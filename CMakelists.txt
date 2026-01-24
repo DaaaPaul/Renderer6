@@ -8,7 +8,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Vulkan REQUIRED)
 find_package(GLFW3 REQUIRED)
+if(APPLE)
+find_library(COCOA Cocoa)
+find_library(IOKIT IOKit)
+find_library(CORE_FOUNDATION CoreFoundation)
+endif()
 find_package(GLM REQUIRED)
 
 add_executable(Renderer6 main.cpp)
-target_link_libraries(Renderer6 PRIVATE ${GLFW3_LIBRARY} Vulkan::Vulkan)
+target_link_libraries(Renderer6 PRIVATE 
+    Vulkan::Vulkan
+    ${GLFW3_LIBRARY} 
+    $<$<PLATFORM_ID:Darwin>:${COCOA}>
+    $<$<PLATFORM_ID:Darwin>:${IOKIT}>
+    $<$<PLATFORM_ID:Darwin>:${CORE_FOUNDATION}>
+)
