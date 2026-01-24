@@ -8,6 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Vulkan REQUIRED)
 find_package(GLFW3 REQUIRED)
+find_package(GLM REQUIRED)
 
 add_executable(Renderer6 main.cpp)
 target_link_libraries(Renderer6 PRIVATE ${GLFW3_LIBRARY} Vulkan::Vulkan)
