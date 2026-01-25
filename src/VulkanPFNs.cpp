@@ -1,4 +1,4 @@
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 #ifdef __APPLE__
@@ -9,7 +9,7 @@
 #include "VulkanPFNs.h"
 
 void loadVkGetInstanceProcAddr() {
-    #ifdef WIN32
+    #ifdef _WIN32
     std::cout << "You are running with windows. Loading the vulkan loader...\n";
 
     HMODULE pVulkanLoader = LoadLibraryA("vulkan-1.dll");
