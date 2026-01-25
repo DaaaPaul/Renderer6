@@ -1,0 +1,52 @@
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+#ifdef MACOS
+#include <dlfcn.h>
+#endif
+#include <iostream>
+#include "Common.h"
+#include "VulkanPFNs.h"
+
+void loadVkGetInstanceProcAddr() {
+    #ifdef WINDOWS
+    std::cout << "You are running with windows. Loading the vulkan loader...\n";
+
+    HMODULE pVulkanLoader = LoadLibraryA("vulkan-1.dll");
+    CHECK_NULLPTR(pVulkanLoader)
+
+    pVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(pVulkanLoader, "vkGetInstanceProcAddr"));
+    CHECK_NULLPTR(pVkGetInstanceProcAddr)
+    #endif
+
+    #ifdef MACOS
+    std::cout << "You are running with mac. Loading the vulkan loader...\n";
+
+    void* pVulkanLoader = dlopen("libvulkan.dylib", RTLD_NOW | RTLD_LOCAL);
+
+    // fallback search if libvulkan.dylib is not found
+	if (!pVulkanLoader) {
+		pVulkanLoader = dlopen("libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
+    } 
+	if (!pVulkanLoader && getenv("DYLD_FALLBACK_LIBRARY_PATH") == NULL) {
+		pVulkanLoader = dlopen("/usr/local/lib/libvulkan.dylib", RTLD_NOW | RTLD_LOCAL);
+    }
+	if (!pVulkanLoader) {
+		pVulkanLoader = dlopen("libMoltenVK.dylib", RTLD_NOW | RTLD_LOCAL);
+    }
+	if (!pVulkanLoader) {
+		pVulkanLoader = dlopen("vulkan.framework/vulkan", RTLD_NOW | RTLD_LOCAL);
+    }
+	if (!pVulkanLoader) {
+		pVulkanLoader = dlopen("MoltenVK.framework/MoltenVK", RTLD_NOW | RTLD_LOCAL);
+    }
+    CHECK_NULLPTR(pVulkanLoader) // if nothing was found, throw std::runtime_error
+
+	pVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(pVulkanLoader, "vkGetInstanceProcAddr"));
+    CHECK_NULLPTR(pVkGetInstanceProcAddr)
+    #endif
+}
+
+void loadVulkanFunctions() {
+    pVkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(pVkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+}

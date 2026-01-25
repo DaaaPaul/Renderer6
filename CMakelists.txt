@@ -21,12 +21,25 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisibleMemory.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/LoadVulkan.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackend.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Device.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisibleMemory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackend.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Window.hpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalParameters.h
 )
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
@@ -39,3 +52,9 @@ target_include_directories(Renderer6 PRIVATE
     ${GLM_INCLUDE_DIRS}
     Vulkan::Headers
 )
+if(WIN32)
+target_compile_definitions(Renderer6 PRIVATE WINDOWS)
+endif()
+if(APPLE)
+target_compile_definitions(Renderer6 PRIVATE MACOS)
+endif()
