@@ -1,6 +1,5 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
-#include <windows.h>
 #include <iostream>
 #include "VulkanPFNs.h"
 
