@@ -26,7 +26,7 @@ void loadVkGetInstanceProcAddr() {
 
     // fallback search if libvulkan.dylib is not found
     if (!pVulkanLoader) {
-		pVulkanLoader = dlopen("/opt/homebrew/Cellar/vulkan-loader/1.4.335.0/lib/libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
+		pVulkanLoader = dlopen("/opt/homebrew/lib/libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
     } 
 	if (!pVulkanLoader) {
 		pVulkanLoader = dlopen("libvulkan.1.dylib", RTLD_NOW | RTLD_LOCAL);
