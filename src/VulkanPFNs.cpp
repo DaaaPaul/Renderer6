@@ -1,7 +1,7 @@
-#ifdef WINDOWS
+#ifdef WIN32
 #include <windows.h>
 #endif
-#ifdef MACOS
+#ifdef __APPLE__
 #include <dlfcn.h>
 #endif
 #include <iostream>
@@ -9,7 +9,7 @@
 #include "VulkanPFNs.h"
 
 void loadVkGetInstanceProcAddr() {
-    #ifdef WINDOWS
+    #ifdef WIN32
     std::cout << "You are running with windows. Loading the vulkan loader...\n";
 
     HMODULE pVulkanLoader = LoadLibraryA("vulkan-1.dll");
@@ -19,7 +19,7 @@ void loadVkGetInstanceProcAddr() {
     CHECK_NULLPTR(pVkGetInstanceProcAddr)
     #endif
 
-    #ifdef MACOS
+    #ifdef __APPLE__
     std::cout << "You are running with mac. Loading the vulkan loader...\n";
 
     void* pVulkanLoader = dlopen("libvulkan.dylib", RTLD_NOW | RTLD_LOCAL);

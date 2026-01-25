@@ -5,9 +5,6 @@
             "includePath": [
                 "C:\\VulkanSDK\\1.4.321.1\\Include"
             ],
-            "defines": [
-                "WINDOWS"
-            ],
             "windowsSdkVersion": "10.0.26100.0",
             "compilerPath": "cl.exe",
             "cStandard": "c17",
