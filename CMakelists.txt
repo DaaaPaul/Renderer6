@@ -18,10 +18,14 @@ endif()
 find_package(GLM REQUIRED)
 
 add_executable(Renderer6 main.cpp)
-target_link_libraries(Renderer6 PRIVATE 
-    Vulkan::Vulkan
+target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
     $<$<PLATFORM_ID:Darwin>:${COCOA}>
     $<$<PLATFORM_ID:Darwin>:${IOKIT}>
     $<$<PLATFORM_ID:Darwin>:${CORE_FOUNDATION}>
+)
+target_include_directories(Renderer6 PRIVATE
+    ${GLFW3_INCLUDE_DIR}
+    ${GLM_INCLUDE_DIRS}
+    Vulkan::Headers
 )
