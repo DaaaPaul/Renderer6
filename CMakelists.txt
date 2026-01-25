@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 project(Renderer6)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -17,7 +15,19 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-add_executable(Renderer6 main.cpp)
+add_executable(Renderer6)
+target_sources(Renderer6 PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Device.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisibleMemory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/LoadVulkan.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackend.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
+)
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
     $<$<PLATFORM_ID:Darwin>:${COCOA}>
