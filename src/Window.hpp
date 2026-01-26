@@ -6,7 +6,7 @@
 
 class Window {
 private:
-    GLFWwindow *window;
+    GLFWwindow* window;
 
     const uint16_t WINDOW_WIDTH;
     const uint16_t WINDOW_HEIGHT;

@@ -1,6 +1,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <stdexcept>
 #include "VulkanPFNs.h"
 #include "Window.hpp"
 #include "VulkanBackend.hpp"
@@ -24,11 +25,6 @@ int main() {
         };
         GlobalCreateInfos::gEnabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
         GlobalCreateInfos::gEnabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
-
-        for(std::string const& s : GlobalCreateInfos::gEnabledInstanceExtensions) {
-            std::cout << s << '\n';
-        }
-
         GlobalCreateInfos::gInstanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
@@ -42,6 +38,8 @@ int main() {
         VulkanBackend vulkanBackend(&GlobalCreateInfos::gInstanceCreateInfo);
 
         VulkanPFNs::fLoadVulkanFunctions();
+
+
     } catch(std::runtime_error const& runtimeError) {
         std::cout << "ERROR: " << runtimeError.what() << "\n";
     }

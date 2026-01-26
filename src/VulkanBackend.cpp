@@ -4,9 +4,12 @@
 #include "GlobalCreateInfos.h"
 
 VulkanBackend::VulkanBackend(VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
+    instance{},
     INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
+
+    std::cout << "\t-INSTANCE API VERSION: " << INSTANCE_CREATE_INFO->pApplicationInfo->apiVersion << '\n';
 
     std::vector<std::string> vectorStringInstanceExtensionNames{};
     for(int i = 0; i < INSTANCE_CREATE_INFO->enabledExtensionCount; i++) {
@@ -15,8 +18,9 @@ VulkanBackend::VulkanBackend(VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_I
     }
 
     std::vector<std::string> vectorStringLoaderLayerNames{};
+
     for(int i = 0; i < INSTANCE_CREATE_INFO->enabledLayerCount; i++) {
-        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledLayerNames[i]));
+        vectorStringLoaderLayerNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledLayerNames[i]));
         std::cout << "\t-LOADER LAYER: " << vectorStringLoaderLayerNames[i] << "\n";
     }
 
@@ -87,7 +91,6 @@ std::vector<const char*> VulkanBackend::getGlfwWindowExtensions() {
 
     std::vector<const char*> requiredGlfwExtensionsNamesVector{};
     for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
-        std::cout << requiredGlfwExtensionsNames[i] << '\n';
         requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
     }
 

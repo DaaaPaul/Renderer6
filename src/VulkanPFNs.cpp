@@ -1,4 +1,6 @@
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #endif
 #ifdef __APPLE__
@@ -67,9 +69,11 @@ namespace VulkanPFNs {
     }
 
     void fLoadVulkanFunctions() {
+        CHECK_NULLPTR(gInstanceInUse);
+
         std::cout << "Loading vulkan functions...\n";
 
-        gpVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(gpVkGetInstanceProcAddr(nullptr, "vkDestroyInstance"));
+        gpVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyInstance"));
         CHECK_NULLPTR(gpVkDestroyInstance)
     }
 }
