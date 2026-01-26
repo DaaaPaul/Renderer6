@@ -83,6 +83,8 @@ std::vector<const char*> VulkanBackend::getGlfwWindowExtensions() {
     uint32_t requiredGlfwExtensionsCount{};
 	const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
 
+    CHECK_NULLPTR(requiredGlfwExtensionsNames)
+
     std::vector<const char*> requiredGlfwExtensionsNamesVector{};
     for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
         requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
