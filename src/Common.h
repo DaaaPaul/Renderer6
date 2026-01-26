@@ -10,7 +10,7 @@
 
 #define CHECK_VK_SUCCESS(vkCreateCmd) \
 	if(vkCreateCmd != VK_SUCCESS) { \
-		std::string errorMsg = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + vkCreateCmd; \
+		std::string errorMsg = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)); \
         throw std::runtime_error(errorMsg); \
 	}
 
