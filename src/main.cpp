@@ -28,7 +28,7 @@ int main() {
         VkInstanceCreateFlags instanceCreateFlags = 0;
         #ifdef __APPLE__
         GlobalCreateInfos::gEnabledInstanceExtensions.push_back("VK_KHR_portability_enumeration");
-        instanceCreateFlags &= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        instanceCreateFlags += VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
         #endif
         GlobalCreateInfos::gInstanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
