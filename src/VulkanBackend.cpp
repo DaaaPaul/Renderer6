@@ -45,7 +45,7 @@ void VulkanBackend::arise() {
     CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(INSTANCE_CREATE_INFO, nullptr, &instance))
     CHECK_VK_SUCCESS(glfwCreateWindowSurface(instance, window->glfwWindow, nullptr, &surface))
 
-    VulkanPFNs::fSetInstance(instance);
+    setVulkanPFNsInstanceInUseToInstanceMember();
 
     std::cout << "Created Vulkan backend\n";
 }
@@ -86,16 +86,6 @@ void VulkanBackend::checkHaveLoaderLayers(std::vector<std::string> const& checkH
     CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMe)
 }
 
-std::vector<const char*> VulkanBackend::getGlfwWindowExtensions() {
-    uint32_t requiredGlfwExtensionsCount{};
-	const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
-
-    CHECK_NULLPTR(requiredGlfwExtensionsNames)
-
-    std::vector<const char*> requiredGlfwExtensionsNamesVector{};
-    for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
-        requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
-    }
-
-    return requiredGlfwExtensionsNamesVector;
+void VulkanBackend::setVulkanPFNsInstanceInUseToInstanceMember() const {
+    VulkanPFNs::fSetInstance(instance);
 }

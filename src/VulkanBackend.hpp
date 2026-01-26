@@ -18,12 +18,11 @@ private:
     void arise();
     void checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const;
     void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const;
-    
+    void setVulkanPFNsInstanceInUseToInstanceMember() const;
+
 public:
     VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
     ~VulkanBackend();
-
-    static std::vector<const char*> getGlfwWindowExtensions();
 
     DELETE_COPY_CONSTRUCTORS(VulkanBackend)
     DELETE_MOVE_CONSTRUCTORS(VulkanBackend)

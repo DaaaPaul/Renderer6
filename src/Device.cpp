@@ -1,5 +1,6 @@
 #include "Device.hpp"
 #include <iostream>
+#include <climits>
 
 Device::Device(VulkanBackend* givenVulkanBackend, VkPhysicalDevice const& GIVEN_PHYSICAL_DEVICE, VkDeviceCreateInfo const* GIVEN_LOGICAL_DEVICE_CREATE_INFO) : 
     vulkanBackend{ givenVulkanBackend },

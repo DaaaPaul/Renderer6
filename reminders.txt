@@ -1,2 +1,6 @@
-- bro u gotta make them create infos global
-- add them prefixes for things (g) (p) (f)
+- bro u gotta make them create infos global !DONE!
+- add them prefixes for things (g) (p) (f) !DONE!
+
+- bro rename everything better now that ur better
+- fellow, add (m) prefix for class members
+
