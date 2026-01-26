@@ -3,14 +3,14 @@
 #include "Window.hpp"
 #include "Common.h"
 
-Window::Window(uint16_t const &GIVEN_WIDTH, uint16_t const &GIVEN_HEIGHT, std::string const &GIVEN_NAME) : 
-    window{},
-    WINDOW_WIDTH{GIVEN_WIDTH},
-    WINDOW_HEIGHT{GIVEN_HEIGHT},
+Window::Window(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::string const& GIVEN_NAME) : 
+    glfwWindow{},
+    windowWidth{GIVEN_WIDTH},
+    windowHeight{GIVEN_HEIGHT},
     WINDOW_NAME{GIVEN_NAME} {
     std::cout << "SET WINDOW CREATE PARAMETERS:\n"
-        "\t-WINDOW_WIDTH " << WINDOW_WIDTH << "\n"
-        "\t-WINDOW_HEIGHT " << WINDOW_HEIGHT << "\n"
+        "\t-WINDOW_WIDTH " << windowWidth << "\n"
+        "\t-WINDOW_HEIGHT " << windowHeight << "\n"
         "\t-WINDOW_NAME " << WINDOW_NAME << "\n";
 
     glfwInitVulkanLoader(VulkanPFNs::gpVkGetInstanceProcAddr);
@@ -21,7 +21,7 @@ Window::Window(uint16_t const &GIVEN_WIDTH, uint16_t const &GIVEN_HEIGHT, std::s
 Window::~Window() {
     std::cout << "Destroying window...\n";
 
-    glfwDestroyWindow(window);
+    glfwDestroyWindow(glfwWindow);
     glfwTerminate();
 
     std::cout << "Destroyed window\n";
@@ -35,9 +35,9 @@ void Window::arise() {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME.c_str(), nullptr, nullptr);
+    glfwWindow = glfwCreateWindow(windowWidth, windowHeight, WINDOW_NAME.c_str(), nullptr, nullptr);
 
-    CHECK_NULLPTR(window);
+    CHECK_NULLPTR(glfwWindow);
 
     std::cout << "Created window\n";
 }

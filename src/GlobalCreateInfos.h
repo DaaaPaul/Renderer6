@@ -4,6 +4,9 @@
 #include "VulkanBackend.hpp"
 
 namespace GlobalCreateInfos {
+    inline uint16_t gWindowWidth{};
+    inline uint16_t gWindowHeight{};
+    inline const char* gWindowName{};
     inline VkApplicationInfo gAppInfo{};
     inline std::vector<const char*> gEnabledLoaderLayers{};
     inline std::vector<const char*> gEnabledInstanceExtensions{};

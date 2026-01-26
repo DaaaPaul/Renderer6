@@ -5,10 +5,13 @@
 #include <vector>
 #include <string>
 #include "Common.h"
+#include "Window.hpp"
 
 class VulkanBackend {
 private:
     VkInstance instance;
+    Window* window;
+    VkSurfaceKHR surface;
 
     VkInstanceCreateInfo const* INSTANCE_CREATE_INFO;
 
@@ -17,7 +20,7 @@ private:
     void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const;
     
 public:
-    VulkanBackend(VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
+    VulkanBackend(Window* window, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
     ~VulkanBackend();
 
     static std::vector<const char*> getGlfwWindowExtensions();
