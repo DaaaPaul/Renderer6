@@ -75,5 +75,7 @@ namespace VulkanPFNs {
 
         gpVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyInstance"));
         CHECK_NULLPTR(gpVkDestroyInstance)
+        gpVkDestroySurfaceKHR = reinterpret_cast<PFN_vkDestroySurfaceKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySurfaceKHR"));
+        CHECK_NULLPTR(gpVkDestroySurfaceKHR)
     }
 }

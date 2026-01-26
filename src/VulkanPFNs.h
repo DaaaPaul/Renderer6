@@ -16,4 +16,5 @@ namespace VulkanPFNs {
     inline PFN_vkEnumerateInstanceLayerProperties gpVkEnumerateInstanceLayerProperties{};
     inline PFN_vkCreateInstance gpVkCreateInstance{};
     inline PFN_vkDestroyInstance gpVkDestroyInstance{};
+    inline PFN_vkDestroySurfaceKHR gpVkDestroySurfaceKHR{};
 }
