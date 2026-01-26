@@ -8,6 +8,10 @@
 #include "Common.h"
 #include "VulkanPFNs.h"
 
+void setInstance(VkInstance const& givenInstance) {
+    instanceInUse = givenInstance;
+}
+
 void loadVkGetInstanceProcAddr() {
     #ifdef _WIN32
     std::cout << "You are running with windows. Loading the vulkan loader...\n";
@@ -50,6 +54,19 @@ void loadVkGetInstanceProcAddr() {
     #endif
 }
 
-void loadVulkanFunctions() {
+void loadTrueGlobalVulkanFunctions() {
+    std::cout << "Loading vulkan true global functions...\n";
+
+    pVkEnumerateInstanceExtensionProperties = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(pVkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceExtensionProperties"));
+    CHECK_NULLPTR(pVkEnumerateInstanceExtensionProperties)
+    pVkEnumerateInstanceLayerProperties = reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(pVkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceLayerProperties"));
+    CHECK_NULLPTR(pVkEnumerateInstanceLayerProperties)
     pVkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(pVkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+    CHECK_NULLPTR(pVkCreateInstance)
+    pVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(pVkGetInstanceProcAddr(nullptr, "vkDestroyInstance"));
+    CHECK_NULLPTR(pVkDestroyInstance)
+}
+
+void loadVulkanFunctions() {
+    std::cout << "Loading vulkan functions...\n";
 }
