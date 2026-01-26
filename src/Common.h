@@ -10,7 +10,8 @@
 
 #define CHECK_VK_SUCCESS(vkCreateCmd) \
 	if(vkCreateCmd != VK_SUCCESS) { \
-        throw std::runtime_error(#vkCreateCmd " did not return VK_SUCCESS"); \
+		std::string errorMsg = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + vkCreateCmd; \
+        throw std::runtime_error(errorMsg); \
 	}
 
 #define CHECK_CONTAINS_ALL(big, small) \

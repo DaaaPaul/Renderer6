@@ -25,10 +25,15 @@ int main() {
         };
         GlobalCreateInfos::gEnabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
         GlobalCreateInfos::gEnabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
+        VkInstanceCreateFlags instanceCreateFlags = 0;
+        #ifdef __APPLE__
+        GlobalCreateInfos::gEnabledInstanceExtensions.push_back("VK_KHR_portability_enumeration")
+        instanceCreateFlags &= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        #endif
         GlobalCreateInfos::gInstanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
-            .flags = 0,
+            .flags = instanceCreateFlags,
             .pApplicationInfo = &GlobalCreateInfos::gAppInfo,
             .enabledLayerCount = static_cast<uint32_t>(GlobalCreateInfos::gEnabledLoaderLayers.size()),
             .ppEnabledLayerNames = GlobalCreateInfos::gEnabledLoaderLayers.data(),
