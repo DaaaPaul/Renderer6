@@ -24,6 +24,11 @@ int main() {
         };
         GlobalCreateInfos::gEnabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
         GlobalCreateInfos::gEnabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
+
+        for(std::string const& s : GlobalCreateInfos::gEnabledInstanceExtensions) {
+            std::cout << s << '\n';
+        }
+
         GlobalCreateInfos::gInstanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
