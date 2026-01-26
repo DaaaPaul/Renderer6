@@ -44,6 +44,33 @@ void populateGlobalCreateInfos() {
         .enabledExtensionCount = static_cast<uint32_t>(GlobalCreateInfos::gEnabledInstanceExtensions.size()),
         .ppEnabledExtensionNames = GlobalCreateInfos::gEnabledInstanceExtensions.data(),
     };
+
+    // logical device and physical device stuff
+    std::vector<std::vector<float>> deviceQueueFamilyQueuePriorities{
+        {0.5f}
+    };
+    std::vector<VkDeviceQueueCreateInfo> deviceQueueFamilyCreateInfos{
+        VkDeviceQueueCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .queueFamilyIndex = 777,
+            .queueCount = 1,
+            .pQueuePriorities = deviceQueueFamilyQueuePriorities[0].data()
+        }
+    };
+    GlobalCreateInfos::gLogicalDeviceCreateInfo = VkDeviceCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .queueCreateInfoCount = ,
+        .pQueueCreateInfos = ,
+        .enabledLayerCount = ,
+        .ppEnabledLayerNames ,
+        .enabledExtensionCount = ,
+        .ppEnabledExtensionNames ,
+        .pEnabledFeatures = 
+    };
 }
 
 int main() {

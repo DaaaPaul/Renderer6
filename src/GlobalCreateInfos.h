@@ -11,4 +11,8 @@ namespace GlobalCreateInfos {
     inline std::vector<const char*> gEnabledLoaderLayers{};
     inline std::vector<const char*> gEnabledInstanceExtensions{};
     inline VkInstanceCreateInfo gInstanceCreateInfo{};
+    inline VkDeviceCreateInfo gLogicalDeviceCreateInfo{};
+
+    [[nodiscard]] VkPhysicalDevice fSelectPhysicalDevice(VkInstance instance);
+    [[nodiscard]] uint32_t fGetPhysicalDeviceGraphicsQueueFamilyIndex(VkPhysicalDevice physicalDevice);
 }

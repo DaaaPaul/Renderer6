@@ -20,7 +20,7 @@ private:
     void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const;
     
 public:
-    VulkanBackend(Window* window, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
+    VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
     ~VulkanBackend();
 
     static std::vector<const char*> getGlfwWindowExtensions();

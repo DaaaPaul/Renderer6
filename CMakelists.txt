@@ -24,6 +24,7 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalCreateInfos.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalCreateInfos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisibleMemory.cpp

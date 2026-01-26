@@ -5,16 +5,16 @@
 
 class Device {
 private:
-    VulkanBackend* backend;
+    VulkanBackend* vulkanBackend;
+    VkPhysicalDevice physicalDevice;
+    VkDevice logicalDevice;
 
-    const uint16_t WINDOW_WIDTH;
-    const uint16_t WINDOW_HEIGHT;
-    const std::string WINDOW_NAME;
+    VkDeviceCreateInfo const* LOGICAL_DEVICE_CREATE_INFO;
 
     void arise();
 
 public:
-    Device();
+    Device(VulkanBackend* givenVulkanBackend, VkPhysicalDevice const& GIVEN_PHYSICAL_DEVICE, VkDeviceCreateInfo const* GIVEN_LOGICAL_DEVICE_CREATE_INFO);
     ~Device();
 
     DELETE_COPY_CONSTRUCTORS(Device)

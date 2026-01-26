@@ -75,7 +75,23 @@ namespace VulkanPFNs {
 
         gpVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyInstance"));
         CHECK_NULLPTR(gpVkDestroyInstance)
+
         gpVkDestroySurfaceKHR = reinterpret_cast<PFN_vkDestroySurfaceKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySurfaceKHR"));
         CHECK_NULLPTR(gpVkDestroySurfaceKHR)
+
+        gpVkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEnumeratePhysicalDevices"));
+        CHECK_NULLPTR(gpVkEnumeratePhysicalDevices)
+
+        gpVkGetPhysicalDeviceProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceProperties"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceProperties)
+
+        gpVkGetPhysicalDeviceQueueFamilyProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceQueueFamilyProperties"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceQueueFamilyProperties)
+
+        gpVkEnumerateDeviceExtensionProperties = reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEnumerateDeviceExtensionProperties"));
+        CHECK_NULLPTR(gpVkEnumerateDeviceExtensionProperties)
+
+        gpVkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceFeatures2KHR"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceFeatures2KHR)
     }
 }

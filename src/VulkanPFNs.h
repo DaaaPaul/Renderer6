@@ -17,4 +17,9 @@ namespace VulkanPFNs {
     inline PFN_vkCreateInstance gpVkCreateInstance{};
     inline PFN_vkDestroyInstance gpVkDestroyInstance{};
     inline PFN_vkDestroySurfaceKHR gpVkDestroySurfaceKHR{};
+    inline PFN_vkEnumeratePhysicalDevices gpVkEnumeratePhysicalDevices{};
+    inline PFN_vkGetPhysicalDeviceProperties gpVkGetPhysicalDeviceProperties{};
+    inline PFN_vkGetPhysicalDeviceQueueFamilyProperties gpVkGetPhysicalDeviceQueueFamilyProperties{};
+    inline PFN_vkEnumerateDeviceExtensionProperties gpVkEnumerateDeviceExtensionProperties{};
+    inline PFN_vkGetPhysicalDeviceFeatures2KHR gpVkGetPhysicalDeviceFeatures2KHR{};
 }

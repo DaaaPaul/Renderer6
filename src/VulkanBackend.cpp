@@ -3,9 +3,9 @@
 #include "VulkanPFNs.h"
 #include "GlobalCreateInfos.h"
 
-VulkanBackend::VulkanBackend(Window* window, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
+VulkanBackend::VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
     instance{},
-    window{ window },
+    window{ givenWindow },
     INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
