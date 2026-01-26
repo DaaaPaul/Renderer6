@@ -33,6 +33,7 @@ VulkanBackend::VulkanBackend(Window* window, VkInstanceCreateInfo const* GIVEN_I
 VulkanBackend::~VulkanBackend() {
     std::cout << "Destroying Vulkan backend...\n";
 
+    VulkanPFNs::gpVkDestroySurfaceKHR(instance, surface, nullptr);
     VulkanPFNs::gpVkDestroyInstance(instance, nullptr);
 
     std::cout << "Destroyed Vulkan backend\n";
