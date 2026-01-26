@@ -63,10 +63,11 @@ void loadTrueGlobalVulkanFunctions() {
     CHECK_NULLPTR(pVkEnumerateInstanceLayerProperties)
     pVkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(pVkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
     CHECK_NULLPTR(pVkCreateInstance)
-    pVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(pVkGetInstanceProcAddr(nullptr, "vkDestroyInstance"));
-    CHECK_NULLPTR(pVkDestroyInstance)
 }
 
 void loadVulkanFunctions() {
     std::cout << "Loading vulkan functions...\n";
+
+    pVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(pVkGetInstanceProcAddr(nullptr, "vkDestroyInstance"));
+    CHECK_NULLPTR(pVkDestroyInstance)
 }
