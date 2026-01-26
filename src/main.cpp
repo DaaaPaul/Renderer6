@@ -37,7 +37,7 @@ int main() {
 
         loadVulkanFunctions();
     } catch(std::runtime_error const& runtimeError) {
-        std::cout << "ERROR: " << runtimeError.what() << '\n';
+        std::cout << "ERROR: " << runtimeError.what() << "\n";
     }
 
     return 0;
