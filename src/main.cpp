@@ -7,6 +7,10 @@
 #include "VulkanBackend.hpp"
 #include "GlobalCreateInfos.h"
 
+void manuallyInitializeGlfw() {
+    glfwInit();
+}
+
 void populateGlobalCreateInfos() {
     // window stuff
     GlobalCreateInfos::gWindowWidth = 800;
@@ -46,6 +50,7 @@ int main() {
     try {
         VulkanPFNs::fLoadVkGetInstanceProcAddr();
         VulkanPFNs::fLoadTrueGlobalVulkanFunctions();
+        manuallyInitializeGlfw();
         populateGlobalCreateInfos();
 
         Window window(GlobalCreateInfos::gWindowWidth, GlobalCreateInfos::gWindowHeight, GlobalCreateInfos::gWindowName);
