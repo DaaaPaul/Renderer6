@@ -13,7 +13,7 @@
 	}
 
 #define CHECK_CONTAINS_ALL(big, small) \
-	if(!containsAll(big, small)) { \
+	if(!Common::containsAll(big, small)) { \
 		throw std::runtime_error(#big " does not contain all of " #small); \
 	}
 
@@ -28,4 +28,6 @@
 #define STATIC_CAST_VECTOR_SIZE(vector) \
 	static_cast<uint32_t>(vector.size())
 
-bool containsAll(std::vector<std::string> const& big, std::vector<std::string> const& small);
+namespace Common {
+	bool containsAll(std::vector<std::string> const& big, std::vector<std::string> const& small);
+}

@@ -4,15 +4,16 @@
 #include "VulkanPFNs.h"
 #include "Window.hpp"
 #include "VulkanBackend.hpp"
+#include "GlobalCreateInfos.h"
 
 int main() {
     try {
-        loadVkGetInstanceProcAddr();
-        loadTrueGlobalVulkanFunctions();
+        VulkanPFNs::fLoadVkGetInstanceProcAddr();
+        VulkanPFNs::fLoadTrueGlobalVulkanFunctions();
 
         Window window(800, 600, "Renderer6");
 
-        const VkApplicationInfo APP_INFO{
+        GlobalCreateInfos::appInfo = VkApplicationInfo{
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext = nullptr,
             .pApplicationName = nullptr,
@@ -21,21 +22,21 @@ int main() {
             .engineVersion = 0,
             .apiVersion = VK_API_VERSION_1_3,
         };
-        const std::vector<const char*> ENABLED_LOADER_LAYERS{ "VK_LAYER_KHRONOS_validation" };
-        const std::vector<const char*> ENABLED_INSTANCE_EXTENSIONS(VulkanBackend::getGlfwWindowExtensions());
-        const VkInstanceCreateInfo INSTANCE_CREATE_INFO{
+        GlobalCreateInfos::enabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
+        GlobalCreateInfos::enabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
+        GlobalCreateInfos::instanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .pApplicationInfo = &APP_INFO,
-            .enabledLayerCount = STATIC_CAST_VECTOR_SIZE(ENABLED_LOADER_LAYERS),
-            .ppEnabledLayerNames = ENABLED_LOADER_LAYERS.data(),
-            .enabledExtensionCount = STATIC_CAST_VECTOR_SIZE(ENABLED_INSTANCE_EXTENSIONS),
-            .ppEnabledExtensionNames = ENABLED_INSTANCE_EXTENSIONS.data(),
+            .pApplicationInfo = &GlobalCreateInfos::appInfo,
+            .enabledLayerCount = static_cast<uint32_t>(GlobalCreateInfos::enabledLoaderLayers.size()),
+            .ppEnabledLayerNames = GlobalCreateInfos::enabledLoaderLayers.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(GlobalCreateInfos::enabledInstanceExtensions.size()),
+            .ppEnabledExtensionNames = GlobalCreateInfos::enabledInstanceExtensions.data(),
         };
-        VulkanBackend vulkanBackend(INSTANCE_CREATE_INFO);
+        VulkanBackend vulkanBackend(GlobalCreateInfos::instanceCreateInfo);
 
-        loadVulkanFunctions();
+        VulkanPFNs::fLoadVulkanFunctions();
     } catch(std::runtime_error const& runtimeError) {
         std::cout << "ERROR: " << runtimeError.what() << "\n";
     }

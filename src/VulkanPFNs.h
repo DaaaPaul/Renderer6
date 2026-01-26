@@ -3,15 +3,17 @@
 #include <vulkan/vulkan.h>
 #include <string>
 
-void setInstance(VkInstance const& givenInstance);
-void loadVkGetInstanceProcAddr();
-void loadTrueGlobalVulkanFunctions();
-void loadVulkanFunctions();
+namespace VulkanPFNs {
+    void fSetInstance(VkInstance const& givenInstance);
+    void fLoadVkGetInstanceProcAddr();
+    void fLoadTrueGlobalVulkanFunctions();
+    void fLoadVulkanFunctions();
 
-inline VkInstance instanceInUse{};
+    inline VkInstance gInstanceInUse{};
 
-inline PFN_vkGetInstanceProcAddr pVkGetInstanceProcAddr{};
-inline PFN_vkEnumerateInstanceExtensionProperties pVkEnumerateInstanceExtensionProperties{};
-inline PFN_vkEnumerateInstanceLayerProperties pVkEnumerateInstanceLayerProperties{};
-inline PFN_vkCreateInstance pVkCreateInstance{};
-inline PFN_vkDestroyInstance pVkDestroyInstance{};
+    inline PFN_vkGetInstanceProcAddr gpVkGetInstanceProcAddr{};
+    inline PFN_vkEnumerateInstanceExtensionProperties gpVkEnumerateInstanceExtensionProperties{};
+    inline PFN_vkEnumerateInstanceLayerProperties gpVkEnumerateInstanceLayerProperties{};
+    inline PFN_vkCreateInstance gpVkCreateInstance{};
+    inline PFN_vkDestroyInstance gpVkDestroyInstance{};
+}

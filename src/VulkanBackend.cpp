@@ -1,6 +1,7 @@
 #include <iostream>
 #include "VulkanBackend.hpp"
 #include "VulkanPFNs.h"
+#include "GlobalCreateInfos.h"
 
 VulkanBackend::VulkanBackend(VkInstanceCreateInfo const& GIVEN_INSTANCE_CREATE_INFO) :
     INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
@@ -27,7 +28,7 @@ VulkanBackend::VulkanBackend(VkInstanceCreateInfo const& GIVEN_INSTANCE_CREATE_I
 VulkanBackend::~VulkanBackend() {
     std::cout << "Destroying Vulkan backend...\n";
 
-    pVkDestroyInstance(instance, nullptr);
+    VulkanPFNs::gpVkDestroyInstance(instance, nullptr);
 
     std::cout << "Destroyed Vulkan backend\n";
 }
@@ -35,9 +36,9 @@ VulkanBackend::~VulkanBackend() {
 void VulkanBackend::arise() {
     std::cout << "Creating Vulkan backend...\n";
 
-    CHECK_VK_SUCCESS(pVkCreateInstance(&INSTANCE_CREATE_INFO, nullptr, &instance))
+    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(&INSTANCE_CREATE_INFO, nullptr, &instance))
 
-    setInstance(instance);
+    VulkanPFNs::fSetInstance(instance);
 
     std::cout << "Created Vulkan backend\n";
 }
@@ -48,9 +49,9 @@ void VulkanBackend::checkHaveInstanceExtensions(std::vector<std::string> const& 
     }
 
     uint32_t instanceExtensionsCount{};
-    pVkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, nullptr);
+    VulkanPFNs::gpVkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, nullptr);
     std::vector<VkExtensionProperties> instanceExtensionProperties(instanceExtensionsCount);
-    pVkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, instanceExtensionProperties.data());
+    VulkanPFNs::gpVkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, instanceExtensionProperties.data());
 
     std::vector<std::string> instanceExtensionNames{};
     for(VkExtensionProperties const& singleExtensionProperties : instanceExtensionProperties) {
@@ -66,9 +67,9 @@ void VulkanBackend::checkHaveLoaderLayers(std::vector<std::string> const& checkH
     }
 
     uint32_t loaderLayerCount{};
-    pVkEnumerateInstanceLayerProperties(&loaderLayerCount, nullptr);
+    VulkanPFNs::gpVkEnumerateInstanceLayerProperties(&loaderLayerCount, nullptr);
     std::vector<VkLayerProperties> loaderLayerProperties(loaderLayerCount);
-    pVkEnumerateInstanceLayerProperties(&loaderLayerCount, loaderLayerProperties.data());
+    VulkanPFNs::gpVkEnumerateInstanceLayerProperties(&loaderLayerCount, loaderLayerProperties.data());
 
     std::vector<std::string> loaderLayerNames{};
     for(VkLayerProperties const& singleLayerProperties : loaderLayerProperties) {

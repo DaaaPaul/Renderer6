@@ -29,6 +29,7 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalCreateInfos.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Device.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocalMemory.hpp
