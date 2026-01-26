@@ -13,7 +13,7 @@ int main() {
 
         Window window(800, 600, "Renderer6");
 
-        GlobalCreateInfos::appInfo = VkApplicationInfo{
+        GlobalCreateInfos::gAppInfo = VkApplicationInfo{
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
             .pNext = nullptr,
             .pApplicationName = nullptr,
@@ -22,19 +22,19 @@ int main() {
             .engineVersion = 0,
             .apiVersion = VK_API_VERSION_1_3,
         };
-        GlobalCreateInfos::enabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
-        GlobalCreateInfos::enabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
-        GlobalCreateInfos::instanceCreateInfo = VkInstanceCreateInfo{
+        GlobalCreateInfos::gEnabledLoaderLayers = { "VK_LAYER_KHRONOS_validation" };
+        GlobalCreateInfos::gEnabledInstanceExtensions = VulkanBackend::getGlfwWindowExtensions();
+        GlobalCreateInfos::gInstanceCreateInfo = VkInstanceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .pApplicationInfo = &GlobalCreateInfos::appInfo,
-            .enabledLayerCount = static_cast<uint32_t>(GlobalCreateInfos::enabledLoaderLayers.size()),
-            .ppEnabledLayerNames = GlobalCreateInfos::enabledLoaderLayers.data(),
-            .enabledExtensionCount = static_cast<uint32_t>(GlobalCreateInfos::enabledInstanceExtensions.size()),
-            .ppEnabledExtensionNames = GlobalCreateInfos::enabledInstanceExtensions.data(),
+            .pApplicationInfo = &GlobalCreateInfos::gAppInfo,
+            .enabledLayerCount = static_cast<uint32_t>(GlobalCreateInfos::gEnabledLoaderLayers.size()),
+            .ppEnabledLayerNames = GlobalCreateInfos::gEnabledLoaderLayers.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(GlobalCreateInfos::gEnabledInstanceExtensions.size()),
+            .ppEnabledExtensionNames = GlobalCreateInfos::gEnabledInstanceExtensions.data(),
         };
-        VulkanBackend vulkanBackend(GlobalCreateInfos::instanceCreateInfo);
+        VulkanBackend vulkanBackend(&GlobalCreateInfos::gInstanceCreateInfo);
 
         VulkanPFNs::fLoadVulkanFunctions();
     } catch(std::runtime_error const& runtimeError) {

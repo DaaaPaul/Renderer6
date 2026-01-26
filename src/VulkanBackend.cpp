@@ -3,20 +3,20 @@
 #include "VulkanPFNs.h"
 #include "GlobalCreateInfos.h"
 
-VulkanBackend::VulkanBackend(VkInstanceCreateInfo const& GIVEN_INSTANCE_CREATE_INFO) :
+VulkanBackend::VulkanBackend(VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
     INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
 
     std::vector<std::string> vectorStringInstanceExtensionNames{};
-    for(int i = 0; i < INSTANCE_CREATE_INFO.enabledExtensionCount; i++) {
-        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO.ppEnabledExtensionNames[i]));
+    for(int i = 0; i < INSTANCE_CREATE_INFO->enabledExtensionCount; i++) {
+        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledExtensionNames[i]));
         std::cout << "\t-INSTANCE EXTENSION: " << vectorStringInstanceExtensionNames[i] << "\n";
     }
 
     std::vector<std::string> vectorStringLoaderLayerNames{};
-    for(int i = 0; i < INSTANCE_CREATE_INFO.enabledLayerCount; i++) {
-        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO.ppEnabledLayerNames[i]));
+    for(int i = 0; i < INSTANCE_CREATE_INFO->enabledLayerCount; i++) {
+        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledLayerNames[i]));
         std::cout << "\t-LOADER LAYER: " << vectorStringLoaderLayerNames[i] << "\n";
     }
 
@@ -36,7 +36,7 @@ VulkanBackend::~VulkanBackend() {
 void VulkanBackend::arise() {
     std::cout << "Creating Vulkan backend...\n";
 
-    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(&INSTANCE_CREATE_INFO, nullptr, &instance))
+    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(INSTANCE_CREATE_INFO, nullptr, &instance))
 
     VulkanPFNs::fSetInstance(instance);
 

@@ -4,8 +4,8 @@
 #include "VulkanBackend.hpp"
 
 namespace GlobalCreateInfos {
-    inline VkApplicationInfo appInfo{};
-    inline std::vector<const char*> enabledLoaderLayers{};
-    inline std::vector<const char*> enabledInstanceExtensions{};
-    inline VkInstanceCreateInfo instanceCreateInfo{};
+    inline VkApplicationInfo gAppInfo{};
+    inline std::vector<const char*> gEnabledLoaderLayers{};
+    inline std::vector<const char*> gEnabledInstanceExtensions{};
+    inline VkInstanceCreateInfo gInstanceCreateInfo{};
 }
