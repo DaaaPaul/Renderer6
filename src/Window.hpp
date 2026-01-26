@@ -3,7 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include "Common.h"
-#include "VulkanBackend.hpp"
+
+class VulkanBackend;
 
 class Window {
 private:

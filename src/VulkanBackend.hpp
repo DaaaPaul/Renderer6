@@ -5,7 +5,8 @@
 #include <vector>
 #include <string>
 #include "Common.h"
-#include "Window.hpp"
+
+class Window;
 
 class VulkanBackend {
 private:
