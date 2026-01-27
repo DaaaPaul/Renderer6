@@ -122,20 +122,6 @@ namespace GlobalCreateInfos {
         };
     }
 
-    [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions() {
-        uint32_t requiredGlfwExtensionsCount{};
-        const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
-
-        CHECK_NULLPTR(requiredGlfwExtensionsNames)
-
-        std::vector<const char*> requiredGlfwExtensionsNamesVector{};
-        for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
-            requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
-        }
-
-        return requiredGlfwExtensionsNamesVector;
-    }
-
     [[nodiscard]] VkPhysicalDevice fSelectPhysicalDevice(VkInstance instance) {
         uint32_t physicalDeviceCount{};
         CHECK_VK_SUCCESS(VulkanPFNs::gpVkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr));
@@ -271,5 +257,28 @@ namespace GlobalCreateInfos {
         } else {
             return graphicsQueueFamilyIndex;
         }
+    }
+
+    [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions() {
+        uint32_t requiredGlfwExtensionsCount{};
+        const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
+        std::vector<const char*> requiredGlfwExtensionsNamesVector{};
+
+        if(!requiredGlfwExtensionsNames) {
+            #ifdef __APPLE__
+            requiredGlfwExtensionsNamesVector.push_back("VK_KHR_surface");
+            requiredGlfwExtensionsNamesVector.push_back("VK_EXT_metal_surface");
+            #endif
+
+            #ifdef _WIN32
+            CHECK_NULLPTR(requiredGlfwExtensionsNames)
+            #endif
+        }   
+
+        for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
+            requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
+        }   
+
+        return requiredGlfwExtensionsNamesVector;
     }
 }

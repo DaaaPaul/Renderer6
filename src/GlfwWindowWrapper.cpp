@@ -28,7 +28,6 @@ GlfwWindowWrapper::~GlfwWindowWrapper() {
 void GlfwWindowWrapper::arise() {
     std::cout << "Creating GlfwWindowWrapper...\n";
 
-    glfwInitVulkanLoader(VulkanPFNs::gpVkGetInstanceProcAddr);
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
