@@ -9,11 +9,11 @@
 
 class VulkanBackendWrapper {
 private:
-    VkInstance instance;
-    GlfwWindowWrapper* window;
-    VkSurfaceKHR surface;
+    VkInstance mInstance;
+    GlfwWindowWrapper* mGlfwWindowWrapper;
+    VkSurfaceKHR mSurface;
 
-    VkInstanceCreateInfo const* INSTANCE_CREATE_INFO;
+    VkInstanceCreateInfo const* mINSTANCE_CREATE_INFO;
 
     void arise();
     void checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const;

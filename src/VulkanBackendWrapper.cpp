@@ -4,24 +4,24 @@
 #include "GlobalCreateInfos.h"
 
 VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
-    instance{},
-    window{ givenGlfwWindowWrapper },
-    INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
+    mInstance{},
+    mGlfwWindowWrapper{ givenGlfwWindowWrapper },
+    mINSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
 
-    std::cout << "\t-INSTANCE API VERSION: " << (UINT32_TO_VK_API_VERSION_CSTR(INSTANCE_CREATE_INFO->pApplicationInfo->apiVersion)) << '\n';
+    std::cout << "\t-INSTANCE API VERSION: " << (UINT32_TO_VK_API_VERSION_CSTR(mINSTANCE_CREATE_INFO->pApplicationInfo->apiVersion)) << '\n';
 
     std::vector<std::string> vectorStringInstanceExtensionNames{};
-    for(int i = 0; i < INSTANCE_CREATE_INFO->enabledExtensionCount; i++) {
-        vectorStringInstanceExtensionNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledExtensionNames[i]));
+    for(int i = 0; i < mINSTANCE_CREATE_INFO->enabledExtensionCount; i++) {
+        vectorStringInstanceExtensionNames.push_back(std::string(mINSTANCE_CREATE_INFO->ppEnabledExtensionNames[i]));
         std::cout << "\t-INSTANCE EXTENSION: " << vectorStringInstanceExtensionNames[i] << "\n";
     }
 
     std::vector<std::string> vectorStringLoaderLayerNames{};
 
-    for(int i = 0; i < INSTANCE_CREATE_INFO->enabledLayerCount; i++) {
-        vectorStringLoaderLayerNames.push_back(std::string(INSTANCE_CREATE_INFO->ppEnabledLayerNames[i]));
+    for(int i = 0; i < mINSTANCE_CREATE_INFO->enabledLayerCount; i++) {
+        vectorStringLoaderLayerNames.push_back(std::string(mINSTANCE_CREATE_INFO->ppEnabledLayerNames[i]));
         std::cout << "\t-LOADER LAYER: " << vectorStringLoaderLayerNames[i] << "\n";
     }
 
@@ -33,8 +33,8 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
 VulkanBackendWrapper::~VulkanBackendWrapper() {
     std::cout << "Destroying VulkanBackendWrapper...\n";
 
-    VulkanPFNs::gpVkDestroySurfaceKHR(instance, surface, nullptr);
-    VulkanPFNs::gpVkDestroyInstance(instance, nullptr);
+    VulkanPFNs::gpVkDestroySurfaceKHR(mInstance, mSurface, nullptr);
+    VulkanPFNs::gpVkDestroyInstance(mInstance, nullptr);
 
     std::cout << "Destroyed VulkanBackendWrapper\n";
 }
@@ -42,8 +42,8 @@ VulkanBackendWrapper::~VulkanBackendWrapper() {
 void VulkanBackendWrapper::arise() {
     std::cout << "Creating VulkanBackendWrapper...\n";
 
-    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(INSTANCE_CREATE_INFO, nullptr, &instance))
-    CHECK_VK_SUCCESS(glfwCreateWindowSurface(instance, window->glfwWindow, nullptr, &surface))
+    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(mINSTANCE_CREATE_INFO, nullptr, &mInstance))
+    CHECK_VK_SUCCESS(glfwCreateWindowSurface(mInstance, mGlfwWindowWrapper->mGlfwWindow, nullptr, &mSurface))
 
     setVulkanPFNsInstanceInUseToInstanceMember();
 
@@ -87,5 +87,5 @@ void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const&
 }
 
 void VulkanBackendWrapper::setVulkanPFNsInstanceInUseToInstanceMember() const {
-    VulkanPFNs::fSetInstance(instance);
+    VulkanPFNs::fSetInstance(mInstance);
 }
