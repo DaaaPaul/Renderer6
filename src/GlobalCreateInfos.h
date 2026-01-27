@@ -19,6 +19,9 @@ namespace GlobalCreateInfos {
     inline std::vector<VkDeviceQueueCreateInfo> gDeviceQueueFamilyCreateInfos{};
     inline std::vector<std::vector<float>> gDeviceQueueFamilyQueuePriorities{};
     inline std::vector<const char*> gEnabledDeviceExtensions{};
+    inline VkPhysicalDeviceExtendedDynamicState2FeaturesEXT gDeviceEnabledExtendedDynamicStateFeatures{};
+    inline VkPhysicalDeviceDynamicRenderingFeatures gDeviceEnabledDynamicRenderingFeatures{};
+    inline VkPhysicalDeviceSynchronization2Features gDeviceEnabledSyncFeatures{};
     inline VkPhysicalDeviceFeatures2 gEnabledDeviceFeatures{};
 
     void fPopulateGlobalWindowCreateInfo();

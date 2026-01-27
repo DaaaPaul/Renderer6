@@ -14,16 +14,18 @@ int main() {
         VulkanPFNs::fLoadTrueGlobalVulkanFunctions();
 
         GlobalCreateInfos::fPopulateGlobalWindowCreateInfo();
-        GlfwWindowWrapper window(GlobalCreateInfos::gWindowWidth, GlobalCreateInfos::gWindowHeight, GlobalCreateInfos::gWindowName);
+        GlfwWindowWrapper glfwWindowWrapper(GlobalCreateInfos::gWindowWidth, GlobalCreateInfos::gWindowHeight, GlobalCreateInfos::gWindowName);
 
         GlobalCreateInfos::fPopulateGlobalInstanceCreateInfo();
-        VulkanBackendWrapper vulkanBackend(&window, &GlobalCreateInfos::gInstanceCreateInfo);
+        VulkanBackendWrapper vulkanBackendWrapper(&glfwWindowWrapper, &GlobalCreateInfos::gInstanceCreateInfo);
         VulkanPFNs::fLoadVulkanFunctions();
 
         GlobalCreateInfos::fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
         GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(VulkanPFNs::gInstanceInUse);
         GlobalCreateInfos::fPopulateGlobalLogicalDeviceCreateInfo();
-        VulkanDevicesWrapper device(&vulkanBackend, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);
+        VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);
+    
+    
     } catch(std::runtime_error const& runtimeError) {
         std::cout << "ERROR: " << runtimeError.what() << "\n";
     }

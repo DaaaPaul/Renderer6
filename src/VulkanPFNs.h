@@ -22,4 +22,6 @@ namespace VulkanPFNs {
     inline PFN_vkGetPhysicalDeviceQueueFamilyProperties gpVkGetPhysicalDeviceQueueFamilyProperties{};
     inline PFN_vkEnumerateDeviceExtensionProperties gpVkEnumerateDeviceExtensionProperties{};
     inline PFN_vkGetPhysicalDeviceFeatures2 gpVkGetPhysicalDeviceFeatures2{};
+    inline PFN_vkCreateDevice gpVkCreateDevice{};
+    inline PFN_vkDestroyDevice gpVkDestroyDevice{};
 }

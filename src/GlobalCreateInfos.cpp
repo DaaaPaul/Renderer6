@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <climits>
+#include <cassert>
 #include "GlobalCreateInfos.h"
 #include "VulkanPFNs.h"
 #include "Common.h"
@@ -43,23 +44,23 @@ namespace GlobalCreateInfos {
     }
 
     void fPopulateGlobalSharedPhysicalLogicalDeviceInfo() {
-        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT deviceEnabledExtendedDynamicStateFeatures{
+        GlobalCreateInfos::gDeviceEnabledExtendedDynamicStateFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
             .extendedDynamicState2 = true
         };
-        VkPhysicalDeviceDynamicRenderingFeatures deviceEnabledDynamicRenderingFeatures{
+        GlobalCreateInfos::gDeviceEnabledDynamicRenderingFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-            .pNext = &deviceEnabledExtendedDynamicStateFeatures,
+            .pNext = &GlobalCreateInfos::gDeviceEnabledExtendedDynamicStateFeatures,
             .dynamicRendering = true
         };
-        VkPhysicalDeviceSynchronization2Features deviceEnabledSyncFeatures{
+        GlobalCreateInfos::gDeviceEnabledSyncFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-            .pNext = &deviceEnabledDynamicRenderingFeatures,
+            .pNext = &GlobalCreateInfos::gDeviceEnabledDynamicRenderingFeatures,
             .synchronization2 = true
         };
         GlobalCreateInfos::gEnabledDeviceFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-            .pNext = &deviceEnabledSyncFeatures,
+            .pNext = &GlobalCreateInfos::gDeviceEnabledSyncFeatures,
             .features = {
                 .samplerAnisotropy = true
             }
@@ -85,6 +86,11 @@ namespace GlobalCreateInfos {
                 .pQueuePriorities = GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities[0].data()
             }
         };
+
+        assert(GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities.size() == GlobalCreateInfos::gDeviceQueueFamilyCreateInfos.size());
+        for(int i = 0; i < gDeviceQueueFamilyQueuePriorities.size(); i++) {
+            assert(GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities[i].size() == GlobalCreateInfos::gDeviceQueueFamilyCreateInfos[i].queueCount);
+        }
     }
 
     void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance) {
@@ -94,6 +100,10 @@ namespace GlobalCreateInfos {
     void fPopulateGlobalLogicalDeviceCreateInfo() {
         // here i am: set it to a non-absurd value
         GlobalCreateInfos::gDeviceQueueFamilyCreateInfos[0].queueFamilyIndex = fGetGraphicsQueueFamilyIndex(gSelectedPhysicalDevice); 
+
+        for(int i = 0; i < GlobalCreateInfos::gDeviceQueueFamilyCreateInfos.size(); i++) {
+            assert(GlobalCreateInfos::gDeviceQueueFamilyCreateInfos[i].queueFamilyIndex != UINT32_MAX);
+        }
 
         GlobalCreateInfos::gLogicalDeviceCreateInfo = {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -137,6 +147,7 @@ namespace GlobalCreateInfos {
             // api version check
             if(!(physicalDeviceProperties.apiVersion >= gAppInfo.apiVersion)) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
+                std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for too low API version of below " << UINT32_TO_VK_API_VERSION_CSTR(gAppInfo.apiVersion) << "\n";
                 continue;
             }
 
@@ -156,6 +167,7 @@ namespace GlobalCreateInfos {
 
             if(!foundGraphicsQueueFamilyWithEnoughQueues) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
+                std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for not having a graphics queue family with eough queues" << "\n";
                 continue;
             }
 
@@ -176,6 +188,7 @@ namespace GlobalCreateInfos {
 
             if(!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
+                std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for not having the device extensions this application needs" << "\n";
                 continue;
             }
 
@@ -199,6 +212,7 @@ namespace GlobalCreateInfos {
 
             if(!(physicalDeviceFeaturesStatus.features.samplerAnisotropy && physicalDeviceSyncFeaturesStatus.synchronization2 && physicalDeviceDynamicRenderingFeaturesStatus.dynamicRendering && physicalDeviceExtendedDynamicStateFeaturesStatus.extendedDynamicState2)) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
+                std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for not having the device features this application needs" << "\n";
                 continue;
             }
         }

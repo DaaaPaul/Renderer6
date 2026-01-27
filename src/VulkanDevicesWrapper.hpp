@@ -5,11 +5,11 @@
 
 class VulkanDevicesWrapper {
 private:
-    VulkanBackendWrapper* mVulkanBackendWrapper;
-    VkPhysicalDevice mPhysicalDevice;
-    VkDevice mLogicalDevice;
+    VulkanBackendWrapper* mVulkanBackendWrapper{};
+    VkPhysicalDevice mPhysicalDevice{};
+    VkDevice mLogicalDevice{};
 
-    VkDeviceCreateInfo const* mLOGICAL_DEVICE_CREATE_INFO;
+    VkDeviceCreateInfo const* mLOGICAL_DEVICE_CREATE_INFO{};
 
     void arise();
 

@@ -1,6 +1,8 @@
 - bro u gotta make them create infos global !DONE!
 - add them prefixes for things (g) (p) (f) !DONE!
 
-- bro rename everything better now that ur better
-- fellow, add (m) prefix for class members
-- just be safer and add those default construct things to classes
+- bro rename everything better now that ur better !DONE!
+- fellow, add (m) prefix for class members !DONE!
+- just be safer and add those default construct things to classes !DONE!
+
+- bro add that cool pointer feature thing to print the features
