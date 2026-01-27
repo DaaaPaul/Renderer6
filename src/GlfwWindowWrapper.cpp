@@ -1,9 +1,9 @@
 #include <iostream>
 #include "VulkanPFNs.h"
-#include "Window.hpp"
+#include "GlfwWindowWrapper.hpp"
 #include "Common.h"
 
-Window::Window(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::string const& GIVEN_NAME) : 
+GlfwWindowWrapper::GlfwWindowWrapper(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::string const& GIVEN_NAME) : 
     glfwWindow{},
     windowWidth{GIVEN_WIDTH},
     windowHeight{GIVEN_HEIGHT},
@@ -16,17 +16,17 @@ Window::Window(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::s
     arise();
 }
 
-Window::~Window() {
-    std::cout << "Destroying window...\n";
+GlfwWindowWrapper::~GlfwWindowWrapper() {
+    std::cout << "Destroying GlfwWindowWrapper...\n";
 
     glfwDestroyWindow(glfwWindow);
     glfwTerminate();
 
-    std::cout << "Destroyed window\n";
+    std::cout << "Destroyed GlfwWindowWrapper\n";
 }
 
-void Window::arise() {
-    std::cout << "Creating window...\n";
+void GlfwWindowWrapper::arise() {
+    std::cout << "Creating GlfwWindowWrapper...\n";
 
     glfwInitVulkanLoader(VulkanPFNs::gpVkGetInstanceProcAddr);
     glfwInit();
@@ -38,5 +38,5 @@ void Window::arise() {
 
     CHECK_NULLPTR(glfwWindow);
 
-    std::cout << "Created window\n";
+    std::cout << "Created GlfwWindowWrapper\n";
 }

@@ -1,11 +1,11 @@
 #include <iostream>
-#include "VulkanBackend.hpp"
+#include "VulkanBackendWrapper.hpp"
 #include "VulkanPFNs.h"
 #include "GlobalCreateInfos.h"
 
-VulkanBackend::VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
+VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO) :
     instance{},
-    window{ givenWindow },
+    window{ givenGlfwWindowWrapper },
     INSTANCE_CREATE_INFO { GIVEN_INSTANCE_CREATE_INFO } {
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
@@ -30,27 +30,27 @@ VulkanBackend::VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GI
     arise();
 }
 
-VulkanBackend::~VulkanBackend() {
-    std::cout << "Destroying Vulkan backend...\n";
+VulkanBackendWrapper::~VulkanBackendWrapper() {
+    std::cout << "Destroying VulkanBackendWrapper...\n";
 
     VulkanPFNs::gpVkDestroySurfaceKHR(instance, surface, nullptr);
     VulkanPFNs::gpVkDestroyInstance(instance, nullptr);
 
-    std::cout << "Destroyed Vulkan backend\n";
+    std::cout << "Destroyed VulkanBackendWrapper\n";
 }
 
-void VulkanBackend::arise() {
-    std::cout << "Creating Vulkan backend...\n";
+void VulkanBackendWrapper::arise() {
+    std::cout << "Creating VulkanBackendWrapper...\n";
 
     CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(INSTANCE_CREATE_INFO, nullptr, &instance))
     CHECK_VK_SUCCESS(glfwCreateWindowSurface(instance, window->glfwWindow, nullptr, &surface))
 
     setVulkanPFNsInstanceInUseToInstanceMember();
 
-    std::cout << "Created Vulkan backend\n";
+    std::cout << "Created VulkanBackendWrapper\n";
 }
     
-void VulkanBackend::checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const {
+void VulkanBackendWrapper::checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const {
     if(checkHaveMe.empty()) {
         return;
     }
@@ -68,7 +68,7 @@ void VulkanBackend::checkHaveInstanceExtensions(std::vector<std::string> const& 
     CHECK_CONTAINS_ALL(instanceExtensionNames, checkHaveMe)
 }
 
-void VulkanBackend::checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const {
+void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const {
     if(checkHaveMe.empty()) {
         return;
     }
@@ -86,6 +86,6 @@ void VulkanBackend::checkHaveLoaderLayers(std::vector<std::string> const& checkH
     CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMe)
 }
 
-void VulkanBackend::setVulkanPFNsInstanceInUseToInstanceMember() const {
+void VulkanBackendWrapper::setVulkanPFNsInstanceInUseToInstanceMember() const {
     VulkanPFNs::fSetInstance(instance);
 }

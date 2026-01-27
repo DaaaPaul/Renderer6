@@ -5,12 +5,12 @@
 #include <vector>
 #include <string>
 #include "Common.h"
-#include "Window.hpp"
+#include "GlfwWindowWrapper.hpp"
 
-class VulkanBackend {
+class VulkanBackendWrapper {
 private:
     VkInstance instance;
-    Window* window;
+    GlfwWindowWrapper* window;
     VkSurfaceKHR surface;
 
     VkInstanceCreateInfo const* INSTANCE_CREATE_INFO;
@@ -21,9 +21,9 @@ private:
     void setVulkanPFNsInstanceInUseToInstanceMember() const;
 
 public:
-    VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
-    ~VulkanBackend();
+    VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
+    ~VulkanBackendWrapper();
 
-    DELETE_COPY_CONSTRUCTORS(VulkanBackend)
-    DELETE_MOVE_CONSTRUCTORS(VulkanBackend)
+    DELETE_COPY_CONSTRUCTORS(VulkanBackendWrapper)
+    DELETE_MOVE_CONSTRUCTORS(VulkanBackendWrapper)
 };
