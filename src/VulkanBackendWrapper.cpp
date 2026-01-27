@@ -25,8 +25,8 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
         std::cout << "\t-LOADER LAYER: " << vectorStringLoaderLayerNames[i] << "\n";
     }
 
-    checkHaveInstanceExtensions(vectorStringInstanceExtensionNames);
-    checkHaveLoaderLayers(vectorStringLoaderLayerNames);
+    VulkanBackendWrapper::checkHaveInstanceExtensions(vectorStringInstanceExtensionNames);
+    VulkanBackendWrapper::checkHaveLoaderLayers(vectorStringLoaderLayerNames);
     arise();
 }
 
@@ -50,7 +50,7 @@ void VulkanBackendWrapper::arise() {
     std::cout << "Created VulkanBackendWrapper\n";
 }
     
-void VulkanBackendWrapper::checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const {
+void VulkanBackendWrapper::checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) {
     if(checkHaveMe.empty()) {
         return;
     }
@@ -68,7 +68,7 @@ void VulkanBackendWrapper::checkHaveInstanceExtensions(std::vector<std::string> 
     CHECK_CONTAINS_ALL(instanceExtensionNames, checkHaveMe)
 }
 
-void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const {
+void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) {
     if(checkHaveMe.empty()) {
         return;
     }

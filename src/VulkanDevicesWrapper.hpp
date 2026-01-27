@@ -13,6 +13,7 @@ private:
 
     void arise();
 
+    void static printEnabledFeaturesInVkFeatureStruct(void const* VK_FEATURE_STRUCT, const char* featureName);
 public:
     VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VkPhysicalDevice const& GIVEN_PHYSICAL_DEVICE, VkDeviceCreateInfo const* GIVEN_LOGICAL_DEVICE_CREATE_INFO);
     ~VulkanDevicesWrapper();

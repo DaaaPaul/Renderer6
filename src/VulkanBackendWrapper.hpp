@@ -16,9 +16,11 @@ private:
     VkInstanceCreateInfo const* mINSTANCE_CREATE_INFO{};
 
     void arise();
-    void checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe) const;
-    void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) const;
+    
     void setVulkanPFNsInstanceInUseToInstanceMember() const;
+
+    static void checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe);
+    static void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe);
 
 public:
     VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);

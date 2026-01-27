@@ -20,7 +20,11 @@ VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBack
         std::cout << "\t\t-" << mLOGICAL_DEVICE_CREATE_INFO->ppEnabledExtensionNames[i] << '\n';
     }
 
-    std::cout << "\t-Device features (too lazy to list):\n";
+    std::cout << "\t-Device features:\n";
+    VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(mLOGICAL_DEVICE_CREATE_INFO->pNext, "VkPhysicalDeviceFeatures2");
+    VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mLOGICAL_DEVICE_CREATE_INFO->pNext)->pNext, "VkPhysicalDeviceSynchronization2Features");
+    VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mLOGICAL_DEVICE_CREATE_INFO->pNext)->pNext)->pNext, "VkPhysicalDeviceDynamicRenderingFeatures");
+    VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures const*>(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mLOGICAL_DEVICE_CREATE_INFO->pNext)->pNext)->pNext)->pNext, "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT");
 
     std::cout << "\t-Device queues:\n";
     for(int i = 0; i < mLOGICAL_DEVICE_CREATE_INFO->queueCreateInfoCount; i++) {
@@ -48,4 +52,18 @@ void VulkanDevicesWrapper::arise() {
     CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, mLOGICAL_DEVICE_CREATE_INFO, nullptr, &mLogicalDevice))
 
     std::cout << "Created VulkanDevicesWrapper\n";
+}
+
+void VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(void const* VK_FEATURE_STRUCT, const char* featureName) {
+    const uint16_t FIRST_VKBOOL32_OFFSET = 16; // assuming sType is bytes 0-3 and pNext is bytes 8-15
+    unsigned char const* BYTE_POINTER = reinterpret_cast<unsigned char const*>(VK_FEATURE_STRUCT);
+    BYTE_POINTER += FIRST_VKBOOL32_OFFSET;
+    VkBool32 const* VK_BOOLS_POINTER = reinterpret_cast<VkBool32 const*>(BYTE_POINTER);
+
+    for(int i = 0; (*VK_BOOLS_POINTER == VK_TRUE) || (*VK_BOOLS_POINTER == VK_FALSE); i++) {
+        if(*VK_BOOLS_POINTER == VK_TRUE) {
+            std::cout << "\t\t-Feature " << i << " from the top down (zero-indexed) is enabled in the struct " << featureName << "\n";
+        }
+        VK_BOOLS_POINTER++;
+    }
 }

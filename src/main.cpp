@@ -24,8 +24,8 @@ int main() {
         GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(VulkanPFNs::gInstanceInUse);
         GlobalCreateInfos::fPopulateGlobalLogicalDeviceCreateInfo();
         VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);
-    
-    
+        
+        
     } catch(std::runtime_error const& runtimeError) {
         std::cout << "ERROR: " << runtimeError.what() << "\n";
     }
