@@ -69,7 +69,10 @@ namespace GlobalCreateInfos {
         GlobalCreateInfos::gEnabledDeviceExtensions = {
             "VK_KHR_swapchain",
             "VK_KHR_synchronization2",
-            "VK_KHR_spirv_1_4"
+            "VK_KHR_spirv_1_4",
+            #ifdef __APPLE__
+            "VK_KHR_portability_subset"
+            #endif
         };
 
         GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities = {

@@ -55,9 +55,8 @@ void VulkanDevicesWrapper::arise() {
 }
 
 void VulkanDevicesWrapper::printEnabledFeaturesInVkFeatureStruct(void const* VK_FEATURE_STRUCT, const char* featureName) {
-    const uint16_t FIRST_VKBOOL32_OFFSET = 16; // assuming sType is bytes 0-3 and pNext is bytes 8-15
-    unsigned char const* BYTE_POINTER = reinterpret_cast<unsigned char const*>(VK_FEATURE_STRUCT);
-    BYTE_POINTER += FIRST_VKBOOL32_OFFSET;
+    const uint16_t FIRST_VKBOOL32_OFFSET = offsetof(VkPhysicalDeviceFeatures2, pNext) + 8;
+    unsigned char const* BYTE_POINTER = reinterpret_cast<unsigned char const*>(VK_FEATURE_STRUCT) + FIRST_VKBOOL32_OFFSET;
     VkBool32 const* VK_BOOLS_POINTER = reinterpret_cast<VkBool32 const*>(BYTE_POINTER);
 
     for(int i = 0; (*VK_BOOLS_POINTER == VK_TRUE) || (*VK_BOOLS_POINTER == VK_FALSE); i++) {
