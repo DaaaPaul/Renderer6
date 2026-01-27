@@ -23,6 +23,7 @@ namespace GlobalCreateInfos {
 
     void fPopulateGlobalWindowCreateInfo();
     void fPopulateGlobalInstanceCreateInfo();
+    void fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
     void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance);
     void fPopulateGlobalLogicalDeviceCreateInfo();
 

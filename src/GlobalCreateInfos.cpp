@@ -1,6 +1,7 @@
 #include <array>
 #include <algorithm>
 #include <iostream>
+#include <climits>
 #include "GlobalCreateInfos.h"
 #include "VulkanPFNs.h"
 #include "Common.h"
@@ -41,52 +42,59 @@ namespace GlobalCreateInfos {
         };
     }
 
-    void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance) {
-        GlobalCreateInfos::gSelectedPhysicalDevice = GlobalCreateInfos::fSelectPhysicalDevice(createdInstance);
-    }
-
-    void fPopulateGlobalLogicalDeviceCreateInfo() {
-        GlobalCreateInfos::gEnabledDeviceExtensions = {
-            "VK_KHR_swapchain", 
-            "VK_KHR_synchronization2", 
-            "VK_KHR_spirv_1_4"
-        };
-
-        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT deviceEnabledExtendedDynamicStateFeatures{ 
+    void fPopulateGlobalSharedPhysicalLogicalDeviceInfo() {
+        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT deviceEnabledExtendedDynamicStateFeatures{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
             .extendedDynamicState2 = true
         };
-        VkPhysicalDeviceDynamicRenderingFeatures deviceEnabledDynamicRenderingFeatures{ 
+        VkPhysicalDeviceDynamicRenderingFeatures deviceEnabledDynamicRenderingFeatures{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
             .pNext = &deviceEnabledExtendedDynamicStateFeatures,
             .dynamicRendering = true
         };
-        VkPhysicalDeviceSynchronization2Features deviceEnabledSyncFeatures{ 
+        VkPhysicalDeviceSynchronization2Features deviceEnabledSyncFeatures{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
             .pNext = &deviceEnabledDynamicRenderingFeatures,
             .synchronization2 = true
         };
-        GlobalCreateInfos::gEnabledDeviceFeatures = { 
+        GlobalCreateInfos::gEnabledDeviceFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
             .pNext = &deviceEnabledSyncFeatures,
-            .features = { 
-                .samplerAnisotropy = true 
+            .features = {
+                .samplerAnisotropy = true
             }
+        };
+
+        GlobalCreateInfos::gEnabledDeviceExtensions = {
+            "VK_KHR_swapchain",
+            "VK_KHR_synchronization2",
+            "VK_KHR_spirv_1_4"
         };
 
         GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities = {
             {0.5f}
         };
+
         GlobalCreateInfos::gDeviceQueueFamilyCreateInfos = {
             VkDeviceQueueCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
                 .pNext = nullptr,
                 .flags = 0,
-                .queueFamilyIndex = GlobalCreateInfos::fGetGraphicsQueueFamilyIndex(GlobalCreateInfos::gSelectedPhysicalDevice),
+                .queueFamilyIndex = UINT32_MAX, // warning value: this must be set non-absurdly later
                 .queueCount = 1,
                 .pQueuePriorities = GlobalCreateInfos::gDeviceQueueFamilyQueuePriorities[0].data()
             }
         };
+    }
+
+    void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance) {
+        GlobalCreateInfos::gSelectedPhysicalDevice = GlobalCreateInfos::fSelectPhysicalDevice(createdInstance);
+    }
+
+    void fPopulateGlobalLogicalDeviceCreateInfo() {
+        // here i am: set it to a non-absurd value
+        GlobalCreateInfos::gDeviceQueueFamilyCreateInfos[0].queueFamilyIndex = fGetGraphicsQueueFamilyIndex(gSelectedPhysicalDevice); 
+
         GlobalCreateInfos::gLogicalDeviceCreateInfo = {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .pNext = &GlobalCreateInfos::gEnabledDeviceFeatures,
@@ -102,8 +110,6 @@ namespace GlobalCreateInfos {
     }
 
     [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions() {
-        glfwInit();
-
         uint32_t requiredGlfwExtensionsCount{};
         const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
 
@@ -143,7 +149,7 @@ namespace GlobalCreateInfos {
             bool foundGraphicsQueueFamilyWithEnoughQueues = false;
             for(int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
                 if ((physicalDeviceQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && 
-                    (physicalDeviceQueueFamilyProperties[i].queueCount >= gLogicalDeviceCreateInfo.pQueueCreateInfos[0].queueCount)) {
+                    (physicalDeviceQueueFamilyProperties[i].queueCount >= GlobalCreateInfos::gDeviceQueueFamilyCreateInfos[0].queueCount)) {
                     foundGraphicsQueueFamilyWithEnoughQueues = true;
                 }
             }
@@ -164,8 +170,8 @@ namespace GlobalCreateInfos {
                 physicalDeviceExtensionNames.push_back(physicalDeviceExtension.extensionName);
             }
             std::vector<std::string> logicalDeviceExtensionNames{};
-            for(int i = 0; i < gLogicalDeviceCreateInfo.enabledExtensionCount; i++) {
-                logicalDeviceExtensionNames.push_back(gLogicalDeviceCreateInfo.ppEnabledExtensionNames[i]);
+            for(int i = 0; i < GlobalCreateInfos::gEnabledDeviceExtensions.size(); i++) {
+                logicalDeviceExtensionNames.push_back(GlobalCreateInfos::gEnabledDeviceExtensions[i]);
             }
 
             if(!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
@@ -189,12 +195,16 @@ namespace GlobalCreateInfos {
                 .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
                 .pNext = &physicalDeviceSyncFeaturesStatus
             };
-            VulkanPFNs::gpVkGetPhysicalDeviceFeatures2KHR(systemPhysicalDevices[i], &physicalDeviceFeaturesStatus);
+            VulkanPFNs::gpVkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &physicalDeviceFeaturesStatus);
 
             if(!(physicalDeviceFeaturesStatus.features.samplerAnisotropy && physicalDeviceSyncFeaturesStatus.synchronization2 && physicalDeviceDynamicRenderingFeaturesStatus.dynamicRendering && physicalDeviceExtendedDynamicStateFeaturesStatus.extendedDynamicState2)) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
                 continue;
             }
+        }
+
+        if(systemPhysicalDevices.empty()) {
+            throw std::runtime_error("There is no suitable GPU on your computer for this application");
         }
 
         // perform nice-to-have checks on the remaining physical devices
@@ -221,7 +231,7 @@ namespace GlobalCreateInfos {
         VkPhysicalDeviceProperties selectedPhysicalDeviceProperties{};
 	    VulkanPFNs::gpVkGetPhysicalDeviceProperties(selectedPhysicalDevice, &selectedPhysicalDeviceProperties);
         std::cout << "SELECTED PHYSICAL DEVICE: " << selectedPhysicalDeviceProperties.deviceName << "\n";
-        std::cout << "DISCRETE GPU? " << (niceToHavesBySystemPhysicalDevice[selectedPhysicalDeviceIndex][0]) ? "Yes\n" : "No\n";
+        std::cout << "DISCRETE GPU? " << ((niceToHavesBySystemPhysicalDevice[selectedPhysicalDeviceIndex][0]) ? "Yes\n" : "No\n");
 
         return selectedPhysicalDevice;
     }

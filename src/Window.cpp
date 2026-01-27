@@ -13,8 +13,6 @@ Window::Window(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::s
         "\t-WINDOW_HEIGHT " << windowHeight << "\n"
         "\t-WINDOW_NAME " << WINDOW_NAME << "\n";
 
-    glfwInitVulkanLoader(VulkanPFNs::gpVkGetInstanceProcAddr);
-
     arise();
 }
 
@@ -29,6 +27,9 @@ Window::~Window() {
 
 void Window::arise() {
     std::cout << "Creating window...\n";
+
+    glfwInitVulkanLoader(VulkanPFNs::gpVkGetInstanceProcAddr);
+    glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);

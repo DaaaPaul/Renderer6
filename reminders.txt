@@ -3,4 +3,4 @@
 
 - bro rename everything better now that ur better
 - fellow, add (m) prefix for class members
-
+- just be safer and add those default construct things to classes

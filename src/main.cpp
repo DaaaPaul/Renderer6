@@ -20,6 +20,7 @@ int main() {
         VulkanBackend vulkanBackend(&window, &GlobalCreateInfos::gInstanceCreateInfo);
         VulkanPFNs::fLoadVulkanFunctions();
 
+        GlobalCreateInfos::fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
         GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(VulkanPFNs::gInstanceInUse);
         GlobalCreateInfos::fPopulateGlobalLogicalDeviceCreateInfo();
         Device device(&vulkanBackend, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);

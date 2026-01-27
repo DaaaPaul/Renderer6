@@ -91,7 +91,7 @@ namespace VulkanPFNs {
         gpVkEnumerateDeviceExtensionProperties = reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEnumerateDeviceExtensionProperties"));
         CHECK_NULLPTR(gpVkEnumerateDeviceExtensionProperties)
 
-        gpVkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceFeatures2KHR"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceFeatures2KHR)
+        gpVkGetPhysicalDeviceFeatures2 = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceFeatures2"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceFeatures2)
     }
 }

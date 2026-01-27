@@ -10,7 +10,7 @@ VulkanBackend::VulkanBackend(Window* givenWindow, VkInstanceCreateInfo const* GI
 
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
 
-    std::cout << "\t-INSTANCE API VERSION: " << INSTANCE_CREATE_INFO->pApplicationInfo->apiVersion << '\n';
+    std::cout << "\t-INSTANCE API VERSION: " << (UINT32_TO_VK_API_VERSION_CSTR(INSTANCE_CREATE_INFO->pApplicationInfo->apiVersion)) << '\n';
 
     std::vector<std::string> vectorStringInstanceExtensionNames{};
     for(int i = 0; i < INSTANCE_CREATE_INFO->enabledExtensionCount; i++) {
