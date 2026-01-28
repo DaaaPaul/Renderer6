@@ -7,13 +7,17 @@ namespace GlobalCreateInfos {
     inline uint16_t gWindowWidth{};
     inline uint16_t gWindowHeight{};
     inline const char* gWindowName{};
+    void fPopulateGlobalWindowCreateInfo();
 
     inline VkInstanceCreateInfo gInstanceCreateInfo{};
     inline VkApplicationInfo gAppInfo{};
     inline std::vector<const char*> gEnabledLoaderLayers{};
     inline std::vector<const char*> gEnabledInstanceExtensions{};
+    void fPopulateGlobalInstanceCreateInfo();
 
     inline VkPhysicalDevice gSelectedPhysicalDevice{};
+    void fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
+    void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance);
 
     inline VkDeviceCreateInfo gLogicalDeviceCreateInfo{};
     inline std::vector<VkDeviceQueueCreateInfo> gDeviceQueueFamilyCreateInfos{};
@@ -23,12 +27,11 @@ namespace GlobalCreateInfos {
     inline VkPhysicalDeviceDynamicRenderingFeatures gDeviceEnabledDynamicRenderingFeatures{};
     inline VkPhysicalDeviceSynchronization2Features gDeviceEnabledSyncFeatures{};
     inline VkPhysicalDeviceFeatures2 gEnabledDeviceFeatures{};
-
-    void fPopulateGlobalWindowCreateInfo();
-    void fPopulateGlobalInstanceCreateInfo();
-    void fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
-    void fPopulateGlobalSelectedPhysicalDevice(VkInstance createdInstance);
     void fPopulateGlobalLogicalDeviceCreateInfo();
+
+    inline VkSwapchainCreateInfoKHR gSwapchainKHRCreateInfo{};
+    inline uint32_t gGraphicsQueueFamilyIndex{};
+    void fPopulateGlobalSwapchainKHRCreateInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfaceKHR, GLFWwindow* window);
 
     [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions();
     [[nodiscard]] VkPhysicalDevice fSelectPhysicalDevice(VkInstance instance);

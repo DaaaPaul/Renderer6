@@ -8,10 +8,13 @@
 #include "GlfwWindowWrapper.hpp"
 
 class VulkanBackendWrapper {
-private:
+    friend class VulkanDevicesWrapper;
+    friend class VulkanSwapchainWrapper;
+
+    private:
     VkInstance mInstance{};
     GlfwWindowWrapper* mGlfwWindowWrapper{};
-    VkSurfaceKHR mSurface{};
+    VkSurfaceKHR mSurfaceKHR{};
 
     VkInstanceCreateInfo const* mINSTANCE_CREATE_INFO{};
 
@@ -22,7 +25,7 @@ private:
     static void checkHaveInstanceExtensions(std::vector<std::string> const& checkHaveMe);
     static void checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe);
 
-public:
+    public:
     VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
     ~VulkanBackendWrapper();
 

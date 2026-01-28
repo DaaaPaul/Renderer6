@@ -7,9 +7,9 @@
 class VulkanBackendWrapper;
 
 class GlfwWindowWrapper {
-private:
     friend class VulkanBackendWrapper;
 
+    private:
     GLFWwindow* mGlfwWindow{};
 
     uint16_t mWindowWidth{};
@@ -18,7 +18,7 @@ private:
 
     void arise();
 
-public:
+    public:
     GlfwWindowWrapper(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::string const& GIVEN_NAME);
     ~GlfwWindowWrapper();
 

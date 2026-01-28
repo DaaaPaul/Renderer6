@@ -8,6 +8,11 @@
         throw std::runtime_error(#ptr " is a nullptr"); \
     }
 
+#define CHECK_BOOL(b) \
+	if(!b) { \
+        throw std::runtime_error(#b " is false"); \
+	}
+
 #define CHECK_VK_SUCCESS(vkCreateCmd) \
 	if(vkCreateCmd != VK_SUCCESS) { \
 		std::string errorMsg = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)); \

@@ -33,7 +33,7 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
 VulkanBackendWrapper::~VulkanBackendWrapper() {
     std::cout << "Destroying VulkanBackendWrapper...\n";
 
-    VulkanPFNs::gpVkDestroySurfaceKHR(mInstance, mSurface, nullptr);
+    VulkanPFNs::gpVkDestroySurfaceKHR(mInstance, mSurfaceKHR, nullptr);
     VulkanPFNs::gpVkDestroyInstance(mInstance, nullptr);
 
     std::cout << "Destroyed VulkanBackendWrapper\n";
@@ -43,7 +43,7 @@ void VulkanBackendWrapper::arise() {
     std::cout << "Creating VulkanBackendWrapper...\n";
 
     CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(mINSTANCE_CREATE_INFO, nullptr, &mInstance))
-    CHECK_VK_SUCCESS(glfwCreateWindowSurface(mInstance, mGlfwWindowWrapper->mGlfwWindow, nullptr, &mSurface))
+    CHECK_VK_SUCCESS(glfwCreateWindowSurface(mInstance, mGlfwWindowWrapper->mGlfwWindow, nullptr, &mSurfaceKHR))
 
     setVulkanPFNsInstanceInUseToInstanceMember();
 
