@@ -6,16 +6,17 @@ class VulkanSwapchainWrapper {
     private:
     VulkanDevicesWrapper* mVulkanDevicesWrapper{};
     VkSwapchainKHR mSwapchainKHR{};
+    VkSurfaceKHR mSurfaceKHR{};
 
     VkSwapchainCreateInfoKHR const* mSWAPCHAIN_KHR_CREATE_INFO{};
 
     void arise();
 
-    static void checkHaveVkFormat(VulkanDevicesWrapper const& VULKAN_DEVICES_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
-    static void checkHavePresentModeKHR(VulkanDevicesWrapper const& VULKAN_DEVICES_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
+    static void checkHaveVkFormat(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
+    static void checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
 
     public:
-    VulkanSwapchainWrapper(VkSwapchainCreateInfoKHR const* GIVEN_SWAPCHAIN_CREATE_INFO);
+    VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VkSwapchainCreateInfoKHR const* GIVEN_SWAPCHAIN_CREATE_INFO);
     ~VulkanSwapchainWrapper();
 
     DELETE_COPY_CONSTRUCTORS(VulkanSwapchainWrapper)

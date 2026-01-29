@@ -24,4 +24,6 @@ namespace VulkanPFNs {
     inline PFN_vkGetPhysicalDeviceFeatures2 gpVkGetPhysicalDeviceFeatures2{};
     inline PFN_vkCreateDevice gpVkCreateDevice{};
     inline PFN_vkDestroyDevice gpVkDestroyDevice{};
+    inline PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR{};
+    inline PFN_vkGetPhysicalDeviceSurfaceFormatsKHR gpVkGetPhysicalDeviceSurfaceFormatsKHR{};
 }

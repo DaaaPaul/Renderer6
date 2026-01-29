@@ -14,7 +14,6 @@ class VulkanBackendWrapper {
     private:
     VkInstance mInstance{};
     GlfwWindowWrapper* mGlfwWindowWrapper{};
-    VkSurfaceKHR mSurfaceKHR{};
 
     VkInstanceCreateInfo const* mINSTANCE_CREATE_INFO{};
 

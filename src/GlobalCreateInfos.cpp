@@ -241,7 +241,7 @@ namespace GlobalCreateInfos {
 
     void fPopulateGlobalSwapchainKHRCreateInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfaceKHR, GLFWwindow* window) {
         VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-        CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceKHR, &surfaceCapabilities));
+        CHECK_VK_SUCCESS(VulkanPFNs::gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceKHR, &surfaceCapabilities));
 
         VkExtent2D surfaceExtentInPixels{};
         if(surfaceCapabilities.currentExtent.width == UINT32_MAX || surfaceCapabilities.currentExtent.height == UINT32_MAX) {

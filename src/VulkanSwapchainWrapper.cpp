@@ -1,8 +1,11 @@
 #include <iostream>
 #include "VulkanSwapchainWrapper.hpp"
+#include "VulkanPFNs.h"
 
-VulkanSwapchainWrapper::VulkanSwapchainWrapper(VkSwapchainCreateInfoKHR const* GIVEN_SWAPCHAIN_CREATE_INFO) :
+VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VkSwapchainCreateInfoKHR const* GIVEN_SWAPCHAIN_CREATE_INFO) :
+    mVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
     mSwapchainKHR{},
+    mSurfaceKHR{},
     mSWAPCHAIN_KHR_CREATE_INFO{ GIVEN_SWAPCHAIN_CREATE_INFO } {
 
     
@@ -21,11 +24,11 @@ void VulkanSwapchainWrapper::arise() {
     std::cout << "Created VulkanSwapchainWrapper\n";
 }
 
-void VulkanSwapchainWrapper::checkHaveVkFormat(VulkanDevicesWrapper const& VULKAN_DEVICES_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
+void VulkanSwapchainWrapper::checkHaveVkFormat(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
     uint32_t supportedVkFormatColorspacesCount{};
-    vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_DEVICES_WRAPPER.mPhysicalDevice, VULKAN_DEVICES_WRAPPER.mVulkanBackendWrapper->mSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
     std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-    vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_DEVICES_WRAPPER.mPhysicalDevice, VULKAN_DEVICES_WRAPPER.mVulkanBackendWrapper->mSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
 
     bool checkSuccess{ false };
 
@@ -38,6 +41,6 @@ void VulkanSwapchainWrapper::checkHaveVkFormat(VulkanDevicesWrapper const& VULKA
     CHECK_BOOL(checkSuccess)
 }
 
-void VulkanSwapchainWrapper::checkHavePresentModeKHR(VulkanDevicesWrapper const& VULKAN_DEVICES_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
-
+void VulkanSwapchainWrapper::checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
+    
 }

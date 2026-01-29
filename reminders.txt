@@ -5,4 +5,6 @@
 - fellow, add (m) prefix for class members !DONE!
 - just be safer and add those default construct things to classes !DONE!
 
-- bro add that cool pointer feature thing to print the features
+- bro add that cool pointer feature thing to print the features !KIND OF DONE!
+
+- vkGetPhysicalDeviceSurfaceSupportKHR???

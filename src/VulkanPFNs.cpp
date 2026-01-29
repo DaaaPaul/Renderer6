@@ -99,5 +99,11 @@ namespace VulkanPFNs {
 
         gpVkDestroyDevice = reinterpret_cast<PFN_vkDestroyDevice>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyDevice"));
         CHECK_NULLPTR(gpVkDestroyDevice)
+
+        gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+
+        gpVkGetPhysicalDeviceSurfaceFormatsKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceFormatsKHR)
     }
 }
