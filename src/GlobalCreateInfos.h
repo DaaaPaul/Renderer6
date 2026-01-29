@@ -6,11 +6,6 @@
 #include "VulkanBackendWrapper.hpp"
 
 namespace GlobalCreateInfos {
-    inline uint16_t gWindowWidth{};
-    inline uint16_t gWindowHeight{};
-    inline const char* gWindowName{};
-    void fPopulateGlobalWindowCreateInfo();
-
     inline VkInstanceCreateInfo gInstanceCreateInfo{};
     inline VkApplicationInfo gAppInfo{};
     inline std::vector<const char*> gEnabledLoaderLayers{};
@@ -35,7 +30,6 @@ namespace GlobalCreateInfos {
     inline uint32_t gGraphicsQueueFamilyIndex{};
     void fPopulateGlobalSwapchainKHRCreateInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfaceKHR, GLFWwindow* window);
 
-    [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions();
     [[nodiscard]] VkPhysicalDevice fSelectPhysicalDevice(VkInstance instance);
     [[nodiscard]] uint32_t fGetGraphicsQueueFamilyIndex(VkPhysicalDevice physicalDevice);
 }

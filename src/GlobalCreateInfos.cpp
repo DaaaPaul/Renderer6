@@ -8,12 +8,6 @@
 #include "Common.h"
 
 namespace GlobalCreateInfos {
-    void fPopulateGlobalWindowCreateInfo() {
-        GlobalCreateInfos::gWindowWidth = 800;
-        GlobalCreateInfos::gWindowHeight = 600;
-        GlobalCreateInfos::gWindowName = "Renderer6";
-    }
-
     void fPopulateGlobalInstanceCreateInfo() {
         GlobalCreateInfos::gAppInfo = {
             .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -301,28 +295,5 @@ namespace GlobalCreateInfos {
         } else {
             return graphicsQueueFamilyIndex;
         }
-    }
-
-    [[nodiscard]] std::vector<const char*> fGetGlfwWindowExtensions() {
-        uint32_t requiredGlfwExtensionsCount{};
-        const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
-        std::vector<const char*> requiredGlfwExtensionsNamesVector{};
-
-        if(!requiredGlfwExtensionsNames) {
-            #ifdef __APPLE__
-            requiredGlfwExtensionsNamesVector.push_back("VK_KHR_surface");
-            requiredGlfwExtensionsNamesVector.push_back("VK_EXT_metal_surface");
-            #endif
-
-            #ifdef _WIN32
-            CHECK_NULLPTR(requiredGlfwExtensionsNames, "glfwGetRequiredInstanceExtensions failed")
-            #endif
-        }   
-
-        for(int i = 0; i < requiredGlfwExtensionsCount; i++) {
-            requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
-        }   
-
-        return requiredGlfwExtensionsNamesVector;
     }
 }

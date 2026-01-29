@@ -54,8 +54,8 @@ void VulkanSwapchainWrapper::checkHaveVkFormatColorspace(VulkanSwapchainWrapper 
 
     bool checkSuccess{ false };
 
-    for(VkSurfaceFormatKHR const& SUPPORTED : supportedVkFormatColorspaces) {
-        if(SUPPORTED.format == CHECK_ME_FORMAT_COLORSPACE.format && SUPPORTED.colorSpace == CHECK_ME_FORMAT_COLORSPACE.colorSpace) {
+    for (VkSurfaceFormatKHR const& SUPPORTED : supportedVkFormatColorspaces) {
+        if (SUPPORTED.format == CHECK_ME_FORMAT_COLORSPACE.format && SUPPORTED.colorSpace == CHECK_ME_FORMAT_COLORSPACE.colorSpace) {
             checkSuccess = true;
         }
     }

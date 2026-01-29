@@ -14,8 +14,7 @@ int main() {
         VulkanPFNs::fLoadVkGetInstanceProcAddr();
         VulkanPFNs::fLoadTrueGlobalVulkanFunctions();
 
-        GlobalCreateInfos::fPopulateGlobalWindowCreateInfo();
-        GlfwWindowWrapper glfwWindowWrapper(GlobalCreateInfos::gWindowWidth, GlobalCreateInfos::gWindowHeight, GlobalCreateInfos::gWindowName);
+        GlfwWindowWrapper glfwWindowWrapper(GlfwWindowWrapper::getConstructParameters());
 
         GlobalCreateInfos::fPopulateGlobalInstanceCreateInfo();
         VulkanBackendWrapper vulkanBackendWrapper(&glfwWindowWrapper, &GlobalCreateInfos::gInstanceCreateInfo);
