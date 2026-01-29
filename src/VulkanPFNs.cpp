@@ -50,10 +50,10 @@ namespace VulkanPFNs {
         if (!pVulkanLoader) {
             pVulkanLoader = dlopen("MoltenVK.framework/MoltenVK", RTLD_NOW | RTLD_LOCAL);
         }
-        CHECK_NULLPTR(pVulkanLoader) // if nothing was found, throw std::runtime_error
+        CHECK_NULLPTR(pVulkanLoader, "Failed to dynamically load the vulkan loader on your mac") // if nothing was found, throw std::runtime_error
 
         gpVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(dlsym(pVulkanLoader, "vkGetInstanceProcAddr"));
-        CHECK_NULLPTR(gpVkGetInstanceProcAddr)
+        CHECK_NULLPTR(gpVkGetInstanceProcAddr, "Failed to find vkGetInstanceProcAddr on the vulkan loader on your mac")
         #endif
     }
 
