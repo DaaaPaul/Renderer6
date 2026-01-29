@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vulkan/vulkan.h>
 #include "Common.h"
 #include "VulkanPFNs.h"
@@ -20,6 +22,8 @@ class VulkanDevicesWrapper {
     public:
     VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VkPhysicalDevice const& GIVEN_PHYSICAL_DEVICE, VkDeviceCreateInfo const* GIVEN_LOGICAL_DEVICE_CREATE_INFO);
     ~VulkanDevicesWrapper();
+
+    inline [[nodiscard]] VkPhysicalDevice getVkPhysicalDevice() noexcept { return mPhysicalDevice; }
 
     DELETE_COPY_CONSTRUCTORS(VulkanDevicesWrapper)
     DELETE_MOVE_CONSTRUCTORS(VulkanDevicesWrapper)

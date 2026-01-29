@@ -28,6 +28,8 @@ class VulkanBackendWrapper {
     VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VkInstanceCreateInfo const* GIVEN_INSTANCE_CREATE_INFO);
     ~VulkanBackendWrapper();
 
+    inline [[nodiscard]] VkInstance getVkInstance() noexcept { return mInstance; }
+
     DELETE_COPY_CONSTRUCTORS(VulkanBackendWrapper)
     DELETE_MOVE_CONSTRUCTORS(VulkanBackendWrapper)
 };

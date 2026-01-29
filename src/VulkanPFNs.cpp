@@ -105,5 +105,15 @@ namespace VulkanPFNs {
 
         gpVkGetPhysicalDeviceSurfaceFormatsKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
         CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceFormatsKHR)
+
+        gpVkGetPhysicalDeviceSurfacePresentModesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfacePresentModesKHR"));
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfacePresentModesKHR)
+        
+        gpVkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateSwapchainKHR"));
+        CHECK_NULLPTR(gpVkCreateSwapchainKHR)
+        
+        gpVkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySwapchainKHR"));
+        CHECK_NULLPTR(gpVkDestroySwapchainKHR)
+        
     }
 }

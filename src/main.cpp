@@ -7,6 +7,7 @@
 #include "GlfwWindowWrapper.hpp"
 #include "VulkanBackendWrapper.hpp"
 #include "VulkanDevicesWrapper.hpp"
+#include "VulkanSwapchainWrapper.hpp"
 
 int main() {
     try {
@@ -21,13 +22,15 @@ int main() {
         VulkanPFNs::fLoadVulkanFunctions();
 
         GlobalCreateInfos::fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
-        GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(VulkanPFNs::gInstanceInUse);
+        GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(vulkanBackendWrapper.getVkInstance());
         GlobalCreateInfos::fPopulateGlobalLogicalDeviceCreateInfo();
         VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);
         
-        
-    } catch(std::runtime_error const& runtimeError) {
-        std::cout << "ERROR: " << runtimeError.what() << "\n";
+        VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper);
+        GlobalCreateInfos::fPopulateGlobalSwapchainKHRCreateInfo(vulkanDevicesWrapper.getVkPhysicalDevice(), vulkanSwapchainWrapper.getSurfaceKHR(), glfwWindowWrapper.getGlfwWindow());
+        vulkanSwapchainWrapper.setSwapchainKHRCreateInfoAndArise(&GlobalCreateInfos::gSwapchainKHRCreateInfo);
+    } catch(std::runtime_error const& RUNTIME_ERROR) {
+        std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }
 
     return 0;

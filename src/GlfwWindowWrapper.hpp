@@ -4,10 +4,9 @@
 #include <string>
 #include "Common.h"
 
-class VulkanBackendWrapper;
-
 class GlfwWindowWrapper {
     friend class VulkanBackendWrapper;
+    friend class VulkanSwapchainWrapper;
 
     private:
     GLFWwindow* mGlfwWindow{};
@@ -21,6 +20,8 @@ class GlfwWindowWrapper {
     public:
     GlfwWindowWrapper(uint16_t const& GIVEN_WIDTH, uint16_t const& GIVEN_HEIGHT, std::string const& GIVEN_NAME);
     ~GlfwWindowWrapper();
+
+    inline [[nodiscard]] GLFWwindow* getGlfwWindow() noexcept { return mGlfwWindow; }
 
     DELETE_COPY_CONSTRUCTORS(GlfwWindowWrapper)
     DELETE_MOVE_CONSTRUCTORS(GlfwWindowWrapper)
