@@ -5,25 +5,25 @@
 #include <vector>
 #include <cstdint>
 
-#define CHECK_NULLPTR(ptr) \
+#define CHECK_NULLPTR(ptr, errMsg) \
     if(!ptr) { \
-        throw std::runtime_error(#ptr " is a nullptr"); \
+        throw std::runtime_error(errMsg); \
     }
 
-#define CHECK_BOOL(b) \
+#define CHECK_BOOL(b, errMsg) \
 	if(!b) { \
-        throw std::runtime_error(#b " is false"); \
+        throw std::runtime_error(errMsg); \
 	}
 
-#define CHECK_VK_SUCCESS(vkCreateCmd) \
+#define CHECK_VK_SUCCESS(vkCreateCmd, errMsg) \
 	if(vkCreateCmd != VK_SUCCESS) { \
-		std::string errorMsg = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)); \
-        throw std::runtime_error(errorMsg); \
+		std::string errCode = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)) + ". "; \
+        throw std::runtime_error(errCode + errMsg); \
 	}
 
-#define CHECK_CONTAINS_ALL(big, small) \
+#define CHECK_CONTAINS_ALL(big, small, errMsg) \
 	if(!Common::containsAll(big, small)) { \
-		throw std::runtime_error(#big " does not contain all of " #small); \
+		throw std::runtime_error(errMsg); \
 	}
 
 #define DELETE_COPY_CONSTRUCTORS(className) \

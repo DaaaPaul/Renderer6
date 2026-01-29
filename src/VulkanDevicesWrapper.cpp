@@ -49,7 +49,10 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
 void VulkanDevicesWrapper::arise() {
     std::cout << "Creating VulkanDevicesWrapper...\n";
 
-    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, mLOGICAL_DEVICE_CREATE_INFO, nullptr, &mLogicalDevice))
+    CHECK_VK_SUCCESS(
+    VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, mLOGICAL_DEVICE_CREATE_INFO, nullptr, &mLogicalDevice),
+    "Failed to create logical device"
+    )
 
     std::cout << "Created VulkanDevicesWrapper\n";
 }

@@ -41,7 +41,10 @@ VulkanBackendWrapper::~VulkanBackendWrapper() {
 void VulkanBackendWrapper::arise() {
     std::cout << "Creating VulkanBackendWrapper...\n";
 
-    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateInstance(mINSTANCE_CREATE_INFO, nullptr, &mInstance))
+    CHECK_VK_SUCCESS(
+    VulkanPFNs::gpVkCreateInstance(mINSTANCE_CREATE_INFO, nullptr, &mInstance),
+    "Failed to create instance"
+    )
 
     setVulkanPFNsInstanceInUseToInstanceMember();
 
@@ -63,7 +66,7 @@ void VulkanBackendWrapper::checkHaveInstanceExtensions(std::vector<std::string> 
         instanceExtensionNames.push_back(std::string(singleExtensionProperties.extensionName));
     }
 
-    CHECK_CONTAINS_ALL(instanceExtensionNames, checkHaveMe)
+    CHECK_CONTAINS_ALL(instanceExtensionNames, checkHaveMe, "Your vulkan installation does not have the required instance extensions")
 }
 
 void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const& checkHaveMe) {
@@ -81,7 +84,7 @@ void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<std::string> const&
         loaderLayerNames.push_back(std::string(singleLayerProperties.layerName));
     }
 
-    CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMe)
+    CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMe, "Your vulkan installation does not have the required loader layers")
 }
 
 void VulkanBackendWrapper::setVulkanPFNsInstanceInUseToInstanceMember() const {

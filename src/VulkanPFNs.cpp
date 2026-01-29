@@ -20,10 +20,10 @@ namespace VulkanPFNs {
         std::cout << "You are running with windows. Loading the vulkan loader...\n";
 
         HMODULE pVulkanLoader = LoadLibraryA("vulkan-1.dll");
-        CHECK_NULLPTR(pVulkanLoader)
+        CHECK_NULLPTR(pVulkanLoader, "Failed to dynamically load vulkan-1.dll")
 
         gpVkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(GetProcAddress(pVulkanLoader, "vkGetInstanceProcAddr"));
-        CHECK_NULLPTR(gpVkGetInstanceProcAddr)
+        CHECK_NULLPTR(gpVkGetInstanceProcAddr, "Failed to find vkGetInstanceProcAddr in vulkan-1.dll")
         #endif
 
         #ifdef __APPLE__
@@ -61,59 +61,59 @@ namespace VulkanPFNs {
         std::cout << "Loading vulkan true global functions...\n";
 
         gpVkEnumerateInstanceExtensionProperties = reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(gpVkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceExtensionProperties"));
-        CHECK_NULLPTR(gpVkEnumerateInstanceExtensionProperties)
+        CHECK_NULLPTR(gpVkEnumerateInstanceExtensionProperties, "Failed to load vkEnumerateInstanceExtensionProperties")
         gpVkEnumerateInstanceLayerProperties = reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(gpVkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceLayerProperties"));
-        CHECK_NULLPTR(gpVkEnumerateInstanceLayerProperties)
+        CHECK_NULLPTR(gpVkEnumerateInstanceLayerProperties, "Failed to load vkEnumerateInstanceLayerProperties")
         gpVkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(gpVkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
-        CHECK_NULLPTR(gpVkCreateInstance)
+        CHECK_NULLPTR(gpVkCreateInstance, "Failed to load vkCreateInstance")
     }
 
     void fLoadVulkanFunctions() {
-        CHECK_NULLPTR(gInstanceInUse);
+        CHECK_NULLPTR(gInstanceInUse, "There is no instance in use for the VulkanPFNs namespace bro");
 
         std::cout << "Loading vulkan functions...\n";
 
         gpVkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyInstance"));
-        CHECK_NULLPTR(gpVkDestroyInstance)
+        CHECK_NULLPTR(gpVkDestroyInstance, "Failed to load vkDestroyInstance")
 
         gpVkDestroySurfaceKHR = reinterpret_cast<PFN_vkDestroySurfaceKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySurfaceKHR"));
-        CHECK_NULLPTR(gpVkDestroySurfaceKHR)
+        CHECK_NULLPTR(gpVkDestroySurfaceKHR, "Failed to load vkDestroySurfaceKHR")
 
         gpVkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEnumeratePhysicalDevices"));
-        CHECK_NULLPTR(gpVkEnumeratePhysicalDevices)
+        CHECK_NULLPTR(gpVkEnumeratePhysicalDevices, "Failed to load vkEnumeratePhysicalDevices")
 
         gpVkGetPhysicalDeviceProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceProperties"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceProperties)
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceProperties, "Failed to load vkGetPhysicalDeviceProperties")
 
         gpVkGetPhysicalDeviceQueueFamilyProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceQueueFamilyProperties"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceQueueFamilyProperties)
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceQueueFamilyProperties, "Failed to load vkGetPhysicalDeviceQueueFamilyProperties")
 
         gpVkEnumerateDeviceExtensionProperties = reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEnumerateDeviceExtensionProperties"));
-        CHECK_NULLPTR(gpVkEnumerateDeviceExtensionProperties)
+        CHECK_NULLPTR(gpVkEnumerateDeviceExtensionProperties, "Failed to load vkEnumerateDeviceExtensionProperties")
 
         gpVkGetPhysicalDeviceFeatures2 = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceFeatures2"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceFeatures2)
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceFeatures2, "Failed to load vkGetPhysicalDeviceFeatures2")
 
         gpVkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateDevice"));
-        CHECK_NULLPTR(gpVkCreateDevice)
+        CHECK_NULLPTR(gpVkCreateDevice, "Failed to load vkCreateDevice")
 
         gpVkDestroyDevice = reinterpret_cast<PFN_vkDestroyDevice>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyDevice"));
-        CHECK_NULLPTR(gpVkDestroyDevice)
+        CHECK_NULLPTR(gpVkDestroyDevice, "Failed to load vkDestroyDevice")
 
         gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR)
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR, "Failed to load vkGetPhysicalDeviceSurfaceCapabilitiesKHR")
 
         gpVkGetPhysicalDeviceSurfaceFormatsKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceFormatsKHR)
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfaceFormatsKHR, "Failed to load vkGetPhysicalDeviceSurfaceFormatsKHR")
 
         gpVkGetPhysicalDeviceSurfacePresentModesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceSurfacePresentModesKHR"));
-        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfacePresentModesKHR)
-        
+        CHECK_NULLPTR(gpVkGetPhysicalDeviceSurfacePresentModesKHR, "Failed to load vkGetPhysicalDeviceSurfacePresentModesKHR")
+
         gpVkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateSwapchainKHR"));
-        CHECK_NULLPTR(gpVkCreateSwapchainKHR)
-        
+        CHECK_NULLPTR(gpVkCreateSwapchainKHR, "Failed to load vkCreateSwapchainKHR")
+
         gpVkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySwapchainKHR"));
-        CHECK_NULLPTR(gpVkDestroySwapchainKHR)
+        CHECK_NULLPTR(gpVkDestroySwapchainKHR, "Failed to load vkDestroySwapchainKHR")
         
     }
 }

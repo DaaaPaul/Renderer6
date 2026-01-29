@@ -29,13 +29,19 @@ void VulkanSwapchainWrapper::setSwapchainKHRCreateInfoAndArise(VkSwapchainCreate
 }
 
 void VulkanSwapchainWrapper::initSurface() {
-    CHECK_VK_SUCCESS(glfwCreateWindowSurface(mVulkanDevicesWrapper->mVulkanBackendWrapper->mInstance, mVulkanDevicesWrapper->mVulkanBackendWrapper->mGlfwWindowWrapper->mGlfwWindow, nullptr, &mSurfaceKHR))
+    CHECK_VK_SUCCESS(
+    glfwCreateWindowSurface(mVulkanDevicesWrapper->mVulkanBackendWrapper->mInstance, mVulkanDevicesWrapper->mVulkanBackendWrapper->mGlfwWindowWrapper->mGlfwWindow, nullptr, &mSurfaceKHR),
+    "Failed to create surface"
+    )
 }
 
 void VulkanSwapchainWrapper::arise() {
     std::cout << "Creating VulkanSwapchainWrapper...\n";
 
-    CHECK_VK_SUCCESS(VulkanPFNs::gpVkCreateSwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, mSWAPCHAIN_KHR_CREATE_INFO, nullptr, &mSwapchainKHR))
+    CHECK_VK_SUCCESS(
+    VulkanPFNs::gpVkCreateSwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, mSWAPCHAIN_KHR_CREATE_INFO, nullptr, &mSwapchainKHR),
+    "Failed to create swapchain"
+    )
 
     std::cout << "Created VulkanSwapchainWrapper\n";
 }
@@ -54,7 +60,7 @@ void VulkanSwapchainWrapper::checkHaveVkFormatColorspace(VulkanSwapchainWrapper 
         }
     }
 
-    CHECK_BOOL(checkSuccess)
+    CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired format")
 }
 
 void VulkanSwapchainWrapper::checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
@@ -71,5 +77,5 @@ void VulkanSwapchainWrapper::checkHavePresentModeKHR(VulkanSwapchainWrapper cons
         }
     }
 
-    CHECK_BOOL(checkSuccess)
+    CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired present mode")
 }

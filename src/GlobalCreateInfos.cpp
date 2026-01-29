@@ -124,9 +124,15 @@ namespace GlobalCreateInfos {
 
     [[nodiscard]] VkPhysicalDevice fSelectPhysicalDevice(VkInstance instance) {
         uint32_t physicalDeviceCount{};
-        CHECK_VK_SUCCESS(VulkanPFNs::gpVkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr));
+        CHECK_VK_SUCCESS(
+        VulkanPFNs::gpVkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr),
+        "Failed to enumerate physical devices on your instance"
+        );
         std::vector<VkPhysicalDevice> systemPhysicalDevices(physicalDeviceCount);
-        CHECK_VK_SUCCESS(VulkanPFNs::gpVkEnumeratePhysicalDevices(instance, &physicalDeviceCount, systemPhysicalDevices.data()));
+        CHECK_VK_SUCCESS(
+        VulkanPFNs::gpVkEnumeratePhysicalDevices(instance, &physicalDeviceCount, systemPhysicalDevices.data()),
+        "Failed to enumerate physical devices on your instance"
+        );
 
         // weed out the downs
         for(int i = 0; i < systemPhysicalDevices.size(); i++) {
@@ -241,7 +247,10 @@ namespace GlobalCreateInfos {
 
     void fPopulateGlobalSwapchainKHRCreateInfo(VkPhysicalDevice physicalDevice, VkSurfaceKHR surfaceKHR, GLFWwindow* window) {
         VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-        CHECK_VK_SUCCESS(VulkanPFNs::gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceKHR, &surfaceCapabilities));
+        CHECK_VK_SUCCESS(
+        VulkanPFNs::gpVkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surfaceKHR, &surfaceCapabilities),
+        "Failed to get physical device surface capabilities"
+        );
 
         VkExtent2D surfaceExtentInPixels{};
         if(surfaceCapabilities.currentExtent.width == UINT32_MAX || surfaceCapabilities.currentExtent.height == UINT32_MAX) {
@@ -306,7 +315,7 @@ namespace GlobalCreateInfos {
             #endif
 
             #ifdef _WIN32
-            CHECK_NULLPTR(requiredGlfwExtensionsNames)
+            CHECK_NULLPTR(requiredGlfwExtensionsNames, "glfwGetRequiredInstanceExtensions failed")
             #endif
         }   
 

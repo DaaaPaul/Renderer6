@@ -35,7 +35,7 @@ void GlfwWindowWrapper::arise() {
 
     mGlfwWindow = glfwCreateWindow(mWindowWidth, mWindowHeight, mWINDOW_NAME.c_str(), nullptr, nullptr);
 
-    CHECK_NULLPTR(mGlfwWindow);
+    CHECK_NULLPTR(mGlfwWindow, "glfwCreateWindow failed");
 
     std::cout << "Created GlfwWindowWrapper\n";
 }
