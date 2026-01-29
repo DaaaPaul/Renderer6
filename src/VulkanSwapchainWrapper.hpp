@@ -22,7 +22,7 @@ class VulkanSwapchainWrapper {
     VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper);
     ~VulkanSwapchainWrapper();
 
-    inline [[nodiscard]] VkSurfaceKHR getSurfaceKHR() noexcept { return mSurfaceKHR; }
+    [[nodiscard]] inline VkSurfaceKHR getSurfaceKHR() noexcept { return mSurfaceKHR; }
     void setSwapchainKHRCreateInfoAndArise(VkSwapchainCreateInfoKHR const* GIVEN_SWAPCHAIN_KHR_CREATE_INFO);
 
     DELETE_COPY_CONSTRUCTORS(VulkanSwapchainWrapper)
