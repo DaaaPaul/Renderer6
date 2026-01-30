@@ -16,17 +16,14 @@ int main() {
 
         GlfwWindowWrapper glfwWindowWrapper(GlfwWindowWrapper::getConstructParameters());
 
-        GlobalCreateInfos::fPopulateGlobalInstanceCreateInfo();
-        VulkanBackendWrapper vulkanBackendWrapper(&glfwWindowWrapper, &GlobalCreateInfos::gInstanceCreateInfo);
+        VulkanBackendWrapper vulkanBackendWrapper(&glfwWindowWrapper, VulkanBackendWrapper::getConstructParameters());
+        VulkanPFNs::gInstanceInUse = vulkanBackendWrapper.mInstance;
         VulkanPFNs::fLoadVulkanFunctions();
 
-        GlobalCreateInfos::fPopulateGlobalSharedPhysicalLogicalDeviceInfo();
-        GlobalCreateInfos::fPopulateGlobalSelectedPhysicalDevice(vulkanBackendWrapper.getVkInstance());
-        GlobalCreateInfos::fPopulateGlobalLogicalDeviceCreateInfo();
-        VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, GlobalCreateInfos::gSelectedPhysicalDevice, &GlobalCreateInfos::gLogicalDeviceCreateInfo);
+        VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, VulkanDevicesWrapper::getConstructParameters(vulkanBackendWrapper.mInstance));
         
         VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper);
-        GlobalCreateInfos::fPopulateGlobalSwapchainKHRCreateInfo(vulkanDevicesWrapper.getVkPhysicalDevice(), vulkanSwapchainWrapper.getSurfaceKHR(), glfwWindowWrapper.getGlfwWindow());
+        GlobalCreateInfos::fPopulateGlobalSwapchainKHRCreateInfo(vulkanDevicesWrapper.mPhysicalDevice, vulkanSwapchainWrapper.getSurfaceKHR(), glfwWindowWrapper.mGlfwWindow);
         vulkanSwapchainWrapper.setSwapchainKHRCreateInfoAndArise(&GlobalCreateInfos::gSwapchainKHRCreateInfo);
     } catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";

@@ -4,7 +4,6 @@
 #include <string>
 
 namespace VulkanPFNs {
-    void fSetInstance(VkInstance const& givenInstance);
     void fLoadVkGetInstanceProcAddr();
     void fLoadTrueGlobalVulkanFunctions();
     void fLoadVulkanFunctions();

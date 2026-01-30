@@ -11,10 +11,6 @@
 #include "VulkanPFNs.h"
 
 namespace VulkanPFNs {
-    void fSetInstance(VkInstance const& givenInstance) {
-        gInstanceInUse = givenInstance;
-    }
-
     void fLoadVkGetInstanceProcAddr() {
         #ifdef _WIN32
         std::cout << "You are running with windows. Loading the vulkan loader...\n";

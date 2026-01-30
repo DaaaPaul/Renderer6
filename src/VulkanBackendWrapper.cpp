@@ -18,16 +18,30 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
     // print parameters
     std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
     std::cout << "\t-INSTANCE API VERSION: " << UINT32_TO_VK_API_VERSION_CSTR(mParameters.mCreateInfo.pApplicationInfo->apiVersion) << "\n";
+    std::vector<const char*> enabledExtensionsNames{};
     for(int i = 0; i < mParameters.mCreateInfo.enabledExtensionCount; i++) {
         std::cout << "\t-INSTANCE EXTENSION: " << mParameters.mCreateInfo.ppEnabledExtensionNames[i] << "\n";
+        enabledExtensionsNames.push_back(mParameters.mCreateInfo.ppEnabledExtensionNames[i]);
     }
+    std::vector<const char*> enabledLayersNames{};
     for(int i = 0; i < mParameters.mCreateInfo.enabledLayerCount; i++) {
         std::cout << "\t-LOADER LAYER: " << mParameters.mCreateInfo.ppEnabledLayerNames[i] << "\n";
+        enabledLayersNames.push_back(mParameters.mCreateInfo.ppEnabledLayerNames[i]);
     }
 
-    VulkanBackendWrapper::checkHaveInstanceExtensions(vectorStringInstanceExtensionNames);
-    VulkanBackendWrapper::checkHaveLoaderLayers(vectorStringLoaderLayerNames);
-    arise();
+    // checks
+    VulkanBackendWrapper::checkHaveInstanceExtensions(enabledExtensionsNames);
+    VulkanBackendWrapper::checkHaveLoaderLayers(enabledLayersNames);
+
+    // construct the VkInstance
+    std::cout << "Creating VulkanBackendWrapper...\n";
+
+    CHECK_VK_SUCCESS(
+        VulkanPFNs::gpVkCreateInstance(&mParameters.mCreateInfo, nullptr, &mInstance),
+        "Failed to create instance"
+    )
+
+    std::cout << "Created VulkanBackendWrapper\n";
 }
 
 VulkanBackendWrapper::~VulkanBackendWrapper() {
@@ -36,19 +50,6 @@ VulkanBackendWrapper::~VulkanBackendWrapper() {
     VulkanPFNs::gpVkDestroyInstance(mInstance, nullptr);
 
     std::cout << "Destroyed VulkanBackendWrapper\n";
-}
-
-void VulkanBackendWrapper::arise() {
-    std::cout << "Creating VulkanBackendWrapper...\n";
-
-    CHECK_VK_SUCCESS(
-    VulkanPFNs::gpVkCreateInstance(mINSTANCE_CREATE_INFO, nullptr, &mInstance),
-    "Failed to create instance"
-    )
-
-    setVulkanPFNsInstanceInUseToInstanceMember();
-
-    std::cout << "Created VulkanBackendWrapper\n";
 }
 
 VulkanBackendWrapper::VulkanBackendWrapperConstructParameters VulkanBackendWrapper::getConstructParameters() {
@@ -128,8 +129,4 @@ void VulkanBackendWrapper::checkHaveLoaderLayers(std::vector<const char*> const&
     }
 
     CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMeNames, "Your vulkan installation does not have the required loader layers")
-}
-
-void VulkanBackendWrapper::setVulkanPFNsInstanceInUseToInstanceMember() const {
-    VulkanPFNs::fSetInstance(mInstance);
 }

@@ -12,7 +12,7 @@ GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PA
         "\t-height: " << mPARAMETERS.mHEIGHT << "\n"
         "\t-name: " << mPARAMETERS.mNAME << "\n";
 
-    // construct the glfwWindow
+    // construct the GLFWwindow*
     std::cout << "Creating GlfwWindowWrapper...\n";
 
     glfwInit();
@@ -20,7 +20,7 @@ GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PA
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    mGlfwWindow = glfwCreateWindow(mPARAMETERS.mWIDTH, mPARAMETERS.mHEIGHT, mPARAMETERS.mNAME.c_str(), nullptr, nullptr);
+    mGlfwWindow = glfwCreateWindow(mPARAMETERS.mWIDTH, mPARAMETERS.mHEIGHT, mPARAMETERS.mNAME, nullptr, nullptr);
 
     CHECK_NULLPTR(mGlfwWindow, "glfwCreateWindow failed");
 

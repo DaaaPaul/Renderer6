@@ -5,25 +5,27 @@
 #include "VulkanPFNs.h"
 #include "VulkanBackendWrapper.hpp"
 
-class VulkanDevicesWrapper {
-    friend class VulkanSwapchainWrapper;
-    
-    private:
+struct VulkanDevicesWrapper {
+    struct VulkanDevicesWrapperConstructParameters {
+        VkPhysicalDevice selectedPhysicalDevice{};
+        VkDeviceCreateInfo logicalDeviceCreateInfo{};
+        std::vector<VkDeviceQueueCreateInfo> deviceQueueFamilyCreateInfos{};
+        std::vector<std::vector<float>> deviceQueueFamilyQueuePriorities{};
+        std::vector<const char*> enabledDeviceExtensions{};
+        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT deviceEnabledExtendedDynamicStateFeatures{};
+        VkPhysicalDeviceDynamicRenderingFeatures deviceEnabledDynamicRenderingFeatures{};
+        VkPhysicalDeviceSynchronization2Features deviceEnabledSyncFeatures{};
+        VkPhysicalDeviceFeatures2 enabledDeviceFeatures{};
+    };
+
     VulkanBackendWrapper* mVulkanBackendWrapper{};
     VkPhysicalDevice mPhysicalDevice{};
     VkDevice mLogicalDevice{};
+    VulkanDevicesWrapperConstructParameters mParameters{};
 
-    VkDeviceCreateInfo const* mLOGICAL_DEVICE_CREATE_INFO{};
-
-    void arise();
-
-    void static printEnabledFeaturesInVkFeatureStruct(void const* VK_FEATURE_STRUCT, const char* featureName);
-    
-    public:
-    VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VkPhysicalDevice const& GIVEN_PHYSICAL_DEVICE, VkDeviceCreateInfo const* GIVEN_LOGICAL_DEVICE_CREATE_INFO);
+    static VulkanDevicesWrapperConstructParameters getConstructParameters(VkInstance instance);
+    VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VulkanDevicesWrapperConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS);
     ~VulkanDevicesWrapper();
-
-    [[nodiscard]] inline VkPhysicalDevice getVkPhysicalDevice() noexcept { return mPhysicalDevice; }
 
     DELETE_COPY_CONSTRUCTORS(VulkanDevicesWrapper)
     DELETE_MOVE_CONSTRUCTORS(VulkanDevicesWrapper)
