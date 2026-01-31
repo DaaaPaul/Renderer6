@@ -31,4 +31,9 @@ namespace VulkanPFNs {
     inline PFN_vkGetSwapchainImagesKHR gpVkGetSwapchainImagesKHR{};
 	inline PFN_vkCreateImageView gpVkCreateImageView{};
 	inline PFN_vkDestroyImageView gpVkDestroyImageView{};
+	inline PFN_vkCreateBuffer gpVkCreateBuffer{};
+	inline PFN_vkDestroyBuffer gpVkDestroyBuffer{};
+	inline PFN_vkGetPhysicalDeviceMemoryProperties gpVkGetPhysicalDeviceMemoryProperties{};
+	inline PFN_vkGetBufferMemoryRequirements gpVkGetBufferMemoryRequirements{};
+	inline PFN_vkAllocateMemory gpVkAllocateMemory{};
 }

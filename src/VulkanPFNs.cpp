@@ -118,6 +118,21 @@ namespace VulkanPFNs {
 		CHECK_NULLPTR(gpVkCreateImageView, "Failed to load gpVkCreateImageView")
 			
 		gpVkDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyImageView"));
-		CHECK_NULLPTR(gpVkDestroyImageView, "Failed to load vkDestroyImageView")
+		CHECK_NULLPTR(gpVkDestroyImageView, "Failed to load gpVkDestroyImageView")
+
+		gpVkCreateBuffer = reinterpret_cast<PFN_vkCreateBuffer>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateBuffer"));
+		CHECK_NULLPTR(gpVkCreateBuffer, "Failed to load gpVkCreateBuffer")
+
+		gpVkDestroyBuffer = reinterpret_cast<PFN_vkDestroyBuffer>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyBuffer"));
+		CHECK_NULLPTR(gpVkDestroyBuffer, "Failed to load gpVkDestroyBuffer")
+			
+		gpVkGetPhysicalDeviceMemoryProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetPhysicalDeviceMemoryProperties"));
+		CHECK_NULLPTR(gpVkGetPhysicalDeviceMemoryProperties, "Failed to load gpVkGetPhysicalDeviceMemoryProperties")
+
+		gpVkGetBufferMemoryRequirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetBufferMemoryRequirements"));
+		CHECK_NULLPTR(gpVkGetBufferMemoryRequirements, "Failed to load gpVkGetBufferMemoryRequirements")
+			
+		gpVkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkAllocateMemory"));
+		CHECK_NULLPTR(gpVkAllocateMemory, "Failed to load gpVkAllocateMemory")
     }
 }
