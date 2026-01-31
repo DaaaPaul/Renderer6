@@ -21,8 +21,6 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GlfwWindowWrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GlfwWindowWrapper.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalCreateInfos.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalCreateInfos.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.hpp

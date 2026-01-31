@@ -1,7 +1,6 @@
 #include <iostream>
 #include "VulkanBackendWrapper.hpp"
 #include "VulkanPFNs.h"
-#include "GlobalCreateInfos.h"
 
 VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VulkanBackendWrapperConstructParameters const& GIVEN_VULKAN_BACKEND_CREATE_PARAMETERS) :
     mInstance{},
@@ -52,7 +51,7 @@ VulkanBackendWrapper::~VulkanBackendWrapper() {
     std::cout << "Destroyed VulkanBackendWrapper\n";
 }
 
-VulkanBackendWrapper::VulkanBackendWrapperConstructParameters VulkanBackendWrapper::getConstructParameters() {
+[[nodiscard]] VulkanBackendWrapper::VulkanBackendWrapperConstructParameters VulkanBackendWrapper::getConstructParameters() {
     const std::vector<const char*> ENABLED_LOADER_LAYERS{ "VK_LAYER_KHRONOS_validation" };
     std::vector<const char*> enabledExtensions(GlfwWindowWrapper::getGlfwWindowExtensions());
     #ifdef __APPLE__

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <stdexcept>
 #include "VulkanPFNs.h"
-#include "GlobalCreateInfos.h"
 #include "GlfwWindowWrapper.hpp"
 #include "VulkanBackendWrapper.hpp"
 #include "VulkanDevicesWrapper.hpp"
@@ -22,9 +21,7 @@ int main() {
 
         VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, VulkanDevicesWrapper::getConstructParameters(vulkanBackendWrapper.mInstance));
         
-        VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper);
-        GlobalCreateInfos::fPopulateGlobalSwapchainKHRCreateInfo(vulkanDevicesWrapper.mPhysicalDevice, vulkanSwapchainWrapper.getSurfaceKHR(), glfwWindowWrapper.mGlfwWindow);
-        vulkanSwapchainWrapper.setSwapchainKHRCreateInfoAndArise(&GlobalCreateInfos::gSwapchainKHRCreateInfo);
+        VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper, VulkanSwapchainWrapper::getConstructParameters(vulkanBackendWrapper.mInstance, vulkanDevicesWrapper.mPhysicalDevice, vulkanBackendWrapper.mGlfwWindowWrapper->mGlfwWindow));
     } catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

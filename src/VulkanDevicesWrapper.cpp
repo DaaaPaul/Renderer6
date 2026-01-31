@@ -89,7 +89,7 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     std::cout << "Destroyed VulkanDevicesWrapper\n";
 }
 
-VulkanDevicesWrapper::VulkanDevicesWrapperConstructParameters VulkanDevicesWrapper::getConstructParameters(VkInstance instance) {
+[[nodiscard]] VulkanDevicesWrapper::VulkanDevicesWrapperConstructParameters VulkanDevicesWrapper::getConstructParameters(VkInstance instance) {
     VulkanDevicesWrapperConstructParameters returnValue{};
 
     auto setupEnabledFeatures = [&returnValue]() -> void {

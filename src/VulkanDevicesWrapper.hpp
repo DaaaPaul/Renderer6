@@ -23,7 +23,7 @@ struct VulkanDevicesWrapper {
     VkDevice mLogicalDevice{};
     VulkanDevicesWrapperConstructParameters mParameters{};
 
-    static VulkanDevicesWrapperConstructParameters getConstructParameters(VkInstance instance);
+    [[nodiscard]] static VulkanDevicesWrapperConstructParameters getConstructParameters(VkInstance instance);
     VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VulkanDevicesWrapperConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS);
     ~VulkanDevicesWrapper();
 
