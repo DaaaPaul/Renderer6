@@ -28,4 +28,7 @@ namespace VulkanPFNs {
     inline PFN_vkGetPhysicalDeviceSurfacePresentModesKHR gpVkGetPhysicalDeviceSurfacePresentModesKHR{};
     inline PFN_vkCreateSwapchainKHR gpVkCreateSwapchainKHR{};
     inline PFN_vkDestroySwapchainKHR gpVkDestroySwapchainKHR{};
+    inline PFN_vkGetSwapchainImagesKHR gpVkGetSwapchainImagesKHR{};
+	inline PFN_vkCreateImageView gpVkCreateImageView{};
+	inline PFN_vkDestroyImageView gpVkDestroyImageView{};
 }

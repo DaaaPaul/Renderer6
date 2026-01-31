@@ -6,6 +6,7 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
     mVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
     mSwapchainKHR{},
     mSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mSURFACE_KHR },
+    mImageViews{},
     mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
     // reroute pointers
@@ -16,16 +17,53 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
     checkHaveVkFormatColorspace(*this, VkSurfaceFormatKHR(mParameters.mSwapchainKHRCreateInfo.imageFormat, mParameters.mSwapchainKHRCreateInfo.imageColorSpace));
     checkHavePresentModeKHR(*this, mParameters.mSwapchainKHRCreateInfo.presentMode);
 
+    std::cout << "SET VULKAN SWAPCHAIN WRAPPER PARAMETERS:\n";
+    std::cout << "\timages count: " << mParameters.mSwapchainKHRCreateInfo.minImageCount << "\n";
+    std::cout << "\tformat: " << mParameters.mSwapchainKHRCreateInfo.imageFormat << "\n";
+    std::cout << "\tcolorspace: " << mParameters.mSwapchainKHRCreateInfo.imageColorSpace << "\n";
+    std::cout << "\textent: " << mParameters.mSwapchainKHRCreateInfo.imageExtent.width << "x" << mParameters.mSwapchainKHRCreateInfo.imageExtent.height << "\n";
+    std::cout << "\timage usage: " << mParameters.mSwapchainKHRCreateInfo.imageUsage << "\n";
+    std::cout << "\taccessed by queue family: " << mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices[0] << "\n";
+    std::cout << "\tpresent mode: " << mParameters.mSwapchainKHRCreateInfo.presentMode << "\n";
+
+    std::cout << "Creating VulkanSwapchainWrapper...\n";
+
     // construct the swapchainKHR
     CHECK_VK_SUCCESS(
-    VulkanPFNs::gpVkCreateSwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mSwapchainKHR),
-    "Failed to create the swapchain"
+        VulkanPFNs::gpVkCreateSwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mSwapchainKHR),
+        "Failed to create the swapchain"
     )
+
+    auto createImageViews = [this]() -> void {
+        uint32_t swapchainImageCount{};
+		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mVulkanDevicesWrapper->mLogicalDevice, this->mSwapchainKHR, &swapchainImageCount, nullptr);
+		std::vector<VkImage> swapchainImages(swapchainImageCount);
+		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mVulkanDevicesWrapper->mLogicalDevice, this->mSwapchainKHR, &swapchainImageCount, swapchainImages.data());
+
+		VkImageViewCreateInfo rollingImageViewCreateInfo{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = VK_NULL_HANDLE,
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = VK_FORMAT_R8G8B8A8_SRGB,
+			.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
+		};
+		this->mImageViews.resize(swapchainImageCount, VK_NULL_HANDLE);
+		for(int i = 0; i < swapchainImageCount; i++) {
+			rollingImageViewCreateInfo.image = swapchainImages[i];
+			VulkanPFNs::gpVkCreateImageView(this->mVulkanDevicesWrapper->mLogicalDevice, &rollingImageViewCreateInfo, nullptr, &(this->mImageViews[i]));
+		}
+	};
+	createImageViews();
+        
+    std::cout << "Created VulkanSwapchainWrapper\n";
 }
 
 VulkanSwapchainWrapper::~VulkanSwapchainWrapper() {
     std::cout << "Destroying VulkanSwapchainWrapper...\n";
 
+	for(VkImageView& imageView : mImageViews) {
+		VulkanPFNs::gpVkDestroyImageView(mVulkanDevicesWrapper->mLogicalDevice, imageView, nullptr);
+	}
     VulkanPFNs::gpVkDestroySwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, mSwapchainKHR, nullptr);
     VulkanPFNs::gpVkDestroySurfaceKHR(mVulkanDevicesWrapper->mVulkanBackendWrapper->mInstance, mSurfaceKHR, nullptr);
 

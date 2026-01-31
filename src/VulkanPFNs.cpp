@@ -111,5 +111,13 @@ namespace VulkanPFNs {
         gpVkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroySwapchainKHR"));
         CHECK_NULLPTR(gpVkDestroySwapchainKHR, "Failed to load vkDestroySwapchainKHR")
         
+        gpVkGetSwapchainImagesKHR = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetSwapchainImagesKHR"));
+        CHECK_NULLPTR(gpVkGetSwapchainImagesKHR, "Failed to load gpVkGetSwapchainImagesKHR")
+
+		gpVkCreateImageView = reinterpret_cast<PFN_vkCreateImageView>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateImageView"));
+		CHECK_NULLPTR(gpVkCreateImageView, "Failed to load gpVkCreateImageView")
+			
+		gpVkDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyImageView"));
+		CHECK_NULLPTR(gpVkDestroyImageView, "Failed to load vkDestroyImageView")
     }
 }

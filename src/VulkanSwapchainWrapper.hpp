@@ -14,6 +14,7 @@ struct VulkanSwapchainWrapper {
     VulkanDevicesWrapper* mVulkanDevicesWrapper{};
     VkSwapchainKHR mSwapchainKHR{};
     VkSurfaceKHR mSurfaceKHR{};
+    std::vector<VkImageView> mImageViews{};
     VulkanSwapchainWrapperConstructInfo mParameters{};
 
     [[nodiscard]] static VulkanSwapchainWrapperConstructInfo getConstructParameters(VkInstance instance, VkPhysicalDevice physicalDevice, GLFWwindow* window);
