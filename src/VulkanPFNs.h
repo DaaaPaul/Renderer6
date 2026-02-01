@@ -41,4 +41,15 @@ namespace VulkanPFNs {
 	inline PFN_vkMapMemory gpVkMapMemory{};
 	inline PFN_vkUnmapMemory gpVkUnmapMemory{};
 	inline PFN_vkFreeMemory gpVkFreeMemory{};
+	inline PFN_vkCreateCommandPool gpVkCreateCommandPool{};
+	inline PFN_vkDestroyCommandPool gpVkDestroyCommandPool{};
+	inline PFN_vkAllocateCommandBuffers gpVkAllocateCommandBuffers{};
+	inline PFN_vkFreeCommandBuffers gpVkFreeCommandBuffers{};
+	inline PFN_vkBeginCommandBuffer gpVkBeginCommandBuffer{};
+	inline PFN_vkCmdCopyBuffer gpVkCmdCopyBuffer{};
+	inline PFN_vkEndCommandBuffer gpVkEndCommandBuffer{};
+	inline PFN_vkCreateFence gpVkCreateFence{};
+	inline PFN_vkDestroyFence gpVkDestroyFence{};
+	inline PFN_vkQueueSubmit gpVkQueueSubmit{};
+	inline PFN_vkWaitForFences gpVkWaitForFences{};
 }

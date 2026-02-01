@@ -34,6 +34,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanGraphicsPipelineWrapper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanHostVisibleMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanHostVisibleMemory.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanMemoryCommon.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanMemoryCommon.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanSwapchainWrapper.cpp

@@ -57,6 +57,88 @@ VulkanDeviceLocalMemory::~VulkanDeviceLocalMemory() {
 	std::cout << "Destroyed VulkanDeviceLocalMemory\n";
 }
 
-void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX) {
-	
+void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {
+	VkCommandPool tempCommandPool{};
+	VkCommandBuffer tempCommandBuffer{};
+
+	// create transient command pool
+	{
+		const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+			.queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(mVulkanDevicesWrapper->mPhysicalDevice)
+		};
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkCreateCommandPool(mVulkanDevicesWrapper->mLogicalDevice, &COMMAND_POOL_INFO, nullptr, &tempCommandPool),
+			"Failed to create temporary command pool"
+		)
+	}
+
+	// create command buffer
+	{
+		const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.commandPool = tempCommandPool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1,
+		};
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkAllocateCommandBuffers(mVulkanDevicesWrapper->mLogicalDevice, &COMMAND_BUFFER_INFO, &tempCommandBuffer),
+			"Failed to create temporary command buffer"
+		)
+	}
+
+	// record the copy
+	{
+		const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkBeginCommandBuffer(tempCommandBuffer, &ONE_TIME_SUBMIT_BEGIN),
+			"Failed to begin temporary command buffer recording"
+		)
+		VulkanPFNs::gpVkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, mDeviceLocalBuffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkEndCommandBuffer(tempCommandBuffer),
+			"Failed to end temporary command buffer recording"
+		)
+	}
+
+	// create fence to wait on
+	VkFence copyCommandDone{};
+	{
+		const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkCreateFence(mVulkanDevicesWrapper->mLogicalDevice, &FENCE_INFO, nullptr, &copyCommandDone),
+			"Failed to create copy command done fence"
+		)
+	}
+
+	// submit it right away
+	{
+		const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &tempCommandBuffer,
+		};
+
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkQueueSubmit(mVulkanDevicesWrapper->mGraphicsFamilyQueues[0], 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
+			"Failed to submit temporary command buffer"
+		)
+	}
+
+	for(VkBufferCopy const& REGION : COPY_REGIONS) {
+		std::cout << "Copied buffer:\n";
+		std::cout << "\tSource offset: " << REGION.srcOffset << "\n";
+		std::cout << "\tDestination offset: " << REGION.dstOffset << "\n";
+		std::cout << "\tBytes: " << REGION.size << "\n";
+	}
+
+	CHECK_VK_SUCCESS(
+		VulkanPFNs::gpVkWaitForFences(mVulkanDevicesWrapper->mLogicalDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
+		"Failed to wait for copy command done fence"
+	)
+
+	VulkanPFNs::gpVkDestroyFence(mVulkanDevicesWrapper->mLogicalDevice, copyCommandDone, nullptr);
+	VulkanPFNs::gpVkFreeCommandBuffers(mVulkanDevicesWrapper->mLogicalDevice, tempCommandPool, 1, &tempCommandBuffer);
+	VulkanPFNs::gpVkDestroyCommandPool(mVulkanDevicesWrapper->mLogicalDevice, tempCommandPool, nullptr);
 }

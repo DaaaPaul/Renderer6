@@ -149,5 +149,38 @@ namespace VulkanPFNs {
 
 		gpVkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkFreeMemory"));
 		CHECK_NULLPTR(gpVkFreeMemory, "Failed to load gpVkFreeMemory")
+
+		gpVkCreateCommandPool = reinterpret_cast<PFN_vkCreateCommandPool>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateCommandPool"));
+		CHECK_NULLPTR(gpVkCreateCommandPool, "Failed to load gpVkCreateCommandPool")
+
+		gpVkDestroyCommandPool = reinterpret_cast<PFN_vkDestroyCommandPool>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyCommandPool"));
+		CHECK_NULLPTR(gpVkDestroyCommandPool, "Failed to load gpVkDestroyCommandPool")
+
+		gpVkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkAllocateCommandBuffers"));
+		CHECK_NULLPTR(gpVkAllocateCommandBuffers, "Failed to load gpVkAllocateCommandBuffers")
+
+		gpVkFreeCommandBuffers = reinterpret_cast<PFN_vkFreeCommandBuffers>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkFreeCommandBuffers"));
+		CHECK_NULLPTR(gpVkFreeCommandBuffers, "Failed to load gpVkFreeCommandBuffers")
+
+		gpVkBeginCommandBuffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkBeginCommandBuffer"));
+		CHECK_NULLPTR(gpVkBeginCommandBuffer, "Failed to load gpVkBeginCommandBuffer")
+
+		gpVkCmdCopyBuffer = reinterpret_cast<PFN_vkCmdCopyBuffer>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCmdCopyBuffer"));
+		CHECK_NULLPTR(gpVkCmdCopyBuffer, "Failed to load gpVkCmdCopyBuffer")
+
+		gpVkEndCommandBuffer = reinterpret_cast<PFN_vkEndCommandBuffer>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkEndCommandBuffer"));
+		CHECK_NULLPTR(gpVkEndCommandBuffer, "Failed to load gpVkEndCommandBuffer")
+
+		gpVkCreateFence = reinterpret_cast<PFN_vkCreateFence>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateFence"));
+		CHECK_NULLPTR(gpVkCreateFence, "Failed to load gpVkCreateFence")
+
+		gpVkDestroyFence = reinterpret_cast<PFN_vkDestroyFence>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyFence"));
+		CHECK_NULLPTR(gpVkDestroyFence, "Failed to load gpVkDestroyFence")
+
+		gpVkQueueSubmit = reinterpret_cast<PFN_vkQueueSubmit>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkQueueSubmit"));
+		CHECK_NULLPTR(gpVkQueueSubmit, "Failed to load gpVkQueueSubmit")
+
+		gpVkWaitForFences = reinterpret_cast<PFN_vkWaitForFences>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkWaitForFences"));
+		CHECK_NULLPTR(gpVkWaitForFences, "Failed to load gpVkWaitForFences")
     }
 }
