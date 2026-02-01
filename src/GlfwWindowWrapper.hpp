@@ -13,7 +13,7 @@ struct GlfwWindowWrapper {
         const char* mNAME{};
     };
 
-    GLFWwindow* mGlfwWindow{};
+    GLFWwindow* mpGlfwWindow{};
     const GlfwWindowWrapperParameters mPARAMETERS{};
 
     constexpr static GlfwWindowWrapperParameters getConstructParameters() noexcept { return GlfwWindowWrapperParameters(800, 600, "Renderer6"); }

@@ -3,14 +3,14 @@
 #include "VulkanPFNs.h"
 
 VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VulkanSwapchainWrapperConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
-    mVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
-    mSwapchainKHR{},
-    mSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mSURFACE_KHR },
-    mImageViews{},
+    mpVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
+    mpSwapchainKHR{},
+    mpSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mSURFACE_KHR },
+    mpImageViews{},
     mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
     // reroute pointers
-    mParameters.mSwapchainKHRCreateInfo.surface = mSurfaceKHR;
+    mParameters.mSwapchainKHRCreateInfo.surface = mpSurfaceKHR;
     mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &mParameters.mGRAPHICS_QUEUE_FAMILY_INDEX;
 
     // check that this gpu-surface pair supports the given format and present mode
@@ -30,15 +30,15 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
 
     // construct the swapchainKHR
     CHECK_VK_SUCCESS(
-        VulkanPFNs::gpVkCreateSwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mSwapchainKHR),
+        VulkanPFNs::gpVkCreateSwapchainKHR(mpVulkanDevicesWrapper->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
         "Failed to create the swapchain"
     )
 
     auto createImageViews = [this]() -> void {
         uint32_t swapchainImageCount{};
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mVulkanDevicesWrapper->mLogicalDevice, this->mSwapchainKHR, &swapchainImageCount, nullptr);
+		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mpVulkanDevicesWrapper->mpLogicalDevice, this->mpSwapchainKHR, &swapchainImageCount, nullptr);
 		std::vector<VkImage> swapchainImages(swapchainImageCount);
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mVulkanDevicesWrapper->mLogicalDevice, this->mSwapchainKHR, &swapchainImageCount, swapchainImages.data());
+		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mpVulkanDevicesWrapper->mpLogicalDevice, this->mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
 
 		VkImageViewCreateInfo rollingImageViewCreateInfo{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -47,10 +47,10 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
 			.format = VK_FORMAT_R8G8B8A8_SRGB,
 			.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
 		};
-		this->mImageViews.resize(swapchainImageCount, VK_NULL_HANDLE);
+		this->mpImageViews.resize(swapchainImageCount, VK_NULL_HANDLE);
 		for(int i = 0; i < swapchainImageCount; i++) {
 			rollingImageViewCreateInfo.image = swapchainImages[i];
-			VulkanPFNs::gpVkCreateImageView(this->mVulkanDevicesWrapper->mLogicalDevice, &rollingImageViewCreateInfo, nullptr, &(this->mImageViews[i]));
+			VulkanPFNs::gpVkCreateImageView(this->mpVulkanDevicesWrapper->mpLogicalDevice, &rollingImageViewCreateInfo, nullptr, &(this->mpImageViews[i]));
 		}
 	};
 	createImageViews();
@@ -61,11 +61,11 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
 VulkanSwapchainWrapper::~VulkanSwapchainWrapper() {
     std::cout << "Destroying VulkanSwapchainWrapper...\n";
 
-	for(VkImageView& imageView : mImageViews) {
-		VulkanPFNs::gpVkDestroyImageView(mVulkanDevicesWrapper->mLogicalDevice, imageView, nullptr);
+	for(VkImageView& imageView : mpImageViews) {
+		VulkanPFNs::gpVkDestroyImageView(mpVulkanDevicesWrapper->mpLogicalDevice, imageView, nullptr);
 	}
-    VulkanPFNs::gpVkDestroySwapchainKHR(mVulkanDevicesWrapper->mLogicalDevice, mSwapchainKHR, nullptr);
-    VulkanPFNs::gpVkDestroySurfaceKHR(mVulkanDevicesWrapper->mVulkanBackendWrapper->mInstance, mSurfaceKHR, nullptr);
+    VulkanPFNs::gpVkDestroySwapchainKHR(mpVulkanDevicesWrapper->mpLogicalDevice, mpSwapchainKHR, nullptr);
+    VulkanPFNs::gpVkDestroySurfaceKHR(mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpInstance, mpSurfaceKHR, nullptr);
 
     std::cout << "Destroyed VulkanSwapchainWrapper\n";
 }
@@ -142,9 +142,9 @@ VulkanSwapchainWrapper::~VulkanSwapchainWrapper() {
 
 void VulkanSwapchainWrapper::checkHaveVkFormatColorspace(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
     uint32_t supportedVkFormatColorspacesCount{};
-    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mpVulkanDevicesWrapper->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
     std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mpVulkanDevicesWrapper->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
 
     bool checkSuccess{ false };
 
@@ -159,9 +159,9 @@ void VulkanSwapchainWrapper::checkHaveVkFormatColorspace(VulkanSwapchainWrapper 
 
 void VulkanSwapchainWrapper::checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
     uint32_t supportedPresentModeCount{};
-    VulkanPFNs::gpVkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedPresentModeCount, nullptr);
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mpVulkanDevicesWrapper->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, nullptr);
     std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
-    VulkanPFNs::gpVkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mVulkanDevicesWrapper->mPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
+    VulkanPFNs::gpVkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mpVulkanDevicesWrapper->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
 
     bool checkSuccess{ false };
 

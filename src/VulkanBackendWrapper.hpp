@@ -15,15 +15,15 @@ struct VulkanBackendWrapper {
         VkInstanceCreateInfo mCreateInfo{};
     };
 
-    VkInstance mInstance{};
-    GlfwWindowWrapper* mGlfwWindowWrapper{};
+    VkInstance mpInstance{};
+    GlfwWindowWrapper* mpGlfwWindowWrapper{};
     VulkanBackendWrapperConstructParameters mParameters{};
 
     static void checkHaveInstanceExtensions(std::vector<const char*> const& CHECK_HAVE_ME);
     static void checkHaveLoaderLayers(std::vector<const char*> const& CHECK_HAVE_ME);
     [[nodiscard]] static VulkanBackendWrapperConstructParameters getConstructParameters();
 
-    VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VulkanBackendWrapperConstructParameters const& GIVEN_VULKAN_BACKEND_CREATE_PARAMETERS);
+    explicit VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VulkanBackendWrapperConstructParameters const& GIVEN_VULKAN_BACKEND_CREATE_PARAMETERS);
     ~VulkanBackendWrapper();
 
     DELETE_COPY_CONSTRUCTORS(VulkanBackendWrapper)

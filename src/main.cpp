@@ -20,12 +20,12 @@ int main() {
         GlfwWindowWrapper glfwWindowWrapper(GlfwWindowWrapper::getConstructParameters());
 
         VulkanBackendWrapper vulkanBackendWrapper(&glfwWindowWrapper, VulkanBackendWrapper::getConstructParameters());
-        VulkanPFNs::gInstanceInUse = vulkanBackendWrapper.mInstance;
+        VulkanPFNs::gpInstanceUsed = vulkanBackendWrapper.mpInstance;
         VulkanPFNs::fLoadVulkanFunctions();
 
-        VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, VulkanDevicesWrapper::getConstructParameters(vulkanBackendWrapper.mInstance));
+        VulkanDevicesWrapper vulkanDevicesWrapper(&vulkanBackendWrapper, VulkanDevicesWrapper::getConstructParameters(vulkanBackendWrapper.mpInstance));
         
-        VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper, VulkanSwapchainWrapper::getConstructParameters(vulkanBackendWrapper.mInstance, vulkanDevicesWrapper.mPhysicalDevice, vulkanBackendWrapper.mGlfwWindowWrapper->mGlfwWindow));
+        VulkanSwapchainWrapper vulkanSwapchainWrapper(&vulkanDevicesWrapper, VulkanSwapchainWrapper::getConstructParameters(vulkanBackendWrapper.mpInstance, vulkanDevicesWrapper.mpPhysicalDevice, vulkanBackendWrapper.mpGlfwWindowWrapper->mpGlfwWindow));
     
 		const std::vector<glm::vec4> VERTEX_POSITIONS{
 			glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), // top left
@@ -40,20 +40,20 @@ int main() {
 		};
 		const VkDeviceSize INDICES_SIZE{ sizeof(uint32_t) * INDICES.size() };
 		const std::vector<VulkanMemoryCommon::VulkanBufferInfo> STAGING_BUFFERS_INFO{
-			VulkanMemoryCommon::VulkanBufferInfo(VERTEX_POSITIONS_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
-			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
+			VulkanMemoryCommon::VulkanBufferInfo(VERTEX_POSITIONS_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
 		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, STAGING_BUFFERS_INFO);
 		vulkanHostVisibleMemory.writeToBuffer(0, VERTEX_POSITIONS.data(), sizeof(glm::vec4) * VERTEX_POSITIONS.size());
 		vulkanHostVisibleMemory.writeToBuffer(1, INDICES.data(), sizeof(uint32_t) * INDICES.size());
 
 		const std::vector<VulkanMemoryCommon::VulkanBufferInfo> VERTEX_AND_INDICE_BUFFERS_INFO{
-			VulkanMemoryCommon::VulkanBufferInfo(VERTEX_POSITIONS_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
-			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
+			VulkanMemoryCommon::VulkanBufferInfo(VERTEX_POSITIONS_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
 		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO);
-		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisibleBuffers[0], {VkBufferCopy(0, 0, VERTEX_POSITIONS_SIZE)});
-		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisibleBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
+		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, VERTEX_POSITIONS_SIZE)});
+		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

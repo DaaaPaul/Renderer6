@@ -8,7 +8,7 @@ namespace VulkanPFNs {
     void fLoadTrueGlobalVulkanFunctions();
     void fLoadVulkanFunctions();
 
-    inline VkInstance gInstanceInUse{};
+    inline VkInstance gpInstanceUsed{};
 
     inline PFN_vkGetInstanceProcAddr gpVkGetInstanceProcAddr{};
     inline PFN_vkEnumerateInstanceExtensionProperties gpVkEnumerateInstanceExtensionProperties{};
@@ -52,4 +52,6 @@ namespace VulkanPFNs {
 	inline PFN_vkDestroyFence gpVkDestroyFence{};
 	inline PFN_vkQueueSubmit gpVkQueueSubmit{};
 	inline PFN_vkWaitForFences gpVkWaitForFences{};
+	inline PFN_vkCreateSemaphore gpVkCreateSemaphore{};
+	inline PFN_vkDestroySemaphore gpVkDestroySemaphore{};
 }

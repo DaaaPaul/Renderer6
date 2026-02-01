@@ -4,38 +4,38 @@
 #include <array>
 
 VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VulkanDevicesWrapperConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS) :
-    mVulkanBackendWrapper{ givenVulkanBackendWrapper },
-    mPhysicalDevice{ GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS.selectedPhysicalDevice },
-    mLogicalDevice{},
+    mpVulkanBackendWrapper{ givenVulkanBackendWrapper },
+    mpPhysicalDevice{ GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS.mSelectedPhysicalDevice },
+    mpLogicalDevice{},
     mParameters{ GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS } {
 
     // reroute pointers
-    mParameters.deviceEnabledDynamicRenderingFeatures.pNext = &mParameters.deviceEnabledExtendedDynamicStateFeatures;
-    mParameters.deviceEnabledSyncFeatures.pNext = &mParameters.deviceEnabledDynamicRenderingFeatures;
-    mParameters.enabledDeviceFeatures.pNext = &mParameters.deviceEnabledSyncFeatures;
+    mParameters.mDeviceEnabledDynamicRenderingFeatures.pNext = &mParameters.mDeviceEnabledExtendedDynamicStateFeatures;
+    mParameters.mDeviceEnabledSyncFeatures.pNext = &mParameters.mDeviceEnabledDynamicRenderingFeatures;
+    mParameters.mEnabledDeviceFeatures.pNext = &mParameters.mDeviceEnabledSyncFeatures;
 
-    mParameters.logicalDeviceCreateInfo.pNext = &mParameters.enabledDeviceFeatures;
+    mParameters.mLogicalDeviceCreateInfo.pNext = &mParameters.mEnabledDeviceFeatures;
 
-    mParameters.deviceQueueFamilyCreateInfos[0].pQueuePriorities = mParameters.deviceQueueFamilyQueuePriorities[0].data();
+    mParameters.mDeviceQueueFamilyCreateInfos[0].pQueuePriorities = mParameters.mDeviceQueueFamilyQueuePriorities[0].data();
 
-    mParameters.logicalDeviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(mParameters.deviceQueueFamilyCreateInfos.size());
-    mParameters.logicalDeviceCreateInfo.pQueueCreateInfos = mParameters.deviceQueueFamilyCreateInfos.data();
-    mParameters.logicalDeviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(mParameters.enabledDeviceExtensions.size());
-    mParameters.logicalDeviceCreateInfo.ppEnabledExtensionNames = mParameters.enabledDeviceExtensions.data();
+    mParameters.mLogicalDeviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(mParameters.mDeviceQueueFamilyCreateInfos.size());
+    mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos = mParameters.mDeviceQueueFamilyCreateInfos.data();
+    mParameters.mLogicalDeviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(mParameters.mEnabledDeviceExtensions.size());
+    mParameters.mLogicalDeviceCreateInfo.ppEnabledExtensionNames = mParameters.mEnabledDeviceExtensions.data();
 
     // print parameters
     std::cout << "SET VULKAN DEVICES CREATE PARAMETERS:\n";
 
     {
         VkPhysicalDeviceProperties physicalDeviceProperties{};
-        VulkanPFNs::gpVkGetPhysicalDeviceProperties(mParameters.selectedPhysicalDevice, &physicalDeviceProperties);
+        VulkanPFNs::gpVkGetPhysicalDeviceProperties(mParameters.mSelectedPhysicalDevice, &physicalDeviceProperties);
         std::cout << "\t-Physical device: " << physicalDeviceProperties.deviceName << "\n";
     }
 
     {
         std::cout << "\t-Device extensions:\n";
-        for (int i = 0; i < mParameters.logicalDeviceCreateInfo.enabledExtensionCount; i++) {
-            std::cout << "\t\t-" << mParameters.logicalDeviceCreateInfo.ppEnabledExtensionNames[i] << '\n';
+        for (int i = 0; i < mParameters.mLogicalDeviceCreateInfo.enabledExtensionCount; i++) {
+            std::cout << "\t\t-" << mParameters.mLogicalDeviceCreateInfo.ppEnabledExtensionNames[i] << '\n';
         }
     }
 
@@ -53,19 +53,19 @@ VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBack
             }
             };
         std::cout << "\t-Device features:\n";
-        printEnabledFeaturesInVkFeatureStruct(mParameters.logicalDeviceCreateInfo.pNext, "VkPhysicalDeviceFeatures2");
-        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.logicalDeviceCreateInfo.pNext)->pNext, "VkPhysicalDeviceSynchronization2Features");
-        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.logicalDeviceCreateInfo.pNext)->pNext)->pNext, "VkPhysicalDeviceDynamicRenderingFeatures");
-        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures const*>(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.logicalDeviceCreateInfo.pNext)->pNext)->pNext)->pNext, "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT");
+        printEnabledFeaturesInVkFeatureStruct(mParameters.mLogicalDeviceCreateInfo.pNext, "VkPhysicalDeviceFeatures2");
+        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext, "VkPhysicalDeviceSynchronization2Features");
+        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext)->pNext, "VkPhysicalDeviceDynamicRenderingFeatures");
+        printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures const*>(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext)->pNext)->pNext, "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT");
     }
 
     {
         std::cout << "\t-Device queues:\n";
-        for (int i = 0; i < mParameters.logicalDeviceCreateInfo.queueCreateInfoCount; i++) {
-            std::cout << "\t\t-Queue family index:" << mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[i].queueFamilyIndex << '\n';
-            std::cout << "\t\t-Queue count:" << mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount << '\n';
-            for (int j = 0; j < mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount; j++) {
-                std::cout << "\t\t-Queue priorities:" << mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[i].pQueuePriorities[j] << '\n';
+        for (int i = 0; i < mParameters.mLogicalDeviceCreateInfo.queueCreateInfoCount; i++) {
+            std::cout << "\t\t-Queue family index:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueFamilyIndex << '\n';
+            std::cout << "\t\t-Queue count:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount << '\n';
+            for (int j = 0; j < mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount; j++) {
+                std::cout << "\t\t-Queue priorities:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].pQueuePriorities[j] << '\n';
             }
         }
     }
@@ -74,12 +74,12 @@ VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBack
     std::cout << "Creating VulkanDevicesWrapper...\n";
 
 	CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, &mParameters.logicalDeviceCreateInfo, nullptr, &mLogicalDevice),
+		VulkanPFNs::gpVkCreateDevice(mpPhysicalDevice, &mParameters.mLogicalDeviceCreateInfo, nullptr, &mpLogicalDevice),
 		"Failed to create logical device"
 	)
-	mGraphicsFamilyQueues.resize(mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[0].queueCount, VK_NULL_HANDLE);
-	for(int i = 0; i < mGraphicsFamilyQueues.size(); i++) {
-		VulkanPFNs::gpVkGetDeviceQueue(mLogicalDevice, mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[0].queueFamilyIndex, i, &mGraphicsFamilyQueues[i]);
+	mGraphicsFamilypQueues.resize(mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[0].queueCount, VK_NULL_HANDLE);
+	for(int i = 0; i < mGraphicsFamilypQueues.size(); i++) {
+		VulkanPFNs::gpVkGetDeviceQueue(mpLogicalDevice, mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[0].queueFamilyIndex, i, &mGraphicsFamilypQueues[i]);
 	}
 
     std::cout << "Created VulkanDevicesWrapper\n";
@@ -88,7 +88,7 @@ VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBack
 VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     std::cout << "Destroying VulkanDevicesWrapper...\n";
 
-    VulkanPFNs::gpVkDestroyDevice(mLogicalDevice, nullptr);
+    VulkanPFNs::gpVkDestroyDevice(mpLogicalDevice, nullptr);
 
     std::cout << "Destroyed VulkanDevicesWrapper\n";
 }
@@ -97,21 +97,21 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     VulkanDevicesWrapperConstructParameters returnValue{};
 
     auto setupEnabledFeatures = [&returnValue]() -> void {
-        returnValue.deviceEnabledExtendedDynamicStateFeatures = {
+        returnValue.mDeviceEnabledExtendedDynamicStateFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
             .extendedDynamicState2 = true
         };
-        returnValue.deviceEnabledDynamicRenderingFeatures = {
+        returnValue.mDeviceEnabledDynamicRenderingFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
             .pNext = nullptr, // reroute needed
             .dynamicRendering = true
         };
-        returnValue.deviceEnabledSyncFeatures = {
+        returnValue.mDeviceEnabledSyncFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
             .pNext = nullptr, // reroute needed
             .synchronization2 = true
         };
-        returnValue.enabledDeviceFeatures = {
+        returnValue.mEnabledDeviceFeatures = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
             .pNext = nullptr, // reroute needed
             .features = {
@@ -122,7 +122,7 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     setupEnabledFeatures();
 
     auto setupEnabledExtensions = [&returnValue]() -> void {
-        returnValue.enabledDeviceExtensions = {
+        returnValue.mEnabledDeviceExtensions = {
             "VK_KHR_swapchain",
             "VK_KHR_synchronization2",
             "VK_KHR_spirv_1_4",
@@ -134,11 +134,11 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     setupEnabledExtensions();
 
     auto setupQueueFamilyCreateInfo = [&returnValue]() -> void {
-        returnValue.deviceQueueFamilyQueuePriorities = {
+        returnValue.mDeviceQueueFamilyQueuePriorities = {
             {0.5f}
         };
 
-        returnValue.deviceQueueFamilyCreateInfos = {
+        returnValue.mDeviceQueueFamilyCreateInfos = {
             VkDeviceQueueCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
                 .pNext = nullptr,
@@ -184,7 +184,7 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
             bool foundGraphicsQueueFamilyWithEnoughQueues = false;
             for (int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
                 if ((physicalDeviceQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-                    (physicalDeviceQueueFamilyProperties[i].queueCount >= returnValue.deviceQueueFamilyCreateInfos[0].queueCount)) {
+                    (physicalDeviceQueueFamilyProperties[i].queueCount >= returnValue.mDeviceQueueFamilyCreateInfos[0].queueCount)) {
                     foundGraphicsQueueFamilyWithEnoughQueues = true;
                 }
             }
@@ -206,8 +206,8 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
                 physicalDeviceExtensionNames.push_back(physicalDeviceExtension.extensionName);
             }
             std::vector<std::string> logicalDeviceExtensionNames{};
-            for (int i = 0; i < returnValue.enabledDeviceExtensions.size(); i++) {
-                logicalDeviceExtensionNames.push_back(returnValue.enabledDeviceExtensions[i]);
+            for (int i = 0; i < returnValue.mEnabledDeviceExtensions.size(); i++) {
+                logicalDeviceExtensionNames.push_back(returnValue.mEnabledDeviceExtensions[i]);
             }
 
             if (!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
@@ -271,13 +271,13 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
         std::cout << "SELECTED PHYSICAL DEVICE: " << selectedPhysicalDeviceProperties.deviceName << "\n";
         std::cout << "DISCRETE GPU? " << ((niceToHavesBySystemPhysicalDevice[selectedPhysicalDeviceIndex][0]) ? "Yes\n" : "No\n");
 
-        returnValue.selectedPhysicalDevice = systemPhysicalDevices[selectedPhysicalDeviceIndex];
+        returnValue.mSelectedPhysicalDevice = systemPhysicalDevices[selectedPhysicalDeviceIndex];
     };
     selectPhysicalDevice(instance);
     
-    returnValue.deviceQueueFamilyCreateInfos[0].queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(returnValue.selectedPhysicalDevice);
+    returnValue.mDeviceQueueFamilyCreateInfos[0].queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(returnValue.mSelectedPhysicalDevice);
 
-    returnValue.logicalDeviceCreateInfo = {
+    returnValue.mLogicalDeviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr, // reroute needed
         .flags = 0,

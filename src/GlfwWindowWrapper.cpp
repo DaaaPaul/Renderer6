@@ -4,7 +4,7 @@
 #include "Common.h"
 
 GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PARAMETERS) :
-    mGlfwWindow{},
+    mpGlfwWindow{},
     mPARAMETERS{ GIVEN_PARAMETERS } {
     // print parameters
     std::cout << "SET WINDOW CREATE PARAMETERS:\n"
@@ -20,9 +20,9 @@ GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PA
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    mGlfwWindow = glfwCreateWindow(mPARAMETERS.mWIDTH, mPARAMETERS.mHEIGHT, mPARAMETERS.mNAME, nullptr, nullptr);
+    mpGlfwWindow = glfwCreateWindow(mPARAMETERS.mWIDTH, mPARAMETERS.mHEIGHT, mPARAMETERS.mNAME, nullptr, nullptr);
 
-    CHECK_NULLPTR(mGlfwWindow, "glfwCreateWindow failed");
+    CHECK_NULLPTR(mpGlfwWindow, "glfwCreateWindow failed");
 
     std::cout << "Created GlfwWindowWrapper\n";
 }
@@ -30,7 +30,7 @@ GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PA
 GlfwWindowWrapper::~GlfwWindowWrapper() {
     std::cout << "Destroying GlfwWindowWrapper...\n";
 
-    glfwDestroyWindow(mGlfwWindow);
+    glfwDestroyWindow(mpGlfwWindow);
     glfwTerminate();
 
     std::cout << "Destroyed GlfwWindowWrapper\n";

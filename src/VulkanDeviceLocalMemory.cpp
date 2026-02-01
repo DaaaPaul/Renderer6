@@ -1,10 +1,10 @@
 #include "VulkanDeviceLocalMemory.hpp"
 #include <iostream>
 
-VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* givenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN_VULKAN_HOST_VISIBLE_MEMORY_BUFFER_INFO) : 
-	mVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
-	mDeviceLocalMemory{},
-	mDeviceLocalBuffers{},
+VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN_VULKAN_HOST_VISIBLE_MEMORY_BUFFER_INFO) : 
+	mpVulkanDevicesWrapper{ pGivenVulkanDevicesWrapper },
+	mpDeviceLocalMemory{},
+	mDeviceLocalpBuffers{},
 	mDeviceLocalBufferInfos{ GIVEN_VULKAN_HOST_VISIBLE_MEMORY_BUFFER_INFO },
 	mBufferOffsets{},
 	mBufferSizes{} {
@@ -20,12 +20,12 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* givenVulk
 	const size_t BUFFERS_COUNT{ mDeviceLocalBufferInfos.size() };
 
 	// create the buffers themselves with their memory requirements info
-	mDeviceLocalBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
+	mDeviceLocalpBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
 	mBufferSizes.resize(BUFFERS_COUNT, 0);
 	std::vector<VkMemoryRequirements> deviceLocalBuffersMemRequirements(BUFFERS_COUNT, {});
 	for (int i = 0; i < BUFFERS_COUNT; i++) {
-		mDeviceLocalBuffers[i] = VulkanMemoryCommon::fCreateBuffer(mVulkanDevicesWrapper->mLogicalDevice, mDeviceLocalBufferInfos[i]);
-		VulkanPFNs::gpVkGetBufferMemoryRequirements(mVulkanDevicesWrapper->mLogicalDevice, mDeviceLocalBuffers[i], &deviceLocalBuffersMemRequirements[i]);
+		mDeviceLocalpBuffers[i] = VulkanMemoryCommon::fCreateBuffer(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalBufferInfos[i]);
+		VulkanPFNs::gpVkGetBufferMemoryRequirements(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], &deviceLocalBuffersMemRequirements[i]);
 		mBufferSizes[i] = deviceLocalBuffersMemRequirements[i].size;
 	}
 
@@ -33,14 +33,14 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* givenVulk
 	VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 		.allocationSize = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).first,
-		.memoryTypeIndex = VulkanMemoryCommon::fGetMemoryTypeIndex(mVulkanDevicesWrapper->mPhysicalDevice, deviceLocalBuffersMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+		.memoryTypeIndex = VulkanMemoryCommon::fGetMemoryTypeIndex(mpVulkanDevicesWrapper->mpPhysicalDevice, deviceLocalBuffersMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 	};
-	VulkanPFNs::gpVkAllocateMemory(mVulkanDevicesWrapper->mLogicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &mDeviceLocalMemory);
+	VulkanPFNs::gpVkAllocateMemory(mpVulkanDevicesWrapper->mpLogicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &mpDeviceLocalMemory);
 
 	// bind buffers
 	mBufferOffsets = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).second;
 	for(int i = 0; i < BUFFERS_COUNT; i++) {
-		VulkanPFNs::gpVkBindBufferMemory(mVulkanDevicesWrapper->mLogicalDevice, mDeviceLocalBuffers[i], mDeviceLocalMemory, mBufferOffsets[i]);
+		VulkanPFNs::gpVkBindBufferMemory(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], mpDeviceLocalMemory, mBufferOffsets[i]);
 	}
 
 	std::cout << "Created VulkanDeviceLocalMemory\n";
@@ -49,9 +49,9 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* givenVulk
 VulkanDeviceLocalMemory::~VulkanDeviceLocalMemory() {
 	std::cout << "Destroying VulkanDeviceLocalMemory...\n";
 	
-	VulkanPFNs::gpVkFreeMemory(mVulkanDevicesWrapper->mLogicalDevice, mDeviceLocalMemory, nullptr);
-	for(VkBuffer& buffer : mDeviceLocalBuffers) {
-		VulkanPFNs::gpVkDestroyBuffer(mVulkanDevicesWrapper->mLogicalDevice, buffer, nullptr);
+	VulkanPFNs::gpVkFreeMemory(mpVulkanDevicesWrapper->mpLogicalDevice, mpDeviceLocalMemory, nullptr);
+	for(VkBuffer& buffer : mDeviceLocalpBuffers) {
+		VulkanPFNs::gpVkDestroyBuffer(mpVulkanDevicesWrapper->mpLogicalDevice, buffer, nullptr);
 	}
 	
 	std::cout << "Destroyed VulkanDeviceLocalMemory\n";
@@ -66,10 +66,10 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 		const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-			.queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(mVulkanDevicesWrapper->mPhysicalDevice)
+			.queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(mpVulkanDevicesWrapper->mpPhysicalDevice)
 		};
 		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkCreateCommandPool(mVulkanDevicesWrapper->mLogicalDevice, &COMMAND_POOL_INFO, nullptr, &tempCommandPool),
+			VulkanPFNs::gpVkCreateCommandPool(mpVulkanDevicesWrapper->mpLogicalDevice, &COMMAND_POOL_INFO, nullptr, &tempCommandPool),
 			"Failed to create temporary command pool"
 		)
 	}
@@ -83,7 +83,7 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 			.commandBufferCount = 1,
 		};
 		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkAllocateCommandBuffers(mVulkanDevicesWrapper->mLogicalDevice, &COMMAND_BUFFER_INFO, &tempCommandBuffer),
+			VulkanPFNs::gpVkAllocateCommandBuffers(mpVulkanDevicesWrapper->mpLogicalDevice, &COMMAND_BUFFER_INFO, &tempCommandBuffer),
 			"Failed to create temporary command buffer"
 		)
 	}
@@ -95,7 +95,7 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 			VulkanPFNs::gpVkBeginCommandBuffer(tempCommandBuffer, &ONE_TIME_SUBMIT_BEGIN),
 			"Failed to begin temporary command buffer recording"
 		)
-		VulkanPFNs::gpVkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, mDeviceLocalBuffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
+		VulkanPFNs::gpVkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, mDeviceLocalpBuffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
 		CHECK_VK_SUCCESS(
 			VulkanPFNs::gpVkEndCommandBuffer(tempCommandBuffer),
 			"Failed to end temporary command buffer recording"
@@ -107,7 +107,7 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 	{
 		const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
 		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkCreateFence(mVulkanDevicesWrapper->mLogicalDevice, &FENCE_INFO, nullptr, &copyCommandDone),
+			VulkanPFNs::gpVkCreateFence(mpVulkanDevicesWrapper->mpLogicalDevice, &FENCE_INFO, nullptr, &copyCommandDone),
 			"Failed to create copy command done fence"
 		)
 	}
@@ -121,7 +121,7 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 		};
 
 		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkQueueSubmit(mVulkanDevicesWrapper->mGraphicsFamilyQueues[0], 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
+			VulkanPFNs::gpVkQueueSubmit(mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
 			"Failed to submit temporary command buffer"
 		)
 	}
@@ -134,11 +134,11 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 	}
 
 	CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkWaitForFences(mVulkanDevicesWrapper->mLogicalDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
+		VulkanPFNs::gpVkWaitForFences(mpVulkanDevicesWrapper->mpLogicalDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
 		"Failed to wait for copy command done fence"
 	)
 
-	VulkanPFNs::gpVkDestroyFence(mVulkanDevicesWrapper->mLogicalDevice, copyCommandDone, nullptr);
-	VulkanPFNs::gpVkFreeCommandBuffers(mVulkanDevicesWrapper->mLogicalDevice, tempCommandPool, 1, &tempCommandBuffer);
-	VulkanPFNs::gpVkDestroyCommandPool(mVulkanDevicesWrapper->mLogicalDevice, tempCommandPool, nullptr);
+	VulkanPFNs::gpVkDestroyFence(mpVulkanDevicesWrapper->mpLogicalDevice, copyCommandDone, nullptr);
+	VulkanPFNs::gpVkFreeCommandBuffers(mpVulkanDevicesWrapper->mpLogicalDevice, tempCommandPool, 1, &tempCommandBuffer);
+	VulkanPFNs::gpVkDestroyCommandPool(mpVulkanDevicesWrapper->mpLogicalDevice, tempCommandPool, nullptr);
 }

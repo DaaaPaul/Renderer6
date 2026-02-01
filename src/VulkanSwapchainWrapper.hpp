@@ -11,17 +11,17 @@ struct VulkanSwapchainWrapper {
         const uint32_t mGRAPHICS_QUEUE_FAMILY_INDEX{};
     };
 
-    VulkanDevicesWrapper* mVulkanDevicesWrapper{};
-    VkSwapchainKHR mSwapchainKHR{};
-    VkSurfaceKHR mSurfaceKHR{};
-    std::vector<VkImageView> mImageViews{};
+    VulkanDevicesWrapper* mpVulkanDevicesWrapper{};
+    VkSwapchainKHR mpSwapchainKHR{};
+    VkSurfaceKHR mpSurfaceKHR{};
+    std::vector<VkImageView> mpImageViews{};
     VulkanSwapchainWrapperConstructInfo mParameters{};
 
     [[nodiscard]] static VulkanSwapchainWrapperConstructInfo getConstructParameters(VkInstance instance, VkPhysicalDevice physicalDevice, GLFWwindow* window);
     static void checkHaveVkFormatColorspace(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
     static void checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
 
-    VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VulkanSwapchainWrapperConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO);
+    explicit VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VulkanSwapchainWrapperConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO);
     ~VulkanSwapchainWrapper();
 
     DELETE_COPY_CONSTRUCTORS(VulkanSwapchainWrapper)

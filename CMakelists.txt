@@ -23,7 +23,7 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/GlfwWindowWrapper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDeviceLocalMemory.cpp

@@ -3,8 +3,8 @@
 #include "VulkanPFNs.h"
 
 VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWrapper, VulkanBackendWrapperConstructParameters const& GIVEN_VULKAN_BACKEND_CREATE_PARAMETERS) :
-    mInstance{},
-    mGlfwWindowWrapper{ givenGlfwWindowWrapper },
+    mpInstance{},
+    mpGlfwWindowWrapper{ givenGlfwWindowWrapper },
     mParameters{ GIVEN_VULKAN_BACKEND_CREATE_PARAMETERS } {
 
     // route mCreateInfo's pointers properly
@@ -36,7 +36,7 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
     std::cout << "Creating VulkanBackendWrapper...\n";
 
     CHECK_VK_SUCCESS(
-        VulkanPFNs::gpVkCreateInstance(&mParameters.mCreateInfo, nullptr, &mInstance),
+        VulkanPFNs::gpVkCreateInstance(&mParameters.mCreateInfo, nullptr, &mpInstance),
         "Failed to create instance"
     )
 
@@ -46,7 +46,7 @@ VulkanBackendWrapper::VulkanBackendWrapper(GlfwWindowWrapper* givenGlfwWindowWra
 VulkanBackendWrapper::~VulkanBackendWrapper() {
     std::cout << "Destroying VulkanBackendWrapper...\n";
 
-    VulkanPFNs::gpVkDestroyInstance(mInstance, nullptr);
+    VulkanPFNs::gpVkDestroyInstance(mpInstance, nullptr);
 
     std::cout << "Destroyed VulkanBackendWrapper\n";
 }
