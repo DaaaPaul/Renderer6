@@ -8,6 +8,7 @@
 #include "VulkanBackendWrapper.hpp"
 #include "VulkanDevicesWrapper.hpp"
 #include "VulkanSwapchainWrapper.hpp"
+#include "VulkanMemoryCommon.h"
 #include "VulkanHostVisibleMemory.hpp"
 
 int main() {
@@ -35,9 +36,9 @@ int main() {
 			0, 1, 3,
 			0, 3, 2
 		};
-		const std::vector<VulkanBufferInfo> VERTEX_AND_INDEX_BUFFER_INFO{
-			VulkanBufferInfo(sizeof(glm::vec4) * VERTEX_POSITIONS.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
-			VulkanBufferInfo(sizeof(uint32_t) * INDICES.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
+		const std::vector<VulkanMemoryCommon::VulkanBufferInfo> VERTEX_AND_INDEX_BUFFER_INFO{
+			VulkanMemoryCommon::VulkanBufferInfo(sizeof(glm::vec4) * VERTEX_POSITIONS.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
+			VulkanMemoryCommon::VulkanBufferInfo(sizeof(uint32_t) * INDICES.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mPhysicalDevice)),
 		};
 		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, VERTEX_AND_INDEX_BUFFER_INFO);
 

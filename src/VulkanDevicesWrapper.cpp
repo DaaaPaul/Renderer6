@@ -73,10 +73,14 @@ VulkanDevicesWrapper::VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBack
     // construct the logical device
     std::cout << "Creating VulkanDevicesWrapper...\n";
 
-    CHECK_VK_SUCCESS(
-        VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, &mParameters.logicalDeviceCreateInfo, nullptr, &mLogicalDevice),
-        "Failed to create logical device"
-    )
+	CHECK_VK_SUCCESS(
+		VulkanPFNs::gpVkCreateDevice(mPhysicalDevice, &mParameters.logicalDeviceCreateInfo, nullptr, &mLogicalDevice),
+		"Failed to create logical device"
+	)
+	mGraphicsFamilyQueues.resize(mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[0].queueCount, VK_NULL_HANDLE);
+	for(int i = 0; i < mGraphicsFamilyQueues.size(); i++) {
+		VulkanPFNs::gpVkGetDeviceQueue(mLogicalDevice, mParameters.logicalDeviceCreateInfo.pQueueCreateInfos[0].queueFamilyIndex, i, &mGraphicsFamilyQueues[i]);
+	}
 
     std::cout << "Created VulkanDevicesWrapper\n";
 }

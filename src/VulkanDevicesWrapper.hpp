@@ -21,6 +21,7 @@ struct VulkanDevicesWrapper {
     VulkanBackendWrapper* mVulkanBackendWrapper{};
     VkPhysicalDevice mPhysicalDevice{};
     VkDevice mLogicalDevice{};
+	std::vector<VkQueue> mGraphicsFamilyQueues{};
     VulkanDevicesWrapperConstructParameters mParameters{};
 
     [[nodiscard]] static VulkanDevicesWrapperConstructParameters getConstructParameters(VkInstance instance);

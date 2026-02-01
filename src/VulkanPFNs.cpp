@@ -93,6 +93,9 @@ namespace VulkanPFNs {
         gpVkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkCreateDevice"));
         CHECK_NULLPTR(gpVkCreateDevice, "Failed to load vkCreateDevice")
 
+		gpVkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkGetDeviceQueue"));
+		CHECK_NULLPTR(gpVkGetDeviceQueue, "Failed to load gpVkGetDeviceQueue")
+
         gpVkDestroyDevice = reinterpret_cast<PFN_vkDestroyDevice>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkDestroyDevice"));
         CHECK_NULLPTR(gpVkDestroyDevice, "Failed to load vkDestroyDevice")
 
