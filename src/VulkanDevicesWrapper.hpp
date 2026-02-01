@@ -24,6 +24,7 @@ struct VulkanDevicesWrapper {
     VulkanDevicesWrapperConstructParameters mParameters{};
 
     [[nodiscard]] static VulkanDevicesWrapperConstructParameters getConstructParameters(VkInstance instance);
+	[[nodiscard]] static uint32_t getGraphicsQueueFamilyIndex(VkPhysicalDevice physicalDevice);
     VulkanDevicesWrapper(VulkanBackendWrapper* givenVulkanBackendWrapper, VulkanDevicesWrapperConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS);
     ~VulkanDevicesWrapper();
 

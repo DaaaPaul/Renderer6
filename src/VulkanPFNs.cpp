@@ -134,5 +134,17 @@ namespace VulkanPFNs {
 			
 		gpVkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkAllocateMemory"));
 		CHECK_NULLPTR(gpVkAllocateMemory, "Failed to load gpVkAllocateMemory")
+
+		gpVkBindBufferMemory = reinterpret_cast<PFN_vkBindBufferMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkBindBufferMemory"));
+		CHECK_NULLPTR(gpVkBindBufferMemory, "Failed to load gpVkBindBufferMemory")
+
+		gpVkMapMemory = reinterpret_cast<PFN_vkMapMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkMapMemory"));
+		CHECK_NULLPTR(gpVkMapMemory, "Failed to load gpVkMapMemory")
+
+		gpVkUnmapMemory = reinterpret_cast<PFN_vkUnmapMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkUnmapMemory"));
+		CHECK_NULLPTR(gpVkUnmapMemory, "Failed to load gpVkUnmapMemory")
+
+		gpVkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(gpVkGetInstanceProcAddr(gInstanceInUse, "vkFreeMemory"));
+		CHECK_NULLPTR(gpVkFreeMemory, "Failed to load gpVkFreeMemory")
     }
 }

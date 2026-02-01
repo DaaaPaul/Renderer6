@@ -36,4 +36,8 @@ namespace VulkanPFNs {
 	inline PFN_vkGetPhysicalDeviceMemoryProperties gpVkGetPhysicalDeviceMemoryProperties{};
 	inline PFN_vkGetBufferMemoryRequirements gpVkGetBufferMemoryRequirements{};
 	inline PFN_vkAllocateMemory gpVkAllocateMemory{};
+	inline PFN_vkBindBufferMemory gpVkBindBufferMemory{};
+	inline PFN_vkMapMemory gpVkMapMemory{};
+	inline PFN_vkUnmapMemory gpVkUnmapMemory{};
+	inline PFN_vkFreeMemory gpVkFreeMemory{};
 }

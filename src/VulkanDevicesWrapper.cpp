@@ -271,26 +271,7 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     };
     selectPhysicalDevice(instance);
     
-    auto getGraphicsQueueFamilyIndex = [](VkPhysicalDevice physicalDevice) -> uint32_t {
-        uint32_t physicalDeviceQueueFamilyCount{};
-        VulkanPFNs::gpVkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, nullptr);
-        std::vector<VkQueueFamilyProperties> physicalDeviceQueueFamilyProperties(physicalDeviceQueueFamilyCount);
-        VulkanPFNs::gpVkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, physicalDeviceQueueFamilyProperties.data());
-
-        uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
-        for (int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
-            if (physicalDeviceQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                graphicsQueueFamilyIndex = i;
-            }
-        }
-
-        if (graphicsQueueFamilyIndex == UINT32_MAX) {
-            throw std::runtime_error("Did not find a graphics queue for physical device");
-        } else {
-            return graphicsQueueFamilyIndex;
-        }
-    };
-    returnValue.deviceQueueFamilyCreateInfos[0].queueFamilyIndex = getGraphicsQueueFamilyIndex(returnValue.selectedPhysicalDevice);
+    returnValue.deviceQueueFamilyCreateInfos[0].queueFamilyIndex = VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(returnValue.selectedPhysicalDevice);
 
     returnValue.logicalDeviceCreateInfo = {
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
@@ -303,4 +284,24 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
     };
 
     return returnValue;
+}
+
+[[nodiscard]] uint32_t VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(VkPhysicalDevice physicalDevice) {
+	uint32_t physicalDeviceQueueFamilyCount{};
+    VulkanPFNs::gpVkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, nullptr);
+    std::vector<VkQueueFamilyProperties> physicalDeviceQueueFamilyProperties(physicalDeviceQueueFamilyCount);
+    VulkanPFNs::gpVkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, physicalDeviceQueueFamilyProperties.data());
+
+    uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
+    for (int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
+        if (physicalDeviceQueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            graphicsQueueFamilyIndex = i;
+        }
+    }
+
+    if (graphicsQueueFamilyIndex == UINT32_MAX) {
+        throw std::runtime_error("Did not find a graphics queue for physical device");
+    } else {
+        return graphicsQueueFamilyIndex;
+    }
 }
