@@ -210,7 +210,7 @@ VulkanDevicesWrapper::~VulkanDevicesWrapper() {
                 logicalDeviceExtensionNames.push_back(returnValue.mEnabledDeviceExtensions[i]);
             }
 
-            if (!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
+            if (!Common::fContainsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
                 systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
                 std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for not having the device extensions this application needs" << "\n";
                 continue;
