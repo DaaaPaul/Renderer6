@@ -12,6 +12,7 @@
 #include "VulkanHostVisibleMemory.hpp"
 #include "VulkanDeviceLocalMemory.hpp"
 #include "VulkanGraphicsPipelineWrapper.hpp"
+#include "RenderEngine.h"
 
 int main() {
     try {
@@ -57,6 +58,10 @@ int main() {
 		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
 
 		VulkanGraphicsPipelineWrapper vulkanGraphicsPipelineWrapper(&vulkanDevicesWrapper, VulkanGraphicsPipelineWrapper::getConstructParameters());
+
+		RenderEngine::gpGlfwWindowUsed = glfwWindowWrapper.mpGlfwWindow;
+		RenderEngine::gpLogicalDeviceUsed = vulkanDevicesWrapper.mpLogicalDevice;
+		RenderEngine::ImageKiller killer(vulkanSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.minImageCount, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice));
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }
