@@ -54,4 +54,10 @@ namespace VulkanPFNs {
 	inline PFN_vkWaitForFences gpVkWaitForFences{};
 	inline PFN_vkCreateSemaphore gpVkCreateSemaphore{};
 	inline PFN_vkDestroySemaphore gpVkDestroySemaphore{};
+	inline PFN_vkCreateShaderModule gpVkCreateShaderModule{};
+	inline PFN_vkCreatePipelineLayout gpVkCreatePipelineLayout{};
+	inline PFN_vkCreateGraphicsPipelines gpVkCreateGraphicsPipelines{};
+	inline PFN_vkDestroyPipeline gpVkDestroyPipeline{};
+	inline PFN_vkDestroyPipelineLayout gpVkDestroyPipelineLayout{};
+	inline PFN_vkDestroyShaderModule gpVkDestroyShaderModule{};
 }

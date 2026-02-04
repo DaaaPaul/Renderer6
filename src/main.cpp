@@ -11,6 +11,7 @@
 #include "VulkanMemoryCommon.h"
 #include "VulkanHostVisibleMemory.hpp"
 #include "VulkanDeviceLocalMemory.hpp"
+#include "VulkanGraphicsPipelineWrapper.hpp"
 
 int main() {
     try {
@@ -54,6 +55,8 @@ int main() {
 		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO);
 		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, VERTEX_POSITIONS_SIZE)});
 		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
+
+		VulkanGraphicsPipelineWrapper vulkanGraphicsPipelineWrapper(&vulkanDevicesWrapper, VulkanGraphicsPipelineWrapper::getConstructParameters());
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

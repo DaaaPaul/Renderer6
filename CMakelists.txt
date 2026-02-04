@@ -24,6 +24,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDeviceLocalMemory.cpp
@@ -40,6 +42,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanSwapchainWrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanSwapchainWrapper.hpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
 )
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 

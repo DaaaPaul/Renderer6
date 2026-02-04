@@ -188,5 +188,23 @@ namespace VulkanPFNs {
 
 		gpVkDestroySemaphore = reinterpret_cast<PFN_vkDestroySemaphore>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDestroySemaphore"));
 		CHECK_NULLPTR(gpVkDestroySemaphore, "Failed to load gpVkDestroySemaphore")
+
+		gpVkCreateShaderModule = reinterpret_cast<PFN_vkCreateShaderModule>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCreateShaderModule"));
+		CHECK_NULLPTR(gpVkCreateShaderModule, "Failed to load gpVkCreateShaderModule")
+
+		gpVkCreatePipelineLayout = reinterpret_cast<PFN_vkCreatePipelineLayout>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCreatePipelineLayout"));
+		CHECK_NULLPTR(gpVkCreatePipelineLayout, "Failed to load gpVkCreatePipelineLayout")
+
+		gpVkCreateGraphicsPipelines = reinterpret_cast<PFN_vkCreateGraphicsPipelines>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCreateGraphicsPipelines"));
+		CHECK_NULLPTR(gpVkCreateGraphicsPipelines, "Failed to load gpVkCreateGraphicsPipelines")
+
+		gpVkDestroyPipeline = reinterpret_cast<PFN_vkDestroyPipeline>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDestroyPipeline"));
+		CHECK_NULLPTR(gpVkDestroyPipeline, "Failed to load gpVkDestroyPipeline")
+
+		gpVkDestroyPipelineLayout = reinterpret_cast<PFN_vkDestroyPipelineLayout>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDestroyPipelineLayout"));
+		CHECK_NULLPTR(gpVkDestroyPipelineLayout, "Failed to load gpVkDestroyPipelineLayout")
+
+		gpVkDestroyShaderModule = reinterpret_cast<PFN_vkDestroyShaderModule>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDestroyShaderModule"));
+		CHECK_NULLPTR(gpVkDestroyShaderModule, "Failed to load gpVkDestroyShaderModule")
     }
 }
