@@ -6,7 +6,6 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
     mpVulkanDevicesWrapper{ givenVulkanDevicesWrapper },
     mpSwapchainKHR{},
     mpSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mSURFACE_KHR },
-    mpImageViews{},
     mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
     // reroute pointers
@@ -33,27 +32,6 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
         VulkanPFNs::gpVkCreateSwapchainKHR(mpVulkanDevicesWrapper->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
         "Failed to create the swapchain"
     )
-
-    auto createImageViews = [this]() -> void {
-        uint32_t swapchainImageCount{};
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mpVulkanDevicesWrapper->mpLogicalDevice, this->mpSwapchainKHR, &swapchainImageCount, nullptr);
-		std::vector<VkImage> swapchainImages(swapchainImageCount);
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(this->mpVulkanDevicesWrapper->mpLogicalDevice, this->mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
-
-		VkImageViewCreateInfo rollingImageViewCreateInfo{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = VK_NULL_HANDLE,
-			.viewType = VK_IMAGE_VIEW_TYPE_2D,
-			.format = VK_FORMAT_R8G8B8A8_SRGB,
-			.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
-		};
-		this->mpImageViews.resize(swapchainImageCount, VK_NULL_HANDLE);
-		for(int i = 0; i < swapchainImageCount; i++) {
-			rollingImageViewCreateInfo.image = swapchainImages[i];
-			VulkanPFNs::gpVkCreateImageView(this->mpVulkanDevicesWrapper->mpLogicalDevice, &rollingImageViewCreateInfo, nullptr, &(this->mpImageViews[i]));
-		}
-	};
-	createImageViews();
         
     std::cout << "Created VulkanSwapchainWrapper\n";
 }
@@ -61,9 +39,6 @@ VulkanSwapchainWrapper::VulkanSwapchainWrapper(VulkanDevicesWrapper* givenVulkan
 VulkanSwapchainWrapper::~VulkanSwapchainWrapper() {
     std::cout << "Destroying VulkanSwapchainWrapper...\n";
 
-	for(VkImageView& imageView : mpImageViews) {
-		VulkanPFNs::gpVkDestroyImageView(mpVulkanDevicesWrapper->mpLogicalDevice, imageView, nullptr);
-	}
     VulkanPFNs::gpVkDestroySwapchainKHR(mpVulkanDevicesWrapper->mpLogicalDevice, mpSwapchainKHR, nullptr);
     VulkanPFNs::gpVkDestroySurfaceKHR(mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpInstance, mpSurfaceKHR, nullptr);
 

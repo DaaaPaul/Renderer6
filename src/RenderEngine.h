@@ -1,30 +1,33 @@
 #pragma once
 
 #include "VulkanDevicesWrapper.hpp"
+#include "VulkanSwapchainWrapper.hpp"
+#include "VulkanDeviceLocalMemory.hpp"
 #include "VulkanPFNs.h"
 #include "Common.h"
 
 namespace RenderEngine {
-	inline GLFWwindow* gpGlfwWindowUsed{};
-	inline VkDevice gpLogicalDeviceUsed{};
+	inline VulkanSwapchainWrapper* gpVulkanSwapchainWrapper{};
+	inline VulkanDeviceLocalMemory* gpVulkanDeviceLocalMemory{};
 
-	struct ImageKiller {
-		struct ImageHitmanEquipment {
-			VkSemaphore mRenderReady{};
-			VkSemaphore mRenderFinished{};
-			VkCommandPool mCommandPool{};
-			VkCommandBuffer mDrawCommands{};
+	struct ImageHitmanEquipment {
+		VkFence mpOneAtATime{};
+		VkSemaphore mpRenderReady{};
+		VkSemaphore mpRenderFinished{};
+		VkCommandPool mpCommandPool{};
+		VkCommandBuffer mDrawCommands{};
 
-			explicit ImageHitmanEquipment(VkCommandPool pool);
-			~ImageHitmanEquipment();
-		};
+		explicit ImageHitmanEquipment(VkCommandPool pool);
+		~ImageHitmanEquipment();
+	};
 
+	struct ImageKillhouse {
 		VkCommandPool mpCommandPoolUsed{};
 		std::vector<ImageHitmanEquipment> mHitmen{};
 
-		explicit ImageKiller(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX);
-		~ImageKiller();
+		explicit ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX);
+		~ImageKillhouse();
 	};
 
-	void fRenderLoop();
+	void fRenderLoop(ImageKillhouse& imageKillhouse);
 }

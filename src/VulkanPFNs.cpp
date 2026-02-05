@@ -206,5 +206,26 @@ namespace VulkanPFNs {
 
 		gpVkDestroyShaderModule = reinterpret_cast<PFN_vkDestroyShaderModule>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDestroyShaderModule"));
 		CHECK_NULLPTR(gpVkDestroyShaderModule, "Failed to load gpVkDestroyShaderModule")
+
+		gpVkAcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkAcquireNextImageKHR"));
+		CHECK_NULLPTR(gpVkAcquireNextImageKHR, "Failed to load gpVkAcquireNextImageKHR")
+
+		gpVkCmdPipelineBarrier2 = reinterpret_cast<PFN_vkCmdPipelineBarrier2>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdPipelineBarrier2"));
+		CHECK_NULLPTR(gpVkCmdPipelineBarrier2, "Failed to load gpVkCmdPipelineBarrier2")
+
+		gpVkCmdBindIndexBuffer = reinterpret_cast<PFN_vkCmdBindIndexBuffer>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBindIndexBuffer"));
+		CHECK_NULLPTR(gpVkCmdBindIndexBuffer, "Failed to load gpVkCmdBindIndexBuffer")
+
+		gpVkCmdBindVertexBuffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBindVertexBuffers"));
+		CHECK_NULLPTR(gpVkCmdBindVertexBuffers, "Failed to load gpVkCmdBindVertexBuffers")
+
+		gpVkCmdSetViewport = reinterpret_cast<PFN_vkCmdSetViewport>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdSetViewport"));
+		CHECK_NULLPTR(gpVkCmdSetViewport, "Failed to load gpVkCmdSetViewport")
+
+		gpVkCmdSetScissor = reinterpret_cast<PFN_vkCmdSetScissor>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdSetScissor"));
+		CHECK_NULLPTR(gpVkCmdSetScissor, "Failed to load gpVkCmdSetScissor")
+
+		gpVkCmdBeginRendering = reinterpret_cast<PFN_vkCmdBeginRendering>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBeginRendering"));
+		CHECK_NULLPTR(gpVkCmdBeginRendering, "Failed to load gpVkCmdBeginRendering")
     }
 }
