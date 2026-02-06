@@ -151,7 +151,7 @@ namespace RenderEngine {
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = VkClearColorValue(0.2f, 0.2f, 0.2f, 1.0f),
+			.clearValue = VkClearColorValue({0.2f, 0.2f, 0.2f, 1.0f}),
 		};
 		const VkRenderingInfo RENDERING_INFO{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
@@ -176,8 +176,8 @@ namespace RenderEngine {
 		const VkViewport VIEWPORT{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.width,
-			.height = gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.height,
+			.width = static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.width),
+			.height = static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
@@ -266,9 +266,11 @@ namespace RenderEngine {
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
 		fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex);
+
 		ImageHitman& hitmanUsed{ killhouse.mHitmen[nextSwapchainImageIndex] };
 
 		VulkanPFNs::gpVkWaitForFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
+		VulkanPFNs::gpVkResetFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
 		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
@@ -284,5 +286,7 @@ namespace RenderEngine {
 
 			fRunThroughNextSwapchainImage(killhouse);
 		}
+
+		VulkanPFNs::gpVkDeviceWaitIdle(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice);
 	}
 }

@@ -71,4 +71,6 @@ namespace VulkanPFNs {
 	inline PFN_vkCmdEndRendering gpVkCmdEndRendering{};
 	inline PFN_vkCmdDrawIndexed gpVkCmdDrawIndexed{};
 	inline PFN_vkQueuePresentKHR gpVkQueuePresentKHR{};
+	inline PFN_vkResetFences gpVkResetFences{};
+	inline PFN_vkDeviceWaitIdle gpVkDeviceWaitIdle{};
 }

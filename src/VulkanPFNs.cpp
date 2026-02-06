@@ -240,5 +240,11 @@ namespace VulkanPFNs {
 		gpVkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkQueuePresentKHR"));
 		CHECK_NULLPTR(gpVkQueuePresentKHR, "Failed to load gpVkQueuePresentKHR")
 
+		gpVkResetFences = reinterpret_cast<PFN_vkResetFences>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkResetFences"));
+		CHECK_NULLPTR(gpVkResetFences, "Failed to load gpVkResetFences")
+
+		gpVkDeviceWaitIdle = reinterpret_cast<PFN_vkDeviceWaitIdle>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDeviceWaitIdle"));
+		CHECK_NULLPTR(gpVkDeviceWaitIdle, "Failed to load gpVkDeviceWaitIdle")
+		
     }
 }

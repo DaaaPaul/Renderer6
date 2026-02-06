@@ -82,7 +82,7 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 		.stencilAttachmentFormat = {},
 	};
 
-	const std::vector<char> SHADERS_SPRIV_FILE_BYTES{ Common::fLoadSprivFileBytes(R"(..\shaders\shaders.spv)") };
+	const std::vector<char> SHADERS_SPRIV_FILE_BYTES{ Common::fLoadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)") };
 	VkShaderModule shaderModuleForEverything{}; // create needed
 	VkShaderModuleCreateInfo shaderModuleForEverythingInfo{
 		.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -138,7 +138,7 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 		.depthClampEnable = VK_FALSE,
 		.rasterizerDiscardEnable = VK_FALSE,
 		.polygonMode = VK_POLYGON_MODE_FILL,
-		.cullMode = VK_CULL_MODE_BACK_BIT,
+		.cullMode = VK_CULL_MODE_NONE,
 		.frontFace = VK_FRONT_FACE_CLOCKWISE,
 		.depthBiasConstantFactor = 1.0f,
 		.depthBiasClamp = 0.0f,

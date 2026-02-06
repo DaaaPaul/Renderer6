@@ -1,16 +1,16 @@
 struct VertexIn {
-    [[vk::location(0)]] float4 mColor;
-    [[vk::location(1)]] float4 mPosition;
+    [[vk::location(0)]] float4 mPosition;
+    [[vk::location(1)]] float4 mColor;
 };
 
 struct VertexOut {
-    float4 mColor;
     float4 mPosition;
+    float4 mColor;
 };
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn vertexData) {
-    return VertexOut(vertexData.mColor, vertexData.mPosition);
+    return VertexOut(vertexData.mPosition, vertexData.mColor);
 }
 
 [shader("fragment")]
