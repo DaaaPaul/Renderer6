@@ -73,4 +73,5 @@ namespace VulkanPFNs {
 	inline PFN_vkQueuePresentKHR gpVkQueuePresentKHR{};
 	inline PFN_vkResetFences gpVkResetFences{};
 	inline PFN_vkDeviceWaitIdle gpVkDeviceWaitIdle{};
+	inline PFN_vkResetCommandBuffer gpVkResetCommandBuffer{};
 }

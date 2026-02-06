@@ -245,6 +245,9 @@ namespace VulkanPFNs {
 
 		gpVkDeviceWaitIdle = reinterpret_cast<PFN_vkDeviceWaitIdle>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkDeviceWaitIdle"));
 		CHECK_NULLPTR(gpVkDeviceWaitIdle, "Failed to load gpVkDeviceWaitIdle")
+
+		gpVkResetCommandBuffer = reinterpret_cast<PFN_vkResetCommandBuffer>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkResetCommandBuffer"));
+		CHECK_NULLPTR(gpVkResetCommandBuffer, "Failed to load gpVkResetCommandBuffer")
 		
     }
 }

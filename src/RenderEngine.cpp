@@ -200,7 +200,9 @@ namespace RenderEngine {
 		
 		// draw!
 		VulkanPFNs::gpVkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
+
 		VulkanPFNs::gpVkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+
 		VulkanPFNs::gpVkCmdEndRendering(commandBuffer);
 
 		// color attachment output optimal -> present optimal
@@ -216,22 +218,14 @@ namespace RenderEngine {
 		"Command buffer end recording failure"
 		)
 		// ended recording
+
+		VulkanPFNs::gpVkDestroyImageView(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, imageView, nullptr);
 	};
 
 	void fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
 		uint32_t acquiredImageIndex{ UINT32_MAX };
 
-		VkSemaphore pTemporarySemaphorePointer{};
-		const VkSemaphoreCreateInfo EMPTY_INFO{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-		};
-		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkCreateSemaphore(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &EMPTY_INFO, nullptr, &pTemporarySemaphorePointer),
-			"Semaphore creation failed"
-		)
-
-		VulkanPFNs::gpVkAcquireNextImageKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, UINT64_MAX, pTemporarySemaphorePointer, VK_NULL_HANDLE, &acquiredImageIndex);
-		killhouse.mHitmen[acquiredImageIndex].mpRenderReady = pTemporarySemaphorePointer;
+		VulkanPFNs::gpVkAcquireNextImageKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &acquiredImageIndex);
 
 		nextImageIndex = acquiredImageIndex;
 	}
@@ -264,17 +258,23 @@ namespace RenderEngine {
 	}
 
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
+		ImageHitman& hitmanUsed{ killhouse.mHitmen[gHitmanIndex] };
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
-		fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex);
-
-		ImageHitman& hitmanUsed{ killhouse.mHitmen[nextSwapchainImageIndex] };
 
 		VulkanPFNs::gpVkWaitForFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
+		fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex);
+
+		std::cout << "Hitman index: " << gHitmanIndex << "\n";
+		std::cout << "Image index: " << nextSwapchainImageIndex << "\n";
+
 		VulkanPFNs::gpVkResetFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
+		VulkanPFNs::gpVkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
 		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
 		fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed);
+
+		gHitmanIndex = (gHitmanIndex + 1) % 4;
 	}
 
 	void fRenderLoop(ImageKillhouse& killhouse) {

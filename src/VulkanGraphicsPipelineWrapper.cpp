@@ -1,3 +1,4 @@
+#include <iostream>
 #include "VulkanGraphicsPipelineWrapper.hpp"
 #include "Vertex.hpp"
 
@@ -38,6 +39,7 @@ VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapper(VulkanDevicesWrappe
 		)
 
 		mParameters.mPipelineCreateInfo.pNext = &mParameters.mRendering;
+		mParameters.mPipelineCreateInfo.stageCount = static_cast<uint32_t>(mParameters.mStages.size());
 		mParameters.mPipelineCreateInfo.pStages = mParameters.mStages.data();
 		mParameters.mPipelineCreateInfo.pVertexInputState = &mParameters.mVertexInput;
 		mParameters.mPipelineCreateInfo.pInputAssemblyState = &mParameters.mINPUT_ASSEMBLY;
@@ -49,6 +51,29 @@ VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapper(VulkanDevicesWrappe
 		mParameters.mPipelineCreateInfo.pColorBlendState = &mParameters.mColorBlend;
 		mParameters.mPipelineCreateInfo.pDynamicState = &mParameters.mDynamicState;
 		mParameters.mPipelineCreateInfo.layout = mParameters.mpPipelineLayout;
+	}
+
+	// print parameters
+	{
+		std::cout << "SET VULKAN GRAPHICS PIPELINE WRAPPER PARAMETERS:\n";
+		std::cout << "color attachments rendered to: " << mParameters.mRendering.colorAttachmentCount << " with format(s) ";
+		for(VkFormat const& FORMAT : mParameters.mCOLOR_ATTACHMENT_FORMATS) {
+			std::cout << FORMAT << " ";
+		} std::cout << "\n";
+		std::cout << mParameters.mPipelineCreateInfo.stageCount << " shader stages, with name(s) ";
+		for(VkPipelineShaderStageCreateInfo const& STAGE : mParameters.mStages) {
+			std::cout << STAGE.pName << " ";
+		} std::cout << "\n";
+		std::cout << mParameters.mPipelineCreateInfo.pVertexInputState->vertexBindingDescriptionCount << " vertex input binding with " << mParameters.mPipelineCreateInfo.pVertexInputState->vertexAttributeDescriptionCount << " attributes\n";
+		std::cout << "input assembly state toplogy: " << mParameters.mPipelineCreateInfo.pInputAssemblyState->topology << "\n";
+		std::cout << "viewport count: " << mParameters.mPipelineCreateInfo.pViewportState->viewportCount << "\n";
+		std::cout << "scissor count: " << mParameters.mPipelineCreateInfo.pViewportState->scissorCount << "\n";
+		std::cout << "rasterization info: \n";
+		std::cout << "\tpolygon mode: " << mParameters.mPipelineCreateInfo.pRasterizationState->polygonMode << "\n";
+		std::cout << "\tcull mode: " << mParameters.mPipelineCreateInfo.pRasterizationState->cullMode << "\n";
+		std::cout << "\tfront face: " << mParameters.mPipelineCreateInfo.pRasterizationState->frontFace << "\n";
+		std::cout << "multisample info: \n";
+		std::cout << "\tsamples per fragment: " << mParameters.mPipelineCreateInfo.pMultisampleState->rasterizationSamples << "\n";
 	}
 
 	// create the graphics pipeline
@@ -69,7 +94,6 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 [[nodiscard]] VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapperConstructInfo VulkanGraphicsPipelineWrapper::getConstructParameters() {
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo{
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-		.stageCount = 2
 		// REROUTE EVERYTHING NEEDED
 	};
 
@@ -140,7 +164,8 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 		.polygonMode = VK_POLYGON_MODE_FILL,
 		.cullMode = VK_CULL_MODE_NONE,
 		.frontFace = VK_FRONT_FACE_CLOCKWISE,
-		.depthBiasConstantFactor = 1.0f,
+		.depthBiasEnable = VK_FALSE,
+		.depthBiasConstantFactor = 0.0f,
 		.depthBiasClamp = 0.0f,
 		.depthBiasSlopeFactor = 1.0f,
 		.lineWidth = 1.0f
@@ -168,14 +193,14 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 	const std::vector<VkPipelineColorBlendAttachmentState> COLOR_BLEND_ATTACHMENTS{
 		VkPipelineColorBlendAttachmentState{
 			.blendEnable = VK_FALSE,
+			.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
 		}
 	};
 	VkPipelineColorBlendStateCreateInfo colorBlend{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-		.logicOpEnable = VK_FALSE,
+		.logicOpEnable = VK_FALSE,	
 		.attachmentCount = 0, // reroute needed
 		.pAttachments = nullptr, // reroute needed
-		.blendConstants = { 1.0f, 1.0f, 1.0f, 1.0f }
 	};
 
 	const std::vector<VkDynamicState> DYNAMIC_STATES{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };

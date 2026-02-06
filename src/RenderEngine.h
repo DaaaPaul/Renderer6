@@ -30,6 +30,7 @@ namespace RenderEngine {
 	inline VulkanGraphicsPipelineWrapper* gpVulkanGraphicsPipelineWrapper{};
 	inline VulkanSwapchainWrapper* gpVulkanSwapchainWrapper{};
 	inline VulkanDeviceLocalMemory* gpVulkanDeviceLocalMemory{};
+	inline uint32_t gHitmanIndex{};
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX);

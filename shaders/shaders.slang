@@ -4,7 +4,7 @@ struct VertexIn {
 };
 
 struct VertexOut {
-    float4 mPosition;
+    float4 mPosition : SV_Position;
     float4 mColor;
 };
 
