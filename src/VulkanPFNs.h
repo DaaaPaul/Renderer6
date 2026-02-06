@@ -62,9 +62,13 @@ namespace VulkanPFNs {
 	inline PFN_vkDestroyShaderModule gpVkDestroyShaderModule{};
 	inline PFN_vkAcquireNextImageKHR gpVkAcquireNextImageKHR{};
 	inline PFN_vkCmdPipelineBarrier2 gpVkCmdPipelineBarrier2{};
+	inline PFN_vkCmdBindPipeline gpVkCmdBindPipeline{};
 	inline PFN_vkCmdBindIndexBuffer gpVkCmdBindIndexBuffer{};
 	inline PFN_vkCmdBindVertexBuffers gpVkCmdBindVertexBuffers{};
 	inline PFN_vkCmdSetViewport gpVkCmdSetViewport{};
 	inline PFN_vkCmdSetScissor gpVkCmdSetScissor{};
 	inline PFN_vkCmdBeginRendering gpVkCmdBeginRendering{};
+	inline PFN_vkCmdEndRendering gpVkCmdEndRendering{};
+	inline PFN_vkCmdDrawIndexed gpVkCmdDrawIndexed{};
+	inline PFN_vkQueuePresentKHR gpVkQueuePresentKHR{};
 }

@@ -213,6 +213,9 @@ namespace VulkanPFNs {
 		gpVkCmdPipelineBarrier2 = reinterpret_cast<PFN_vkCmdPipelineBarrier2>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdPipelineBarrier2"));
 		CHECK_NULLPTR(gpVkCmdPipelineBarrier2, "Failed to load gpVkCmdPipelineBarrier2")
 
+		gpVkCmdBindPipeline = reinterpret_cast<PFN_vkCmdBindPipeline>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBindPipeline"));
+		CHECK_NULLPTR(gpVkCmdBindPipeline, "Failed to load gpVkCmdBindPipeline")
+
 		gpVkCmdBindIndexBuffer = reinterpret_cast<PFN_vkCmdBindIndexBuffer>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBindIndexBuffer"));
 		CHECK_NULLPTR(gpVkCmdBindIndexBuffer, "Failed to load gpVkCmdBindIndexBuffer")
 
@@ -227,5 +230,15 @@ namespace VulkanPFNs {
 
 		gpVkCmdBeginRendering = reinterpret_cast<PFN_vkCmdBeginRendering>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdBeginRendering"));
 		CHECK_NULLPTR(gpVkCmdBeginRendering, "Failed to load gpVkCmdBeginRendering")
+
+		gpVkCmdEndRendering = reinterpret_cast<PFN_vkCmdEndRendering>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdEndRendering"));
+		CHECK_NULLPTR(gpVkCmdEndRendering, "Failed to load gpVkCmdEndRendering")
+		
+		gpVkCmdDrawIndexed = reinterpret_cast<PFN_vkCmdDrawIndexed>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkCmdDrawIndexed"));
+		CHECK_NULLPTR(gpVkCmdDrawIndexed, "Failed to load gpVkCmdDrawIndexed")
+
+		gpVkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(gpVkGetInstanceProcAddr(gpInstanceUsed, "vkQueuePresentKHR"));
+		CHECK_NULLPTR(gpVkQueuePresentKHR, "Failed to load gpVkQueuePresentKHR")
+
     }
 }

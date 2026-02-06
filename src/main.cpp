@@ -61,10 +61,11 @@ int main() {
 
 		VulkanGraphicsPipelineWrapper vulkanGraphicsPipelineWrapper(&vulkanDevicesWrapper, VulkanGraphicsPipelineWrapper::getConstructParameters());
 
-		RenderEngine::gpGlfwWindowUsed = glfwWindowWrapper.mpGlfwWindow;
-		RenderEngine::gpLogicalDeviceUsed = vulkanDevicesWrapper.mpLogicalDevice;
-		RenderEngine::gpSwapchainUsed = vulkanSwapchainWrapper.mpSwapchainKHR;
+		RenderEngine::gpVulkanGraphicsPipelineWrapper = &vulkanGraphicsPipelineWrapper;
+		RenderEngine::gpVulkanSwapchainWrapper = &vulkanSwapchainWrapper;
+		RenderEngine::gpVulkanDeviceLocalMemory = &vulkanDeviceLocalMemory;
 		RenderEngine::ImageKillhouse killhouse(vulkanSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.minImageCount, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice));
+		RenderEngine::fRenderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }
