@@ -48,7 +48,11 @@ int main() {
 			VulkanMemoryCommon::VulkanBufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
-		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, STAGING_BUFFERS_INFO);
+		const VkDescriptorSetLayoutBinding uniformBufferLayoutBinding{ TransformationMatrices::getTransformationMatricesDescriptorSetLayoutBinding(0) };
+		const std::vector<VulkanMemoryCommon::VulkanDescriptorSetInfo> DESCRIPTOR_SET_INFO{
+			VulkanMemoryCommon::VulkanDescriptorSetInfo(1, &uniformBufferLayoutBinding)
+		};
+		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, STAGING_BUFFERS_INFO, DESCRIPTOR_SET_INFO);
 		vulkanHostVisibleMemory.writeToBuffer(0, VERTICIES.data(), VERTICIES_SIZE);
 		vulkanHostVisibleMemory.writeToBuffer(1, INDICES.data(), INDICES_SIZE);
 
@@ -57,11 +61,7 @@ int main() {
 			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
 
-		const VkDescriptorSetLayoutBinding uniformBufferLayoutBinding{ TransformationMatrices::getTransformationMatricesDescriptorSetLayoutBinding(0) };
-		const std::vector<VulkanDeviceLocalMemory::VulkanDescriptorSetInfo> DESCRIPTOR_SET_INFO{
-			VulkanDeviceLocalMemory::VulkanDescriptorSetInfo(1, &uniformBufferLayoutBinding)
-		};
-		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO, DESCRIPTOR_SET_INFO);
+		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO, {});
 		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, VERTICIES_SIZE)});
 		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
 
