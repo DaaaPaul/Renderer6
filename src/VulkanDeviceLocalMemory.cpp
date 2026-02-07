@@ -1,13 +1,14 @@
 #include "VulkanDeviceLocalMemory.hpp"
 #include <iostream>
 
-VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN_VULKAN_HOST_VISIBLE_MEMORY_BUFFER_INFO) : 
+VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN_BUFFER_INFO, std::vector<VulkanDescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) : 
 	mpVulkanDevicesWrapper{ pGivenVulkanDevicesWrapper },
 	mpDeviceLocalMemory{},
+	mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
 	mDeviceLocalpBuffers{},
-	mDeviceLocalBufferInfos{ GIVEN_VULKAN_HOST_VISIBLE_MEMORY_BUFFER_INFO },
 	mBufferOffsets{},
-	mBufferSizes{} {
+	mBufferSizes{}, 
+	mDeviceLocalDescriptorSetInfos{ GIVEN_DESCRIPTOR_SET_INFOS } {
 
 	std::cout << "DEVICE LOCAL MEMORY PARAMETERS:\n";
 	for(VulkanMemoryCommon::VulkanBufferInfo const& INFO : mDeviceLocalBufferInfos) {
@@ -17,31 +18,61 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVul
 
 	std::cout << "Creating VulkanDeviceLocalMemory...\n";
 
-	const size_t BUFFERS_COUNT{ mDeviceLocalBufferInfos.size() };
+	// memory and buffer stuff
+	{
+		const size_t BUFFERS_COUNT{ mDeviceLocalBufferInfos.size() };
 
-	// create the buffers themselves with their memory requirements info
-	mDeviceLocalpBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
-	mBufferSizes.resize(BUFFERS_COUNT, 0);
-	std::vector<VkMemoryRequirements> deviceLocalBuffersMemRequirements(BUFFERS_COUNT, {});
-	for (int i = 0; i < BUFFERS_COUNT; i++) {
-		mDeviceLocalpBuffers[i] = VulkanMemoryCommon::fCreateBuffer(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalBufferInfos[i]);
-		VulkanPFNs::gpVkGetBufferMemoryRequirements(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], &deviceLocalBuffersMemRequirements[i]);
-		mBufferSizes[i] = deviceLocalBuffersMemRequirements[i].size;
+		// create the buffers themselves with their memory requirements info
+		mDeviceLocalpBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
+		mBufferSizes.resize(BUFFERS_COUNT, 0);
+		std::vector<VkMemoryRequirements> deviceLocalBuffersMemRequirements(BUFFERS_COUNT, {});
+		for (int i = 0; i < BUFFERS_COUNT; i++) {
+			mDeviceLocalpBuffers[i] = VulkanMemoryCommon::fCreateBuffer(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalBufferInfos[i]);
+			VulkanPFNs::gpVkGetBufferMemoryRequirements(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], &deviceLocalBuffersMemRequirements[i]);
+			mBufferSizes[i] = deviceLocalBuffersMemRequirements[i].size;
+		}
+
+		// create the memory
+		VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+			.allocationSize = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).first,
+			.memoryTypeIndex = VulkanMemoryCommon::fGetMemoryTypeIndex(mpVulkanDevicesWrapper->mpPhysicalDevice, deviceLocalBuffersMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+		};
+		VulkanPFNs::gpVkAllocateMemory(mpVulkanDevicesWrapper->mpLogicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &mpDeviceLocalMemory);
+
+		// bind buffers
+		mBufferOffsets = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).second;
+		for(int i = 0; i < BUFFERS_COUNT; i++) {
+			VulkanPFNs::gpVkBindBufferMemory(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], mpDeviceLocalMemory, mBufferOffsets[i]);
+		}
 	}
 
-	// create the memory
-	VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
-		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-		.allocationSize = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).first,
-		.memoryTypeIndex = VulkanMemoryCommon::fGetMemoryTypeIndex(mpVulkanDevicesWrapper->mpPhysicalDevice, deviceLocalBuffersMemRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-	};
-	VulkanPFNs::gpVkAllocateMemory(mpVulkanDevicesWrapper->mpLogicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &mpDeviceLocalMemory);
+	// descriptor set stuff
+	{
+		// create pool sizes
+		std::vector<VkDescriptorPoolSize> poolSizes{};
+		for(VulkanDescriptorSetInfo const& CUSTOM_SET_INFO : mDeviceLocalDescriptorSetInfos) {
+			VkDescriptorSetLayoutBinding const* pBINDING{ CUSTOM_SET_INFO.mpLAYOUT_BINDINGS };
 
-	// bind buffers
-	mBufferOffsets = VulkanMemoryCommon::fGetMemoryAllocationSizeAndOffsets(deviceLocalBuffersMemRequirements).second;
-	for(int i = 0; i < BUFFERS_COUNT; i++) {
-		VulkanPFNs::gpVkBindBufferMemory(mpVulkanDevicesWrapper->mpLogicalDevice, mDeviceLocalpBuffers[i], mpDeviceLocalMemory, mBufferOffsets[i]);
+			for(int i = 0; i < CUSTOM_SET_INFO.mBINDINGS_COUNT; i++) {
+				poolSizes.emplace_back(pBINDING[i].descriptorType, pBINDING[i].descriptorCount);
+			}
+		}
+
+		// create descriptor pool
+		const VkDescriptorPoolCreateInfo DESCRIPTOR_POOL_INFO{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+			.maxSets = static_cast<uint32_t>(mDeviceLocalDescriptorSetInfos.size()),
+			.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+			.pPoolSizes = poolSizes.data(),
+		};
+		CHECK_VK_SUCCESS(
+			VulkanPFNs::gpVkCreateDescriptorPool(mpVulkanDevicesWrapper->mpLogicalDevice, &DESCRIPTOR_POOL_INFO, nullptr, &mpDescriptorPool),
+			"Failed to create descriptor pool"
+		)
 	}
+
 
 	std::cout << "Created VulkanDeviceLocalMemory\n";
 }
@@ -55,6 +86,32 @@ VulkanDeviceLocalMemory::~VulkanDeviceLocalMemory() {
 	}
 	
 	std::cout << "Destroyed VulkanDeviceLocalMemory\n";
+}
+
+void VulkanDeviceLocalMemory::createDescriptorSet(VulkanDescriptorSetInfo const& INFO, size_t const& INDEX) {
+	const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+		.flags = 0,
+		.bindingCount = INFO.mBINDINGS_COUNT,
+		.pBindings = INFO.mpLAYOUT_BINDINGS,
+	};
+
+	CHECK_VK_SUCCESS(
+		VulkanPFNs::gpVkCreateDescriptorSetLayout(mpVulkanDevicesWrapper->mpLogicalDevice, &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &mDescriptorpSetLayouts[INDEX]),
+		"Failed to create descriptor set layout"
+	)
+
+	const VkDescriptorSetAllocateInfo DESCRIPTOR_SET_ALLOCATE_INFO{
+		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+		.descriptorPool = mpDescriptorPool,
+		.descriptorSetCount = 1,
+		.pSetLayouts = &mDescriptorpSetLayouts[INDEX],
+	};
+
+	CHECK_VK_SUCCESS(
+		VulkanPFNs::gpVkAllocateDescriptorSets(mpVulkanDevicesWrapper->mpLogicalDevice, &DESCRIPTOR_SET_ALLOCATE_INFO, &mDescriptorpSets[INDEX]),
+		"Failed to create descriptor set"
+	)
 }
 
 void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {

@@ -74,4 +74,7 @@ namespace VulkanPFNs {
 	inline PFN_vkResetFences gpVkResetFences{};
 	inline PFN_vkDeviceWaitIdle gpVkDeviceWaitIdle{};
 	inline PFN_vkResetCommandBuffer gpVkResetCommandBuffer{};
+	inline PFN_vkCreateDescriptorPool gpVkCreateDescriptorPool{};
+	inline PFN_vkCreateDescriptorSetLayout gpVkCreateDescriptorSetLayout{};
+	inline PFN_vkAllocateDescriptorSets gpVkAllocateDescriptorSets{};
 }

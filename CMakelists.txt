@@ -24,6 +24,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TransformationMatrices.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/TransformationMatrices.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.cpp
