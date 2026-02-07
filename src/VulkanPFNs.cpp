@@ -140,5 +140,6 @@ namespace VulkanPFNs {
 		LOAD_INSTANCE_PFN(DestroyDescriptorSetLayout)
 		LOAD_INSTANCE_PFN(DestroyDescriptorPool)
 		LOAD_INSTANCE_PFN(UpdateDescriptorSets)
+		LOAD_INSTANCE_PFN(CmdBindDescriptorSets)
     }
 }

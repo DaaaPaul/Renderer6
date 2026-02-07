@@ -8,3 +8,5 @@
 - bro add that cool pointer feature thing to print the features !KIND OF DONE!
 
 - vkGetPhysicalDeviceSurfaceSupportKHR???
+- remove vulkan name put in namespace
+- add print parameters

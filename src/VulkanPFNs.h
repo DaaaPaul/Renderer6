@@ -81,4 +81,5 @@ namespace VulkanPFNs {
 	inline PFN_vkDestroyDescriptorSetLayout gpVkDestroyDescriptorSetLayout{};
 	inline PFN_vkDestroyDescriptorPool gpVkDestroyDescriptorPool{};
 	inline PFN_vkUpdateDescriptorSets gpVkUpdateDescriptorSets{};
+	inline PFN_vkCmdBindDescriptorSets gpVkCmdBindDescriptorSets{};
 }

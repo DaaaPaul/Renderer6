@@ -34,7 +34,7 @@ VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapper(VulkanDevicesWrappe
 		mParameters.mDynamicState.pDynamicStates = mParameters.mDYNAMIC_STATES.data();
 
 		CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkCreatePipelineLayout(mpVulkanDevicesWrapper->mpLogicalDevice, &mParameters.mPIPELINE_LAYOUT_CREATE_INFO, nullptr, &mParameters.mpPipelineLayout),
+		VulkanPFNs::gpVkCreatePipelineLayout(mpVulkanDevicesWrapper->mpLogicalDevice, &mParameters.mPIPELINE_LAYOUT_INFO, nullptr, &mParameters.mpPipelineLayout),
 		"Failed to create pipeline layout"
 		)
 
@@ -91,7 +91,7 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 	VulkanPFNs::gpVkDestroyPipeline(mpVulkanDevicesWrapper->mpLogicalDevice, mpGraphicsPipeline, nullptr);
 }
 
-[[nodiscard]] VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapperConstructInfo VulkanGraphicsPipelineWrapper::getConstructParameters() {
+[[nodiscard]] VulkanGraphicsPipelineWrapper::VulkanGraphicsPipelineWrapperConstructInfo VulkanGraphicsPipelineWrapper::getConstructParameters(VkPipelineLayoutCreateInfo const& PIPLINE_LAYOUT_INFO) {
 	VkGraphicsPipelineCreateInfo pipelineCreateInfo{
 		.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 		// REROUTE EVERYTHING NEEDED
@@ -211,10 +211,7 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 	};
 
 	// UNUSED CURRENTLY
-	const VkPipelineLayoutCreateInfo PIPELINE_LAYOUT_CREATE_INFO{
-		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-	};
-	VkPipelineLayout pipelineLayout{}; // creation needed
+	VkPipelineLayout returnpPipelineLayout{}; // creation needed
 
 	return VulkanGraphicsPipelineWrapperConstructInfo{
 		pipelineCreateInfo,
@@ -237,7 +234,7 @@ VulkanGraphicsPipelineWrapper::~VulkanGraphicsPipelineWrapper() {
 		colorBlend,
 		DYNAMIC_STATES,
 		dynamicState,
-		PIPELINE_LAYOUT_CREATE_INFO,
-		pipelineLayout
+		PIPLINE_LAYOUT_INFO,
+		returnpPipelineLayout
 	};
 }

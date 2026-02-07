@@ -1,7 +1,7 @@
 #include "VulkanDeviceLocalMemory.hpp"
 #include <iostream>
 
-VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN_BUFFER_INFO, std::vector<VulkanMemoryCommon::VulkanDescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) : 
+VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<VulkanMemoryCommon::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) : 
 	mpVulkanDevicesWrapper{ pGivenVulkanDevicesWrapper },
 	mpDeviceLocalMemory{},
 	mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
@@ -14,7 +14,7 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVul
 	mDescriptorpSets{} {
 
 	std::cout << "DEVICE LOCAL MEMORY PARAMETERS:\n";
-	for(VulkanMemoryCommon::VulkanBufferInfo const& INFO : mDeviceLocalBufferInfos) {
+	for(VulkanMemoryCommon::BufferInfo const& INFO : mDeviceLocalBufferInfos) {
 		std::cout << "\tsize: " << INFO.mBUFFER_SIZE << "\n";
 		std::cout << "\tusage: " << INFO.mBUFFER_USAGE << "\n";
 	}
@@ -173,7 +173,7 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 	VulkanPFNs::gpVkDestroyCommandPool(mpVulkanDevicesWrapper->mpLogicalDevice, tempCommandPool, nullptr);
 }
 
-void VulkanDeviceLocalMemory::createDescriptorSet(VulkanMemoryCommon::VulkanDescriptorSetInfo const& INFO, size_t const& INDEX) {
+void VulkanDeviceLocalMemory::createDescriptorSet(VulkanMemoryCommon::DescriptorSetInfo const& INFO, size_t const& INDEX) {
 	const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 		.flags = 0,
@@ -220,4 +220,10 @@ void VulkanDeviceLocalMemory::updateDescriptorSet(size_t const& SET_INDEX, uint3
 	};
 
 	VulkanPFNs::gpVkUpdateDescriptorSets(mpVulkanDevicesWrapper->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
+
+	std::cout << "Set " << SET_INDEX << " binding " << SET_BINDING_NUM << " now describes buffer(s) ";
+	for(size_t const& INDEX : BUFFER_INDICES) {
+		std::cout << INDEX << " ";
+	}
+	std::cout << "\n";
 }

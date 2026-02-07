@@ -44,32 +44,40 @@ int main() {
 		};
 		const VkDeviceSize INDICES_SIZE{ sizeof(uint32_t) * INDICES.size() };
 
-		const std::vector<VulkanMemoryCommon::VulkanBufferInfo> STAGING_BUFFERS_INFO{
-			VulkanMemoryCommon::VulkanBufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
-			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+		const std::vector<VulkanMemoryCommon::BufferInfo> HOST_VISIBLE_BUFFERS_INFO{
+			VulkanMemoryCommon::BufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+			VulkanMemoryCommon::BufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+			VulkanMemoryCommon::BufferInfo(sizeof(TransformationMatrices), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice))
 		};
 		const VkDescriptorSetLayoutBinding uniformBufferLayoutBinding{ TransformationMatrices::getTransformationMatricesDescriptorSetLayoutBinding(0) };
-		const std::vector<VulkanMemoryCommon::VulkanDescriptorSetInfo> DESCRIPTOR_SET_INFO{
-			VulkanMemoryCommon::VulkanDescriptorSetInfo(1, &uniformBufferLayoutBinding)
+		const std::vector<VulkanMemoryCommon::DescriptorSetInfo> DESCRIPTOR_SET_INFO{
+			VulkanMemoryCommon::DescriptorSetInfo(1, &uniformBufferLayoutBinding)
 		};
-		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, STAGING_BUFFERS_INFO, DESCRIPTOR_SET_INFO);
+		VulkanHostVisibleMemory vulkanHostVisibleMemory(&vulkanDevicesWrapper, HOST_VISIBLE_BUFFERS_INFO, DESCRIPTOR_SET_INFO);
 		vulkanHostVisibleMemory.writeToBuffer(0, VERTICIES.data(), VERTICIES_SIZE);
 		vulkanHostVisibleMemory.writeToBuffer(1, INDICES.data(), INDICES_SIZE);
+		vulkanHostVisibleMemory.updateDescriptorSet(0, 0, {2});
 
-		const std::vector<VulkanMemoryCommon::VulkanBufferInfo> VERTEX_AND_INDICE_BUFFERS_INFO{
-			VulkanMemoryCommon::VulkanBufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
-			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+		const std::vector<VulkanMemoryCommon::BufferInfo> DEVICE_LOCAL_BUFFERS_INFO{
+			VulkanMemoryCommon::BufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
+			VulkanMemoryCommon::BufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
 
-		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO, {});
+		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, DEVICE_LOCAL_BUFFERS_INFO, {});
 		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, VERTICIES_SIZE)});
 		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
 
-		VulkanGraphicsPipelineWrapper vulkanGraphicsPipelineWrapper(&vulkanDevicesWrapper, VulkanGraphicsPipelineWrapper::getConstructParameters());
+		const VkPipelineLayoutCreateInfo PIPELINE_LAYOUT_INFO{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+			.setLayoutCount = 1,
+			.pSetLayouts = &vulkanHostVisibleMemory.mDescriptorpSetLayouts[0],
+		};
+		VulkanGraphicsPipelineWrapper vulkanGraphicsPipelineWrapper(&vulkanDevicesWrapper, VulkanGraphicsPipelineWrapper::getConstructParameters(PIPELINE_LAYOUT_INFO));
 
 		RenderEngine::gpVulkanGraphicsPipelineWrapper = &vulkanGraphicsPipelineWrapper;
 		RenderEngine::gpVulkanSwapchainWrapper = &vulkanSwapchainWrapper;
 		RenderEngine::gpVulkanDeviceLocalMemory = &vulkanDeviceLocalMemory;
+		RenderEngine::gpVulkanHostVisibleMemory = &vulkanHostVisibleMemory;
 		RenderEngine::ImageKillhouse killhouse(vulkanSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.minImageCount, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice));
 		RenderEngine::fRenderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {

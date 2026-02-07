@@ -2,6 +2,7 @@
 
 #include "VulkanDevicesWrapper.hpp"
 #include "VulkanSwapchainWrapper.hpp"
+#include "VulkanHostVisibleMemory.hpp"
 #include "VulkanDeviceLocalMemory.hpp"
 #include "VulkanGraphicsPipelineWrapper.hpp"
 #include "VulkanPFNs.h"
@@ -32,6 +33,7 @@ namespace RenderEngine {
 
 	inline VulkanGraphicsPipelineWrapper* gpVulkanGraphicsPipelineWrapper{};
 	inline VulkanSwapchainWrapper* gpVulkanSwapchainWrapper{};
+	inline VulkanHostVisibleMemory* gpVulkanHostVisibleMemory{};
 	inline VulkanDeviceLocalMemory* gpVulkanDeviceLocalMemory{};
 	inline uint32_t gHitmanIndex{};
 
@@ -44,7 +46,8 @@ namespace RenderEngine {
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);
 	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
-	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse);
 	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT);
+	void fWriteToUniformBuffer();
+	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse);
 	void fRenderLoop(ImageKillhouse& killhouse);
 }

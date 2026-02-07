@@ -1,6 +1,8 @@
 #pragma once
 
 #include "VulkanDevicesWrapper.hpp"
+#include "VulkanHostVisibleMemory.hpp"
+#include "VulkanDeviceLocalMemory.hpp"
 #include "Common.h"
 
 struct VulkanGraphicsPipelineWrapper {
@@ -25,7 +27,7 @@ struct VulkanGraphicsPipelineWrapper {
 		VkPipelineColorBlendStateCreateInfo mColorBlend{};
 		const std::vector<VkDynamicState> mDYNAMIC_STATES{};
 		VkPipelineDynamicStateCreateInfo mDynamicState{};
-		const VkPipelineLayoutCreateInfo mPIPELINE_LAYOUT_CREATE_INFO{};
+		const VkPipelineLayoutCreateInfo mPIPELINE_LAYOUT_INFO{};
 		VkPipelineLayout mpPipelineLayout{};
     };
 
@@ -33,7 +35,7 @@ struct VulkanGraphicsPipelineWrapper {
 	VkPipeline mpGraphicsPipeline{};
 	VulkanGraphicsPipelineWrapperConstructInfo mParameters{};
 
-    [[nodiscard]] static VulkanGraphicsPipelineWrapperConstructInfo getConstructParameters();
+    [[nodiscard]] static VulkanGraphicsPipelineWrapperConstructInfo getConstructParameters(VkPipelineLayoutCreateInfo const& PIPLINE_LAYOUT_INFO);
 
     explicit VulkanGraphicsPipelineWrapper(VulkanDevicesWrapper* givenVulkanDevicesWrapper, VulkanGraphicsPipelineWrapperConstructInfo const& GIVEN_VULKAN_GRAPHICS_PIPELINE_WRAPPER_CONSTRUCT_INFO);
     ~VulkanGraphicsPipelineWrapper();

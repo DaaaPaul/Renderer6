@@ -1,5 +1,6 @@
 #include <iostream>
 #include "RenderEngine.h"
+#include "TransformationMatrices.hpp"
 
 namespace RenderEngine {
 	ImageHitman::ImageHitman(VkCommandPool pool) :
@@ -200,6 +201,7 @@ namespace RenderEngine {
 		constexpr VkDeviceSize ZERO_OFFSET{ 0 };
 		VulkanPFNs::gpVkCmdBindVertexBuffers(commandBuffer, 0, 1, &gpVulkanDeviceLocalMemory->mDeviceLocalpBuffers[0], &ZERO_OFFSET);
 		VulkanPFNs::gpVkCmdBindIndexBuffer(commandBuffer, gpVulkanDeviceLocalMemory->mDeviceLocalpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
+		VulkanPFNs::gpVkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gpVulkanGraphicsPipelineWrapper->mParameters.mpPipelineLayout, 0, 1, gpVulkanHostVisibleMemory->mDescriptorpSets.data(), 0, nullptr);
 
 		// undefined/unknown layout -> color attachment output optimal
 		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -280,6 +282,16 @@ namespace RenderEngine {
 		return resized;
 	}
 
+	void fWriteToUniformBuffer() {
+		const TransformationMatrices TRANSFORM(
+			glm::mat4{glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
+			glm::mat4{1.0f},
+			glm::mat4{1.0f}
+		);
+
+		gpVulkanHostVisibleMemory->writeToBuffer(2, &TRANSFORM, sizeof(TransformationMatrices));
+	}
+
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
 		ImageHitman& hitmanUsed{ killhouse.mHitmen[gHitmanIndex] };
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
@@ -296,6 +308,7 @@ namespace RenderEngine {
 		VulkanPFNs::gpVkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
+		fWriteToUniformBuffer();
 		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
 		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
 		if(fRecreateSwapchainIfNecessary(PRESENT_RESULT)) {

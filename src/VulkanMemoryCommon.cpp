@@ -2,7 +2,7 @@
 #include "Common.h"
 
 namespace VulkanMemoryCommon {
-	[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, VulkanBufferInfo const& INFO) {
+	[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO) {
 		VkBufferCreateInfo bufferInfo{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.size = INFO.mBUFFER_SIZE,
@@ -56,12 +56,12 @@ namespace VulkanMemoryCommon {
 		return memoryTypeIndexReturn;
 	}
 
-	[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkDevice pLogicalDevice, std::vector<VulkanDescriptorSetInfo> const& INFO) {
+	[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
 		VkDescriptorPool pReturnDescriptorPool{};
 		
 		// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
 		std::vector<VkDescriptorPoolSize> poolSizes{};
-		for(VulkanMemoryCommon::VulkanDescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
+		for(VulkanMemoryCommon::DescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
 			VkDescriptorSetLayoutBinding const* pBINDING{ CUSTOM_SET_INFO.mpLAYOUT_BINDINGS };
 
 			for(int i = 0; i < CUSTOM_SET_INFO.mBINDINGS_COUNT; i++) {
