@@ -49,6 +49,9 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVul
 
 	// descriptor set stuff
 	{
+		mDescriptorpSetLayouts.resize(mDeviceLocalDescriptorSetInfos.size(), VK_NULL_HANDLE);
+		mDescriptorpSets.resize(mDeviceLocalDescriptorSetInfos.size(), VK_NULL_HANDLE);
+
 		// create pool sizes
 		std::vector<VkDescriptorPoolSize> poolSizes{};
 		for(VulkanDescriptorSetInfo const& CUSTOM_SET_INFO : mDeviceLocalDescriptorSetInfos) {
@@ -71,8 +74,13 @@ VulkanDeviceLocalMemory::VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVul
 			VulkanPFNs::gpVkCreateDescriptorPool(mpVulkanDevicesWrapper->mpLogicalDevice, &DESCRIPTOR_POOL_INFO, nullptr, &mpDescriptorPool),
 			"Failed to create descriptor pool"
 		)
-	}
 
+		// create the descriptor sets
+		for(size_t i = 0; i < mDeviceLocalDescriptorSetInfos.size(); i++) {
+			createDescriptorSet(mDeviceLocalDescriptorSetInfos[i], i);
+			std::cout << "Created descriptor set layout and set\n";
+		}
+	}
 
 	std::cout << "Created VulkanDeviceLocalMemory\n";
 }
@@ -84,6 +92,12 @@ VulkanDeviceLocalMemory::~VulkanDeviceLocalMemory() {
 	for(VkBuffer& buffer : mDeviceLocalpBuffers) {
 		VulkanPFNs::gpVkDestroyBuffer(mpVulkanDevicesWrapper->mpLogicalDevice, buffer, nullptr);
 	}
+
+	for(size_t i = 0; i < mDescriptorpSets.size(); i++) {
+		VulkanPFNs::gpVkFreeDescriptorSets(mpVulkanDevicesWrapper->mpLogicalDevice, mpDescriptorPool, 1, &mDescriptorpSets[i]);
+		VulkanPFNs::gpVkDestroyDescriptorSetLayout(mpVulkanDevicesWrapper->mpLogicalDevice, mDescriptorpSetLayouts[i], nullptr);
+	}
+	VulkanPFNs::gpVkDestroyDescriptorPool(mpVulkanDevicesWrapper->mpLogicalDevice, mpDescriptorPool, nullptr);
 	
 	std::cout << "Destroyed VulkanDeviceLocalMemory\n";
 }
@@ -198,4 +212,27 @@ void VulkanDeviceLocalMemory::copyToBuffer(size_t const& INDEX, VkBuffer const& 
 	VulkanPFNs::gpVkDestroyFence(mpVulkanDevicesWrapper->mpLogicalDevice, copyCommandDone, nullptr);
 	VulkanPFNs::gpVkFreeCommandBuffers(mpVulkanDevicesWrapper->mpLogicalDevice, tempCommandPool, 1, &tempCommandBuffer);
 	VulkanPFNs::gpVkDestroyCommandPool(mpVulkanDevicesWrapper->mpLogicalDevice, tempCommandPool, nullptr);
+}
+
+void VulkanDeviceLocalMemory::updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
+	if(BUFFER_INDICES.size() != mDeviceLocalDescriptorSetInfos[SET_INDEX].mpLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorCount) {
+		throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
+	}
+	
+	std::vector<VkDescriptorBufferInfo> toWriteBuffers{};
+	for(size_t const& BUFFER_INDEX : BUFFER_INDICES) {
+		toWriteBuffers.emplace_back(mDeviceLocalpBuffers[BUFFER_INDEX], 0, VK_WHOLE_SIZE);
+	}
+	
+	const VkWriteDescriptorSet WRITE_INFO{
+		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+		.dstSet = mDescriptorpSets[SET_INDEX],
+		.dstBinding = SET_BINDING_NUM,
+		.dstArrayElement = 0,
+		.descriptorCount = mDeviceLocalDescriptorSetInfos[SET_INDEX].mpLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorCount,
+		.descriptorType = mDeviceLocalDescriptorSetInfos[SET_INDEX].mpLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorType,
+		.pBufferInfo = toWriteBuffers.data()
+	};
+
+	VulkanPFNs::gpVkUpdateDescriptorSets(mpVulkanDevicesWrapper->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
 }

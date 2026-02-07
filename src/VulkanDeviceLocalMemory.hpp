@@ -24,6 +24,7 @@ struct VulkanDeviceLocalMemory {
 
 	void createDescriptorSet(VulkanDescriptorSetInfo const& INFO, size_t const& INDEX);
 	void copyToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS);
+	void updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
 	explicit VulkanDeviceLocalMemory(VulkanDevicesWrapper* pGivenVulkanDevicesWrapper, std::vector<VulkanMemoryCommon::VulkanBufferInfo> const& GIVEN__BUFFER_INFO, std::vector<VulkanDescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS);
 	~VulkanDeviceLocalMemory();

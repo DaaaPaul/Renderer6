@@ -133,9 +133,12 @@ namespace VulkanPFNs {
 		LOAD_INSTANCE_PFN(ResetFences)
 		LOAD_INSTANCE_PFN(DeviceWaitIdle)
 		LOAD_INSTANCE_PFN(ResetCommandBuffer)
+		LOAD_INSTANCE_PFN(CreateDescriptorPool)
 		LOAD_INSTANCE_PFN(CreateDescriptorSetLayout)
 		LOAD_INSTANCE_PFN(AllocateDescriptorSets)
-		LOAD_INSTANCE_PFN(CreateDescriptorPool)
-		
+		LOAD_INSTANCE_PFN(FreeDescriptorSets)
+		LOAD_INSTANCE_PFN(DestroyDescriptorSetLayout)
+		LOAD_INSTANCE_PFN(DestroyDescriptorPool)
+		LOAD_INSTANCE_PFN(UpdateDescriptorSets)
     }
 }

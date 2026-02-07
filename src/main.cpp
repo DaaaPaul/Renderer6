@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "VulkanPFNs.h"
 #include "Vertex.hpp"
+#include "TransformationMatrices.hpp"
 #include "GlfwWindowWrapper.hpp"
 #include "VulkanBackendWrapper.hpp"
 #include "VulkanDevicesWrapper.hpp"
@@ -55,7 +56,12 @@ int main() {
 			VulkanMemoryCommon::VulkanBufferInfo(VERTICIES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 			VulkanMemoryCommon::VulkanBufferInfo(INDICES_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(vulkanDevicesWrapper.mpPhysicalDevice)),
 		};
-		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO);
+
+		const VkDescriptorSetLayoutBinding uniformBufferLayoutBinding{ TransformationMatrices::getTransformationMatricesDescriptorSetLayoutBinding(0) };
+		const std::vector<VulkanDeviceLocalMemory::VulkanDescriptorSetInfo> DESCRIPTOR_SET_INFO{
+			VulkanDeviceLocalMemory::VulkanDescriptorSetInfo(1, &uniformBufferLayoutBinding)
+		};
+		VulkanDeviceLocalMemory vulkanDeviceLocalMemory(&vulkanDevicesWrapper, VERTEX_AND_INDICE_BUFFERS_INFO, DESCRIPTOR_SET_INFO);
 		vulkanDeviceLocalMemory.copyToBuffer(0, vulkanHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, VERTICIES_SIZE)});
 		vulkanDeviceLocalMemory.copyToBuffer(1, vulkanHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, INDICES_SIZE)});
 
