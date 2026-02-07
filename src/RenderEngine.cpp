@@ -87,6 +87,16 @@ namespace RenderEngine {
 		VulkanPFNs::gpVkDestroyCommandPool(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpCommandPoolUsed, nullptr);
 	}
 
+	void ImageKillhouse::recreateHitmen() {
+		const size_t PREVIOUS_HITMEN_COUNT{ mHitmen.size() };
+
+		mHitmen.clear();
+		mHitmen.reserve(PREVIOUS_HITMEN_COUNT);
+		for(int i = 0; i < PREVIOUS_HITMEN_COUNT; i++) {
+			mHitmen.emplace_back(mpCommandPoolUsed);
+		}
+	}
+
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages() {
 		uint32_t swapchainImageCount{};
 		VulkanPFNs::gpVkGetSwapchainImagesKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, &swapchainImageCount, nullptr);
@@ -222,12 +232,9 @@ namespace RenderEngine {
 		VulkanPFNs::gpVkDestroyImageView(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, imageView, nullptr);
 	};
 
-	void fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
-		uint32_t acquiredImageIndex{ UINT32_MAX };
-
-		VulkanPFNs::gpVkAcquireNextImageKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &acquiredImageIndex);
-
-		nextImageIndex = acquiredImageIndex;
+	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
+		const VkResult RESULT = VulkanPFNs::gpVkAcquireNextImageKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
+		return RESULT;
 	}
 
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman) {
@@ -245,7 +252,7 @@ namespace RenderEngine {
 		VulkanPFNs::gpVkQueueSubmit(queue, 1, &DRAW_COMMANDS_SUBMIT_INFO, hitman.mpOneAtATime);
 	}
 
-	void fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman) {
+	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman) {
 		const VkPresentInfoKHR QUEUE_PRESENT_INFO{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.waitSemaphoreCount = 1,
@@ -254,7 +261,23 @@ namespace RenderEngine {
 			.pSwapchains = &gpVulkanSwapchainWrapper->mpSwapchainKHR,
 			.pImageIndices = &SWAPCHAIN_IMAGE_INDEX,
 		};
-		VulkanPFNs::gpVkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
+		return VulkanPFNs::gpVkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
+	}
+
+	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT) {
+		bool resized{ false };
+
+		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mFrameBufferResizedAlert) {
+			VulkanPFNs::gpVkDeviceWaitIdle(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice);
+			gpVulkanSwapchainWrapper->recreateThyself();
+			gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mFrameBufferResizedAlert = false;
+
+			resized = true;
+		} else if(RESULT != VK_SUCCESS) {
+			throw std::runtime_error("Rendering operation did not return VK_SUCCESS nor VK_ERROR_OUT_OF_DATE_KHR");
+		}
+
+		return resized;
 	}
 
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
@@ -262,22 +285,41 @@ namespace RenderEngine {
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
 
 		VulkanPFNs::gpVkWaitForFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
-		fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex);
-
-		std::cout << "Hitman index: " << gHitmanIndex << "\n";
-		std::cout << "Image index: " << nextSwapchainImageIndex << "\n";
+		const VkResult ACQUIRE_RESULT{ fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex) };
+		if(fRecreateSwapchainIfNecessary(ACQUIRE_RESULT)) {
+			killhouse.recreateHitmen();
+			gHitmanIndex = 0;
+			return;
+		}
 
 		VulkanPFNs::gpVkResetFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
 		VulkanPFNs::gpVkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
 		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
-		fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed);
+		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
+		if(fRecreateSwapchainIfNecessary(PRESENT_RESULT)) {
+			killhouse.recreateHitmen();
+			gHitmanIndex = 0;
+			return;
+		}
 
 		gHitmanIndex = (gHitmanIndex + 1) % 4;
 	}
 
 	void fRenderLoop(ImageKillhouse& killhouse) {
+		uint16_t nextSecondMark{ 1 };
+		uint16_t accumulatedFramesCount{ 0 };
+
+		auto incrementFramesCountAndCheck = [&accumulatedFramesCount, &nextSecondMark]() -> void {
+			accumulatedFramesCount++;
+			if(glfwGetTime() > nextSecondMark) {
+				nextSecondMark++;
+				std::cout << "Frames last second: " << accumulatedFramesCount << '\n';
+				accumulatedFramesCount = 0;
+			}
+		};
+
 		while(!glfwWindowShouldClose(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow)) {
 			glfwPollEvents();
 			if(glfwGetKey(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -285,6 +327,7 @@ namespace RenderEngine {
 			}
 
 			fRunThroughNextSwapchainImage(killhouse);
+			incrementFramesCountAndCheck();
 		}
 
 		VulkanPFNs::gpVkDeviceWaitIdle(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice);

@@ -14,7 +14,10 @@ struct GlfwWindowWrapper {
     };
 
     GLFWwindow* mpGlfwWindow{};
+	bool mFrameBufferResizedAlert{};
     const GlfwWindowWrapperParameters mPARAMETERS{};
+
+	static void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
 
     constexpr static GlfwWindowWrapperParameters getConstructParameters() noexcept { return GlfwWindowWrapperParameters(800, 600, "Renderer6"); }
     [[nodiscard]] static std::vector<const char*> getGlfwWindowExtensions();

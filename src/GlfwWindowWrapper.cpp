@@ -5,6 +5,7 @@
 
 GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PARAMETERS) :
     mpGlfwWindow{},
+	mFrameBufferResizedAlert{ false },
     mPARAMETERS{ GIVEN_PARAMETERS } {
     // print parameters
     std::cout << "SET WINDOW CREATE PARAMETERS:\n"
@@ -18,9 +19,10 @@ GlfwWindowWrapper::GlfwWindowWrapper(GlfwWindowWrapperParameters const& GIVEN_PA
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     mpGlfwWindow = glfwCreateWindow(mPARAMETERS.mWIDTH, mPARAMETERS.mHEIGHT, mPARAMETERS.mNAME, nullptr, nullptr);
+	glfwSetWindowUserPointer(mpGlfwWindow, this);
+	glfwSetFramebufferSizeCallback(mpGlfwWindow, framebufferResizeCallback);
 
     CHECK_NULLPTR(mpGlfwWindow, "glfwCreateWindow failed");
 
@@ -34,6 +36,11 @@ GlfwWindowWrapper::~GlfwWindowWrapper() {
     glfwTerminate();
 
     std::cout << "Destroyed GlfwWindowWrapper\n";
+}
+
+void GlfwWindowWrapper::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
+	GlfwWindowWrapper* pUser = reinterpret_cast<GlfwWindowWrapper*>(glfwGetWindowUserPointer(pGlfwWindow));
+	pUser->mFrameBufferResizedAlert = true;
 }
 
 [[nodiscard]] std::vector<const char*> GlfwWindowWrapper::getGlfwWindowExtensions() {

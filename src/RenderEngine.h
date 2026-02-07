@@ -15,6 +15,7 @@ namespace RenderEngine {
 		VkCommandPool mpCommandPool{};
 		VkCommandBuffer mDrawCommands{};
 
+
 		explicit ImageHitman(VkCommandPool pool);
 		~ImageHitman();
 	};
@@ -22,6 +23,8 @@ namespace RenderEngine {
 	struct ImageKillhouse {
 		VkCommandPool mpCommandPoolUsed{};
 		std::vector<ImageHitman> mHitmen{};
+
+		void recreateHitmen();
 
 		explicit ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX);
 		~ImageKillhouse();
@@ -38,9 +41,10 @@ namespace RenderEngine {
 		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
 		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 	void fRecordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX);
-	void fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
+	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);
-	void fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
+	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse);
+	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT);
 	void fRenderLoop(ImageKillhouse& killhouse);
 }

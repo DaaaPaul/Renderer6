@@ -6,7 +6,7 @@
 
 struct VulkanSwapchainWrapper {
     struct VulkanSwapchainWrapperConstructInfo {
-        const VkSurfaceKHR const mSURFACE_KHR{};
+        VkSurfaceKHR mpSurfaceKHR{};
         VkSwapchainCreateInfoKHR mSwapchainKHRCreateInfo{};
         const uint32_t mGRAPHICS_QUEUE_FAMILY_INDEX{};
     };
@@ -16,7 +16,9 @@ struct VulkanSwapchainWrapper {
     VkSurfaceKHR mpSurfaceKHR{};
     VulkanSwapchainWrapperConstructInfo mParameters{};
 
-    [[nodiscard]] static VulkanSwapchainWrapperConstructInfo getConstructParameters(VkInstance instance, VkPhysicalDevice physicalDevice, GLFWwindow* window);
+	void recreateThyself();
+
+    [[nodiscard]] static VulkanSwapchainWrapperConstructInfo getConstructParameters(VkInstance pInstance, VkPhysicalDevice pPhysicalDevice, GLFWwindow* pGlfwWindow);
     static void checkHaveVkFormatColorspace(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
     static void checkHavePresentModeKHR(VulkanSwapchainWrapper const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
 
