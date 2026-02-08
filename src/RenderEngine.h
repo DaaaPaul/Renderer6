@@ -5,6 +5,7 @@
 #include "VulkanHostVisibleMemory.hpp"
 #include "VulkanDeviceLocalMemory.hpp"
 #include "VulkanGraphicsPipelineWrapper.hpp"
+#include "TransformationMatrices.hpp"
 #include "VulkanPFNs.h"
 #include "Common.h"
 
@@ -36,6 +37,7 @@ namespace RenderEngine {
 	inline VulkanHostVisibleMemory* gpVulkanHostVisibleMemory{};
 	inline VulkanDeviceLocalMemory* gpVulkanDeviceLocalMemory{};
 	inline uint32_t gHitmanIndex{};
+	inline TransformationMatrices gCurrentTransformation{};
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX);
@@ -47,6 +49,9 @@ namespace RenderEngine {
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);
 	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
 	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT);
+	void fInitializegCurrentTransformation();
+	[[nodiscard]] const float fGetTimeSinceFirstCall();
+	void fReactToInput();
 	void fWriteToUniformBuffer();
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse);
 	void fRenderLoop(ImageKillhouse& killhouse);

@@ -1,6 +1,9 @@
 #include <iostream>
+#include <chrono>
 #include "RenderEngine.h"
-#include "TransformationMatrices.hpp"
+
+#define CHECK_PRESSED(glfwKey) \
+glfwGetKey(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace RenderEngine {
 	ImageHitman::ImageHitman(VkCommandPool pool) :
@@ -282,14 +285,45 @@ namespace RenderEngine {
 		return resized;
 	}
 
-	void fWriteToUniformBuffer() {
-		const TransformationMatrices TRANSFORM(
-			glm::mat4{glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f))},
+	void fInitializegCurrentTransformation() {
+		gCurrentTransformation = TransformationMatrices(
 			glm::mat4{1.0f},
-			glm::mat4{1.0f}
+			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
+			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
+		gCurrentTransformation.mProjection[1][1] *= -1.0f;
+	}
 
-		gpVulkanHostVisibleMemory->writeToBuffer(2, &TRANSFORM, sizeof(TransformationMatrices));
+	[[nodiscard]] const float fGetTimeSinceFirstCall() {
+		const static std::chrono::steady_clock::time_point sFIRST_CALL_TIME = std::chrono::high_resolution_clock::now();
+		const std::chrono::steady_clock::time_point THIS_CALL_TIME = std::chrono::high_resolution_clock::now();
+		const float TIME_SINCE_FIRST_CALL = std::chrono::duration<float, std::chrono::seconds::period>(THIS_CALL_TIME - sFIRST_CALL_TIME).count();
+
+		return TIME_SINCE_FIRST_CALL;
+	}
+
+	void fReactToInput() {
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(-0.001f, 0.0f, 0.0f));
+		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.001f, 0.0f, 0.0f));
+		}
+		
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, -0.001f, 0.0f));
+		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.001f, 0.0f));
+		}
+
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.0f, -0.001f));
+		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
+			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.0f, 0.001f));
+		}
+	}
+
+	void fWriteToUniformBuffer() {
+		gpVulkanHostVisibleMemory->writeToBuffer(2, &gCurrentTransformation, sizeof(TransformationMatrices));
 	}
 
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
@@ -308,6 +342,7 @@ namespace RenderEngine {
 		VulkanPFNs::gpVkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
+		fReactToInput();
 		fWriteToUniformBuffer();
 		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
 		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
@@ -332,6 +367,7 @@ namespace RenderEngine {
 				accumulatedFramesCount = 0;
 			}
 		};
+		fInitializegCurrentTransformation();
 
 		while(!glfwWindowShouldClose(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow)) {
 			glfwPollEvents();

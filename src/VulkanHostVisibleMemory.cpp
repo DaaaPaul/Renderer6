@@ -98,7 +98,7 @@ void VulkanHostVisibleMemory::writeToBuffer(size_t const& INDEX, void const*cons
 	std::memcpy(mappedMemory, pDATA, NUM_BYTES);
 	VulkanPFNs::gpVkUnmapMemory(mpVulkanDevicesWrapper->mpLogicalDevice, mpHostVisibleMemory);
 
-	std::cout << "Wrote " << NUM_BYTES << " bytes of data from " << pDATA << " to host visible memory offset " << mBufferOffsets[INDEX] << " (address " << mappedMemory << ")" << "\n";
+	// std::cout << "Wrote " << NUM_BYTES << " bytes of data from " << pDATA << " to host visible memory offset " << mBufferOffsets[INDEX] << " (address " << mappedMemory << ")" << "\n";
 }
 
 void VulkanHostVisibleMemory::createDescriptorSet(VulkanMemoryCommon::DescriptorSetInfo const& INFO, size_t const& INDEX) {
