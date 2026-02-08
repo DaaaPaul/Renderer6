@@ -1,11 +1,11 @@
 #include <iostream>
 #include <chrono>
-#include "RenderEngine.h"
+#include "Engine.h"
 
 #define CHECK_PRESSED(glfwKey) \
-glfwGetKey(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow, glfwKey) == GLFW_PRESS
+glfwGetKey(GlobalState::gWindowWrapper.mpGlfwWindow, glfwKey) == GLFW_PRESS
 
-namespace RenderEngine {
+namespace Engine {
 	ImageHitman::ImageHitman(VkCommandPool pool) :
 	mpRenderReady{},
 	mpRenderFinished{},
@@ -18,7 +18,7 @@ namespace RenderEngine {
 				.flags = VK_FENCE_CREATE_SIGNALED_BIT
 			};
 			CHECK_VK_SUCCESS(
-				VulkanPFNs::gpVkCreateFence(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &FENCE_INFO, nullptr, &mpOneAtATime),
+				vkCreateFence(GlobalState::gDevicesWrapper.mpLogicalDevice, &FENCE_INFO, nullptr, &mpOneAtATime),
 				"Fence creation failed"
 			)
 		}
@@ -29,11 +29,11 @@ namespace RenderEngine {
 				.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 			};
 			CHECK_VK_SUCCESS(
-				VulkanPFNs::gpVkCreateSemaphore(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderReady),
+				vkCreateSemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderReady),
 				"Semaphore creation failed"
 			)
 			CHECK_VK_SUCCESS(
-				VulkanPFNs::gpVkCreateSemaphore(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderFinished),
+				vkCreateSemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderFinished),
 				"Semaphore creation failed"
 			)
 		}
@@ -48,17 +48,17 @@ namespace RenderEngine {
 			};
 
 			CHECK_VK_SUCCESS(
-				VulkanPFNs::gpVkAllocateCommandBuffers(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &DRAW_COMMANDS_INFO, &mDrawCommands),
+				vkAllocateCommandBuffers(GlobalState::gDevicesWrapper.mpLogicalDevice, &DRAW_COMMANDS_INFO, &mDrawCommands),
 				"Command buffer creation failed"
 			)
 		}
 	}
 
 	ImageHitman::~ImageHitman() {
-		VulkanPFNs::gpVkDestroyFence(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpOneAtATime, nullptr);
-		VulkanPFNs::gpVkDestroySemaphore(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpRenderReady, nullptr);
-		VulkanPFNs::gpVkDestroySemaphore(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpRenderFinished, nullptr);
-		VulkanPFNs::gpVkFreeCommandBuffers(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpCommandPool, 1, &mDrawCommands);
+		vkDestroyFence(GlobalState::gDevicesWrapper.mpLogicalDevice, mpOneAtATime, nullptr);
+		vkDestroySemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, mpRenderReady, nullptr);
+		vkDestroySemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, mpRenderFinished, nullptr);
+		vkFreeCommandBuffers(GlobalState::gDevicesWrapper.mpLogicalDevice, mpCommandPool, 1, &mDrawCommands);
 	}
 
 	ImageKillhouse::ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
@@ -76,7 +76,7 @@ namespace RenderEngine {
 		std::cout << "\tcreated: " << HITMEN_COUNT << " hitmen" << "\n";
 
 		CHECK_VK_SUCCESS(
-			VulkanPFNs::gpVkCreateCommandPool(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &POOL_INFO, nullptr, &mpCommandPoolUsed),
+			vkCreateCommandPool(GlobalState::gDevicesWrapper.mpLogicalDevice, &POOL_INFO, nullptr, &mpCommandPoolUsed),
 			"Failed to create command pool"
 		)
 
@@ -88,7 +88,7 @@ namespace RenderEngine {
 
 	ImageKillhouse::~ImageKillhouse() {
 		mHitmen.clear();
-		VulkanPFNs::gpVkDestroyCommandPool(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, mpCommandPoolUsed, nullptr);
+		vkDestroyCommandPool(GlobalState::gDevicesWrapper.mpLogicalDevice, mpCommandPoolUsed, nullptr);
 	}
 
 	void ImageKillhouse::recreateHitmen() {
@@ -103,9 +103,9 @@ namespace RenderEngine {
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages() {
 		uint32_t swapchainImageCount{};
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, &swapchainImageCount, nullptr);
+		vkGetSwapchainImagesKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, &swapchainImageCount, nullptr);
 		std::vector<VkImage> swapchainImages(swapchainImageCount);
-		VulkanPFNs::gpVkGetSwapchainImagesKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
+		vkGetSwapchainImagesKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
 
 		return swapchainImages;
 	}
@@ -133,7 +133,7 @@ namespace RenderEngine {
 			.pImageMemoryBarriers = &IMAGE_MEMORY_BARRIER2,
 		};
 
-		VulkanPFNs::gpVkCmdPipelineBarrier2(commandBuffer, &PARENT_MEMORY_BARRIER2);
+		vkCmdPipelineBarrier2(commandBuffer, &PARENT_MEMORY_BARRIER2);
 	}
 
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX) {
@@ -148,7 +148,7 @@ namespace RenderEngine {
 		};
 
 		CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkCreateImageView(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, &IMAGE_VIEW_INFO, nullptr, &returnImageView),
+		vkCreateImageView(GlobalState::gDevicesWrapper.mpLogicalDevice, &IMAGE_VIEW_INFO, nullptr, &returnImageView),
 		"Failed to create image view"
 		)
 
@@ -169,7 +169,7 @@ namespace RenderEngine {
 		};
 		const VkRenderingInfo RENDERING_INFO{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent),
 			.layerCount = 1,
 			.viewMask = 0,
 			.colorAttachmentCount = 1,
@@ -181,64 +181,64 @@ namespace RenderEngine {
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		};
 		CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkBeginCommandBuffer(commandBuffer, &BEGIN_INFO),
+		vkBeginCommandBuffer(commandBuffer, &BEGIN_INFO),
 		"Failed to begin command buffer")
 		// began recording
 
 		// sets and bindings
-		VulkanPFNs::gpVkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gpVulkanGraphicsPipelineWrapper->mpGraphicsPipeline);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mpGraphicsPipeline);
 		const VkViewport VIEWPORT{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.width),
-			.height = static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.height),
+			.width = static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.width),
+			.height = static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 		const VkRect2D SCISSOR{
 			.offset = VkOffset2D(0, 0),
-			.extent = gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent
+			.extent = GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent
 		};
-		VulkanPFNs::gpVkCmdSetViewport(commandBuffer, 0, 1, &VIEWPORT);
-		VulkanPFNs::gpVkCmdSetScissor(commandBuffer, 0, 1, &SCISSOR);
+		vkCmdSetViewport(commandBuffer, 0, 1, &VIEWPORT);
+		vkCmdSetScissor(commandBuffer, 0, 1, &SCISSOR);
 		constexpr VkDeviceSize ZERO_OFFSET{ 0 };
-		VulkanPFNs::gpVkCmdBindVertexBuffers(commandBuffer, 0, 1, &gpVulkanDeviceLocalMemory->mDeviceLocalpBuffers[0], &ZERO_OFFSET);
-		VulkanPFNs::gpVkCmdBindIndexBuffer(commandBuffer, gpVulkanDeviceLocalMemory->mDeviceLocalpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
-		VulkanPFNs::gpVkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gpVulkanGraphicsPipelineWrapper->mParameters.mpPipelineLayout, 0, 1, gpVulkanHostVisibleMemory->mDescriptorpSets.data(), 0, nullptr);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[0], &ZERO_OFFSET);
+		vkCmdBindIndexBuffer(commandBuffer, GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mParameters.mpPipelineLayout, 0, 1, GlobalState::gDeviceLocalMemory.mDescriptorpSets.data(), 0, nullptr);
 
 		// undefined/unknown layout -> color attachment output optimal
 		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpPhysicalDevice));
+		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
 		
 		// draw!
-		VulkanPFNs::gpVkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
+		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
 
-		VulkanPFNs::gpVkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
 
-		VulkanPFNs::gpVkCmdEndRendering(commandBuffer);
+		vkCmdEndRendering(commandBuffer);
 
 		// color attachment output optimal -> present optimal
 		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VulkanDevicesWrapper::getGraphicsQueueFamilyIndex(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpPhysicalDevice));
+		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
 
 		// end recording
 		CHECK_VK_SUCCESS(
-		VulkanPFNs::gpVkEndCommandBuffer(commandBuffer),
+		vkEndCommandBuffer(commandBuffer),
 		"Command buffer end recording failure"
 		)
 		// ended recording
 
-		VulkanPFNs::gpVkDestroyImageView(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, imageView, nullptr);
+		vkDestroyImageView(GlobalState::gDevicesWrapper.mpLogicalDevice, imageView, nullptr);
 	};
 
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
-		const VkResult RESULT = VulkanPFNs::gpVkAcquireNextImageKHR(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, gpVulkanSwapchainWrapper->mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
+		const VkResult RESULT = vkAcquireNextImageKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
 		return RESULT;
 	}
 
@@ -254,7 +254,7 @@ namespace RenderEngine {
 			.signalSemaphoreCount = 1,
 			.pSignalSemaphores = &hitman.mpRenderFinished,
 		};
-		VulkanPFNs::gpVkQueueSubmit(queue, 1, &DRAW_COMMANDS_SUBMIT_INFO, hitman.mpOneAtATime);
+		vkQueueSubmit(queue, 1, &DRAW_COMMANDS_SUBMIT_INFO, hitman.mpOneAtATime);
 	}
 
 	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman) {
@@ -263,19 +263,19 @@ namespace RenderEngine {
 			.waitSemaphoreCount = 1,
 			.pWaitSemaphores = &hitman.mpRenderFinished,
 			.swapchainCount = 1,
-			.pSwapchains = &gpVulkanSwapchainWrapper->mpSwapchainKHR,
+			.pSwapchains = &GlobalState::gSwapchainWrapper.mpSwapchainKHR,
 			.pImageIndices = &SWAPCHAIN_IMAGE_INDEX,
 		};
-		return VulkanPFNs::gpVkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
+		return vkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
 	}
 
 	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT) {
 		bool resized{ false };
 
-		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mFrameBufferResizedAlert) {
-			VulkanPFNs::gpVkDeviceWaitIdle(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice);
-			gpVulkanSwapchainWrapper->recreateThyself();
-			gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mFrameBufferResizedAlert = false;
+		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::gWindowWrapper.mFrameBufferResizedAlert) {
+			vkDeviceWaitIdle(GlobalState::gDevicesWrapper.mpLogicalDevice);
+			GlobalState::gSwapchainWrapper.recreateThyself();
+			GlobalState::gWindowWrapper.mFrameBufferResizedAlert = false;
 
 			resized = true;
 		} else if(RESULT != VK_SUCCESS) {
@@ -286,10 +286,10 @@ namespace RenderEngine {
 	}
 
 	void fInitializegCurrentTransformation() {
-		gCurrentTransformation = TransformationMatrices(
+		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
-			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(gpVulkanSwapchainWrapper->mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
+			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.mProjection[1][1] *= -1.0f;
 	}
@@ -323,14 +323,14 @@ namespace RenderEngine {
 	}
 
 	void fWriteToUniformBuffer() {
-		gpVulkanHostVisibleMemory->writeToBuffer(2, &gCurrentTransformation, sizeof(TransformationMatrices));
+		GlobalState::gHostVisibleMemory.writeToBuffer(2, &gCurrentTransformation, sizeof(Vertex::Transforms));
 	}
 
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
 		ImageHitman& hitmanUsed{ killhouse.mHitmen[gHitmanIndex] };
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
 
-		VulkanPFNs::gpVkWaitForFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(GlobalState::gDevicesWrapper.mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
 		const VkResult ACQUIRE_RESULT{ fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex) };
 		if(fRecreateSwapchainIfNecessary(ACQUIRE_RESULT)) {
 			killhouse.recreateHitmen();
@@ -338,14 +338,14 @@ namespace RenderEngine {
 			return;
 		}
 
-		VulkanPFNs::gpVkResetFences(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
-		VulkanPFNs::gpVkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
+		vkResetFences(GlobalState::gDevicesWrapper.mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
+		vkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
 		fReactToInput();
 		fWriteToUniformBuffer();
-		fSubmitDrawCommands(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], hitmanUsed);
-		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
+		fSubmitDrawCommands(GlobalState::gDevicesWrapper.mGraphicsFamilypQueues[0], hitmanUsed);
+		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(GlobalState::gDevicesWrapper.mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
 		if(fRecreateSwapchainIfNecessary(PRESENT_RESULT)) {
 			killhouse.recreateHitmen();
 			gHitmanIndex = 0;
@@ -369,16 +369,16 @@ namespace RenderEngine {
 		};
 		fInitializegCurrentTransformation();
 
-		while(!glfwWindowShouldClose(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow)) {
+		while(!glfwWindowShouldClose(GlobalState::gWindowWrapper.mpGlfwWindow)) {
 			glfwPollEvents();
-			if(glfwGetKey(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpVulkanBackendWrapper->mpGlfwWindowWrapper->mpGlfwWindow, GLFW_TRUE);
+			if(glfwGetKey(GlobalState::gWindowWrapper.mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(GlobalState::gWindowWrapper.mpGlfwWindow, GLFW_TRUE);
 			}
 
 			fRunThroughNextSwapchainImage(killhouse);
 			incrementFramesCountAndCheck();
 		}
 
-		VulkanPFNs::gpVkDeviceWaitIdle(gpVulkanSwapchainWrapper->mpVulkanDevicesWrapper->mpLogicalDevice);
+		vkDeviceWaitIdle(GlobalState::gDevicesWrapper.mpLogicalDevice);
 	}
 }

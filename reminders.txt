@@ -8,5 +8,9 @@
 - bro add that cool pointer feature thing to print the features !KIND OF DONE!
 
 - vkGetPhysicalDeviceSurfaceSupportKHR???
-- remove vulkan name put in namespace
+- remove vulkan name put in namespace !DONE!
 - add print parameters
+- put graphics queue family index in variable !DONE!
+- put static functions prefix s !DONE!
+
+- remove the shizz names in the memory structs

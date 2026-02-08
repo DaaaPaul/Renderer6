@@ -17,38 +17,39 @@ find_package(GLM REQUIRED)
 
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlfwWindowWrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/GlfwWindowWrapper.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/RenderEngine.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/TransformationMatrices.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/TransformationMatrices.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanBackendWrapper.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDeviceLocalMemory.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDeviceLocalMemory.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDevicesWrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanDevicesWrapper.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanGraphicsPipelineWrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanGraphicsPipelineWrapper.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanHostVisibleMemory.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanHostVisibleMemory.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanMemoryCommon.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanMemoryCommon.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanPFNs.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanSwapchainWrapper.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VulkanSwapchainWrapper.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemoryCommon.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemoryCommon.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.hpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
 )
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
+	Vulkan::Vulkan
     $<$<PLATFORM_ID:Darwin>:${COCOA}>
     $<$<PLATFORM_ID:Darwin>:${IOKIT}>
     $<$<PLATFORM_ID:Darwin>:${CORE_FOUNDATION}>
@@ -56,5 +57,5 @@ target_link_libraries(Renderer6 PRIVATE
 target_include_directories(Renderer6 PRIVATE
     ${GLFW3_INCLUDE_DIR}
     ${GLM_INCLUDE_DIRS}
-    Vulkan::Headers
+	vendor
 )

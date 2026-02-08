@@ -1,22 +1,22 @@
 #pragma once
 
-#include "VulkanDevicesWrapper.hpp"
-#include "VulkanSwapchainWrapper.hpp"
-#include "VulkanHostVisibleMemory.hpp"
-#include "VulkanDeviceLocalMemory.hpp"
-#include "VulkanGraphicsPipelineWrapper.hpp"
-#include "TransformationMatrices.hpp"
-#include "VulkanPFNs.h"
+#include "GlobalState.h"
+#include "Devices.hpp"
+#include "Swapchain.hpp"
+#include "HostVisible.hpp"
+#include "DeviceLocal.hpp"
+#include "GraphicsPipeline.hpp"
+#include "Vertex.hpp"
+#include "Transforms.hpp"
 #include "Common.h"
 
-namespace RenderEngine {
+namespace Engine {
 	struct ImageHitman {
 		VkFence mpOneAtATime{};
 		VkSemaphore mpRenderReady{};
 		VkSemaphore mpRenderFinished{};
 		VkCommandPool mpCommandPool{};
 		VkCommandBuffer mDrawCommands{};
-
 
 		explicit ImageHitman(VkCommandPool pool);
 		~ImageHitman();
@@ -32,12 +32,8 @@ namespace RenderEngine {
 		~ImageKillhouse();
 	};
 
-	inline VulkanGraphicsPipelineWrapper* gpVulkanGraphicsPipelineWrapper{};
-	inline VulkanSwapchainWrapper* gpVulkanSwapchainWrapper{};
-	inline VulkanHostVisibleMemory* gpVulkanHostVisibleMemory{};
-	inline VulkanDeviceLocalMemory* gpVulkanDeviceLocalMemory{};
 	inline uint32_t gHitmanIndex{};
-	inline TransformationMatrices gCurrentTransformation{};
+	inline Vertex::Transforms gCurrentTransformation{};
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX);

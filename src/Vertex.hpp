@@ -1,13 +1,16 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan.h>
 #include "Common.h"
 
-struct Vertex {
-	const glm::vec4 mPOSITION{};
-	const glm::vec4 mCOLOR{};
+namespace Vertex {
+	struct Vertex {
+		const glm::vec4 mPOSITION{};
+		const glm::vec4 mCOLOR{};
 
-	[[nodiscard]] static const VkVertexInputBindingDescription getInputBindingDescription();
-	[[nodiscard]] static const std::vector<VkVertexInputAttributeDescription> getInputAttributeDescriptions();
-};
+		[[nodiscard]] static const VkVertexInputBindingDescription sGetInputBindingDescription();
+		[[nodiscard]] static const std::vector<VkVertexInputAttributeDescription> sGetInputAttributeDescriptions();
+	};
+}
