@@ -14,11 +14,11 @@ namespace DeviceMemory {
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {}
 
-	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) : 
+	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS, void (*pBootFunction)()) : 
 		mpDevices{ pGivenDevices },
 		mpDeviceLocalMemory{},
-		mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
 		mDeviceLocalpBuffers{},
+		mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
 		mBufferOffsets{},
 		mBufferSizes{}, 
 		mpDescriptorPool{}, 
@@ -77,6 +77,7 @@ namespace DeviceMemory {
 			}
 		}
 
+		(*pBootFunction)();
 
 		std::cout << "Created DeviceLocal\n";
 	}

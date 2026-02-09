@@ -17,8 +17,6 @@
 
 int main() {
     try {
-		GlobalState::fLoadDeviceMemory();
-
 		Engine::ImageKillhouse killhouse(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.minImageCount, GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
 		Engine::fRenderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {

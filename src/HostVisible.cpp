@@ -17,7 +17,7 @@ namespace DeviceMemory {
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {}
 
-	HostVisible::HostVisible(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) :
+	HostVisible::HostVisible(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS, void (*pBootFunction)()) :
 		mpDevices{ pGivenDevices },
 		mpHostVisibleMemory{},
 		mHostVisiblepBuffers{},
@@ -79,6 +79,8 @@ namespace DeviceMemory {
 				std::cout << "Created descriptor set layout and set for host visible memory\n";
 			}
 		}
+
+		(*pBootFunction)();
 
 		std::cout << "Created HostVisible\n";
 	}

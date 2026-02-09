@@ -14,3 +14,4 @@
 - put static functions prefix s !DONE!
 
 - remove the shizz names in the memory structs
+- use a unique uniform buffer per frame

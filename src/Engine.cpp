@@ -204,7 +204,7 @@ namespace Engine {
 		constexpr VkDeviceSize ZERO_OFFSET{ 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[0], &ZERO_OFFSET);
 		vkCmdBindIndexBuffer(commandBuffer, GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mParameters.mpPipelineLayout, 0, 1, GlobalState::gDeviceLocalMemory.mDescriptorpSets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mParameters.mpPipelineLayout, 0, 1, GlobalState::gHostVisibleMemory.mDescriptorpSets.data(), 0, nullptr);
 
 		// undefined/unknown layout -> color attachment output optimal
 		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -352,7 +352,7 @@ namespace Engine {
 			return;
 		}
 
-		gHitmanIndex = (gHitmanIndex + 1) % 4;
+		gHitmanIndex = (gHitmanIndex + 1) % static_cast<uint32_t>(killhouse.mHitmen.size());;
 	}
 
 	void fRenderLoop(ImageKillhouse& killhouse) {

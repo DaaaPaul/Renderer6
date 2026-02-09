@@ -8,10 +8,11 @@ namespace DeviceMemory {
 	struct DeviceLocal {
 		Backend::Devices* mpDevices{};
 		VkDeviceMemory mpDeviceLocalMemory{};
-		std::vector<Common::BufferInfo> mDeviceLocalBufferInfos{};
 		std::vector<VkBuffer> mDeviceLocalpBuffers{};
+		std::vector<Common::BufferInfo> mDeviceLocalBufferInfos{};
 		std::vector<VkDeviceSize> mBufferOffsets{};
 		std::vector<VkDeviceSize> mBufferSizes{};
+
 		VkDescriptorPool mpDescriptorPool{};
 		std::vector<Common::DescriptorSetInfo> mDeviceLocalDescriptorSetInfos{};
 		std::vector<VkDescriptorSetLayout> mDescriptorpSetLayouts{};
@@ -22,7 +23,7 @@ namespace DeviceMemory {
 		void updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
 		DeviceLocal();
-		explicit DeviceLocal(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN__BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS);
+		explicit DeviceLocal(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS, void (*pBootFunction)());
 		~DeviceLocal();
 
 		DELETE_COPY_CONSTRUCTORS(DeviceLocal)

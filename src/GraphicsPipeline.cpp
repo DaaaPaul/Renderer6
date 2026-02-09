@@ -41,6 +41,7 @@ namespace Backend {
 
 			mParameters.mPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(mParameters.mDESCRIPTOR_SET_pLAYOUTS.size());
 			mParameters.mPipelineLayoutInfo.pSetLayouts = mParameters.mDESCRIPTOR_SET_pLAYOUTS.data();
+
 			CHECK_VK_SUCCESS(
 			vkCreatePipelineLayout(mpDevices->mpLogicalDevice, &mParameters.mPipelineLayoutInfo, nullptr, &mParameters.mpPipelineLayout),
 			"Failed to create pipeline layout"
