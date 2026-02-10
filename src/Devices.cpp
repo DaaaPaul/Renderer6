@@ -59,7 +59,7 @@ namespace Backend {
 					}
 					VK_BOOLS_POINTER++;
 				}
-				};
+			};
 			std::cout << "\t-Device features:\n";
 			printEnabledFeaturesInVkFeatureStruct(mParameters.mLogicalDeviceCreateInfo.pNext, "VkPhysicalDeviceFeatures2");
 			printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext, "VkPhysicalDeviceSynchronization2Features");
@@ -123,7 +123,8 @@ namespace Backend {
 				.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
 				.pNext = nullptr, // reroute needed
 				.features = {
-					.samplerAnisotropy = true
+					.samplerAnisotropy = true,
+					.textureCompressionBC = true
 				}
 			};
 		};
@@ -243,7 +244,7 @@ namespace Backend {
 				};
 				vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &physicalDeviceFeaturesStatus);
 
-				if (!(physicalDeviceFeaturesStatus.features.samplerAnisotropy && physicalDeviceSyncFeaturesStatus.synchronization2 && physicalDeviceDynamicRenderingFeaturesStatus.dynamicRendering && physicalDeviceExtendedDynamicStateFeaturesStatus.extendedDynamicState2)) {
+				if (!(physicalDeviceFeaturesStatus.features.samplerAnisotropy && physicalDeviceFeaturesStatus.features.textureCompressionBC && physicalDeviceSyncFeaturesStatus.synchronization2 && physicalDeviceDynamicRenderingFeaturesStatus.dynamicRendering && physicalDeviceExtendedDynamicStateFeaturesStatus.extendedDynamicState2)) {
 					systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 					std::cout << "Weeded out " << physicalDeviceProperties.deviceName << " for not having the device features this application needs" << "\n";
 					continue;

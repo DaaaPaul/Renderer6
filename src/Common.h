@@ -10,6 +10,9 @@
         throw std::runtime_error(errMsg); \
     }
 
+#define PTR_TO_DECIMAL(p) \
+	reinterpret_cast<uintptr_t>(p)
+
 #define CHECK_BOOL(b, errMsg) \
 	if(!b) { \
         throw std::runtime_error(errMsg); \

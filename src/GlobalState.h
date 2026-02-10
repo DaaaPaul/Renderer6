@@ -18,14 +18,18 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	void fLoadHostVisibleMemory();
-	void fLoadDeviceLocalMemory();
+	const DeviceMemory::Common::ConstructArguements fConstructHostVisibleMemory();
+	unsigned char* pTexData{};
+	size_t texSize{};
+	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
+	const DeviceMemory::Common::ConstructArguements fConstructDeviceLocalMemory();
+	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
 
 	inline Backend::Window gWindowWrapper(Backend::Window::sGetConstructParameters());
 	inline Backend::Backend gBackendWrapper(&gWindowWrapper, Backend::Backend::sGetConstructParameters());
 	inline Backend::Devices gDevicesWrapper(&gBackendWrapper, Backend::Devices::sGetConstructParameters(gBackendWrapper.mpInstance));
 	inline Backend::Swapchain gSwapchainWrapper(&gDevicesWrapper, Backend::Swapchain::sGetConstructParameters(gBackendWrapper.mpInstance, gDevicesWrapper.mpPhysicalDevice, gBackendWrapper.mpWindow->mpGlfwWindow, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX));
-		
+
 	inline DeviceMemory::HostVisible gHostVisibleMemory(
 		&gDevicesWrapper,
 		std::vector<DeviceMemory::Common::BufferInfo>{
@@ -36,7 +40,7 @@ namespace GlobalState {
 		std::vector<DeviceMemory::Common::DescriptorSetInfo>{
 			DeviceMemory::Common::DescriptorSetInfo({Vertex::Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(0)})
 		},
-		&fLoadHostVisibleMemory
+		&fConstructHostVisibleMemory
 	);
 	inline DeviceMemory::DeviceLocal gDeviceLocalMemory(
 		&gDevicesWrapper,
@@ -45,7 +49,7 @@ namespace GlobalState {
 			DeviceMemory::Common::BufferInfo(4 * 6, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
 		},
 		{},
-		&fLoadDeviceLocalMemory
+		&fConstructDeviceLocalMemory
 	);
 	inline Backend::GraphicsPipeline gGraphicsPipeline(
 		&gDevicesWrapper,

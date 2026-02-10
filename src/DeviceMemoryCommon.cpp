@@ -1,18 +1,30 @@
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #include <iostream>
 #include "DeviceMemoryCommon.h"
 #include "Common.h"
 
 namespace DeviceMemory {
 	namespace Common {
-		unsigned char* fStbiLoadImage(const char* const& FILE_PATH, int& width, int& height, int& bytesPerPixel) {
-			unsigned char* pData{ stbi_load(FILE_PATH, &width, &height, &bytesPerPixel, 4) };
+		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH, uint32_t& texWidth, uint32_t& texHeight, size_t& texSize, unsigned char*& pTexData) {
+			ktxTexture2* pKtxTexture{};
 
-			CHECK_NULLPTR(pData, "Failed to load image with stbi")
+			if(ktxTexture_CreateFromNamedFile(FILE_PATH, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, reinterpret_cast<ktxTexture**>(&pKtxTexture)) != KTX_SUCCESS) {
+				throw std::runtime_error("Failed to load ktx texture from " + std::string(FILE_PATH));
+			}
 
-			std::cout << "Loaded " << width << "x" << height << " image from " << FILE_PATH << " with " << bytesPerPixel << " components individually\n";
-			return pData;
+			if(ktxTexture2_NeedsTranscoding(pKtxTexture)) {
+				const ktx_transcode_fmt_e TARGET_FORMAT{ KTX_TTF_RGBA32 };
+
+				if(ktxTexture2_TranscodeBasis(pKtxTexture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
+					throw std::runtime_error("Failed to transcode ktx texture to ktx_transcode_fmt " + std::to_string(TARGET_FORMAT));
+				}
+			}
+
+			texWidth = pKtxTexture->baseWidth;
+			texHeight = pKtxTexture->baseHeight;
+			texSize = pKtxTexture->dataSize;
+			pTexData = pKtxTexture->pData;
+
+			return pKtxTexture;
 		}
 
 		[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO) {
