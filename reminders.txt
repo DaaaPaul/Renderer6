@@ -15,3 +15,5 @@
 
 - remove the shizz names in the memory structs
 - use a unique uniform buffer per frame
+- change reference with prefix r
+- change pointer const uppercase thing

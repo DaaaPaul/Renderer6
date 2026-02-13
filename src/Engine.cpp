@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include "Engine.h"
+#include "DeviceMemoryCommon.h"
 
 #define CHECK_PRESSED(glfwKey) \
 glfwGetKey(GlobalState::gWindowWrapper.mpGlfwWindow, glfwKey) == GLFW_PRESS
@@ -110,32 +111,6 @@ namespace Engine {
 		return swapchainImages;
 	}
 
-	void fInsertImageMemoryBarrier2(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
-		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
-		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
-		const VkImageMemoryBarrier2 IMAGE_MEMORY_BARRIER2{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-			.srcStageMask = SRC_STAGE,
-			.srcAccessMask = SRC_ACCESS,
-			.dstStageMask = DST_STAGE,
-			.dstAccessMask = DST_ACCESS,
-			.oldLayout = OLD_LAYOUT,
-			.newLayout = NEW_LAYOUT,
-			.srcQueueFamilyIndex = GRAPHICS_QF_INDEX,
-			.dstQueueFamilyIndex = GRAPHICS_QF_INDEX,
-			.image = fGetSwapchainImages()[IMAGE_INDEX],
-			.subresourceRange = SUBRESOURCE_RANGE,
-		};
-
-		const VkDependencyInfo PARENT_MEMORY_BARRIER2{
-			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-			.imageMemoryBarrierCount = 1,
-			.pImageMemoryBarriers = &IMAGE_MEMORY_BARRIER2,
-		};
-
-		vkCmdPipelineBarrier2(commandBuffer, &PARENT_MEMORY_BARRIER2);
-	}
-
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX) {
 		VkImageView returnImageView{};
 
@@ -207,7 +182,7 @@ namespace Engine {
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mParameters.mpPipelineLayout, 0, 1, GlobalState::gHostVisibleMemory.mDescriptorpSets.data(), 0, nullptr);
 
 		// undefined/unknown layout -> color attachment output optimal
-		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -221,7 +196,7 @@ namespace Engine {
 		vkCmdEndRendering(commandBuffer);
 
 		// color attachment output optimal -> present optimal
-		fInsertImageMemoryBarrier2(commandBuffer, IMAGE_INDEX, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,

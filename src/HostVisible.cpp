@@ -17,7 +17,7 @@ namespace DeviceMemory {
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {}
 
-	HostVisible::HostVisible(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS, void (*pBootFunction)()) :
+	HostVisible::HostVisible(Backend::Devices* pGivenDevices, const DeviceMemory::Common::HostVisibleConstructArguements (*const pCONSTRUCT_FUNCTION)(), void (*const pPOPULATE_FUNCTION)(DeviceMemory::HostVisible& toBePopulated)) :
 		mpDevices{ pGivenDevices },
 		mpHostVisibleMemory{},
 		mHostVisiblepBuffers{},

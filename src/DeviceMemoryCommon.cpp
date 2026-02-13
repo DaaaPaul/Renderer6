@@ -4,7 +4,7 @@
 
 namespace DeviceMemory {
 	namespace Common {
-		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH, uint32_t& texWidth, uint32_t& texHeight, size_t& texSize, unsigned char*& pTexData) {
+		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH) {
 			ktxTexture2* pKtxTexture{};
 
 			if(ktxTexture_CreateFromNamedFile(FILE_PATH, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, reinterpret_cast<ktxTexture**>(&pKtxTexture)) != KTX_SUCCESS) {
@@ -12,17 +12,12 @@ namespace DeviceMemory {
 			}
 
 			if(ktxTexture2_NeedsTranscoding(pKtxTexture)) {
-				const ktx_transcode_fmt_e TARGET_FORMAT{ KTX_TTF_RGBA32 };
+				const ktx_transcode_fmt_e TARGET_FORMAT{ KTX_TTF_BC7_RGBA };
 
 				if(ktxTexture2_TranscodeBasis(pKtxTexture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
 					throw std::runtime_error("Failed to transcode ktx texture to ktx_transcode_fmt " + std::to_string(TARGET_FORMAT));
 				}
 			}
-
-			texWidth = pKtxTexture->baseWidth;
-			texHeight = pKtxTexture->baseHeight;
-			texSize = pKtxTexture->dataSize;
-			pTexData = pKtxTexture->pData;
 
 			return pKtxTexture;
 		}
@@ -108,6 +103,113 @@ namespace DeviceMemory {
 			)
 
 			return pReturnDescriptorPool;
+		}
+
+		void fAllocateBeginOneTimeCommandBuffer(VkDevice pDevice, VkCommandPool pCmdPool, VkCommandBuffer pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
+			// create transient command pool
+			{
+				const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
+					.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+					.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+					.queueFamilyIndex = GRAPHICS_QF_INDEX
+				};
+				CHECK_VK_SUCCESS(
+					vkCreateCommandPool(pDevice, &COMMAND_POOL_INFO, nullptr, &pCmdPool),
+					"Failed to create temporary command pool"
+				)
+			}
+
+			// create command buffer
+			{
+				const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
+					.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+					.commandPool = pCmdPool,
+					.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+					.commandBufferCount = 1,
+				};
+				CHECK_VK_SUCCESS(
+					vkAllocateCommandBuffers(pDevice, &COMMAND_BUFFER_INFO, &pCmdBuf),
+					"Failed to create temporary command buffer"
+				)
+			}
+
+			// begin recording
+			{
+				const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
+				CHECK_VK_SUCCESS(
+					vkBeginCommandBuffer(pCmdBuf, &ONE_TIME_SUBMIT_BEGIN),
+					"Failed to begin temporary command buffer recording"
+				)
+			}
+		}
+
+		void fEndSubmitDeallocateOneTimeCommandBuffer(VkDevice pDevice, VkQueue pQueue, VkCommandPool pCmdPool, VkCommandBuffer pCmdBuf) {
+			// end command buffer
+			{
+				CHECK_VK_SUCCESS(
+					vkEndCommandBuffer(pCmdBuf),
+					"Failed to end temporary command buffer recording"
+				)
+			}
+
+			// create fence to wait on
+			VkFence copyCommandDone{};
+			{
+				const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
+				CHECK_VK_SUCCESS(
+					vkCreateFence(pDevice, &FENCE_INFO, nullptr, &copyCommandDone),
+					"Failed to create copy command done fence"
+				)
+			}
+
+			// submit it
+			{
+				const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
+					.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+					.commandBufferCount = 1,
+					.pCommandBuffers = &pCmdBuf,
+				};
+
+				CHECK_VK_SUCCESS(
+					vkQueueSubmit(pQueue, 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
+					"Failed to submit temporary command buffer"
+				)
+			}
+
+			CHECK_VK_SUCCESS(
+				vkWaitForFences(pDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
+				"Failed to wait for copy command done fence"
+			)
+
+			vkDestroyFence(pDevice, copyCommandDone, nullptr);
+			vkFreeCommandBuffers(pDevice, pCmdPool, 1, &pCmdBuf);
+			vkDestroyCommandPool(pDevice, pCmdPool, nullptr);
+		}
+
+		void fTransitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
+		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
+		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
+			const VkImageMemoryBarrier2 IMAGE_MEMORY_BARRIER2{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+				.srcStageMask = SRC_STAGE,
+				.srcAccessMask = SRC_ACCESS,
+				.dstStageMask = DST_STAGE,
+				.dstAccessMask = DST_ACCESS,
+				.oldLayout = OLD_LAYOUT,
+				.newLayout = NEW_LAYOUT,
+				.srcQueueFamilyIndex = GRAPHICS_QF_INDEX,
+				.dstQueueFamilyIndex = GRAPHICS_QF_INDEX,
+				.image = pIMAGE,
+				.subresourceRange = SUBRESOURCE_RANGE,
+			};
+
+			const VkDependencyInfo PARENT_MEMORY_BARRIER2{
+				.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+				.imageMemoryBarrierCount = 1,
+				.pImageMemoryBarriers = &IMAGE_MEMORY_BARRIER2,
+			};
+
+			vkCmdPipelineBarrier2(pCmdBuf, &PARENT_MEMORY_BARRIER2);
 		}
 	}
 }

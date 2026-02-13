@@ -37,9 +37,6 @@ namespace Engine {
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
 	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX);
-	void fInsertImageMemoryBarrier2(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
-		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
-		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 	void fRecordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX);
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);

@@ -18,38 +18,27 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	const DeviceMemory::Common::ConstructArguements fConstructHostVisibleMemory();
-	unsigned char* pTexData{};
-	size_t texSize{};
+	// memory construct functions and data
+	ktxTexture2 const*const gpKTX_TEXTURE{ DeviceMemory::Common::fKtxLoadImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)") };
+	const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements();
 	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
-	const DeviceMemory::Common::ConstructArguements fConstructDeviceLocalMemory();
+	const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements();
 	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
 
+	// vulkan/rendering backend global objects
 	inline Backend::Window gWindowWrapper(Backend::Window::sGetConstructParameters());
 	inline Backend::Backend gBackendWrapper(&gWindowWrapper, Backend::Backend::sGetConstructParameters());
 	inline Backend::Devices gDevicesWrapper(&gBackendWrapper, Backend::Devices::sGetConstructParameters(gBackendWrapper.mpInstance));
 	inline Backend::Swapchain gSwapchainWrapper(&gDevicesWrapper, Backend::Swapchain::sGetConstructParameters(gBackendWrapper.mpInstance, gDevicesWrapper.mpPhysicalDevice, gBackendWrapper.mpWindow->mpGlfwWindow, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX));
-
 	inline DeviceMemory::HostVisible gHostVisibleMemory(
 		&gDevicesWrapper,
-		std::vector<DeviceMemory::Common::BufferInfo>{
-			DeviceMemory::Common::BufferInfo(32 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
-			DeviceMemory::Common::BufferInfo(4 * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
-			DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
-		},
-		std::vector<DeviceMemory::Common::DescriptorSetInfo>{
-			DeviceMemory::Common::DescriptorSetInfo({Vertex::Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(0)})
-		},
-		&fConstructHostVisibleMemory
+		&fGetHostVisibleMemoryConstructArguements,
+		&fPopulateHostVisibleMemory
 	);
 	inline DeviceMemory::DeviceLocal gDeviceLocalMemory(
 		&gDevicesWrapper,
-		std::vector<DeviceMemory::Common::BufferInfo>{
-			DeviceMemory::Common::BufferInfo(32 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
-			DeviceMemory::Common::BufferInfo(4 * 6, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX),
-		},
-		{},
-		&fConstructDeviceLocalMemory
+		&fGetDeviceLocalMemoryConstructArguements,
+		&fPopulateDeviceLocalMemory
 	);
 	inline Backend::GraphicsPipeline gGraphicsPipeline(
 		&gDevicesWrapper,

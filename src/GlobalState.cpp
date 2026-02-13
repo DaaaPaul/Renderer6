@@ -2,23 +2,21 @@
 #include "GlobalState.h"
 
 namespace GlobalState {
-	const DeviceMemory::Common::ConstructArguements fConstructHostVisibleMemory() {
-		DeviceMemory::Common::ConstructArguements constructArguements{};
-		constructArguements.mpDevices = &gDevicesWrapper;
-		constructArguements.mBufferInfos.emplace_back(32 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
-		constructArguements.mBufferInfos.emplace_back(4 * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
-		constructArguements.mBufferInfos.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
-		
-		const char* PATH_TO_TEXTURE{ R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)" };
-		uint32_t texWidth{}, texHeight{};
-		ktxTexture2* pKtxTexture{ DeviceMemory::Common::fKtxLoadImage(PATH_TO_TEXTURE, texWidth, texHeight, texSize, pTexData) };
-		std::cout << "Loaded texture at " << PATH_TO_TEXTURE << " with: \n";
-		std::cout << "Width " << texWidth << "\n";
-		std::cout << "Height " << texHeight << "\n";
-		std::cout << "Size " << texSize << "\n";
-		std::cout << "Into address " << PTR_TO_DECIMAL(pTexData) << "\n";
+	const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements() {
+		DeviceMemory::Common::HostVisibleConstructArguements constructArguements{};
 
-		constructArguements.mBufferInfos.emplace_back(texSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+		{
+			constructArguements.mBufferInfos.emplace_back(32 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+			constructArguements.mBufferInfos.emplace_back(4 * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+			constructArguements.mBufferInfos.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+			constructArguements.mBufferInfos.emplace_back(gpKTX_TEXTURE->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+		}
+
+		{
+			constructArguements.mDescriptorSetInfos.emplace_back(Vertex::Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(0));
+		}
+
+		return constructArguements;
 	}
 
 	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated) {
@@ -35,16 +33,33 @@ namespace GlobalState {
 
 		toBePopulated.writeToBuffer(0, VERTICIES.data(), 32 * 4);
 		toBePopulated.writeToBuffer(1, INDICES.data(), 4 * 6);
-		toBePopulated.writeToBuffer(3, pTexData, texSize);
+		toBePopulated.writeToBuffer(3, gpKTX_TEXTURE->pData, gpKTX_TEXTURE->dataSize);
 		toBePopulated.updateDescriptorSet(0, 0, {2});
 	}
 
-	const DeviceMemory::Common::ConstructArguements fConstructDeviceLocalMemory() {
-		gDeviceLocalMemory.copyToBuffer(0, gHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, 32 * 4)});
-		gDeviceLocalMemory.copyToBuffer(1, gHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, 4 * 6)});
+	const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements() {
+		DeviceMemory::Common::DeviceLocalConstructArguements constructArguements{};
+
+		{
+			constructArguements.mBufferInfos.emplace_back(32 * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+			constructArguements.mBufferInfos.emplace_back(4 * 6, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+			constructArguements.mImageInfos.emplace_back(
+				VK_IMAGE_TYPE_2D,
+				gpKTX_TEXTURE->vkFormat,
+				VkExtent3D(gpKTX_TEXTURE->baseWidth, gpKTX_TEXTURE->baseHeight, 1),
+				1,
+				VK_SAMPLE_COUNT_1_BIT,
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX,
+				VK_IMAGE_LAYOUT_UNDEFINED
+			);
+		}
+
+		return constructArguements;
 	}
 
 	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated) {
-	
+		toBePopulated.copyBufferToBuffer(0, gHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, 32 * 4)});
+		toBePopulated.copyBufferToBuffer(1, gHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, 4 * 6)});
 	}
 }

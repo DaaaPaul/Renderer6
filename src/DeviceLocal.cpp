@@ -9,18 +9,20 @@ namespace DeviceMemory {
 		mDeviceLocalpBuffers{},
 		mBufferOffsets{},
 		mBufferSizes{}, 
+		mpImages{},
 		mpDescriptorPool{}, 
 		mDeviceLocalDescriptorSetInfos{},
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {}
 
-	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFO, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS, void (*pBootFunction)()) : 
+	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, const DeviceMemory::Common::DeviceLocalConstructArguements (*const pCONSTRUCT_FUNCTION)(), void (*const pPOPULATE_FUNCTION)(DeviceMemory::DeviceLocal& toBePopulated)) : 
 		mpDevices{ pGivenDevices },
 		mpDeviceLocalMemory{},
 		mDeviceLocalpBuffers{},
 		mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
 		mBufferOffsets{},
 		mBufferSizes{}, 
+		mpImages{},
 		mpDescriptorPool{}, 
 		mDeviceLocalDescriptorSetInfos{ GIVEN_DESCRIPTOR_SET_INFOS },
 		mDescriptorpSetLayouts{},
@@ -101,90 +103,38 @@ namespace DeviceMemory {
 		std::cout << "Destroyed DeviceLocal\n";
 	}
 
-	void DeviceLocal::copyToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {
+	void DeviceLocal::copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {
 		VkCommandPool tempCommandPool{};
 		VkCommandBuffer tempCommandBuffer{};
 
-		// create transient command pool
-		{
-			const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
-				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-				.queueFamilyIndex = mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX
-			};
-			CHECK_VK_SUCCESS(
-				vkCreateCommandPool(mpDevices->mpLogicalDevice, &COMMAND_POOL_INFO, nullptr, &tempCommandPool),
-				"Failed to create temporary command pool"
-			)
-		}
+		Common::fAllocateBeginOneTimeCommandBuffer(mpDevices->mpLogicalDevice, tempCommandPool, tempCommandBuffer, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX);
+		vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, mDeviceLocalpBuffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
+		Common::fEndSubmitDeallocateOneTimeCommandBuffer(mpDevices->mpLogicalDevice, mpDevices->mGraphicsFamilypQueues[0], tempCommandPool, tempCommandBuffer);
+	}
 
-		// create command buffer
-		{
-			const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
-				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-				.commandPool = tempCommandPool,
-				.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-				.commandBufferCount = 1,
-			};
-			CHECK_VK_SUCCESS(
-				vkAllocateCommandBuffers(mpDevices->mpLogicalDevice, &COMMAND_BUFFER_INFO, &tempCommandBuffer),
-				"Failed to create temporary command buffer"
-			)
-		}
+	void DeviceLocal::copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS) {
+		VkCommandPool tempCommandPool{};
+		VkCommandBuffer tempCommandBuffer{};
 
-		// record the copy
-		{
-			const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
-			CHECK_VK_SUCCESS(
-				vkBeginCommandBuffer(tempCommandBuffer, &ONE_TIME_SUBMIT_BEGIN),
-				"Failed to begin temporary command buffer recording"
-			)
-			vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, mDeviceLocalpBuffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-			CHECK_VK_SUCCESS(
-				vkEndCommandBuffer(tempCommandBuffer),
-				"Failed to end temporary command buffer recording"
-			)
-		}
+		Common::fAllocateBeginOneTimeCommandBuffer(mpDevices->mpLogicalDevice, tempCommandPool, tempCommandBuffer, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX);
+		
+		// recorded commands
+		Common::fTransitionImageLayout(tempCommandBuffer, mpImages[INDEX],
+		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
+		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_NONE, // none because if srcAccess is none, then there is no point of dstAccess
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX);
 
-		// create fence to wait on
-		VkFence copyCommandDone{};
-		{
-			const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
-			CHECK_VK_SUCCESS(
-				vkCreateFence(mpDevices->mpLogicalDevice, &FENCE_INFO, nullptr, &copyCommandDone),
-				"Failed to create copy command done fence"
-			)
-		}
+		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, mpImages[INDEX], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
 
-		// submit it right away
-		{
-			const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
-				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-				.commandBufferCount = 1,
-				.pCommandBuffers = &tempCommandBuffer,
-			};
+		Common::fTransitionImageLayout(tempCommandBuffer, mpImages[INDEX],
+		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
+		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX);
+		// end of recorded commands
 
-			CHECK_VK_SUCCESS(
-				vkQueueSubmit(mpDevices->mGraphicsFamilypQueues[0], 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
-				"Failed to submit temporary command buffer"
-			)
-		}
-
-		for(VkBufferCopy const& REGION : COPY_REGIONS) {
-			std::cout << "Copied buffer:\n";
-			std::cout << "\tSource offset: " << REGION.srcOffset << "\n";
-			std::cout << "\tDestination offset: " << REGION.dstOffset << "\n";
-			std::cout << "\tBytes: " << REGION.size << "\n";
-		}
-
-		CHECK_VK_SUCCESS(
-			vkWaitForFences(mpDevices->mpLogicalDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
-			"Failed to wait for copy command done fence"
-		)
-
-		vkDestroyFence(mpDevices->mpLogicalDevice, copyCommandDone, nullptr);
-		vkFreeCommandBuffers(mpDevices->mpLogicalDevice, tempCommandPool, 1, &tempCommandBuffer);
-		vkDestroyCommandPool(mpDevices->mpLogicalDevice, tempCommandPool, nullptr);
+		Common::fEndSubmitDeallocateOneTimeCommandBuffer(mpDevices->mpLogicalDevice, mpDevices->mGraphicsFamilypQueues[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::createDescriptorSet(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
