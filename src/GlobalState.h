@@ -23,6 +23,7 @@ namespace GlobalState {
 			DeviceMemory::Common::fKtxLoadImage(
 				R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)"
 			);
+
 		return gpKTX_TEXTURE2;
 	}
 

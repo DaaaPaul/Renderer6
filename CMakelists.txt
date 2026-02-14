@@ -16,7 +16,7 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-set(DEBUG_MODE ON)
+set(DEBUG_MODE OFF)
 
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
