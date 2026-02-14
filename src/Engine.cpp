@@ -65,16 +65,11 @@ namespace Engine {
 	ImageKillhouse::ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
 	mpCommandPoolUsed{},
 	mHitmen{} {
-		std::cout << "SET IMAGE KILLER CREATE PARAMETERS:\n";
-
 		const VkCommandPoolCreateInfo POOL_INFO{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 			.queueFamilyIndex = GRAPHICS_QF_INDEX
 		};
-		std::cout << "\tcommand pool flags: " << POOL_INFO.flags << "\n";
-		std::cout << "\tcommand pool command buffers submitted to qf: " << POOL_INFO.queueFamilyIndex << "\n";
-		std::cout << "\tcreated: " << HITMEN_COUNT << " hitmen" << "\n";
 
 		CHECK_VK_SUCCESS(
 			vkCreateCommandPool(GlobalState::gDevicesWrapper.mpLogicalDevice, &POOL_INFO, nullptr, &mpCommandPoolUsed),

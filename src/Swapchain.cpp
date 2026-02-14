@@ -22,38 +22,19 @@ namespace Backend {
 		sCheckHaveVkFormatColorspace(*this, VkSurfaceFormatKHR(mParameters.mSwapchainKHRCreateInfo.imageFormat, mParameters.mSwapchainKHRCreateInfo.imageColorSpace));
 		sCheckHavePresentModeKHR(*this, mParameters.mSwapchainKHRCreateInfo.presentMode);
 
-		std::cout << "SET VULKAN SWAPCHAIN WRAPPER PARAMETERS:\n";
-		std::cout << "\timages count: " << mParameters.mSwapchainKHRCreateInfo.minImageCount << "\n";
-		std::cout << "\tformat: " << mParameters.mSwapchainKHRCreateInfo.imageFormat << "\n";
-		std::cout << "\tcolorspace: " << mParameters.mSwapchainKHRCreateInfo.imageColorSpace << "\n";
-		std::cout << "\textent: " << mParameters.mSwapchainKHRCreateInfo.imageExtent.width << "x" << mParameters.mSwapchainKHRCreateInfo.imageExtent.height << "\n";
-		std::cout << "\timage usage: " << mParameters.mSwapchainKHRCreateInfo.imageUsage << "\n";
-		std::cout << "\taccessed by queue family: " << mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices[0] << "\n";
-		std::cout << "\tpresent mode: " << mParameters.mSwapchainKHRCreateInfo.presentMode << "\n";
-
-		std::cout << "Creating Swapchain...\n";
-
 		// construct the swapchainKHR
 		CHECK_VK_SUCCESS(
 			vkCreateSwapchainKHR(mpDevices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
-        
-		std::cout << "Created Swapchain\n";
 	}
 
 	Swapchain::~Swapchain() {
-		std::cout << "Destroying Swapchain...\n";
-
 		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
 		vkDestroySurfaceKHR(mpDevices->mpBackend->mpInstance, mpSurfaceKHR, nullptr);
-
-		std::cout << "Destroyed Swapchain\n";
 	}
 
 	void Swapchain::recreateThyself() {
-		std::cout << "Recreating Swapchain...\n";
-
 		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
 		vkDestroySurfaceKHR(mpDevices->mpBackend->mpInstance, mpSurfaceKHR, nullptr);
 
@@ -71,8 +52,6 @@ namespace Backend {
 			vkCreateSwapchainKHR(mpDevices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
-
-		std::cout << "Recreated Swapchain\n";
 	}
 
 	[[nodiscard]] Swapchain::SwapchainConstructInfo Swapchain::sGetConstructParameters(VkInstance pInstance, VkPhysicalDevice pPhysicalDevice, GLFWwindow* pGlfwWindow, uint32_t const& GRAPHICS_QUEUE_FAMILY_INDEX) {

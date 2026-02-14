@@ -61,5 +61,6 @@ namespace GlobalState {
 	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated) {
 		toBePopulated.copyBufferToBuffer(0, gHostVisibleMemory.mHostVisiblepBuffers[0], {VkBufferCopy(0, 0, 32 * 4)});
 		toBePopulated.copyBufferToBuffer(1, gHostVisibleMemory.mHostVisiblepBuffers[1], {VkBufferCopy(0, 0, 4 * 6)});
+		toBePopulated.copyBufferToImage(0, gHostVisibleMemory.mHostVisiblepBuffers[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(gpKTX_TEXTURE->baseWidth, gpKTX_TEXTURE->baseHeight, 1))}); // buffer is tightly packed row by row
 	}
 }

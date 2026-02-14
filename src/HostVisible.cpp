@@ -29,14 +29,6 @@ namespace DeviceMemory {
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {
 
-		std::cout << "HOST VISIBLE MEMORY PARAMETERS:\n";
-		for(Common::BufferInfo const& INFO : mHostVisibleBufferInfos) {
-			std::cout << "\tsize: " << INFO.mBUFFER_SIZE << "\n";
-			std::cout << "\tusage: " << INFO.mBUFFER_USAGE << "\n";
-		}
-
-		std::cout << "Creating HostVisible...\n";
-
 		// buffer stuff
 		{
 			const size_t BUFFERS_COUNT{ mHostVisibleBufferInfos.size() };
@@ -76,13 +68,10 @@ namespace DeviceMemory {
 
 			for(size_t i = 0; i < mDeviceLocalDescriptorSetInfos.size(); i++) {
 				createDescriptorSet(mDeviceLocalDescriptorSetInfos[i], i);
-				std::cout << "Created descriptor set layout and set for host visible memory\n";
 			}
 		}
 
 		(*pBootFunction)();
-
-		std::cout << "Created HostVisible\n";
 	}
 
 	HostVisible::~HostVisible() {

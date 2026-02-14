@@ -62,29 +62,6 @@ namespace Backend {
 			mParameters.mPipelineCreateInfo.layout = mParameters.mpPipelineLayout;
 		}
 
-		// print parameters
-		{
-			std::cout << "SET VULKAN GRAPHICS PIPELINE WRAPPER PARAMETERS:\n";
-			std::cout << "color attachments rendered to: " << mParameters.mRendering.colorAttachmentCount << " with format(s) ";
-			for(VkFormat const& FORMAT : mParameters.mCOLOR_ATTACHMENT_FORMATS) {
-				std::cout << FORMAT << " ";
-			} std::cout << "\n";
-			std::cout << mParameters.mPipelineCreateInfo.stageCount << " shader stages, with name(s) ";
-			for(VkPipelineShaderStageCreateInfo const& STAGE : mParameters.mStages) {
-				std::cout << STAGE.pName << " ";
-			} std::cout << "\n";
-			std::cout << mParameters.mPipelineCreateInfo.pVertexInputState->vertexBindingDescriptionCount << " vertex input binding with " << mParameters.mPipelineCreateInfo.pVertexInputState->vertexAttributeDescriptionCount << " attributes\n";
-			std::cout << "input assembly state toplogy: " << mParameters.mPipelineCreateInfo.pInputAssemblyState->topology << "\n";
-			std::cout << "viewport count: " << mParameters.mPipelineCreateInfo.pViewportState->viewportCount << "\n";
-			std::cout << "scissor count: " << mParameters.mPipelineCreateInfo.pViewportState->scissorCount << "\n";
-			std::cout << "rasterization info: \n";
-			std::cout << "\tpolygon mode: " << mParameters.mPipelineCreateInfo.pRasterizationState->polygonMode << "\n";
-			std::cout << "\tcull mode: " << mParameters.mPipelineCreateInfo.pRasterizationState->cullMode << "\n";
-			std::cout << "\tfront face: " << mParameters.mPipelineCreateInfo.pRasterizationState->frontFace << "\n";
-			std::cout << "multisample info: \n";
-			std::cout << "\tsamples per fragment: " << mParameters.mPipelineCreateInfo.pMultisampleState->rasterizationSamples << "\n";
-		}
-
 		// create the graphics pipeline
 		{
 			CHECK_VK_SUCCESS(

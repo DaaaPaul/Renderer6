@@ -19,22 +19,14 @@ namespace DeviceMemory {
 		mpDevices{ pGivenDevices },
 		mpDeviceLocalMemory{},
 		mDeviceLocalpBuffers{},
-		mDeviceLocalBufferInfos{ GIVEN_BUFFER_INFO },
+		mDeviceLocalBufferInfos{},
 		mBufferOffsets{},
 		mBufferSizes{}, 
 		mpImages{},
 		mpDescriptorPool{}, 
-		mDeviceLocalDescriptorSetInfos{ GIVEN_DESCRIPTOR_SET_INFOS },
+		mDeviceLocalDescriptorSetInfos{},
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {
-
-		std::cout << "DEVICE LOCAL MEMORY PARAMETERS:\n";
-		for(Common::BufferInfo const& INFO : mDeviceLocalBufferInfos) {
-			std::cout << "\tsize: " << INFO.mBUFFER_SIZE << "\n";
-			std::cout << "\tusage: " << INFO.mBUFFER_USAGE << "\n";
-		}
-
-		std::cout << "Creating DeviceLocal...\n";
 
 		// memory and buffer stuff
 		{

@@ -31,56 +31,7 @@ namespace Backend {
 		mParameters.mLogicalDeviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(mParameters.mEnabledDeviceExtensions.size());
 		mParameters.mLogicalDeviceCreateInfo.ppEnabledExtensionNames = mParameters.mEnabledDeviceExtensions.data();
 
-		// print parameters
-		std::cout << "SET VULKAN DEVICES CREATE PARAMETERS:\n";
-
-		{
-			VkPhysicalDeviceProperties physicalDeviceProperties{};
-			vkGetPhysicalDeviceProperties(mParameters.mSelectedPhysicalDevice, &physicalDeviceProperties);
-			std::cout << "\t-Physical device: " << physicalDeviceProperties.deviceName << "\n";
-		}
-
-		{
-			std::cout << "\t-Device extensions:\n";
-			for (int i = 0; i < mParameters.mLogicalDeviceCreateInfo.enabledExtensionCount; i++) {
-				std::cout << "\t\t-" << mParameters.mLogicalDeviceCreateInfo.ppEnabledExtensionNames[i] << '\n';
-			}
-		}
-
-		{
-			auto printEnabledFeaturesInVkFeatureStruct = [](void const* VK_FEATURE_STRUCT, const char* FEATURE_NAME)-> void {
-				const uint16_t FIRST_VKBOOL32_OFFSET = offsetof(VkPhysicalDeviceFeatures2, pNext) + 8;
-				unsigned char const* BYTE_POINTER = reinterpret_cast<unsigned char const*>(VK_FEATURE_STRUCT) + FIRST_VKBOOL32_OFFSET;
-				VkBool32 const* VK_BOOLS_POINTER = reinterpret_cast<VkBool32 const*>(BYTE_POINTER);
-
-				for (int i = 0; (*VK_BOOLS_POINTER == VK_TRUE) || (*VK_BOOLS_POINTER == VK_FALSE); i++) {
-					if (*VK_BOOLS_POINTER == VK_TRUE) {
-						std::cout << "\t\t-Feature " << i << " from the top down (zero-indexed) is enabled in the struct " << FEATURE_NAME << "\n";
-					}
-					VK_BOOLS_POINTER++;
-				}
-			};
-			std::cout << "\t-Device features:\n";
-			printEnabledFeaturesInVkFeatureStruct(mParameters.mLogicalDeviceCreateInfo.pNext, "VkPhysicalDeviceFeatures2");
-			printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext, "VkPhysicalDeviceSynchronization2Features");
-			printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext)->pNext, "VkPhysicalDeviceDynamicRenderingFeatures");
-			printEnabledFeaturesInVkFeatureStruct(reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures const*>(reinterpret_cast<VkPhysicalDeviceSynchronization2Features const*>(reinterpret_cast<VkPhysicalDeviceFeatures2 const*>(mParameters.mLogicalDeviceCreateInfo.pNext)->pNext)->pNext)->pNext, "VkPhysicalDeviceExtendedDynamicState2FeaturesEXT");
-		}
-
-		{
-			std::cout << "\t-Device queues:\n";
-			for (int i = 0; i < mParameters.mLogicalDeviceCreateInfo.queueCreateInfoCount; i++) {
-				std::cout << "\t\t-Queue family index:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueFamilyIndex << '\n';
-				std::cout << "\t\t-Queue count:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount << '\n';
-				for (int j = 0; j < mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].queueCount; j++) {
-					std::cout << "\t\t-Queue priorities:" << mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[i].pQueuePriorities[j] << '\n';
-				}
-			}
-		}
-
-		// construct the logical device
-		std::cout << "Creating Devices...\n";
-
+		// construct the logical device and queues
 		CHECK_VK_SUCCESS(
 			vkCreateDevice(mpPhysicalDevice, &mParameters.mLogicalDeviceCreateInfo, nullptr, &mpLogicalDevice),
 			"Failed to create logical device"
@@ -89,16 +40,10 @@ namespace Backend {
 		for(int i = 0; i < mGraphicsFamilypQueues.size(); i++) {
 			vkGetDeviceQueue(mpLogicalDevice, mParameters.mLogicalDeviceCreateInfo.pQueueCreateInfos[0].queueFamilyIndex, i, &mGraphicsFamilypQueues[i]);
 		}
-
-		std::cout << "Created Devices\n";
 	}
 
 	Devices::~Devices() {
-		std::cout << "Destroying Devices...\n";
-
 		vkDestroyDevice(mpLogicalDevice, nullptr);
-
-		std::cout << "Destroyed Devices\n";
 	}
 
 	[[nodiscard]] Devices::DevicesConstructParameters Devices::sGetConstructParameters(VkInstance instance) {

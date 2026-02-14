@@ -12,15 +12,8 @@ namespace Backend {
 		mpGlfwWindow{},
 		mFrameBufferResizedAlert{ false },
 		mPARAMETERS{ GIVEN_PARAMETERS } {
-		// print parameters
-		std::cout << "SET WINDOW CREATE PARAMETERS:\n"
-			"\t-width: " << mPARAMETERS.mWIDTH << "\n"
-			"\t-height: " << mPARAMETERS.mHEIGHT << "\n"
-			"\t-name: " << mPARAMETERS.mNAME << "\n";
 
-		// construct the GLFWwindow*
-		std::cout << "Creating Window...\n";
-
+		// construct the GLFWwindow
 		glfwInit();
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -30,17 +23,11 @@ namespace Backend {
 		glfwSetFramebufferSizeCallback(mpGlfwWindow, sFramebufferResizeCallback);
 
 		CHECK_NULLPTR(mpGlfwWindow, "glfwCreateWindow failed");
-
-		std::cout << "Created Window\n";
 	}
 
 	Window::~Window() {
-		std::cout << "Destroying Window...\n";
-
 		glfwDestroyWindow(mpGlfwWindow);
 		glfwTerminate();
-
-		std::cout << "Destroyed Window\n";
 	}
 
 	void Window::sFramebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {

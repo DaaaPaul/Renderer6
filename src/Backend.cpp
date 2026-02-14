@@ -19,41 +19,19 @@ namespace Backend {
 		mParameters.mCreateInfo.enabledLayerCount = static_cast<uint32_t>(mParameters.mENABLED_LOADER_LAYERS.size());
 		mParameters.mCreateInfo.ppEnabledLayerNames = mParameters.mENABLED_LOADER_LAYERS.data();
 
-		// print parameters
-		std::cout << "SET VULKAN BACKEND CREATE PARAMETERS:\n";
-		std::cout << "\t-INSTANCE API VERSION: " << UINT32_TO_VK_API_VERSION_CSTR(mParameters.mCreateInfo.pApplicationInfo->apiVersion) << "\n";
-		std::vector<const char*> enabledExtensionsNames{};
-		for(int i = 0; i < mParameters.mCreateInfo.enabledExtensionCount; i++) {
-			std::cout << "\t-INSTANCE EXTENSION: " << mParameters.mCreateInfo.ppEnabledExtensionNames[i] << "\n";
-			enabledExtensionsNames.push_back(mParameters.mCreateInfo.ppEnabledExtensionNames[i]);
-		}
-		std::vector<const char*> enabledLayersNames{};
-		for(int i = 0; i < mParameters.mCreateInfo.enabledLayerCount; i++) {
-			std::cout << "\t-LOADER LAYER: " << mParameters.mCreateInfo.ppEnabledLayerNames[i] << "\n";
-			enabledLayersNames.push_back(mParameters.mCreateInfo.ppEnabledLayerNames[i]);
-		}
-
 		// checks
-		Backend::sCheckHaveInstanceExtensions(enabledExtensionsNames);
-		Backend::sCheckHaveLoaderLayers(enabledLayersNames);
+		Backend::sCheckHaveInstanceExtensions(mParameters.mENABLED_EXTENSIONS);
+		Backend::sCheckHaveLoaderLayers(mParameters.mENABLED_LOADER_LAYERS);
 
 		// construct the VkInstance
-		std::cout << "Creating Backend...\n";
-
 		CHECK_VK_SUCCESS(
 			vkCreateInstance(&mParameters.mCreateInfo, nullptr, &mpInstance),
 			"Failed to create instance"
 		)
-
-		std::cout << "Created Backend\n";
 	}
 
 	Backend::~Backend() {
-		std::cout << "Destroying Backend...\n";
-
 		vkDestroyInstance(mpInstance, nullptr);
-
-		std::cout << "Destroyed Backend\n";
 	}
 
 	[[nodiscard]] Backend::BackendConstructParameters Backend::sGetConstructParameters() {
