@@ -75,8 +75,6 @@ namespace DeviceMemory {
 	}
 
 	HostVisible::~HostVisible() {
-		std::cout << "Destroying HostVisible...\n";
-	
 		vkFreeMemory(mpDevices->mpLogicalDevice, mpHostVisibleMemory, nullptr);
 		for(VkBuffer& buffer : mHostVisiblepBuffers) {
 			vkDestroyBuffer(mpDevices->mpLogicalDevice, buffer, nullptr);
@@ -89,20 +87,18 @@ namespace DeviceMemory {
 		if(mpDescriptorPool) {
 			vkDestroyDescriptorPool(mpDevices->mpLogicalDevice, mpDescriptorPool, nullptr);
 		}
-
-		std::cout << "Destroyed HostVisible\n";
 	}
 
 	void HostVisible::writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES) {
 		void* mappedMemory{};
+
 		CHECK_VK_SUCCESS(
 		vkMapMemory(mpDevices->mpLogicalDevice, mpHostVisibleMemory, mBufferOffsets[INDEX], mBufferSizes[INDEX], 0, &mappedMemory),
 		"Failed to map memory"
 		)
+
 		std::memcpy(mappedMemory, pDATA, NUM_BYTES);
 		vkUnmapMemory(mpDevices->mpLogicalDevice, mpHostVisibleMemory);
-
-		// std::cout << "Wrote " << NUM_BYTES << " bytes of data from " << pDATA << " to host visible memory offset " << mBufferOffsets[INDEX] << " (address " << mappedMemory << ")" << "\n";
 	}
 
 	void HostVisible::createDescriptorSet(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
@@ -152,11 +148,5 @@ namespace DeviceMemory {
 		};
 
 		vkUpdateDescriptorSets(mpDevices->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
-
-		std::cout << "Set " << SET_INDEX << " binding " << SET_BINDING_NUM << " now describes buffer(s) ";
-		for(size_t const& INDEX : BUFFER_INDICES) {
-			std::cout << INDEX << " ";
-		}
-		std::cout << "\n";
 	}
 }

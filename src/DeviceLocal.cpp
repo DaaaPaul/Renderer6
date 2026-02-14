@@ -67,18 +67,13 @@ namespace DeviceMemory {
 
 			for(size_t i = 0; i < mDeviceLocalDescriptorSetInfos.size(); i++) {
 				createDescriptorSet(mDeviceLocalDescriptorSetInfos[i], i);
-				std::cout << "Created descriptor set layout and set for device local memory\n";
 			}
 		}
 
 		(*pBootFunction)();
-
-		std::cout << "Created DeviceLocal\n";
 	}
 
 	DeviceLocal::~DeviceLocal() {
-		std::cout << "Destroying DeviceLocal...\n";
-	
 		vkFreeMemory(mpDevices->mpLogicalDevice, mpDeviceLocalMemory, nullptr);
 		for(VkBuffer& buffer : mDeviceLocalpBuffers) {
 			vkDestroyBuffer(mpDevices->mpLogicalDevice, buffer, nullptr);
@@ -91,8 +86,6 @@ namespace DeviceMemory {
 		if(mpDescriptorPool) {
 			vkDestroyDescriptorPool(mpDevices->mpLogicalDevice, mpDescriptorPool, nullptr);
 		}
-	
-		std::cout << "Destroyed DeviceLocal\n";
 	}
 
 	void DeviceLocal::copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {
@@ -176,11 +169,5 @@ namespace DeviceMemory {
 		};
 
 		vkUpdateDescriptorSets(mpDevices->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
-
-		std::cout << "Set " << SET_INDEX << " binding " << SET_BINDING_NUM << " now describes buffer(s) ";
-		for(size_t const& INDEX : BUFFER_INDICES) {
-			std::cout << INDEX << " ";
-		}
-		std::cout << "\n";
 	}
 }
