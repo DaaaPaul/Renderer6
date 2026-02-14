@@ -8,13 +8,14 @@ namespace DeviceMemory {
 	struct HostVisible {
 		Backend::Devices* mpDevices{};
 		VkDeviceMemory mpHostVisibleMemory{};
-		std::vector<VkBuffer> mHostVisiblepBuffers{};
-		std::vector<Common::BufferInfo> mHostVisibleBufferInfos{};
+
+		std::vector<VkBuffer> mpBuffers{};
+		std::vector<Common::BufferInfo> mBufferInfos{};
 		std::vector<VkDeviceSize> mBufferOffsets{};
 		std::vector<VkDeviceSize> mBufferSizes{};
 
 		VkDescriptorPool mpDescriptorPool{};
-		std::vector<Common::DescriptorSetInfo> mDeviceLocalDescriptorSetInfos{};
+		std::vector<Common::DescriptorSetInfo> mDescriptorSetInfos{};
 		std::vector<VkDescriptorSetLayout> mDescriptorpSetLayouts{};
 		std::vector<VkDescriptorSet> mDescriptorpSets{};
 

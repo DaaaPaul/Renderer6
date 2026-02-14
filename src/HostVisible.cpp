@@ -8,75 +8,75 @@ namespace DeviceMemory {
 	HostVisible::HostVisible() :
 		mpDevices{},
 		mpHostVisibleMemory{},
-		mHostVisiblepBuffers{},
-		mHostVisibleBufferInfos{},
+		mpBuffers{},
+		mBufferInfos{},
 		mBufferOffsets{},
 		mBufferSizes{},
 		mpDescriptorPool{}, 
-		mDeviceLocalDescriptorSetInfos{},
+		mDescriptorSetInfos{},
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {}
 
 	HostVisible::HostVisible(Backend::Devices* pGivenDevices, const DeviceMemory::Common::HostVisibleConstructArguements (*const pCONSTRUCT_FUNCTION)(), void (*const pPOPULATE_FUNCTION)(DeviceMemory::HostVisible& toBePopulated)) :
 		mpDevices{ pGivenDevices },
 		mpHostVisibleMemory{},
-		mHostVisiblepBuffers{},
-		mHostVisibleBufferInfos{ GIVEN_BUFFER_INFO },
+		mpBuffers{},
+		mBufferInfos{ pCONSTRUCT_FUNCTION().mBufferInfos },
 		mBufferOffsets{},
 		mBufferSizes{},
 		mpDescriptorPool{}, 
-		mDeviceLocalDescriptorSetInfos{ GIVEN_DESCRIPTOR_SET_INFOS },
+		mDescriptorSetInfos{ pCONSTRUCT_FUNCTION().mDescriptorSetInfos },
 		mDescriptorpSetLayouts{},
 		mDescriptorpSets{} {
 
-		// buffer stuff
+		// memory and buffer stuff
 		{
-			const size_t BUFFERS_COUNT{ mHostVisibleBufferInfos.size() };
+			const size_t BUFFERS_COUNT{ mBufferInfos.size() };
 
 			// create the buffers themselves with their memory requirements info
-			mHostVisiblepBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
+			mpBuffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
 			mBufferSizes.resize(BUFFERS_COUNT, 0);
-			std::vector<VkMemoryRequirements> hostVisibleBuffersMemRequirements(BUFFERS_COUNT, {});
+			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				mHostVisiblepBuffers[i] = Common::fCreateBuffer(mpDevices->mpLogicalDevice, mHostVisibleBufferInfos[i]);
-				vkGetBufferMemoryRequirements(mpDevices->mpLogicalDevice, mHostVisiblepBuffers[i], &hostVisibleBuffersMemRequirements[i]);
-				mBufferSizes[i] = hostVisibleBuffersMemRequirements[i].size;
+				mpBuffers[i] = Common::fCreateBuffer(mpDevices->mpLogicalDevice, mBufferInfos[i]);
+				vkGetBufferMemoryRequirements(mpDevices->mpLogicalDevice, mpBuffers[i], &buffersMemoryRequirements[i]);
+				mBufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
 
 			// create the memory
 			VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.allocationSize = Common::fGetMemoryAllocationSizeAndOffsets(hostVisibleBuffersMemRequirements).first,
-				.memoryTypeIndex = Common::fGetMemoryTypeIndex(mpDevices->mpPhysicalDevice, hostVisibleBuffersMemRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				.allocationSize = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
+				.memoryTypeIndex = Common::fGetMemoryTypeIndex(mpDevices->mpPhysicalDevice, buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			};
 			vkAllocateMemory(mpDevices->mpLogicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &mpHostVisibleMemory);
 	
 			// bind buffers
-			mBufferOffsets = Common::fGetMemoryAllocationSizeAndOffsets(hostVisibleBuffersMemRequirements).second;
+			mBufferOffsets = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
 			for(int i = 0; i < BUFFERS_COUNT; i++) {
-				vkBindBufferMemory(mpDevices->mpLogicalDevice, mHostVisiblepBuffers[i], mpHostVisibleMemory, mBufferOffsets[i]);
+				vkBindBufferMemory(mpDevices->mpLogicalDevice, mpBuffers[i], mpHostVisibleMemory, mBufferOffsets[i]);
 			}
 		}
 
 		// descriptor set stuff
-		if(!GIVEN_DESCRIPTOR_SET_INFOS.empty()) {
-			mpDescriptorPool = Common::fCreateDescriptorPool(mpDevices->mpLogicalDevice, mDeviceLocalDescriptorSetInfos);
+		if(!mDescriptorSetInfos.empty()) {
+			mpDescriptorPool = Common::fCreateDescriptorPool(mpDevices->mpLogicalDevice, mDescriptorSetInfos);
 
 			// create the descriptor sets
-			mDescriptorpSetLayouts.resize(mDeviceLocalDescriptorSetInfos.size(), VK_NULL_HANDLE);
-			mDescriptorpSets.resize(mDeviceLocalDescriptorSetInfos.size(), VK_NULL_HANDLE);
+			mDescriptorpSetLayouts.resize(mDescriptorSetInfos.size(), VK_NULL_HANDLE);
+			mDescriptorpSets.resize(mDescriptorSetInfos.size(), VK_NULL_HANDLE);
 
-			for(size_t i = 0; i < mDeviceLocalDescriptorSetInfos.size(); i++) {
-				createDescriptorSet(mDeviceLocalDescriptorSetInfos[i], i);
+			for(size_t i = 0; i < mDescriptorSetInfos.size(); i++) {
+				createDescriptorSet(mDescriptorSetInfos[i], i);
 			}
 		}
 
-		(*pBootFunction)();
+		pPOPULATE_FUNCTION(*this);
 	}
 
 	HostVisible::~HostVisible() {
 		vkFreeMemory(mpDevices->mpLogicalDevice, mpHostVisibleMemory, nullptr);
-		for(VkBuffer& buffer : mHostVisiblepBuffers) {
+		for(VkBuffer& buffer : mpBuffers) {
 			vkDestroyBuffer(mpDevices->mpLogicalDevice, buffer, nullptr);
 		}
 	
@@ -105,8 +105,8 @@ namespace DeviceMemory {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,
-			.bindingCount = static_cast<uint32_t>(INFO.mLAYOUT_BINDINGS.size()),
-			.pBindings = INFO.mLAYOUT_BINDINGS.data(),
+			.bindingCount = static_cast<uint32_t>(INFO.mLayoutBindings.size()),
+			.pBindings = INFO.mLayoutBindings.data(),
 		};
 
 		CHECK_VK_SUCCESS(
@@ -128,13 +128,13 @@ namespace DeviceMemory {
 	}
 
 	void HostVisible::updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != mDeviceLocalDescriptorSetInfos[SET_INDEX].mLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
 		std::vector<VkDescriptorBufferInfo> toWriteBuffers{};
 		for(size_t const& BUFFER_INDEX : BUFFER_INDICES) {
-			toWriteBuffers.emplace_back(mHostVisiblepBuffers[BUFFER_INDEX], 0, VK_WHOLE_SIZE);
+			toWriteBuffers.emplace_back(mpBuffers[BUFFER_INDEX], 0, VK_WHOLE_SIZE);
 		}
 	
 		const VkWriteDescriptorSet WRITE_INFO{
@@ -142,8 +142,8 @@ namespace DeviceMemory {
 			.dstSet = mDescriptorpSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = mDeviceLocalDescriptorSetInfos[SET_INDEX].mLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = mDeviceLocalDescriptorSetInfos[SET_INDEX].mLAYOUT_BINDINGS[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 

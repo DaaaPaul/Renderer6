@@ -17,8 +17,17 @@
 
 int main() {
     try {
-		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.minImageCount };
-		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX };
+		GlobalState::fGetKtxTexture2();
+		GlobalState::fGetWindowWrapper();
+		GlobalState::fGetBackendWrapper();
+		GlobalState::fGetDevicesWrapper();
+		GlobalState::fGetSwapchainWrapper();
+		GlobalState::fGetHostVisibleMemory();
+		GlobalState::fGetDeviceLocalMemory();
+		GlobalState::fGetGraphicsPipeline();
+
+		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.minImageCount };
+		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX };
 
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
 		Engine::fRenderLoop(killhouse);

@@ -25,11 +25,11 @@ namespace DeviceMemory {
 		[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO) {
 			VkBufferCreateInfo bufferInfo{
 				.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-				.size = INFO.mBUFFER_SIZE,
-				.usage = INFO.mBUFFER_USAGE,
+				.size = INFO.mBufferSize,
+				.usage = INFO.mBufferUsage,
 				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 				.queueFamilyIndexCount = 1,
-				.pQueueFamilyIndices = &INFO.mGRAPHICS_QUEUE_FAMILY_INDEX,
+				.pQueueFamilyIndices = &INFO.mGraphicsQueueFamilyIndex,
 			};
 
 			VkBuffer returnBuffer{};
@@ -82,7 +82,7 @@ namespace DeviceMemory {
 			// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
 			std::vector<VkDescriptorPoolSize> poolSizes{};
 			for(Common::DescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
-				const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.mLAYOUT_BINDINGS };
+				const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.mLayoutBindings };
 
 				for(VkDescriptorSetLayoutBinding const& BINDING : BINDINGS) {
 					poolSizes.emplace_back(BINDING.descriptorType, BINDING.descriptorCount);
@@ -105,7 +105,7 @@ namespace DeviceMemory {
 			return pReturnDescriptorPool;
 		}
 
-		void fAllocateBeginOneTimeCommandBuffer(VkDevice pDevice, VkCommandPool pCmdPool, VkCommandBuffer pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
+		void fAllocateBeginOneTimeCommandBuffer(VkDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
 			// create transient command pool
 			{
 				const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
@@ -114,7 +114,7 @@ namespace DeviceMemory {
 					.queueFamilyIndex = GRAPHICS_QF_INDEX
 				};
 				CHECK_VK_SUCCESS(
-					vkCreateCommandPool(pDevice, &COMMAND_POOL_INFO, nullptr, &pCmdPool),
+					vkCreateCommandPool(rpDevice, &COMMAND_POOL_INFO, nullptr, &rpCmdPool),
 					"Failed to create temporary command pool"
 				)
 			}
@@ -123,12 +123,12 @@ namespace DeviceMemory {
 			{
 				const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
 					.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-					.commandPool = pCmdPool,
+					.commandPool = rpCmdPool,
 					.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 					.commandBufferCount = 1,
 				};
 				CHECK_VK_SUCCESS(
-					vkAllocateCommandBuffers(pDevice, &COMMAND_BUFFER_INFO, &pCmdBuf),
+					vkAllocateCommandBuffers(rpDevice, &COMMAND_BUFFER_INFO, &rpCmdBuf),
 					"Failed to create temporary command buffer"
 				)
 			}
@@ -137,17 +137,17 @@ namespace DeviceMemory {
 			{
 				const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
 				CHECK_VK_SUCCESS(
-					vkBeginCommandBuffer(pCmdBuf, &ONE_TIME_SUBMIT_BEGIN),
+					vkBeginCommandBuffer(rpCmdBuf, &ONE_TIME_SUBMIT_BEGIN),
 					"Failed to begin temporary command buffer recording"
 				)
 			}
 		}
 
-		void fEndSubmitDeallocateOneTimeCommandBuffer(VkDevice pDevice, VkQueue pQueue, VkCommandPool pCmdPool, VkCommandBuffer pCmdBuf) {
+		void fEndSubmitDeallocateOneTimeCommandBuffer(VkDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
 			// end command buffer
 			{
 				CHECK_VK_SUCCESS(
-					vkEndCommandBuffer(pCmdBuf),
+					vkEndCommandBuffer(rpCmdBuf),
 					"Failed to end temporary command buffer recording"
 				)
 			}
@@ -157,7 +157,7 @@ namespace DeviceMemory {
 			{
 				const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
 				CHECK_VK_SUCCESS(
-					vkCreateFence(pDevice, &FENCE_INFO, nullptr, &copyCommandDone),
+					vkCreateFence(rpDevice, &FENCE_INFO, nullptr, &copyCommandDone),
 					"Failed to create copy command done fence"
 				)
 			}
@@ -167,23 +167,23 @@ namespace DeviceMemory {
 				const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
 					.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 					.commandBufferCount = 1,
-					.pCommandBuffers = &pCmdBuf,
+					.pCommandBuffers = &rpCmdBuf,
 				};
 
 				CHECK_VK_SUCCESS(
-					vkQueueSubmit(pQueue, 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
+					vkQueueSubmit(rpQueue, 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
 					"Failed to submit temporary command buffer"
 				)
 			}
 
 			CHECK_VK_SUCCESS(
-				vkWaitForFences(pDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
+				vkWaitForFences(rpDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
 				"Failed to wait for copy command done fence"
 			)
 
-			vkDestroyFence(pDevice, copyCommandDone, nullptr);
-			vkFreeCommandBuffers(pDevice, pCmdPool, 1, &pCmdBuf);
-			vkDestroyCommandPool(pDevice, pCmdPool, nullptr);
+			vkDestroyFence(rpDevice, copyCommandDone, nullptr);
+			vkFreeCommandBuffers(rpDevice, rpCmdPool, 1, &rpCmdBuf);
+			vkDestroyCommandPool(rpDevice, rpCmdPool, nullptr);
 		}
 
 		void fTransitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,

@@ -9,15 +9,18 @@ namespace DeviceMemory {
 		Backend::Devices* mpDevices{};
 		VkDeviceMemory mpDeviceLocalMemory{};
 
-		std::vector<VkBuffer> mDeviceLocalpBuffers{};
-		std::vector<Common::BufferInfo> mDeviceLocalBufferInfos{};
+		std::vector<VkBuffer> mpBuffers{};
+		std::vector<Common::BufferInfo> mBufferInfos{};
 		std::vector<VkDeviceSize> mBufferOffsets{};
 		std::vector<VkDeviceSize> mBufferSizes{};
 
 		std::vector<VkImage> mpImages{};
+		std::vector<Common::ImageInfo> mImageInfos{};
+		std::vector<VkDeviceSize> mImageOffsets{};
+		std::vector<VkDeviceSize> mImageSizes{};
 
 		VkDescriptorPool mpDescriptorPool{};
-		std::vector<Common::DescriptorSetInfo> mDeviceLocalDescriptorSetInfos{};
+		std::vector<Common::DescriptorSetInfo> mDescriptorSetInfos{};
 		std::vector<VkDescriptorSetLayout> mDescriptorpSetLayouts{};
 		std::vector<VkDescriptorSet> mDescriptorpSets{};
 

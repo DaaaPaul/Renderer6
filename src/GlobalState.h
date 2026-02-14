@@ -18,30 +18,85 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	// memory construct functions and data
-	ktxTexture2 const*const gpKTX_TEXTURE{ DeviceMemory::Common::fKtxLoadImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)") };
+	inline ktxTexture2 const* fGetKtxTexture2() {
+		static ktxTexture2 const*const gpKTX_TEXTURE2 = 
+			DeviceMemory::Common::fKtxLoadImage(
+				R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)"
+			);
+		return gpKTX_TEXTURE2;
+	}
+
+	inline Backend::Window& fGetWindowWrapper() {
+		static Backend::Window gWindowWrapper(Backend::Window::sGetConstructParameters());
+
+		return gWindowWrapper;
+	}
+
+	inline Backend::Backend& fGetBackendWrapper() {
+		static Backend::Backend gBackend(
+			&fGetWindowWrapper(),
+			Backend::Backend::sGetConstructParameters()
+		);
+
+		return gBackend;
+	}
+
+	inline Backend::Devices& fGetDevicesWrapper() {
+		static Backend::Devices gDevices(
+			&fGetBackendWrapper(),
+			Backend::Devices::sGetConstructParameters(fGetBackendWrapper().mpInstance)
+		);
+
+		return gDevices;
+	}
+
+	inline Backend::Swapchain& fGetSwapchainWrapper() {
+		static Backend::Swapchain gSwapchainWrapper(
+			&fGetDevicesWrapper(),
+			Backend::Swapchain::sGetConstructParameters(
+				fGetBackendWrapper().mpInstance,
+				fGetDevicesWrapper().mpPhysicalDevice,
+				fGetBackendWrapper().mpWindow->mpGlfwWindow,
+				fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX
+			)
+		);
+
+		return gSwapchainWrapper;
+	}
+
 	const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements();
 	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
 	const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements();
 	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
 
-	// vulkan/rendering backend global objects
-	inline Backend::Window gWindowWrapper(Backend::Window::sGetConstructParameters());
-	inline Backend::Backend gBackendWrapper(&gWindowWrapper, Backend::Backend::sGetConstructParameters());
-	inline Backend::Devices gDevicesWrapper(&gBackendWrapper, Backend::Devices::sGetConstructParameters(gBackendWrapper.mpInstance));
-	inline Backend::Swapchain gSwapchainWrapper(&gDevicesWrapper, Backend::Swapchain::sGetConstructParameters(gBackendWrapper.mpInstance, gDevicesWrapper.mpPhysicalDevice, gBackendWrapper.mpWindow->mpGlfwWindow, gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX));
-	inline DeviceMemory::HostVisible gHostVisibleMemory(
-		&gDevicesWrapper,
-		&fGetHostVisibleMemoryConstructArguements,
-		&fPopulateHostVisibleMemory
-	);
-	inline DeviceMemory::DeviceLocal gDeviceLocalMemory(
-		&gDevicesWrapper,
-		&fGetDeviceLocalMemoryConstructArguements,
-		&fPopulateDeviceLocalMemory
-	);
-	inline Backend::GraphicsPipeline gGraphicsPipeline(
-		&gDevicesWrapper,
-		Backend::GraphicsPipeline::sGetConstructParameters(gHostVisibleMemory.mDescriptorpSetLayouts)
-	);
+	inline DeviceMemory::HostVisible& fGetHostVisibleMemory() {
+		static DeviceMemory::HostVisible gHostVisibleMemory(
+			&fGetDevicesWrapper(),
+			&fGetHostVisibleMemoryConstructArguements,
+			&fPopulateHostVisibleMemory
+		);
+
+		return gHostVisibleMemory;
+	}
+
+	inline DeviceMemory::DeviceLocal& fGetDeviceLocalMemory() {
+		static DeviceMemory::DeviceLocal gDeviceLocalMemory(
+			&fGetDevicesWrapper(),
+			&fGetDeviceLocalMemoryConstructArguements,
+			&fPopulateDeviceLocalMemory
+		);
+
+		return gDeviceLocalMemory;
+	}
+
+	inline Backend::GraphicsPipeline& fGetGraphicsPipeline() {
+		static Backend::GraphicsPipeline gGraphicsPipeline(
+			&fGetDevicesWrapper(),
+			Backend::GraphicsPipeline::sGetConstructParameters(
+				fGetHostVisibleMemory().mDescriptorpSetLayouts
+			)
+		);
+
+		return gGraphicsPipeline;
+	}
 }

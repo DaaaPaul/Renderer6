@@ -16,6 +16,8 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
+set(DEBUG_MODE ON)
+
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend.cpp
@@ -48,6 +50,12 @@ target_sources(Renderer6 PRIVATE
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
 )
+if(DEBUG_MODE)
+	target_compile_options(Renderer6 PRIVATE
+		$<$<CXX_COMPILER_ID:MSVC>:/W4>
+		$<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address /Zi>
+	)
+endif()
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
 	Vulkan::Vulkan

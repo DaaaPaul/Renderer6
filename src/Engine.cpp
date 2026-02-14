@@ -4,7 +4,7 @@
 #include "DeviceMemoryCommon.h"
 
 #define CHECK_PRESSED(glfwKey) \
-glfwGetKey(GlobalState::gWindowWrapper.mpGlfwWindow, glfwKey) == GLFW_PRESS
+glfwGetKey(GlobalState::fGetWindowWrapper().mpGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
 	ImageHitman::ImageHitman(VkCommandPool pool) :
@@ -19,7 +19,7 @@ namespace Engine {
 				.flags = VK_FENCE_CREATE_SIGNALED_BIT
 			};
 			CHECK_VK_SUCCESS(
-				vkCreateFence(GlobalState::gDevicesWrapper.mpLogicalDevice, &FENCE_INFO, nullptr, &mpOneAtATime),
+				vkCreateFence(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &FENCE_INFO, nullptr, &mpOneAtATime),
 				"Fence creation failed"
 			)
 		}
@@ -30,11 +30,11 @@ namespace Engine {
 				.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 			};
 			CHECK_VK_SUCCESS(
-				vkCreateSemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderReady),
+				vkCreateSemaphore(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderReady),
 				"Semaphore creation failed"
 			)
 			CHECK_VK_SUCCESS(
-				vkCreateSemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderFinished),
+				vkCreateSemaphore(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &EMPTY_INFO, nullptr, &mpRenderFinished),
 				"Semaphore creation failed"
 			)
 		}
@@ -49,17 +49,17 @@ namespace Engine {
 			};
 
 			CHECK_VK_SUCCESS(
-				vkAllocateCommandBuffers(GlobalState::gDevicesWrapper.mpLogicalDevice, &DRAW_COMMANDS_INFO, &mDrawCommands),
+				vkAllocateCommandBuffers(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &DRAW_COMMANDS_INFO, &mDrawCommands),
 				"Command buffer creation failed"
 			)
 		}
 	}
 
 	ImageHitman::~ImageHitman() {
-		vkDestroyFence(GlobalState::gDevicesWrapper.mpLogicalDevice, mpOneAtATime, nullptr);
-		vkDestroySemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, mpRenderReady, nullptr);
-		vkDestroySemaphore(GlobalState::gDevicesWrapper.mpLogicalDevice, mpRenderFinished, nullptr);
-		vkFreeCommandBuffers(GlobalState::gDevicesWrapper.mpLogicalDevice, mpCommandPool, 1, &mDrawCommands);
+		vkDestroyFence(GlobalState::fGetDevicesWrapper().mpLogicalDevice, mpOneAtATime, nullptr);
+		vkDestroySemaphore(GlobalState::fGetDevicesWrapper().mpLogicalDevice, mpRenderReady, nullptr);
+		vkDestroySemaphore(GlobalState::fGetDevicesWrapper().mpLogicalDevice, mpRenderFinished, nullptr);
+		vkFreeCommandBuffers(GlobalState::fGetDevicesWrapper().mpLogicalDevice, mpCommandPool, 1, &mDrawCommands);
 	}
 
 	ImageKillhouse::ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
@@ -72,7 +72,7 @@ namespace Engine {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateCommandPool(GlobalState::gDevicesWrapper.mpLogicalDevice, &POOL_INFO, nullptr, &mpCommandPoolUsed),
+			vkCreateCommandPool(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &POOL_INFO, nullptr, &mpCommandPoolUsed),
 			"Failed to create command pool"
 		)
 
@@ -84,7 +84,7 @@ namespace Engine {
 
 	ImageKillhouse::~ImageKillhouse() {
 		mHitmen.clear();
-		vkDestroyCommandPool(GlobalState::gDevicesWrapper.mpLogicalDevice, mpCommandPoolUsed, nullptr);
+		vkDestroyCommandPool(GlobalState::fGetDevicesWrapper().mpLogicalDevice, mpCommandPoolUsed, nullptr);
 	}
 
 	void ImageKillhouse::recreateHitmen() {
@@ -99,9 +99,9 @@ namespace Engine {
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages() {
 		uint32_t swapchainImageCount{};
-		vkGetSwapchainImagesKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, &swapchainImageCount, nullptr);
+		vkGetSwapchainImagesKHR(GlobalState::fGetDevicesWrapper().mpLogicalDevice, GlobalState::fGetSwapchainWrapper().mpSwapchainKHR, &swapchainImageCount, nullptr);
 		std::vector<VkImage> swapchainImages(swapchainImageCount);
-		vkGetSwapchainImagesKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
+		vkGetSwapchainImagesKHR(GlobalState::fGetDevicesWrapper().mpLogicalDevice, GlobalState::fGetSwapchainWrapper().mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
 
 		return swapchainImages;
 	}
@@ -118,7 +118,7 @@ namespace Engine {
 		};
 
 		CHECK_VK_SUCCESS(
-		vkCreateImageView(GlobalState::gDevicesWrapper.mpLogicalDevice, &IMAGE_VIEW_INFO, nullptr, &returnImageView),
+		vkCreateImageView(GlobalState::fGetDevicesWrapper().mpLogicalDevice, &IMAGE_VIEW_INFO, nullptr, &returnImageView),
 		"Failed to create image view"
 		)
 
@@ -139,7 +139,7 @@ namespace Engine {
 		};
 		const VkRenderingInfo RENDERING_INFO{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent),
 			.layerCount = 1,
 			.viewMask = 0,
 			.colorAttachmentCount = 1,
@@ -156,32 +156,32 @@ namespace Engine {
 		// began recording
 
 		// sets and bindings
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mpGraphicsPipeline);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mpGraphicsPipeline);
 		const VkViewport VIEWPORT{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.width),
-			.height = static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.height),
+			.width = static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.width),
+			.height = static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 		const VkRect2D SCISSOR{
 			.offset = VkOffset2D(0, 0),
-			.extent = GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent
+			.extent = GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent
 		};
 		vkCmdSetViewport(commandBuffer, 0, 1, &VIEWPORT);
 		vkCmdSetScissor(commandBuffer, 0, 1, &SCISSOR);
 		constexpr VkDeviceSize ZERO_OFFSET{ 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[0], &ZERO_OFFSET);
-		vkCmdBindIndexBuffer(commandBuffer, GlobalState::gDeviceLocalMemory.mDeviceLocalpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::gGraphicsPipeline.mParameters.mpPipelineLayout, 0, 1, GlobalState::gHostVisibleMemory.mDescriptorpSets.data(), 0, nullptr);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &GlobalState::fGetDeviceLocalMemory().mpBuffers[0], &ZERO_OFFSET);
+		vkCmdBindIndexBuffer(commandBuffer, GlobalState::fGetDeviceLocalMemory().mpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mParameters.mpPipelineLayout, 0, 1, GlobalState::fGetHostVisibleMemory().mDescriptorpSets.data(), 0, nullptr);
 
 		// undefined/unknown layout -> color attachment output optimal
 		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX);
 		
 		// draw!
 		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
@@ -195,7 +195,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, GlobalState::gDevicesWrapper.mGRAPHICS_QUEUE_FAMILY_INDEX);
+		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, GlobalState::fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX);
 
 		// end recording
 		CHECK_VK_SUCCESS(
@@ -204,11 +204,11 @@ namespace Engine {
 		)
 		// ended recording
 
-		vkDestroyImageView(GlobalState::gDevicesWrapper.mpLogicalDevice, imageView, nullptr);
+		vkDestroyImageView(GlobalState::fGetDevicesWrapper().mpLogicalDevice, imageView, nullptr);
 	};
 
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
-		const VkResult RESULT = vkAcquireNextImageKHR(GlobalState::gDevicesWrapper.mpLogicalDevice, GlobalState::gSwapchainWrapper.mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
+		const VkResult RESULT = vkAcquireNextImageKHR(GlobalState::fGetDevicesWrapper().mpLogicalDevice, GlobalState::fGetSwapchainWrapper().mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
 		return RESULT;
 	}
 
@@ -233,7 +233,7 @@ namespace Engine {
 			.waitSemaphoreCount = 1,
 			.pWaitSemaphores = &hitman.mpRenderFinished,
 			.swapchainCount = 1,
-			.pSwapchains = &GlobalState::gSwapchainWrapper.mpSwapchainKHR,
+			.pSwapchains = &GlobalState::fGetSwapchainWrapper().mpSwapchainKHR,
 			.pImageIndices = &SWAPCHAIN_IMAGE_INDEX,
 		};
 		return vkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
@@ -242,10 +242,10 @@ namespace Engine {
 	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT) {
 		bool resized{ false };
 
-		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::gWindowWrapper.mFrameBufferResizedAlert) {
-			vkDeviceWaitIdle(GlobalState::gDevicesWrapper.mpLogicalDevice);
-			GlobalState::gSwapchainWrapper.recreateThyself();
-			GlobalState::gWindowWrapper.mFrameBufferResizedAlert = false;
+		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::fGetWindowWrapper().mFrameBufferResizedAlert) {
+			vkDeviceWaitIdle(GlobalState::fGetDevicesWrapper().mpLogicalDevice);
+			GlobalState::fGetSwapchainWrapper().recreateThyself();
+			GlobalState::fGetWindowWrapper().mFrameBufferResizedAlert = false;
 
 			resized = true;
 		} else if(RESULT != VK_SUCCESS) {
@@ -259,7 +259,7 @@ namespace Engine {
 		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
-			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::gSwapchainWrapper.mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
+			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.mProjection[1][1] *= -1.0f;
 	}
@@ -293,14 +293,14 @@ namespace Engine {
 	}
 
 	void fWriteToUniformBuffer() {
-		GlobalState::gHostVisibleMemory.writeToBuffer(2, &gCurrentTransformation, sizeof(Vertex::Transforms));
+		GlobalState::fGetHostVisibleMemory().writeToBuffer(2, &gCurrentTransformation, sizeof(Vertex::Transforms));
 	}
 
 	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse) {
 		ImageHitman& hitmanUsed{ killhouse.mHitmen[gHitmanIndex] };
 		uint32_t nextSwapchainImageIndex{ UINT32_MAX };
 
-		vkWaitForFences(GlobalState::gDevicesWrapper.mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(GlobalState::fGetDevicesWrapper().mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime, VK_TRUE, UINT64_MAX);
 		const VkResult ACQUIRE_RESULT{ fAcquireNextSwapchainImageIndex(killhouse, nextSwapchainImageIndex) };
 		if(fRecreateSwapchainIfNecessary(ACQUIRE_RESULT)) {
 			killhouse.recreateHitmen();
@@ -308,14 +308,14 @@ namespace Engine {
 			return;
 		}
 
-		vkResetFences(GlobalState::gDevicesWrapper.mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
+		vkResetFences(GlobalState::fGetDevicesWrapper().mpLogicalDevice, 1, &hitmanUsed.mpOneAtATime);
 		vkResetCommandBuffer(hitmanUsed.mDrawCommands, 0);
 
 		fRecordDrawCommands(hitmanUsed.mDrawCommands, nextSwapchainImageIndex);
 		fReactToInput();
 		fWriteToUniformBuffer();
-		fSubmitDrawCommands(GlobalState::gDevicesWrapper.mGraphicsFamilypQueues[0], hitmanUsed);
-		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(GlobalState::gDevicesWrapper.mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
+		fSubmitDrawCommands(GlobalState::fGetDevicesWrapper().mGraphicsFamilypQueues[0], hitmanUsed);
+		const VkResult PRESENT_RESULT{ fQueueImageForPresentation(GlobalState::fGetDevicesWrapper().mGraphicsFamilypQueues[0], nextSwapchainImageIndex, hitmanUsed) };
 		if(fRecreateSwapchainIfNecessary(PRESENT_RESULT)) {
 			killhouse.recreateHitmen();
 			gHitmanIndex = 0;
@@ -339,16 +339,16 @@ namespace Engine {
 		};
 		fInitializegCurrentTransformation();
 
-		while(!glfwWindowShouldClose(GlobalState::gWindowWrapper.mpGlfwWindow)) {
+		while(!glfwWindowShouldClose(GlobalState::fGetWindowWrapper().mpGlfwWindow)) {
 			glfwPollEvents();
-			if(glfwGetKey(GlobalState::gWindowWrapper.mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(GlobalState::gWindowWrapper.mpGlfwWindow, GLFW_TRUE);
+			if(glfwGetKey(GlobalState::fGetWindowWrapper().mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(GlobalState::fGetWindowWrapper().mpGlfwWindow, GLFW_TRUE);
 			}
 
 			fRunThroughNextSwapchainImage(killhouse);
 			incrementFramesCountAndCheck();
 		}
 
-		vkDeviceWaitIdle(GlobalState::gDevicesWrapper.mpLogicalDevice);
+		vkDeviceWaitIdle(GlobalState::fGetDevicesWrapper().mpLogicalDevice);
 	}
 }
