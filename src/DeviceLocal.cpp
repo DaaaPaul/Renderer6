@@ -226,7 +226,7 @@ namespace DeviceMemory {
 		Common::fTransitionImageLayout(tempCommandBuffer, mpImages[INDEX],
 		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
-		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_NONE, // none because if srcAccess is none, then there is no point of dstAccess
+		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_NONE,
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX);
 
 		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, mpImages[INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());

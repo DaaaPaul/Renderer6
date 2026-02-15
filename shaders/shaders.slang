@@ -33,5 +33,5 @@ VertexOut vertexShader(VertexIn vertexData) {
 
 [shader("fragment")]
 float4 fragmentShader(VertexOut interpolatedVertex) {
-    return float4(interpolatedVertex.mTextureCoordinate, 0.0, 1.0);
+    return combinedImageSampler.Sample(interpolatedVertex.mTextureCoordinate);
 }
