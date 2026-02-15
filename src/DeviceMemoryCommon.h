@@ -18,6 +18,12 @@ namespace DeviceMemory {
 			std::vector<VkDescriptorSetLayoutBinding> mLayoutBindings{};
 		};
 
+		struct ImageViewInfo {
+			VkImageViewType mImageViewType{};
+			VkFormat mFormat{};
+			VkImageSubresourceRange mImageSubresourceRange{};
+		};
+
 		struct ImageInfo {
 			VkImageType mImageType{};
 			VkFormat mFormat{};
@@ -27,17 +33,33 @@ namespace DeviceMemory {
 			VkImageUsageFlags mUsage{};
 			uint32_t mGraphicsQueueFamilyIndex{};
 			VkImageLayout mInitialLayout{};
+			ImageViewInfo mImageViewInfo{};
+		};
+
+		struct SamplerInfo {
+			VkFilter mMagFilter{};
+			VkFilter mMinFilter{};
+			VkSamplerMipmapMode mMipmapMode{};
+			VkSamplerAddressMode mAddressModeU{};
+			VkSamplerAddressMode mAddressModeV{};
+			float mMipLodBias{};
+			VkBool32 mAnisotropyEnable{};
+			float mMaxAnisotropy{};
+			float mMinLod{};
+			float mMaxLod{};
+			VkBorderColor mBorderColor{};
 		};
 
 		struct HostVisibleConstructArguements {
-			std::vector<Common::BufferInfo> mBufferInfos{};
-			std::vector<Common::DescriptorSetInfo> mDescriptorSetInfos{};
+			std::vector<BufferInfo> mBufferInfos{};
+			std::vector<DescriptorSetInfo> mDescriptorSetInfos{};
 		};
 
 		struct DeviceLocalConstructArguements {
-			std::vector<Common::BufferInfo> mBufferInfos{};
-			std::vector<Common::ImageInfo> mImageInfos{};
-			std::vector<Common::DescriptorSetInfo> mDescriptorSetInfos{};
+			std::vector<BufferInfo> mBufferInfos{};
+			std::vector<ImageInfo> mImageInfos{};
+			std::vector<SamplerInfo> mSamplerInfos{};
+			std::vector<DescriptorSetInfo> mDescriptorSetInfos{};
 		};
 
 		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH);

@@ -1,11 +1,13 @@
 struct VertexIn {
     [[vk::location(0)]] float4 mPosition;
     [[vk::location(1)]] float4 mColor;
+    [[vk::location(2)]] float2 mTextureCoordinate;
 };
 
 struct VertexOut {
     float4 mPosition : SV_Position;
     float4 mColor;
+    float2 mTextureCoordinate;
 };
 
 struct TransformationMatrices {
@@ -14,8 +16,11 @@ struct TransformationMatrices {
     const float4x4 mPROJECTION;
 };
 
+// first arguement binding #, second arguement is set #
 [[vk::binding(0, 0)]]
 ConstantBuffer<TransformationMatrices> TRANSFORMATION_MATRICES;
+[[vk::binding(0, 1)]]
+Sampler2D combinedImageSampler;
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn vertexData) {
@@ -23,10 +28,10 @@ VertexOut vertexShader(VertexIn vertexData) {
     vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mVIEW, vertexData.mPosition);
     vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mPROJECTION, vertexData.mPosition);
 
-    return VertexOut(vertexData.mPosition, vertexData.mColor);
+    return VertexOut(vertexData.mPosition, vertexData.mColor, vertexData.mTextureCoordinate);
 }
 
 [shader("fragment")]
 float4 fragmentShader(VertexOut interpolatedVertex) {
-    return interpolatedVertex.mColor;
+    return float4(interpolatedVertex.mTextureCoordinate, 0.0, 1.0);
 }

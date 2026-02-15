@@ -24,7 +24,13 @@ namespace Vertex {
 			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
 			.offset = offsetof(Vertex, mCOLOR)
 		};
+		const VkVertexInputAttributeDescription TEXTURE_COORDINATE_ATTRIBUTE = {
+			.location = 2,
+			.binding = 0,
+			.format = VK_FORMAT_R32G32_SFLOAT,
+			.offset = offsetof(Vertex, mTEXTURE_COORDINATE)
+		};
 
-		return { POSITION_ATTRIBUTE, COLOR_ATTRIBUTE };
+		return { POSITION_ATTRIBUTE, COLOR_ATTRIBUTE, TEXTURE_COORDINATE_ATTRIBUTE };
 	}
 }

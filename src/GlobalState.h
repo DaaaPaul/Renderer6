@@ -91,11 +91,17 @@ namespace GlobalState {
 	}
 
 	inline Backend::GraphicsPipeline& fGetGraphicsPipeline() {
+		static const std::vector<VkDescriptorSetLayout> gDESCRIPTOR_SET_LAYOUTS{
+			[&]() -> std::vector<VkDescriptorSetLayout> {
+				std::vector<VkDescriptorSetLayout> initialValue{ fGetHostVisibleMemory().mDescriptorpSetLayouts };
+				initialValue.insert(initialValue.end(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.begin(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.end());
+				return initialValue;
+			}()
+		};
+
 		static Backend::GraphicsPipeline gGraphicsPipeline(
 			&fGetDevicesWrapper(),
-			Backend::GraphicsPipeline::sGetConstructParameters(
-				fGetHostVisibleMemory().mDescriptorpSetLayouts
-			)
+			Backend::GraphicsPipeline::sGetConstructParameters(gDESCRIPTOR_SET_LAYOUTS)
 		);
 
 		return gGraphicsPipeline;

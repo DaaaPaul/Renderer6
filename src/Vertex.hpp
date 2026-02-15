@@ -10,6 +10,7 @@ namespace Vertex {
 	struct Vertex {
 		const glm::vec4 mPOSITION{};
 		const glm::vec4 mCOLOR{};
+		const glm::vec2 mTEXTURE_COORDINATE{};
 
 		[[nodiscard]] static const VkVertexInputBindingDescription sGetInputBindingDescription();
 		[[nodiscard]] static const std::vector<VkVertexInputAttributeDescription> sGetInputAttributeDescriptions();

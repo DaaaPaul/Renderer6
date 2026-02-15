@@ -20,8 +20,8 @@ namespace DeviceMemory {
 		std::vector<VkDescriptorSet> mDescriptorpSets{};
 
 		void writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES);
-		void createDescriptorSet(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
-		void updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
+		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
+		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
 		HostVisible();
 		explicit HostVisible(Backend::Devices* pGivenDevices, const DeviceMemory::Common::HostVisibleConstructArguements (*const pCONSTRUCT_FUNCTION)(), void (*const pPOPULATE_FUNCTION)(DeviceMemory::HostVisible& toBePopulated));

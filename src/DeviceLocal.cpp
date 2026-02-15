@@ -8,8 +8,14 @@ namespace DeviceMemory {
 		mBufferInfos{},
 		mpBuffers{},
 		mBufferOffsets{},
-		mBufferSizes{}, 
+		mBufferSizes{},
+		mpSamplers{},
+		mSamplerInfos{},
 		mpImages{},
+		mpImageViews{},
+		mImageInfos{},
+		mImageOffsets{},
+		mImageSizes{},
 		mpDescriptorPool{}, 
 		mDescriptorSetInfos{},
 		mDescriptorpSetLayouts{},
@@ -21,8 +27,11 @@ namespace DeviceMemory {
 		mpBuffers{},
 		mBufferInfos{ pCONSTRUCT_FUNCTION().mBufferInfos },
 		mBufferOffsets{},
-		mBufferSizes{}, 
+		mBufferSizes{},
+		mpSamplers{},
+		mSamplerInfos{ pCONSTRUCT_FUNCTION().mSamplerInfos },
 		mpImages{},
+		mpImageViews{},
 		mImageInfos{ pCONSTRUCT_FUNCTION().mImageInfos },
 		mImageOffsets{},
 		mImageSizes{},
@@ -50,6 +59,7 @@ namespace DeviceMemory {
 			const size_t IMAGES_COUNT{ mImageInfos.size() };
 
 			mpImages.resize(IMAGES_COUNT, VK_NULL_HANDLE);
+			mpImageViews.resize(IMAGES_COUNT, VK_NULL_HANDLE);
 			mImageSizes.resize(IMAGES_COUNT, 0);
 			std::vector<VkMemoryRequirements> imagesMemoryRequirements(IMAGES_COUNT, {});
 
@@ -106,6 +116,55 @@ namespace DeviceMemory {
 			for(int i = 0; i < IMAGES_COUNT; i++) {
 				vkBindImageMemory(mpDevices->mpLogicalDevice, mpImages[i], mpDeviceLocalMemory, mImageOffsets[i]);
 			}
+
+			// finally create image views after binding images to memory
+			for(int i = 0; i < IMAGES_COUNT; i++) {
+				bool hasImageView{ mImageInfos[i].mImageViewInfo.mImageViewType != 0 && mImageInfos[i].mImageViewInfo.mFormat != 0 };
+				if(hasImageView) {
+					VkImageViewCreateInfo rollingImageViewCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+						.image = mpImages[i],
+						.viewType = mImageInfos[i].mImageViewInfo.mImageViewType,
+						.format = mImageInfos[i].mImageViewInfo.mFormat,
+						.subresourceRange = mImageInfos[i].mImageViewInfo.mImageSubresourceRange
+					};
+
+					CHECK_VK_SUCCESS(
+						vkCreateImageView(mpDevices->mpLogicalDevice, &rollingImageViewCreateInfo, nullptr, &mpImageViews[i]),
+						"Failed to create VkImageView"
+					)
+				}
+			}
+		}
+
+		// sampler stuff
+		if(!mSamplerInfos.empty()) {
+			mpSamplers.resize(mSamplerInfos.size(), VK_NULL_HANDLE);
+
+			VkSamplerCreateInfo rollingSamplerInfo{
+				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+				.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+				.unnormalizedCoordinates = VK_FALSE
+			};
+
+			for(int i = 0; i < mSamplerInfos.size(); i++) {
+				rollingSamplerInfo.magFilter = mSamplerInfos[i].mMagFilter;
+				rollingSamplerInfo.minFilter = mSamplerInfos[i].mMinFilter;
+				rollingSamplerInfo.mipmapMode = mSamplerInfos[i].mMipmapMode;
+				rollingSamplerInfo.addressModeU = mSamplerInfos[i].mAddressModeU;
+				rollingSamplerInfo.addressModeV = mSamplerInfos[i].mAddressModeV;
+				rollingSamplerInfo.mipLodBias = mSamplerInfos[i].mMipLodBias;
+				rollingSamplerInfo.anisotropyEnable = mSamplerInfos[i].mAnisotropyEnable;
+				rollingSamplerInfo.maxAnisotropy = mSamplerInfos[i].mMaxAnisotropy;
+				rollingSamplerInfo.minLod = mSamplerInfos[i].mMinLod;
+				rollingSamplerInfo.maxLod = mSamplerInfos[i].mMaxLod;
+				rollingSamplerInfo.borderColor = mSamplerInfos[i].mBorderColor;
+
+				CHECK_VK_SUCCESS(
+					vkCreateSampler(mpDevices->mpLogicalDevice, &rollingSamplerInfo, nullptr, &mpSamplers[i]),
+					"Failed to create sampler"
+				)
+			}
 		}
 
 		// descriptor set stuff
@@ -117,7 +176,7 @@ namespace DeviceMemory {
 			mDescriptorpSets.resize(mDescriptorSetInfos.size(), VK_NULL_HANDLE);
 
 			for(size_t i = 0; i < mDescriptorSetInfos.size(); i++) {
-				createDescriptorSet(mDescriptorSetInfos[i], i);
+				createDescriptorSetAndLayout(mDescriptorSetInfos[i], i);
 			}
 		}
 
@@ -129,8 +188,14 @@ namespace DeviceMemory {
 		for(VkBuffer& buffer : mpBuffers) {
 			vkDestroyBuffer(mpDevices->mpLogicalDevice, buffer, nullptr);
 		}
+		for(VkImageView& imageView : mpImageViews) {
+			vkDestroyImageView(mpDevices->mpLogicalDevice, imageView, nullptr);
+		}
 		for(VkImage& image : mpImages) {
 			vkDestroyImage(mpDevices->mpLogicalDevice, image, nullptr);
+		}
+		for(VkSampler& sampler : mpSamplers) {
+			vkDestroySampler(mpDevices->mpLogicalDevice, sampler, nullptr);
 		}
 
 		for(size_t i = 0; i < mDescriptorpSets.size(); i++) {
@@ -176,7 +241,7 @@ namespace DeviceMemory {
 		Common::fEndSubmitDeallocateOneTimeCommandBuffer(mpDevices->mpLogicalDevice, mpDevices->mGraphicsFamilypQueues[0], tempCommandPool, tempCommandBuffer);
 	}
 
-	void DeviceLocal::createDescriptorSet(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
+	void DeviceLocal::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,
@@ -202,7 +267,7 @@ namespace DeviceMemory {
 		)
 	}
 
-	void DeviceLocal::updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
+	void DeviceLocal::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
 		if(BUFFER_INDICES.size() != mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
@@ -220,6 +285,29 @@ namespace DeviceMemory {
 			.descriptorCount = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
 			.descriptorType = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
+		};
+
+		vkUpdateDescriptorSets(mpDevices->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
+	}
+
+	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
+		if(SAMPLER_IMAGE_INDICES.size() != mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
+		}
+
+		std::vector<VkDescriptorImageInfo> toWriteImageSamplers{};
+		for(size_t const& SAMPLER_IMAGE_INDEX : SAMPLER_IMAGE_INDICES) {
+			toWriteImageSamplers.emplace_back(mpSamplers[SAMPLER_IMAGE_INDEX], mpImageViews[SAMPLER_IMAGE_INDEX], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+
+		const VkWriteDescriptorSet WRITE_INFO{
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.dstSet = mDescriptorpSets[SET_INDEX],
+			.dstBinding = SET_BINDING_NUM,
+			.dstArrayElement = 0,
+			.descriptorCount = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.pImageInfo = toWriteImageSamplers.data()
 		};
 
 		vkUpdateDescriptorSets(mpDevices->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);

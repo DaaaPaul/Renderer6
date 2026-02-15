@@ -175,7 +175,8 @@ namespace Engine {
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &GlobalState::fGetDeviceLocalMemory().mpBuffers[0], &ZERO_OFFSET);
 		vkCmdBindIndexBuffer(commandBuffer, GlobalState::fGetDeviceLocalMemory().mpBuffers[1], ZERO_OFFSET, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mParameters.mpPipelineLayout, 0, 1, GlobalState::fGetHostVisibleMemory().mDescriptorpSets.data(), 0, nullptr);
-
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mParameters.mpPipelineLayout, 1, 1, GlobalState::fGetDeviceLocalMemory().mDescriptorpSets.data(), 0, nullptr);
+			
 		// undefined/unknown layout -> color attachment output optimal
 		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,

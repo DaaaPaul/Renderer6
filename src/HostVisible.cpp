@@ -67,7 +67,7 @@ namespace DeviceMemory {
 			mDescriptorpSets.resize(mDescriptorSetInfos.size(), VK_NULL_HANDLE);
 
 			for(size_t i = 0; i < mDescriptorSetInfos.size(); i++) {
-				createDescriptorSet(mDescriptorSetInfos[i], i);
+				createDescriptorSetAndLayout(mDescriptorSetInfos[i], i);
 			}
 		}
 
@@ -101,7 +101,7 @@ namespace DeviceMemory {
 		vkUnmapMemory(mpDevices->mpLogicalDevice, mpHostVisibleMemory);
 	}
 
-	void HostVisible::createDescriptorSet(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
+	void HostVisible::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,
@@ -127,7 +127,7 @@ namespace DeviceMemory {
 		)
 	}
 
-	void HostVisible::updateDescriptorSet(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
+	void HostVisible::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
 		if(BUFFER_INDICES.size() != mDescriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
