@@ -5,8 +5,8 @@ namespace GlobalState {
 	const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements() {
 		static DeviceMemory::Common::HostVisibleConstructArguements gConstructArguements{
 			.mBufferInfos{ 
-				DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
-				DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 6, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
+				DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
+				DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
 				DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
 				DeviceMemory::Common::BufferInfo(fGetKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX)
 			},
@@ -20,6 +20,26 @@ namespace GlobalState {
 
 	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated) {
 		const std::vector<Vertex::Vertex> VERTICIES{
+			Vertex::Vertex(
+				glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), 
+				glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 
+				glm::vec2(0.0f, 0.0f)), // top left
+			Vertex::Vertex(
+				glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), 
+				glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
+				glm::vec2(1.0f, 0.0f)
+			), // top right
+			Vertex::Vertex(
+				glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), 
+				glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 
+				glm::vec2(0.0f, 1.0f)
+			), // bottom left
+			Vertex::Vertex(
+				glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), 
+				glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
+				glm::vec2(1.0f, 1.0f)
+			), // bottom right
+
 			Vertex::Vertex(
 				glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), 
 				glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 
@@ -42,11 +62,14 @@ namespace GlobalState {
 		};
 		const std::vector<uint32_t> INDICES{
 			0, 1, 3,
-			0, 3, 2
+			0, 3, 2,
+
+			0 + 4, 1 + 4, 3 + 4,
+			0 + 4, 3 + 4, 2 + 4,
 		};
 
-		toBePopulated.writeToBuffer(0, VERTICIES.data(), sizeof(Vertex::Vertex) * 4);
-		toBePopulated.writeToBuffer(1, INDICES.data(), sizeof(uint32_t) * 6);
+		toBePopulated.writeToBuffer(0, VERTICIES.data(), sizeof(Vertex::Vertex) * 8);
+		toBePopulated.writeToBuffer(1, INDICES.data(), sizeof(uint32_t) * 12);
 		toBePopulated.writeToBuffer(3, fGetKtxTexture2()->pData, fGetKtxTexture2()->dataSize);
 		toBePopulated.updateDescriptorSetBuffer(0, 0, {2});
 	}
@@ -57,8 +80,8 @@ namespace GlobalState {
 
 		static DeviceMemory::Common::DeviceLocalConstructArguements gConstructArguements{
 			.mBufferInfos{ 
-				DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 4, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
-				DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 6, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX)
+				DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX),
+				DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX)
 			},
 			.mImageInfos{
 				DeviceMemory::Common::ImageInfo(
@@ -106,8 +129,8 @@ namespace GlobalState {
 	}
 
 	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated) {
-		toBePopulated.copyBufferToBuffer(0, fGetHostVisibleMemory().mpBuffers[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 4)});
-		toBePopulated.copyBufferToBuffer(1, fGetHostVisibleMemory().mpBuffers[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 6)});
+		toBePopulated.copyBufferToBuffer(0, fGetHostVisibleMemory().mpBuffers[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 8)});
+		toBePopulated.copyBufferToBuffer(1, fGetHostVisibleMemory().mpBuffers[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 12)});
 		toBePopulated.copyBufferToImage(0, fGetHostVisibleMemory().mpBuffers[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(fGetKtxTexture2()->baseWidth, fGetKtxTexture2()->baseHeight, 1))}); // buffer is tightly packed row by row
 		toBePopulated.updateDescriptorSetCombinedImageSampler(0, 0, {0});
 	}

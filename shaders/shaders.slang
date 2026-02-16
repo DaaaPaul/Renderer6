@@ -28,6 +28,9 @@ VertexOut vertexShader(VertexIn vertexData) {
     vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mVIEW, vertexData.mPosition);
     vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mPROJECTION, vertexData.mPosition);
 
+    //const float4x4 CUSTOM = { float4(1, 0, 0, 0), float4(0, -1, 0, 0), float4(0, 0, 0, 1), float4(0, 0, -1, 0) };
+    //vertexData.mPosition = mul(CUSTOM, vertexData.mPosition);
+
     return VertexOut(vertexData.mPosition, vertexData.mColor, vertexData.mTextureCoordinate);
 }
 

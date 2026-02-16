@@ -17,3 +17,4 @@
 - use a unique uniform buffer per frame
 - change reference with prefix r
 - change pointer const uppercase thing
+- clean up the code debt!!

@@ -187,7 +187,7 @@ namespace Engine {
 		// draw!
 		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
 
-		vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, 12, 1, 0, 0, 0);
 
 		vkCmdEndRendering(commandBuffer);
 
@@ -260,6 +260,7 @@ namespace Engine {
 		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
+			//glm::mat4{1.0f}
 			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.mProjection[1][1] *= -1.0f;
