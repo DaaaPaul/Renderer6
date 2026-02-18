@@ -10,7 +10,7 @@ namespace Backend {
 		mParameters{},
 		mGRAPHICS_QUEUE_FAMILY_INDEX{ UINT32_MAX } {}
 
-	Devices::Devices(Backend* givenBackend, DevicesConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS) :
+	Devices::Devices(Instance* givenBackend, DevicesConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS) :
 		mpBackend{ givenBackend },
 		mpPhysicalDevice{ GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS.mSelectedPhysicalDevice },
 		mpLogicalDevice{},

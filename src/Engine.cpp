@@ -4,7 +4,7 @@
 #include "DeviceMemoryCommon.h"
 
 #define CHECK_PRESSED(glfwKey) \
-glfwGetKey(GlobalState::fGetWindowWrapper().mpGlfwWindow, glfwKey) == GLFW_PRESS
+glfwGetKey(GlobalState::getWindow().glfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
 	ImageHitman::ImageHitman(VkCommandPool pool) :
@@ -259,10 +259,10 @@ namespace Engine {
 	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT) {
 		bool resized{ false };
 
-		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::fGetWindowWrapper().mFrameBufferResizedAlert) {
+		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::getWindow().framebufferResized) {
 			vkDeviceWaitIdle(GlobalState::fGetDevicesWrapper().mpLogicalDevice);
 			GlobalState::fGetSwapchainWrapper().recreateThyself();
-			GlobalState::fGetWindowWrapper().mFrameBufferResizedAlert = false;
+			GlobalState::getWindow().framebufferResized = false;
 
 			resized = true;
 		} else if(RESULT != VK_SUCCESS) {
@@ -356,10 +356,10 @@ namespace Engine {
 		};
 		fInitializegCurrentTransformation();
 
-		while(!glfwWindowShouldClose(GlobalState::fGetWindowWrapper().mpGlfwWindow)) {
+		while(!glfwWindowShouldClose(GlobalState::getWindow().glfwWindow)) {
 			glfwPollEvents();
-			if(glfwGetKey(GlobalState::fGetWindowWrapper().mpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(GlobalState::fGetWindowWrapper().mpGlfwWindow, GLFW_TRUE);
+			if(glfwGetKey(GlobalState::getWindow().glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(GlobalState::getWindow().glfwWindow, GLFW_TRUE);
 			}
 
 			fRunThroughNextSwapchainImage(killhouse);

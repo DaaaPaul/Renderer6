@@ -20,8 +20,6 @@ set(DEBUG_MODE OFF)
 
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
@@ -38,6 +36,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp

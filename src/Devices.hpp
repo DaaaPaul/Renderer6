@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include "Common.h"
-#include "Backend.hpp"
+#include "Instance.hpp"
 
 namespace Backend {
 	struct Devices {
@@ -19,7 +19,7 @@ namespace Backend {
 			VkPhysicalDeviceFeatures2 mEnabledDeviceFeatures{};
 		};
 
-		Backend* mpBackend{};
+		Instance* mpBackend{};
 		VkPhysicalDevice mpPhysicalDevice{};
 		VkDevice mpLogicalDevice{};
 		std::vector<VkQueue> mGraphicsFamilypQueues{};
@@ -29,7 +29,7 @@ namespace Backend {
 		[[nodiscard]] static DevicesConstructParameters sGetConstructParameters(VkInstance instance);
 
 		Devices();
-		explicit Devices(Backend* givenBackend, DevicesConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS);
+		explicit Devices(Instance* givenBackend, DevicesConstructParameters const& GIVEN_VULKAN_DEVICES_WRAPPER_CONSTRUCT_PARAMETERS);
 		~Devices();
 
 		DELETE_COPY_CONSTRUCTORS(Devices)

@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include "Vertex.hpp"
 #include "Window.hpp"
-#include "Backend.hpp"
+#include "Instance.hpp"
 #include "Devices.hpp"
 #include "Swapchain.hpp"
 #include "DeviceMemoryCommon.h"
@@ -17,9 +17,9 @@
 
 int main() {
     try {
-		GlobalState::fGetKtxTexture2();
-		GlobalState::fGetWindowWrapper();
-		GlobalState::fGetBackendWrapper();
+		GlobalState::getKtxTexture2();
+		GlobalState::getWindow();
+		GlobalState::getInstance();
 		GlobalState::fGetDevicesWrapper();
 		GlobalState::fGetSwapchainWrapper();
 		GlobalState::fGetHostVisibleMemory();

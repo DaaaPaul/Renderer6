@@ -31,15 +31,15 @@ namespace Backend {
 
 	Swapchain::~Swapchain() {
 		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(mpDevices->mpBackend->mpInstance, mpSurfaceKHR, nullptr);
+		vkDestroySurfaceKHR(mpDevices->mpBackend->instance, mpSurfaceKHR, nullptr);
 	}
 
 	void Swapchain::recreateThyself() {
 		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(mpDevices->mpBackend->mpInstance, mpSurfaceKHR, nullptr);
+		vkDestroySurfaceKHR(mpDevices->mpBackend->instance, mpSurfaceKHR, nullptr);
 
-		// obtain updated construct info and put it into mParameters and mpSurfaceKHR
-		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(mpDevices->mpBackend->mpInstance, mpDevices->mpPhysicalDevice, mpDevices->mpBackend->mpWindow->mpGlfwWindow, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX));
+		// obtain updated construct info and put it into createInfo and mpSurfaceKHR
+		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(mpDevices->mpBackend->instance, mpDevices->mpPhysicalDevice, mpDevices->mpBackend->WINDOW->glfwWindow, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX));
 		mParameters.mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
 		mParameters.mSwapchainKHRCreateInfo = newConstructInfo.mSwapchainKHRCreateInfo;
 		mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;

@@ -8,23 +8,20 @@
 
 namespace Backend {
 	struct Window {
-		struct WindowParameters {
-			const uint16_t mWIDTH{};
-			const uint16_t mHEIGHT{};
-			const char* mNAME{};
+		struct CreateInfo {
+			uint16_t width{};
+			uint16_t height{};
+			const char* NAME{};
 		};
 
-		GLFWwindow* mpGlfwWindow{};
-		bool mFrameBufferResizedAlert{};
-		const WindowParameters mPARAMETERS{};
+		GLFWwindow* glfwWindow{};
+		bool framebufferResized{};
+		const CreateInfo CREATE_INFO{};
 
-		static void sFramebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
+		static void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
+		[[nodiscard]] static std::vector<const char*> getInstanceRequiredWindowExtensions();
 
-		[[nodiscard]] constexpr static WindowParameters sGetConstructParameters() noexcept { return WindowParameters(800, 600, "Renderer6"); }
-		[[nodiscard]] static std::vector<const char*> sGetGlfwWindowExtensions();
-
-		Window();
-		explicit Window(WindowParameters const& GIVEN_PARAMETERS);
+		explicit Window(CreateInfo const& GIVEN_CREATE_INFO);
 		~Window();
 
 		DELETE_COPY_CONSTRUCTORS(Window)

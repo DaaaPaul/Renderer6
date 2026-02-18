@@ -8,7 +8,7 @@
 #include "Vertex.hpp"
 #include "Transforms.hpp"
 #include "Window.hpp"
-#include "Backend.hpp"
+#include "Instance.hpp"
 #include "Devices.hpp"
 #include "Swapchain.hpp"
 #include "DeviceMemoryCommon.h"
@@ -18,92 +18,77 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	inline ktxTexture2 const* fGetKtxTexture2() {
-		static ktxTexture2 const*const gpKTX_TEXTURE2 = 
-			DeviceMemory::Common::fKtxLoadImage(
-				R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)"
+	class Core {
+		private:
+		[[nodiscard]] ktxTexture2 const* getKtxTexture2() const;
+		[[nodiscard]] Backend::Window& getWindow() const;
+		[[nodiscard]] Backend::Instance& getInstance() const;
+
+	};
+
+		Backend::Devices& fGetDevicesWrapper() {
+			static Backend::Devices gDevices(
+				&getInstance(),
+				Backend::Devices::sGetConstructParameters(getInstance().instance)
 			);
 
-		return gpKTX_TEXTURE2;
-	}
+			return gDevices;
+		}
 
-	inline Backend::Window& fGetWindowWrapper() {
-		static Backend::Window gWindowWrapper(Backend::Window::sGetConstructParameters());
+		Backend::Swapchain& fGetSwapchainWrapper() {
+			static Backend::Swapchain gSwapchainWrapper(
+				&fGetDevicesWrapper(),
+				Backend::Swapchain::sGetConstructParameters(
+					getInstance().instance,
+					fGetDevicesWrapper().mpPhysicalDevice,
+					getInstance().WINDOW->glfwWindow,
+					fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX
+				)
+			);
 
-		return gWindowWrapper;
-	}
+			return gSwapchainWrapper;
+		}
 
-	inline Backend::Backend& fGetBackendWrapper() {
-		static Backend::Backend gBackend(
-			&fGetWindowWrapper(),
-			Backend::Backend::sGetConstructParameters()
-		);
+		const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements();
+		void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
+		const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements();
+		void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
 
-		return gBackend;
-	}
+		DeviceMemory::HostVisible& fGetHostVisibleMemory() {
+			static DeviceMemory::HostVisible gHostVisibleMemory(
+				&fGetDevicesWrapper(),
+				&fGetHostVisibleMemoryConstructArguements,
+				&fPopulateHostVisibleMemory
+			);
 
-	inline Backend::Devices& fGetDevicesWrapper() {
-		static Backend::Devices gDevices(
-			&fGetBackendWrapper(),
-			Backend::Devices::sGetConstructParameters(fGetBackendWrapper().mpInstance)
-		);
+			return gHostVisibleMemory;
+		}
 
-		return gDevices;
-	}
+		DeviceMemory::DeviceLocal& fGetDeviceLocalMemory() {
+			static DeviceMemory::DeviceLocal gDeviceLocalMemory(
+				&fGetDevicesWrapper(),
+				&fGetDeviceLocalMemoryConstructArguements,
+				&fPopulateDeviceLocalMemory
+			);
 
-	inline Backend::Swapchain& fGetSwapchainWrapper() {
-		static Backend::Swapchain gSwapchainWrapper(
-			&fGetDevicesWrapper(),
-			Backend::Swapchain::sGetConstructParameters(
-				fGetBackendWrapper().mpInstance,
-				fGetDevicesWrapper().mpPhysicalDevice,
-				fGetBackendWrapper().mpWindow->mpGlfwWindow,
-				fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX
-			)
-		);
+			return gDeviceLocalMemory;
+		}
 
-		return gSwapchainWrapper;
-	}
+		Backend::GraphicsPipeline& fGetGraphicsPipeline() {
+			static const std::vector<VkDescriptorSetLayout> gDESCRIPTOR_SET_LAYOUTS{
+				[&]() -> std::vector<VkDescriptorSetLayout> {
+					std::vector<VkDescriptorSetLayout> initialValue{ fGetHostVisibleMemory().mDescriptorpSetLayouts };
+					initialValue.insert(initialValue.end(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.begin(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.end());
+					return initialValue;
+				}()
+			};
 
-	const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements();
-	void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
-	const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements();
-	void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
+			static Backend::GraphicsPipeline gGraphicsPipeline(
+				&fGetDevicesWrapper(),
+				Backend::GraphicsPipeline::sGetConstructParameters(gDESCRIPTOR_SET_LAYOUTS)
+			);
 
-	inline DeviceMemory::HostVisible& fGetHostVisibleMemory() {
-		static DeviceMemory::HostVisible gHostVisibleMemory(
-			&fGetDevicesWrapper(),
-			&fGetHostVisibleMemoryConstructArguements,
-			&fPopulateHostVisibleMemory
-		);
-
-		return gHostVisibleMemory;
-	}
-
-	inline DeviceMemory::DeviceLocal& fGetDeviceLocalMemory() {
-		static DeviceMemory::DeviceLocal gDeviceLocalMemory(
-			&fGetDevicesWrapper(),
-			&fGetDeviceLocalMemoryConstructArguements,
-			&fPopulateDeviceLocalMemory
-		);
-
-		return gDeviceLocalMemory;
-	}
-
-	inline Backend::GraphicsPipeline& fGetGraphicsPipeline() {
-		static const std::vector<VkDescriptorSetLayout> gDESCRIPTOR_SET_LAYOUTS{
-			[&]() -> std::vector<VkDescriptorSetLayout> {
-				std::vector<VkDescriptorSetLayout> initialValue{ fGetHostVisibleMemory().mDescriptorpSetLayouts };
-				initialValue.insert(initialValue.end(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.begin(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.end());
-				return initialValue;
-			}()
-		};
-
-		static Backend::GraphicsPipeline gGraphicsPipeline(
-			&fGetDevicesWrapper(),
-			Backend::GraphicsPipeline::sGetConstructParameters(gDESCRIPTOR_SET_LAYOUTS)
-		);
-
-		return gGraphicsPipeline;
-	}
+			return gGraphicsPipeline;
+		}
+	};
 }
