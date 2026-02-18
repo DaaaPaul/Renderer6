@@ -3,13 +3,13 @@
 
 namespace Backend {
 	Swapchain::Swapchain() :
-		mpDevices{},
+		devices{},
 		mpSwapchainKHR{},
 		mpSurfaceKHR{},
 		mParameters{} {}
 
 	Swapchain::Swapchain(Devices* givenDevices, SwapchainConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
-		mpDevices{ givenDevices },
+		devices{ givenDevices },
 		mpSwapchainKHR{},
 		mpSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mpSurfaceKHR },
 		mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
@@ -24,22 +24,22 @@ namespace Backend {
 
 		// construct the swapchainKHR
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(mpDevices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
+			vkCreateSwapchainKHR(devices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
 	}
 
 	Swapchain::~Swapchain() {
-		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(mpDevices->mpBackend->instance, mpSurfaceKHR, nullptr);
+		vkDestroySwapchainKHR(devices->mpLogicalDevice, mpSwapchainKHR, nullptr);
+		vkDestroySurfaceKHR(devices->mpBackend->instance, mpSurfaceKHR, nullptr);
 	}
 
 	void Swapchain::recreateThyself() {
-		vkDestroySwapchainKHR(mpDevices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(mpDevices->mpBackend->instance, mpSurfaceKHR, nullptr);
+		vkDestroySwapchainKHR(devices->mpLogicalDevice, mpSwapchainKHR, nullptr);
+		vkDestroySurfaceKHR(devices->mpBackend->instance, mpSurfaceKHR, nullptr);
 
 		// obtain updated construct info and put it into createInfo and mpSurfaceKHR
-		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(mpDevices->mpBackend->instance, mpDevices->mpPhysicalDevice, mpDevices->mpBackend->WINDOW->glfwWindow, mpDevices->mGRAPHICS_QUEUE_FAMILY_INDEX));
+		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(devices->mpBackend->instance, devices->mpPhysicalDevice, devices->mpBackend->WINDOW->glfwWindow, devices->mGRAPHICS_QUEUE_FAMILY_INDEX));
 		mParameters.mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
 		mParameters.mSwapchainKHRCreateInfo = newConstructInfo.mSwapchainKHRCreateInfo;
 		mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
@@ -49,7 +49,7 @@ namespace Backend {
 		mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &mParameters.mGRAPHICS_QUEUE_FAMILY_INDEX;
 
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(mpDevices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
+			vkCreateSwapchainKHR(devices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
 	}
@@ -107,9 +107,9 @@ namespace Backend {
 
 	void Swapchain::sCheckHaveVkFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
 		uint32_t supportedVkFormatColorspacesCount{};
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mpDevices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
 		std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.mpDevices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 
@@ -124,9 +124,9 @@ namespace Backend {
 
 	void Swapchain::sCheckHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
 		uint32_t supportedPresentModeCount{};
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mpDevices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, nullptr);
 		std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.mpDevices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 

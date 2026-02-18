@@ -5,7 +5,7 @@
 #include "DeviceLocal.hpp"
 #include "Common.h"
 
-namespace Backend {
+namespace Engine {
 	struct GraphicsPipeline {
 		struct GraphicsPipelineConstructInfo {
 			VkGraphicsPipelineCreateInfo mPipelineCreateInfo{};
@@ -33,14 +33,14 @@ namespace Backend {
 			VkPipelineLayout mpPipelineLayout{};
 		};
 
-		Devices* mpDevices{};
+		Backend::Devices* devices{};
 		VkPipeline mpGraphicsPipeline{};
 		GraphicsPipelineConstructInfo mParameters{};
 
 		[[nodiscard]] static GraphicsPipelineConstructInfo sGetConstructParameters(std::vector<VkDescriptorSetLayout> const& DESCRIPTOR_SET_LAYOUTS);
 
 		GraphicsPipeline();
-		explicit GraphicsPipeline(Devices* givenDevices, GraphicsPipelineConstructInfo const& GIVEN_VULKAN_GRAPHICS_PIPELINE_WRAPPER_CONSTRUCT_INFO);
+		explicit GraphicsPipeline(Backend::Devices* givenDevices, GraphicsPipelineConstructInfo const& GIVEN_VULKAN_GRAPHICS_PIPELINE_WRAPPER_CONSTRUCT_INFO);
 		~GraphicsPipeline();
 
 		DELETE_COPY_CONSTRUCTORS(GraphicsPipeline)

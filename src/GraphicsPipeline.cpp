@@ -2,14 +2,14 @@
 #include "GraphicsPipeline.hpp"
 #include "Vertex.hpp"
 
-namespace Backend {
+namespace Engine {
 	GraphicsPipeline::GraphicsPipeline() :
-		mpDevices{},
+		devices{},
 		mpGraphicsPipeline{},
 		mParameters{} {}
 
-	GraphicsPipeline::GraphicsPipeline(Devices* givenDevices, GraphicsPipelineConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
-		mpDevices{ givenDevices },
+	GraphicsPipeline::GraphicsPipeline(Backend::Devices* givenDevices, GraphicsPipelineConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
+		devices{ givenDevices },
 		mpGraphicsPipeline{},
 		mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
@@ -21,7 +21,7 @@ namespace Backend {
 			mParameters.mShaderModuleCreateInfo.codeSize = static_cast<uint32_t>(mParameters.mSHADERS_SPRIV_FILE_BYTES.size());
 			mParameters.mShaderModuleCreateInfo.pCode = reinterpret_cast<uint32_t const*>(mParameters.mSHADERS_SPRIV_FILE_BYTES.data());
 			CHECK_VK_SUCCESS(
-			vkCreateShaderModule(mpDevices->mpLogicalDevice, &mParameters.mShaderModuleCreateInfo, nullptr, &mParameters.mpShaderModule),
+			vkCreateShaderModule(devices->mpLogicalDevice, &mParameters.mShaderModuleCreateInfo, nullptr, &mParameters.mpShaderModule),
 			"Failed to create shader module"
 			)
 			for(VkPipelineShaderStageCreateInfo& stage : mParameters.mStages) {
@@ -43,7 +43,7 @@ namespace Backend {
 			mParameters.mPipelineLayoutInfo.pSetLayouts = mParameters.mDESCRIPTOR_SET_pLAYOUTS.data();
 
 			CHECK_VK_SUCCESS(
-			vkCreatePipelineLayout(mpDevices->mpLogicalDevice, &mParameters.mPipelineLayoutInfo, nullptr, &mParameters.mpPipelineLayout),
+			vkCreatePipelineLayout(devices->mpLogicalDevice, &mParameters.mPipelineLayoutInfo, nullptr, &mParameters.mpPipelineLayout),
 			"Failed to create pipeline layout"
 			)
 
@@ -65,16 +65,16 @@ namespace Backend {
 		// create the graphics pipeline
 		{
 			CHECK_VK_SUCCESS(
-			vkCreateGraphicsPipelines(mpDevices->mpLogicalDevice, nullptr, 1, &mParameters.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
+			vkCreateGraphicsPipelines(devices->mpLogicalDevice, nullptr, 1, &mParameters.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
 			"Failed to create graphics pipeline"
 			)
 		}
 	}
 
 	GraphicsPipeline::~GraphicsPipeline() {
-		vkDestroyShaderModule(mpDevices->mpLogicalDevice, mParameters.mpShaderModule, nullptr);
-		vkDestroyPipelineLayout(mpDevices->mpLogicalDevice, mParameters.mpPipelineLayout, nullptr);
-		vkDestroyPipeline(mpDevices->mpLogicalDevice, mpGraphicsPipeline, nullptr);
+		vkDestroyShaderModule(devices->mpLogicalDevice, mParameters.mpShaderModule, nullptr);
+		vkDestroyPipelineLayout(devices->mpLogicalDevice, mParameters.mpPipelineLayout, nullptr);
+		vkDestroyPipeline(devices->mpLogicalDevice, mpGraphicsPipeline, nullptr);
 	}
 
 	[[nodiscard]] GraphicsPipeline::GraphicsPipelineConstructInfo GraphicsPipeline::sGetConstructParameters(std::vector<VkDescriptorSetLayout> const& DESCRIPTOR_SET_pLAYOUTS) {

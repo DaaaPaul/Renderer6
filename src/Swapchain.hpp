@@ -12,7 +12,7 @@ namespace Backend {
 			const uint32_t mGRAPHICS_QUEUE_FAMILY_INDEX{};
 		};
 
-		Devices* mpDevices{};
+		Devices* devices{};
 		VkSwapchainKHR mpSwapchainKHR{};
 		VkSurfaceKHR mpSurfaceKHR{};
 		SwapchainConstructInfo mParameters{};

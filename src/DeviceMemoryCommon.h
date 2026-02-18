@@ -50,18 +50,6 @@ namespace DeviceMemory {
 			VkBorderColor mBorderColor{};
 		};
 
-		struct HostVisibleConstructArguements {
-			std::vector<BufferInfo> mBufferInfos{};
-			std::vector<DescriptorSetInfo> mDescriptorSetInfos{};
-		};
-
-		struct DeviceLocalConstructArguements {
-			std::vector<BufferInfo> mBufferInfos{};
-			std::vector<ImageInfo> mImageInfos{};
-			std::vector<SamplerInfo> mSamplerInfos{};
-			std::vector<DescriptorSetInfo> mDescriptorSetInfos{};
-		};
-
 		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH);
 		[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO);
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> fGetMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);

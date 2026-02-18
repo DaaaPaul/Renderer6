@@ -20,75 +20,19 @@
 namespace GlobalState {
 	class Core {
 		private:
-		[[nodiscard]] ktxTexture2 const* getKtxTexture2() const;
-		[[nodiscard]] Backend::Window& getWindow() const;
-		[[nodiscard]] Backend::Instance& getInstance() const;
+		inline static bool loaded = false;
 
-	};
+		public:
+		static void load();
 
-		Backend::Devices& fGetDevicesWrapper() {
-			static Backend::Devices gDevices(
-				&getInstance(),
-				Backend::Devices::sGetConstructParameters(getInstance().instance)
-			);
-
-			return gDevices;
-		}
-
-		Backend::Swapchain& fGetSwapchainWrapper() {
-			static Backend::Swapchain gSwapchainWrapper(
-				&fGetDevicesWrapper(),
-				Backend::Swapchain::sGetConstructParameters(
-					getInstance().instance,
-					fGetDevicesWrapper().mpPhysicalDevice,
-					getInstance().WINDOW->glfwWindow,
-					fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX
-				)
-			);
-
-			return gSwapchainWrapper;
-		}
-
-		const DeviceMemory::Common::HostVisibleConstructArguements fGetHostVisibleMemoryConstructArguements();
-		void fPopulateHostVisibleMemory(DeviceMemory::HostVisible& toBePopulated);
-		const DeviceMemory::Common::DeviceLocalConstructArguements fGetDeviceLocalMemoryConstructArguements();
-		void fPopulateDeviceLocalMemory(DeviceMemory::DeviceLocal& toBePopulated);
-
-		DeviceMemory::HostVisible& fGetHostVisibleMemory() {
-			static DeviceMemory::HostVisible gHostVisibleMemory(
-				&fGetDevicesWrapper(),
-				&fGetHostVisibleMemoryConstructArguements,
-				&fPopulateHostVisibleMemory
-			);
-
-			return gHostVisibleMemory;
-		}
-
-		DeviceMemory::DeviceLocal& fGetDeviceLocalMemory() {
-			static DeviceMemory::DeviceLocal gDeviceLocalMemory(
-				&fGetDevicesWrapper(),
-				&fGetDeviceLocalMemoryConstructArguements,
-				&fPopulateDeviceLocalMemory
-			);
-
-			return gDeviceLocalMemory;
-		}
-
-		Backend::GraphicsPipeline& fGetGraphicsPipeline() {
-			static const std::vector<VkDescriptorSetLayout> gDESCRIPTOR_SET_LAYOUTS{
-				[&]() -> std::vector<VkDescriptorSetLayout> {
-					std::vector<VkDescriptorSetLayout> initialValue{ fGetHostVisibleMemory().mDescriptorpSetLayouts };
-					initialValue.insert(initialValue.end(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.begin(), fGetDeviceLocalMemory().mDescriptorpSetLayouts.end());
-					return initialValue;
-				}()
-			};
-
-			static Backend::GraphicsPipeline gGraphicsPipeline(
-				&fGetDevicesWrapper(),
-				Backend::GraphicsPipeline::sGetConstructParameters(gDESCRIPTOR_SET_LAYOUTS)
-			);
-
-			return gGraphicsPipeline;
-		}
+		// only call these after the call to load()
+		[[nodiscard]] static ktxTexture2 const* getKtxTexture2();
+		[[nodiscard]] static Backend::Window& getWindow();
+		[[nodiscard]] static Backend::Instance& getInstance();
+		[[nodiscard]] static Backend::Devices& getDevices();
+		[[nodiscard]] static Backend::Swapchain& getSwapchain();
+		[[nodiscard]] static DeviceMemory::HostVisible& getHostVisibleMemory();
+		[[nodiscard]] static DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+		[[nodiscard]] static Engine::GraphicsPipeline& getGraphicsPipeline();
 	};
 }
