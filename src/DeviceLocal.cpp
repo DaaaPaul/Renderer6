@@ -312,4 +312,8 @@ namespace DeviceMemory {
 
 		vkUpdateDescriptorSets(mpDevices->mpLogicalDevice, 1, &WRITE_INFO, 0, nullptr);
 	}
+
+	void DeviceLocal::recreateImage(size_t const& INDEX, Common::ImageInfo const& NEW_INFO) {
+		
+	}
 }

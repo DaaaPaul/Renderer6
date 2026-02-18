@@ -83,12 +83,12 @@ namespace Backend {
 			// REROUTE EVERYTHING NEEDED
 		};
 
-		const std::vector<VkFormat> FORMAT{ VK_FORMAT_R8G8B8A8_SRGB };
+		const std::vector<VkFormat> COLOR_ATTACHMENT_FORMATS{ VK_FORMAT_R8G8B8A8_SRGB };
 		VkPipelineRenderingCreateInfo rendering{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
 			.colorAttachmentCount = 0, // reroute needed
 			.pColorAttachmentFormats = nullptr, // reroute needed
-			.depthAttachmentFormat = {},
+			.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
 			.stencilAttachmentFormat = {},
 		};
 
@@ -166,11 +166,11 @@ namespace Backend {
 			.alphaToOneEnable = VK_FALSE,
 		};
 
-		// UNUSED CURRENTLY
 		const VkPipelineDepthStencilStateCreateInfo DEPTH_STENCIL{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-			.depthTestEnable = VK_FALSE,
-			.depthWriteEnable = VK_FALSE,
+			.depthTestEnable = VK_TRUE,
+			.depthWriteEnable = VK_TRUE,
+			.depthCompareOp = VK_COMPARE_OP_LESS,
 			.depthBoundsTestEnable = VK_FALSE,
 			.stencilTestEnable = VK_FALSE,
 		};
@@ -205,7 +205,7 @@ namespace Backend {
 
 		return GraphicsPipelineConstructInfo{
 			pipelineCreateInfo,
-			FORMAT,
+			COLOR_ATTACHMENT_FORMATS,
 			rendering,
 			SHADERS_SPRIV_FILE_BYTES,
 			shaderModuleForEverythingInfo,

@@ -36,7 +36,7 @@ namespace Engine {
 	inline Vertex::Transforms gCurrentTransformation{};
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
-	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX);
+	[[nodiscard]] VkImageView fGetSwapchainImageView(uint32_t const& IMAGE_INDEX);
 	void fRecordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX);
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
 	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);

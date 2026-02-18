@@ -106,7 +106,7 @@ namespace Engine {
 		return swapchainImages;
 	}
 
-	[[nodiscard]] VkImageView fGetImageView(uint32_t const& IMAGE_INDEX) {
+	[[nodiscard]] VkImageView fGetSwapchainImageView(uint32_t const& IMAGE_INDEX) {
 		VkImageView returnImageView{};
 
 		const VkImageViewCreateInfo IMAGE_VIEW_INFO{
@@ -127,15 +127,25 @@ namespace Engine {
 
 	void fRecordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX) {
 		// rendering info/attachment info
-		const VkImageView imageView{ fGetImageView(IMAGE_INDEX) };
+		VkImageView colorImageView{ fGetSwapchainImageView(IMAGE_INDEX) };
+		VkImageView depthImageView{ GlobalState::fGetDeviceLocalMemory().mpImageViews[1] };
 		const VkRenderingAttachmentInfo COLOR_ATTACHMENT{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = imageView,
+			.imageView = colorImageView,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 			.clearValue = VkClearColorValue({0.2f, 0.2f, 0.2f, 1.0f}),
+		};
+		const VkRenderingAttachmentInfo DEPTH_ATTACHMENT{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+			.imageView = depthImageView,
+			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+			.resolveMode = VK_RESOLVE_MODE_NONE,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.clearValue = {.depthStencil = VkClearDepthStencilValue(1.0f, 0) },
 		};
 		const VkRenderingInfo RENDERING_INFO{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
@@ -144,6 +154,7 @@ namespace Engine {
 			.viewMask = 0,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &COLOR_ATTACHMENT,
+			.pDepthAttachment = &DEPTH_ATTACHMENT
 		};
 
 		// begin recording
@@ -177,13 +188,18 @@ namespace Engine {
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mParameters.mpPipelineLayout, 0, 1, GlobalState::fGetHostVisibleMemory().mDescriptorpSets.data(), 0, nullptr);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::fGetGraphicsPipeline().mParameters.mpPipelineLayout, 1, 1, GlobalState::fGetDeviceLocalMemory().mDescriptorpSets.data(), 0, nullptr);
 			
-		// undefined/unknown layout -> color attachment output optimal
+		// layout transitions to optimal
 		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX);
-		
+		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, GlobalState::fGetDeviceLocalMemory().mpImages[1], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+		VK_ACCESS_2_NONE,
+		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
+		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, GlobalState::fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX);
+
 		// draw!
 		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
 
@@ -191,7 +207,7 @@ namespace Engine {
 
 		vkCmdEndRendering(commandBuffer);
 
-		// color attachment output optimal -> present optimal
+		// layout transition to present optimal
 		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
@@ -205,7 +221,7 @@ namespace Engine {
 		)
 		// ended recording
 
-		vkDestroyImageView(GlobalState::fGetDevicesWrapper().mpLogicalDevice, imageView, nullptr);
+		vkDestroyImageView(GlobalState::fGetDevicesWrapper().mpLogicalDevice, colorImageView, nullptr);
 	};
 
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
@@ -260,7 +276,6 @@ namespace Engine {
 		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
-			//glm::mat4{1.0f}
 			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.mProjection[1][1] *= -1.0f;

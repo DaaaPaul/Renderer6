@@ -61,11 +61,11 @@ namespace GlobalState {
 			), // bottom right
 		};
 		const std::vector<uint32_t> INDICES{
-			0, 1, 3,
-			0, 3, 2,
-
 			0 + 4, 1 + 4, 3 + 4,
 			0 + 4, 3 + 4, 2 + 4,
+
+			0, 1, 3,
+			0, 3, 2,
 		};
 
 		toBePopulated.writeToBuffer(0, VERTICIES.data(), sizeof(Vertex::Vertex) * 8);
@@ -94,7 +94,18 @@ namespace GlobalState {
 					fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX,
 					VK_IMAGE_LAYOUT_UNDEFINED,
 					DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(fGetKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
-				)
+				),
+				DeviceMemory::Common::ImageInfo(
+					VK_IMAGE_TYPE_2D,
+					VK_FORMAT_D32_SFLOAT,
+					VkExtent3D(fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.width, fGetSwapchainWrapper().mParameters.mSwapchainKHRCreateInfo.imageExtent.height, 1),
+					1,
+					VK_SAMPLE_COUNT_1_BIT,
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+					fGetDevicesWrapper().mGRAPHICS_QUEUE_FAMILY_INDEX,
+					VK_IMAGE_LAYOUT_UNDEFINED,
+					DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1))
+				),
 			},
 			.mSamplerInfos{
 				DeviceMemory::Common::SamplerInfo(
