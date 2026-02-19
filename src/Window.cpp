@@ -3,10 +3,17 @@
 #include "Common.h"
 
 namespace Backend {
+	// private:
+	void Window::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
+		Window* self = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
+		self->framebufferResized = true;
+	}
+
+	// public:
 	Window::Window(CreateInfo const& CREATE_INFO) :
 		glfwWindow{},
-		framebufferResized{ false },
-		CREATE_INFO{ CREATE_INFO } {
+		CREATE_INFO{ CREATE_INFO },
+		framebufferResized{ false } {
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
@@ -20,11 +27,6 @@ namespace Backend {
 	Window::~Window() {
 		glfwDestroyWindow(glfwWindow);
 		glfwTerminate();
-	}
-
-	void Window::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
-		Window* self = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
-		self->framebufferResized = true;
 	}
 
 	[[nodiscard]] std::vector<const char*> Window::getInstanceRequiredWindowExtensions() {

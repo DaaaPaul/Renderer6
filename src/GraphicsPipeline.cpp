@@ -6,75 +6,75 @@ namespace Engine {
 	GraphicsPipeline::GraphicsPipeline() :
 		devices{},
 		mpGraphicsPipeline{},
-		mParameters{} {}
+		CREATE_INFO{} {}
 
 	GraphicsPipeline::GraphicsPipeline(Backend::Devices* givenDevices, GraphicsPipelineConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
 		devices{ givenDevices },
 		mpGraphicsPipeline{},
-		mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
+		CREATE_INFO{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
 		// reroute pointers
 		{
-			mParameters.mRendering.colorAttachmentCount = static_cast<uint32_t>(mParameters.mCOLOR_ATTACHMENT_FORMATS.size());
-			mParameters.mRendering.pColorAttachmentFormats = mParameters.mCOLOR_ATTACHMENT_FORMATS.data();
+			CREATE_INFO.mRendering.colorAttachmentCount = static_cast<uint32_t>(CREATE_INFO.mCOLOR_ATTACHMENT_FORMATS.size());
+			CREATE_INFO.mRendering.pColorAttachmentFormats = CREATE_INFO.mCOLOR_ATTACHMENT_FORMATS.data();
 
-			mParameters.mShaderModuleCreateInfo.codeSize = static_cast<uint32_t>(mParameters.mSHADERS_SPRIV_FILE_BYTES.size());
-			mParameters.mShaderModuleCreateInfo.pCode = reinterpret_cast<uint32_t const*>(mParameters.mSHADERS_SPRIV_FILE_BYTES.data());
+			CREATE_INFO.mShaderModuleCreateInfo.codeSize = static_cast<uint32_t>(CREATE_INFO.mSHADERS_SPRIV_FILE_BYTES.size());
+			CREATE_INFO.mShaderModuleCreateInfo.pCode = reinterpret_cast<uint32_t const*>(CREATE_INFO.mSHADERS_SPRIV_FILE_BYTES.data());
 			CHECK_VK_SUCCESS(
-			vkCreateShaderModule(devices->mpLogicalDevice, &mParameters.mShaderModuleCreateInfo, nullptr, &mParameters.mpShaderModule),
+			vkCreateShaderModule(devices->logicalDevice, &CREATE_INFO.mShaderModuleCreateInfo, nullptr, &CREATE_INFO.mpShaderModule),
 			"Failed to create shader module"
 			)
-			for(VkPipelineShaderStageCreateInfo& stage : mParameters.mStages) {
-				stage.module = mParameters.mpShaderModule;
+			for(VkPipelineShaderStageCreateInfo& stage : CREATE_INFO.mStages) {
+				stage.module = CREATE_INFO.mpShaderModule;
 			}
 
-			mParameters.mVertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(mParameters.mVERTEX_BINDINGS.size());
-			mParameters.mVertexInput.pVertexBindingDescriptions = mParameters.mVERTEX_BINDINGS.data();
-			mParameters.mVertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(mParameters.mVERTEX_BINDING_ATTRIBUTES.size());
-			mParameters.mVertexInput.pVertexAttributeDescriptions = mParameters.mVERTEX_BINDING_ATTRIBUTES.data();
+			CREATE_INFO.mVertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(CREATE_INFO.mVERTEX_BINDINGS.size());
+			CREATE_INFO.mVertexInput.pVertexBindingDescriptions = CREATE_INFO.mVERTEX_BINDINGS.data();
+			CREATE_INFO.mVertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(CREATE_INFO.mVERTEX_BINDING_ATTRIBUTES.size());
+			CREATE_INFO.mVertexInput.pVertexAttributeDescriptions = CREATE_INFO.mVERTEX_BINDING_ATTRIBUTES.data();
 
-			mParameters.mColorBlend.attachmentCount = static_cast<uint32_t>(mParameters.mCOLOR_BLEND_ATTACHMENTS.size());
-			mParameters.mColorBlend.pAttachments = mParameters.mCOLOR_BLEND_ATTACHMENTS.data();
+			CREATE_INFO.mColorBlend.attachmentCount = static_cast<uint32_t>(CREATE_INFO.mCOLOR_BLEND_ATTACHMENTS.size());
+			CREATE_INFO.mColorBlend.pAttachments = CREATE_INFO.mCOLOR_BLEND_ATTACHMENTS.data();
 
-			mParameters.mDynamicState.dynamicStateCount = static_cast<uint32_t>(mParameters.mDYNAMIC_STATES.size());
-			mParameters.mDynamicState.pDynamicStates = mParameters.mDYNAMIC_STATES.data();
+			CREATE_INFO.mDynamicState.dynamicStateCount = static_cast<uint32_t>(CREATE_INFO.mDYNAMIC_STATES.size());
+			CREATE_INFO.mDynamicState.pDynamicStates = CREATE_INFO.mDYNAMIC_STATES.data();
 
-			mParameters.mPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(mParameters.mDESCRIPTOR_SET_pLAYOUTS.size());
-			mParameters.mPipelineLayoutInfo.pSetLayouts = mParameters.mDESCRIPTOR_SET_pLAYOUTS.data();
+			CREATE_INFO.mPipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(CREATE_INFO.mDESCRIPTOR_SET_pLAYOUTS.size());
+			CREATE_INFO.mPipelineLayoutInfo.pSetLayouts = CREATE_INFO.mDESCRIPTOR_SET_pLAYOUTS.data();
 
 			CHECK_VK_SUCCESS(
-			vkCreatePipelineLayout(devices->mpLogicalDevice, &mParameters.mPipelineLayoutInfo, nullptr, &mParameters.mpPipelineLayout),
+			vkCreatePipelineLayout(devices->logicalDevice, &CREATE_INFO.mPipelineLayoutInfo, nullptr, &CREATE_INFO.mpPipelineLayout),
 			"Failed to create pipeline layout"
 			)
 
-			mParameters.mPipelineCreateInfo.pNext = &mParameters.mRendering;
-			mParameters.mPipelineCreateInfo.stageCount = static_cast<uint32_t>(mParameters.mStages.size());
-			mParameters.mPipelineCreateInfo.pStages = mParameters.mStages.data();
-			mParameters.mPipelineCreateInfo.pVertexInputState = &mParameters.mVertexInput;
-			mParameters.mPipelineCreateInfo.pInputAssemblyState = &mParameters.mINPUT_ASSEMBLY;
-			mParameters.mPipelineCreateInfo.pTessellationState = &mParameters.mTESSELLATION;
-			mParameters.mPipelineCreateInfo.pViewportState = &mParameters.mVIEWPORT;
-			mParameters.mPipelineCreateInfo.pRasterizationState = &mParameters.mRASTERIZATION;
-			mParameters.mPipelineCreateInfo.pMultisampleState = &mParameters.mMULTISAMPLE;
-			mParameters.mPipelineCreateInfo.pDepthStencilState = &mParameters.mDEPTH_STENCIL;
-			mParameters.mPipelineCreateInfo.pColorBlendState = &mParameters.mColorBlend;
-			mParameters.mPipelineCreateInfo.pDynamicState = &mParameters.mDynamicState;
-			mParameters.mPipelineCreateInfo.layout = mParameters.mpPipelineLayout;
+			CREATE_INFO.mPipelineCreateInfo.pNext = &CREATE_INFO.mRendering;
+			CREATE_INFO.mPipelineCreateInfo.stageCount = static_cast<uint32_t>(CREATE_INFO.mStages.size());
+			CREATE_INFO.mPipelineCreateInfo.pStages = CREATE_INFO.mStages.data();
+			CREATE_INFO.mPipelineCreateInfo.pVertexInputState = &CREATE_INFO.mVertexInput;
+			CREATE_INFO.mPipelineCreateInfo.pInputAssemblyState = &CREATE_INFO.mINPUT_ASSEMBLY;
+			CREATE_INFO.mPipelineCreateInfo.pTessellationState = &CREATE_INFO.mTESSELLATION;
+			CREATE_INFO.mPipelineCreateInfo.pViewportState = &CREATE_INFO.mVIEWPORT;
+			CREATE_INFO.mPipelineCreateInfo.pRasterizationState = &CREATE_INFO.mRASTERIZATION;
+			CREATE_INFO.mPipelineCreateInfo.pMultisampleState = &CREATE_INFO.mMULTISAMPLE;
+			CREATE_INFO.mPipelineCreateInfo.pDepthStencilState = &CREATE_INFO.mDEPTH_STENCIL;
+			CREATE_INFO.mPipelineCreateInfo.pColorBlendState = &CREATE_INFO.mColorBlend;
+			CREATE_INFO.mPipelineCreateInfo.pDynamicState = &CREATE_INFO.mDynamicState;
+			CREATE_INFO.mPipelineCreateInfo.layout = CREATE_INFO.mpPipelineLayout;
 		}
 
 		// create the graphics pipeline
 		{
 			CHECK_VK_SUCCESS(
-			vkCreateGraphicsPipelines(devices->mpLogicalDevice, nullptr, 1, &mParameters.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
+			vkCreateGraphicsPipelines(devices->logicalDevice, nullptr, 1, &CREATE_INFO.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
 			"Failed to create graphics pipeline"
 			)
 		}
 	}
 
 	GraphicsPipeline::~GraphicsPipeline() {
-		vkDestroyShaderModule(devices->mpLogicalDevice, mParameters.mpShaderModule, nullptr);
-		vkDestroyPipelineLayout(devices->mpLogicalDevice, mParameters.mpPipelineLayout, nullptr);
-		vkDestroyPipeline(devices->mpLogicalDevice, mpGraphicsPipeline, nullptr);
+		vkDestroyShaderModule(devices->logicalDevice, CREATE_INFO.mpShaderModule, nullptr);
+		vkDestroyPipelineLayout(devices->logicalDevice, CREATE_INFO.mpPipelineLayout, nullptr);
+		vkDestroyPipeline(devices->logicalDevice, mpGraphicsPipeline, nullptr);
 	}
 
 	[[nodiscard]] GraphicsPipeline::GraphicsPipelineConstructInfo GraphicsPipeline::sGetConstructParameters(std::vector<VkDescriptorSetLayout> const& DESCRIPTOR_SET_pLAYOUTS) {

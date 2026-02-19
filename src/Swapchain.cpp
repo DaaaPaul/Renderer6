@@ -6,50 +6,50 @@ namespace Backend {
 		devices{},
 		mpSwapchainKHR{},
 		mpSurfaceKHR{},
-		mParameters{} {}
+		CREATE_INFO{} {}
 
 	Swapchain::Swapchain(Devices* givenDevices, SwapchainConstructInfo const& GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO) :
 		devices{ givenDevices },
 		mpSwapchainKHR{},
 		mpSurfaceKHR{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO.mpSurfaceKHR },
-		mParameters{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
+		CREATE_INFO{ GIVEN_VULKAN_SWAPCHAIN_WRAPPER_CONSTRUCT_INFO } {
 
 		// reroute pointers
-		mParameters.mSwapchainKHRCreateInfo.surface = mpSurfaceKHR;
-		mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &mParameters.mGRAPHICS_QUEUE_FAMILY_INDEX;
+		CREATE_INFO.mSwapchainKHRCreateInfo.surface = mpSurfaceKHR;
+		CREATE_INFO.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &CREATE_INFO.GRAPHICS_QF_INDEX;
 
 		// check that this gpu-surface pair supports the given format and present mode
-		sCheckHaveVkFormatColorspace(*this, VkSurfaceFormatKHR(mParameters.mSwapchainKHRCreateInfo.imageFormat, mParameters.mSwapchainKHRCreateInfo.imageColorSpace));
-		sCheckHavePresentModeKHR(*this, mParameters.mSwapchainKHRCreateInfo.presentMode);
+		sCheckHaveVkFormatColorspace(*this, VkSurfaceFormatKHR(CREATE_INFO.mSwapchainKHRCreateInfo.imageFormat, CREATE_INFO.mSwapchainKHRCreateInfo.imageColorSpace));
+		sCheckHavePresentModeKHR(*this, CREATE_INFO.mSwapchainKHRCreateInfo.presentMode);
 
 		// construct the swapchainKHR
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(devices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
+			vkCreateSwapchainKHR(devices->logicalDevice, &CREATE_INFO.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
 	}
 
 	Swapchain::~Swapchain() {
-		vkDestroySwapchainKHR(devices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(devices->mpBackend->instance, mpSurfaceKHR, nullptr);
+		vkDestroySwapchainKHR(devices->logicalDevice, mpSwapchainKHR, nullptr);
+		vkDestroySurfaceKHR(devices->instance->instance, mpSurfaceKHR, nullptr);
 	}
 
 	void Swapchain::recreateThyself() {
-		vkDestroySwapchainKHR(devices->mpLogicalDevice, mpSwapchainKHR, nullptr);
-		vkDestroySurfaceKHR(devices->mpBackend->instance, mpSurfaceKHR, nullptr);
+		vkDestroySwapchainKHR(devices->logicalDevice, mpSwapchainKHR, nullptr);
+		vkDestroySurfaceKHR(devices->instance->instance, mpSurfaceKHR, nullptr);
 
 		// obtain updated construct info and put it into createInfo and mpSurfaceKHR
-		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(devices->mpBackend->instance, devices->mpPhysicalDevice, devices->mpBackend->WINDOW->glfwWindow, devices->mGRAPHICS_QUEUE_FAMILY_INDEX));
-		mParameters.mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
-		mParameters.mSwapchainKHRCreateInfo = newConstructInfo.mSwapchainKHRCreateInfo;
+		SwapchainConstructInfo newConstructInfo(Swapchain::sGetConstructParameters(devices->instance->instance, devices->physicalDevice, devices->instance->WINDOW->glfwWindow, devices->GRAPHICS_QF_INDEX));
+		CREATE_INFO.mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
+		CREATE_INFO.mSwapchainKHRCreateInfo = newConstructInfo.mSwapchainKHRCreateInfo;
 		mpSurfaceKHR = newConstructInfo.mpSurfaceKHR;
 
 		// reroute updated construct info pointers
-		mParameters.mSwapchainKHRCreateInfo.surface = mpSurfaceKHR;
-		mParameters.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &mParameters.mGRAPHICS_QUEUE_FAMILY_INDEX;
+		CREATE_INFO.mSwapchainKHRCreateInfo.surface = mpSurfaceKHR;
+		CREATE_INFO.mSwapchainKHRCreateInfo.pQueueFamilyIndices = &CREATE_INFO.GRAPHICS_QF_INDEX;
 
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(devices->mpLogicalDevice, &mParameters.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
+			vkCreateSwapchainKHR(devices->logicalDevice, &CREATE_INFO.mSwapchainKHRCreateInfo, nullptr, &mpSwapchainKHR),
 			"Failed to create the swapchain"
 		)
 	}
@@ -107,9 +107,9 @@ namespace Backend {
 
 	void Swapchain::sCheckHaveVkFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
 		uint32_t supportedVkFormatColorspacesCount{};
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->physicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, nullptr);
 		std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->physicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 
@@ -124,9 +124,9 @@ namespace Backend {
 
 	void Swapchain::sCheckHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
 		uint32_t supportedPresentModeCount{};
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->physicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, nullptr);
 		std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->mpPhysicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->physicalDevice, VULKAN_SWAPCHAIN_WRAPPER.mpSurfaceKHR, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 

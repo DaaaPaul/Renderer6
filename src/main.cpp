@@ -19,8 +19,8 @@ int main() {
     try {
 		GlobalState::Core::load();
 
-		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::Core::getSwapchain().mParameters.mSwapchainKHRCreateInfo.minImageCount };
-		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::Core::getDevices().mGRAPHICS_QUEUE_FAMILY_INDEX };
+		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.minImageCount };
+		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::Core::getDevices().GRAPHICS_QF_INDEX };
 
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
 		Engine::fRenderLoop(killhouse);

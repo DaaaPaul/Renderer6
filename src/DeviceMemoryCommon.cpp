@@ -22,14 +22,14 @@ namespace DeviceMemory {
 			return pKtxTexture;
 		}
 
-		[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO) {
+		[[nodiscard]] VkBuffer fCreateBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
 			VkBufferCreateInfo bufferInfo{
 				.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 				.size = INFO.mBufferSize,
 				.usage = INFO.mBufferUsage,
 				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 				.queueFamilyIndexCount = 1,
-				.pQueueFamilyIndices = &INFO.mGraphicsQueueFamilyIndex,
+				.pQueueFamilyIndices = &INFO.graphicsQfIndex,
 			};
 
 			VkBuffer returnBuffer{};
@@ -76,7 +76,7 @@ namespace DeviceMemory {
 			return memoryTypeIndexReturn;
 		}
 
-		[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
+		[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
 			VkDescriptorPool pReturnDescriptorPool{};
 		
 			// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
@@ -105,7 +105,7 @@ namespace DeviceMemory {
 			return pReturnDescriptorPool;
 		}
 
-		void fAllocateBeginOneTimeCommandBuffer(VkDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
+		void fAllocateBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
 			// create transient command pool
 			{
 				const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
@@ -143,7 +143,7 @@ namespace DeviceMemory {
 			}
 		}
 
-		void fEndSubmitDeallocateOneTimeCommandBuffer(VkDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
+		void fEndSubmitDeallocateOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
 			// end command buffer
 			{
 				CHECK_VK_SUCCESS(

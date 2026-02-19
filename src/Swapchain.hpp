@@ -9,13 +9,13 @@ namespace Backend {
 		struct SwapchainConstructInfo {
 			VkSurfaceKHR mpSurfaceKHR{};
 			VkSwapchainCreateInfoKHR mSwapchainKHRCreateInfo{};
-			const uint32_t mGRAPHICS_QUEUE_FAMILY_INDEX{};
+			const uint32_t GRAPHICS_QF_INDEX{};
 		};
 
 		Devices* devices{};
 		VkSwapchainKHR mpSwapchainKHR{};
 		VkSurfaceKHR mpSurfaceKHR{};
-		SwapchainConstructInfo mParameters{};
+		SwapchainConstructInfo CREATE_INFO{};
 
 		void recreateThyself();
 

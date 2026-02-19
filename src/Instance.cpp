@@ -2,26 +2,7 @@
 #include "Instance.hpp"
 
 namespace Backend {
-	Instance::Instance(Window* givenWindow, CreateInfo&& givenCreateInfo) :
-		instance{},
-		WINDOW{ givenWindow },
-		CREATE_INFO{ std::move(givenCreateInfo) } {
-
-		// checks
-		Instance::checkHaveExtensions(CREATE_INFO.extensions);
-		Instance::checkHaveLayers(CREATE_INFO.layers);
-
-		// construct the VkInstance
-		CHECK_VK_SUCCESS(
-			vkCreateInstance(&CREATE_INFO.createInfo, nullptr, &instance),
-			"Failed to create instance"
-		)
-	}
-
-	Instance::~Instance() {
-		vkDestroyInstance(instance, nullptr);
-	}
-    
+	// private:
 	void Instance::checkHaveExtensions(std::vector<const char*> const& NECESSARY_EXTENSIONS) {
 		if(NECESSARY_EXTENSIONS.empty()) {
 			return;
@@ -64,5 +45,26 @@ namespace Backend {
 		}
 
 		CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMeNames, "Your vulkan installation does not have the required loader layers")
+	}
+
+	// public:
+	Instance::Instance(Window* givenWindow, CreateInfo&& givenCreateInfo) :
+		instance{},
+		WINDOW{ givenWindow },
+		CREATE_INFO{ std::move(givenCreateInfo) } {
+
+		// checks
+		Instance::checkHaveExtensions(CREATE_INFO.extensions);
+		Instance::checkHaveLayers(CREATE_INFO.layers);
+
+		// construct the VkInstance
+		CHECK_VK_SUCCESS(
+			vkCreateInstance(&CREATE_INFO.createInfo, nullptr, &instance),
+			"Failed to create instance"
+		)
+	}
+
+	Instance::~Instance() {
+		vkDestroyInstance(instance, nullptr);
 	}
 }

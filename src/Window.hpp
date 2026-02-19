@@ -7,22 +7,26 @@
 #include "Common.h"
 
 namespace Backend {
-	struct Window {
+	class Window {
+		public:
 		struct CreateInfo {
 			uint16_t width{};
 			uint16_t height{};
 			const char* NAME{};
 		};
 
+		private:
 		GLFWwindow* glfwWindow{};
-		bool framebufferResized{};
 		const CreateInfo CREATE_INFO{};
-
+		bool framebufferResized{};
 		static void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
-		[[nodiscard]] static std::vector<const char*> getInstanceRequiredWindowExtensions();
 
+		public:
 		explicit Window(CreateInfo const& GIVEN_CREATE_INFO);
 		~Window();
+		[[nodiscard]] static std::vector<const char*> getInstanceRequiredWindowExtensions();
+		[[nodiscard]] GLFWwindow*& getGlfwWindow() { return glfwWindow; }
+		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(Window)
 		DELETE_MOVE_CONSTRUCTORS(Window)

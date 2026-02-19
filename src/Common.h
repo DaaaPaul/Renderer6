@@ -48,3 +48,5 @@ namespace Common {
 	[[nodiscard]] bool fContainsAll(std::vector<std::string> const& big, std::vector<std::string> const& small);
 	[[nodiscard]] const std::vector<char> fLoadSprivFileBytes(std::string const& PATH);
 }
+
+using VkLogicalDevice = VkDevice;

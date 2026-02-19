@@ -35,7 +35,7 @@ namespace Engine {
 
 		Backend::Devices* devices{};
 		VkPipeline mpGraphicsPipeline{};
-		GraphicsPipelineConstructInfo mParameters{};
+		GraphicsPipelineConstructInfo CREATE_INFO{};
 
 		[[nodiscard]] static GraphicsPipelineConstructInfo sGetConstructParameters(std::vector<VkDescriptorSetLayout> const& DESCRIPTOR_SET_LAYOUTS);
 

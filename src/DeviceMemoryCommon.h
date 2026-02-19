@@ -11,7 +11,7 @@ namespace DeviceMemory {
 		struct BufferInfo {
 			VkDeviceSize mBufferSize{};
 			VkBufferUsageFlags mBufferUsage{};
-			uint32_t mGraphicsQueueFamilyIndex{};
+			uint32_t graphicsQfIndex{};
 		};
 
 		struct DescriptorSetInfo {
@@ -31,7 +31,7 @@ namespace DeviceMemory {
 			uint32_t mMipLevels{};
 			VkSampleCountFlagBits mSampleCount{};
 			VkImageUsageFlags mUsage{};
-			uint32_t mGraphicsQueueFamilyIndex{};
+			uint32_t graphicsQfIndex{};
 			VkImageLayout mInitialLayout{};
 			ImageViewInfo mImageViewInfo{};
 		};
@@ -51,13 +51,13 @@ namespace DeviceMemory {
 		};
 
 		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH);
-		[[nodiscard]] VkBuffer fCreateBuffer(VkDevice pLogicalDevice, BufferInfo const& INFO);
+		[[nodiscard]] VkBuffer fCreateBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO);
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> fGetMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
 		[[nodiscard]] uint32_t fGetMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
-		[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
+		[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
 
-		void fAllocateBeginOneTimeCommandBuffer(VkDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
-		void fEndSubmitDeallocateOneTimeCommandBuffer(VkDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf);
+		void fAllocateBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
+		void fEndSubmitDeallocateOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf);
 		void fTransitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
 		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
 		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
