@@ -21,7 +21,7 @@ namespace Engine {
 			CREATE_INFO.mShaderModuleCreateInfo.codeSize = static_cast<uint32_t>(CREATE_INFO.mSHADERS_SPRIV_FILE_BYTES.size());
 			CREATE_INFO.mShaderModuleCreateInfo.pCode = reinterpret_cast<uint32_t const*>(CREATE_INFO.mSHADERS_SPRIV_FILE_BYTES.data());
 			CHECK_VK_SUCCESS(
-			vkCreateShaderModule(devices->logicalDevice, &CREATE_INFO.mShaderModuleCreateInfo, nullptr, &CREATE_INFO.mpShaderModule),
+			vkCreateShaderModule(devices->getLogicalDevice(), &CREATE_INFO.mShaderModuleCreateInfo, nullptr, &CREATE_INFO.mpShaderModule),
 			"Failed to create shader module"
 			)
 			for(VkPipelineShaderStageCreateInfo& stage : CREATE_INFO.mStages) {
@@ -43,7 +43,7 @@ namespace Engine {
 			CREATE_INFO.mPipelineLayoutInfo.pSetLayouts = CREATE_INFO.mDESCRIPTOR_SET_pLAYOUTS.data();
 
 			CHECK_VK_SUCCESS(
-			vkCreatePipelineLayout(devices->logicalDevice, &CREATE_INFO.mPipelineLayoutInfo, nullptr, &CREATE_INFO.mpPipelineLayout),
+			vkCreatePipelineLayout(devices->getLogicalDevice(), &CREATE_INFO.mPipelineLayoutInfo, nullptr, &CREATE_INFO.mpPipelineLayout),
 			"Failed to create pipeline layout"
 			)
 
@@ -65,16 +65,16 @@ namespace Engine {
 		// create the graphics pipeline
 		{
 			CHECK_VK_SUCCESS(
-			vkCreateGraphicsPipelines(devices->logicalDevice, nullptr, 1, &CREATE_INFO.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
+			vkCreateGraphicsPipelines(devices->getLogicalDevice(), nullptr, 1, &CREATE_INFO.mPipelineCreateInfo, nullptr, &mpGraphicsPipeline),
 			"Failed to create graphics pipeline"
 			)
 		}
 	}
 
 	GraphicsPipeline::~GraphicsPipeline() {
-		vkDestroyShaderModule(devices->logicalDevice, CREATE_INFO.mpShaderModule, nullptr);
-		vkDestroyPipelineLayout(devices->logicalDevice, CREATE_INFO.mpPipelineLayout, nullptr);
-		vkDestroyPipeline(devices->logicalDevice, mpGraphicsPipeline, nullptr);
+		vkDestroyShaderModule(devices->getLogicalDevice(), CREATE_INFO.mpShaderModule, nullptr);
+		vkDestroyPipelineLayout(devices->getLogicalDevice(), CREATE_INFO.mpPipelineLayout, nullptr);
+		vkDestroyPipeline(devices->getLogicalDevice(), mpGraphicsPipeline, nullptr);
 	}
 
 	[[nodiscard]] GraphicsPipeline::GraphicsPipelineConstructInfo GraphicsPipeline::sGetConstructParameters(std::vector<VkDescriptorSetLayout> const& DESCRIPTOR_SET_pLAYOUTS) {

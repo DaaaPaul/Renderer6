@@ -24,16 +24,6 @@ namespace Backend {
 				sync2Features.pNext = &dynamicRenderingFeatures;
 				dynamicRenderingFeatures.pNext = &extendedDynamicStateFeatures;
 			}
-			CreateInfo() :
-				physicalDevice{},
-				logicalDeviceInfo{},
-				queueFamilyInfos{},
-				queueFamilyPriorities{},
-				extensions{},
-				extendedDynamicStateFeatures{},
-				dynamicRenderingFeatures{},
-				sync2Features{},
-				features{} {}
 			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo> const& GIVEN_QF_INFOS, std::vector<std::vector<float>> const& GIVEN_QF_PRIORITIES, std::vector<const char*> const& GIVEN_EXTENSIONS, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
 				physicalDevice{ givenPhysicalDevice },
 				logicalDeviceInfo{ GIVEN_LOGICAL_DEVICE_INFO },
@@ -66,7 +56,7 @@ namespace Backend {
 		VkPhysicalDevice physicalDevice{};
 		VkLogicalDevice logicalDevice{};
 		std::vector<VkQueue> graphicsQueues{};
-		const CreateInfo CREATE_INFO{};
+		const CreateInfo CREATE_INFO;
 		const uint32_t GRAPHICS_QF_INDEX{ UINT32_MAX };
 
 		public:		

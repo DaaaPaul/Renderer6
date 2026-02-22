@@ -25,8 +25,8 @@ namespace DeviceMemory {
 			bufferSizes.resize(BUFFERS_COUNT, 0);
 			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::fCreateBuffer(devices->logicalDevice, bufferInfos[i]);
-				vkGetBufferMemoryRequirements(devices->logicalDevice, buffers[i], &buffersMemoryRequirements[i]);
+				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), bufferInfos[i]);
+				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
 				bufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
 
@@ -34,20 +34,20 @@ namespace DeviceMemory {
 			VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 				.allocationSize = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
-				.memoryTypeIndex = Common::fGetMemoryTypeIndex(devices->physicalDevice, buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				.memoryTypeIndex = Common::fGetMemoryTypeIndex(devices->getPhysicalDevice(), buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			};
-			vkAllocateMemory(devices->logicalDevice, &hostVisibleMemoryAllocateInfo, nullptr, &hostVisibleMemory);
+			vkAllocateMemory(devices->getLogicalDevice(), &hostVisibleMemoryAllocateInfo, nullptr, &hostVisibleMemory);
 	
 			// bind buffers
 			bufferOffsets = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
 			for(int i = 0; i < BUFFERS_COUNT; i++) {
-				vkBindBufferMemory(devices->logicalDevice, buffers[i], hostVisibleMemory, bufferOffsets[i]);
+				vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], hostVisibleMemory, bufferOffsets[i]);
 			}
 		}
 
 		// descriptor set stuff
 		if(!descriptorSetInfos.empty()) {
-			descriptorPool = Common::fCreateDescriptorPool(devices->logicalDevice, descriptorSetInfos);
+			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), descriptorSetInfos);
 
 			// create the descriptor sets
 			descriptorSetLayouts.resize(descriptorSetInfos.size(), VK_NULL_HANDLE);
@@ -62,17 +62,17 @@ namespace DeviceMemory {
 	}
 
 	HostVisible::~HostVisible() {
-		vkFreeMemory(devices->logicalDevice, hostVisibleMemory, nullptr);
+		vkFreeMemory(devices->getLogicalDevice(), hostVisibleMemory, nullptr);
 		for(VkBuffer& buffer : buffers) {
-			vkDestroyBuffer(devices->logicalDevice, buffer, nullptr);
+			vkDestroyBuffer(devices->getLogicalDevice(), buffer, nullptr);
 		}
 	
 		for(size_t i = 0; i < descriptorSets.size(); i++) {
-			vkFreeDescriptorSets(devices->logicalDevice, descriptorPool, 1, &descriptorSets[i]);
-			vkDestroyDescriptorSetLayout(devices->logicalDevice, descriptorSetLayouts[i], nullptr);
+			vkFreeDescriptorSets(devices->getLogicalDevice(), descriptorPool, 1, &descriptorSets[i]);
+			vkDestroyDescriptorSetLayout(devices->getLogicalDevice(), descriptorSetLayouts[i], nullptr);
 		}
 		if(descriptorPool) {
-			vkDestroyDescriptorPool(devices->logicalDevice, descriptorPool, nullptr);
+			vkDestroyDescriptorPool(devices->getLogicalDevice(), descriptorPool, nullptr);
 		}
 	}
 
@@ -80,12 +80,12 @@ namespace DeviceMemory {
 		void* mappedMemory{};
 
 		CHECK_VK_SUCCESS(
-		vkMapMemory(devices->logicalDevice, hostVisibleMemory, bufferOffsets[INDEX], bufferSizes[INDEX], 0, &mappedMemory),
+		vkMapMemory(devices->getLogicalDevice(), hostVisibleMemory, bufferOffsets[INDEX], bufferSizes[INDEX], 0, &mappedMemory),
 		"Failed to map memory"
 		)
 
 		std::memcpy(mappedMemory, pDATA, NUM_BYTES);
-		vkUnmapMemory(devices->logicalDevice, hostVisibleMemory);
+		vkUnmapMemory(devices->getLogicalDevice(), hostVisibleMemory);
 	}
 
 	void HostVisible::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
@@ -97,7 +97,7 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateDescriptorSetLayout(devices->logicalDevice, &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &descriptorSetLayouts[INDEX]),
+			vkCreateDescriptorSetLayout(devices->getLogicalDevice(), &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &descriptorSetLayouts[INDEX]),
 			"Failed to create descriptor set layout"
 		)
 
@@ -109,7 +109,7 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkAllocateDescriptorSets(devices->logicalDevice, &DESCRIPTOR_SET_ALLOCATE_INFO, &descriptorSets[INDEX]),
+			vkAllocateDescriptorSets(devices->getLogicalDevice(), &DESCRIPTOR_SET_ALLOCATE_INFO, &descriptorSets[INDEX]),
 			"Failed to create descriptor set"
 		)
 	}
@@ -134,6 +134,6 @@ namespace DeviceMemory {
 			.pBufferInfo = toWriteBuffers.data()
 		};
 
-		vkUpdateDescriptorSets(devices->logicalDevice, 1, &WRITE_INFO, 0, nullptr);
+		vkUpdateDescriptorSets(devices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 }

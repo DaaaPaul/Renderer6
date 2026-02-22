@@ -19,11 +19,6 @@ namespace Backend {
 			void reroutePointers() {
 				createInfo.pApplicationInfo = &appInfo;
 			}
-			CreateInfo() :
-				layers{},
-				extensions{},
-				appInfo{},
-				createInfo{} {}
 			CreateInfo(std::vector<const char*> const& GIVEN_LAYERS, std::vector<const char*> const& GIVEN_EXTENSIONS, VkApplicationInfo const& GIVEN_APP_INFO, VkInstanceCreateInfo const& GIVEN_INSTANCE_INFO) :
 				layers(GIVEN_LAYERS),
 				extensions(GIVEN_EXTENSIONS),
@@ -43,8 +38,8 @@ namespace Backend {
 
 		private:
 		VkInstance instance{};
-		Window const* WINDOW{};
-		const CreateInfo CREATE_INFO{};
+		Window* window{};
+		const CreateInfo CREATE_INFO;
 		static void checkHaveExtensions(std::vector<const char*> const& NECESSARY_EXTENSIONS);
 		static void checkHaveLayers(std::vector<const char*> const& NECESSARY_LAYERS);
 
@@ -52,7 +47,7 @@ namespace Backend {
 		explicit Instance(Window* givenWindow, CreateInfo&& givenCreateInfo);
 		~Instance();
 		[[nodiscard]] VkInstance& getInstance() { return instance; }
-		[[nodiscard]] Window const*& getWindow() { return WINDOW; }
+		[[nodiscard]] Window*& getWindow() { return window; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(Instance)

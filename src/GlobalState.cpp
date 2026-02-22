@@ -263,7 +263,7 @@ namespace GlobalState {
 					.ppEnabledExtensionNames = EXTENSIONS.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(finalSelection), DEVICE_INFO, )
+				return Backend::Devices::CreateInfo(std::move(finalSelection), DEVICE_INFO, queueFamilyInfos, QUEUE_PRIORITIES, EXTENSIONS, EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
 			}()
 		);
 
@@ -275,12 +275,51 @@ namespace GlobalState {
 
 		static Backend::Swapchain gSwapchainWrapper(
 			&getDevices(),
-			Backend::Swapchain::sGetConstructParameters(
-				getInstance().instance,
-				getDevices().physicalDevice,
-				getInstance().WINDOW->glfwWindow,
-				getDevices().GRAPHICS_QF_INDEX
-			)
+			[]() -> Backend::Swapchain::CreateInfo {
+				VkSurfaceKHR returnSurface{};
+				CHECK_VK_SUCCESS(
+					glfwCreateWindowSurface(getInstance().getInstance(), getWindow().getGlfwWindow(), nullptr, &returnSurface),
+					"Failed to create surface"
+				)
+
+				VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+				CHECK_VK_SUCCESS(
+					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(getDevices().getPhysicalDevice(), returnSurface, &surfaceCapabilities),
+					"Failed to get physical device surface capabilities"
+				)
+
+				VkExtent2D surfaceExtentInPixels{};
+				if (surfaceCapabilities.currentExtent.width == UINT32_MAX && surfaceCapabilities.currentExtent.height == UINT32_MAX) {
+					glfwGetFramebufferSize(getWindow().getGlfwWindow(), reinterpret_cast<int*>(&surfaceExtentInPixels.width), reinterpret_cast<int*>(&surfaceExtentInPixels.height));
+				} else {
+					surfaceExtentInPixels = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+				}
+
+				const std::vector<uint32_t> ACCESSOR_GFXQF{ getDevices().getGraphicsQfIndex() };
+    
+				const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
+					.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+					.pNext = nullptr,
+					.flags = 0,
+					.surface = nullptr, // reroute needed
+					.minImageCount = 4,
+					.imageFormat = VK_FORMAT_R8G8B8A8_SRGB,
+					.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
+					.imageExtent = surfaceExtentInPixels,
+					.imageArrayLayers = 1,
+					.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+					.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+					.queueFamilyIndexCount = static_cast<uint32_t>(ACCESSOR_GFXQF.size()),
+					.pQueueFamilyIndices = ACCESSOR_GFXQF.data(),
+					.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+					.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+					.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR,
+					.clipped = VK_TRUE,
+					.oldSwapchain = VK_NULL_HANDLE,
+				};
+
+				return Backend::Swapchain::CreateInfo(std::move(returnSurface), SWAPCHAIN_INFO, ACCESSOR_GFXQF);
+			}()
 		);
 
 		return gSwapchainWrapper;
@@ -351,10 +390,10 @@ namespace GlobalState {
 			&getDevices(),
 			DeviceMemory::HostVisible::CreateInfo(
 				{ 
-					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().GRAPHICS_QF_INDEX),
-					DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().GRAPHICS_QF_INDEX),
-					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().GRAPHICS_QF_INDEX),
-					DeviceMemory::Common::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().GRAPHICS_QF_INDEX)
+					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::Common::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				},
 				{
 					DeviceMemory::Common::DescriptorSetInfo({Vertex::Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(0)})
@@ -382,15 +421,15 @@ namespace GlobalState {
 				const VkPhysicalDeviceProperties PHYSICAL_DEVICE_PROPERTIES(
 					[]() -> const VkPhysicalDeviceProperties {
 						VkPhysicalDeviceProperties arguement{};
-						vkGetPhysicalDeviceProperties(getDevices().physicalDevice, &arguement);
+						vkGetPhysicalDeviceProperties(getDevices().getPhysicalDevice(), &arguement);
 						return arguement;
 					}()
 				);
 
 				const DeviceMemory::DeviceLocal::CreateInfo ARGUEMENT(
 					{ 
-						DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().GRAPHICS_QF_INDEX),
-						DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().GRAPHICS_QF_INDEX)
+						DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+						DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
 						DeviceMemory::Common::ImageInfo(
@@ -400,18 +439,18 @@ namespace GlobalState {
 							1,
 							VK_SAMPLE_COUNT_1_BIT,
 							VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-							getDevices().GRAPHICS_QF_INDEX,
+							getDevices().getGraphicsQfIndex(),
 							VK_IMAGE_LAYOUT_UNDEFINED,
 							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
 						),
 						DeviceMemory::Common::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							VK_FORMAT_D32_SFLOAT,
-							VkExtent3D(getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.width, getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.height, 1),
+							VkExtent3D(getSwapchain().CREATE_INFO.createInfo.imageExtent.width, getSwapchain().CREATE_INFO.createInfo.imageExtent.height, 1),
 							1,
 							VK_SAMPLE_COUNT_1_BIT,
 							VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-							getDevices().GRAPHICS_QF_INDEX,
+							getDevices().getGraphicsQfIndex(),
 							VK_IMAGE_LAYOUT_UNDEFINED,
 							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1))
 						),

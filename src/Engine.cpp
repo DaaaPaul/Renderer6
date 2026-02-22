@@ -99,9 +99,9 @@ namespace Engine {
 
 	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages() {
 		uint32_t swapchainImageCount{};
-		vkGetSwapchainImagesKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().mpSwapchainKHR, &swapchainImageCount, nullptr);
+		vkGetSwapchainImagesKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().swapchain, &swapchainImageCount, nullptr);
 		std::vector<VkImage> swapchainImages(swapchainImageCount);
-		vkGetSwapchainImagesKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().mpSwapchainKHR, &swapchainImageCount, swapchainImages.data());
+		vkGetSwapchainImagesKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().swapchain, &swapchainImageCount, swapchainImages.data());
 
 		return swapchainImages;
 	}
@@ -149,7 +149,7 @@ namespace Engine {
 		};
 		const VkRenderingInfo RENDERING_INFO{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent),
 			.layerCount = 1,
 			.viewMask = 0,
 			.colorAttachmentCount = 1,
@@ -171,14 +171,14 @@ namespace Engine {
 		const VkViewport VIEWPORT{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.width),
-			.height = static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.height),
+			.width = static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent.width),
+			.height = static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 		const VkRect2D SCISSOR{
 			.offset = VkOffset2D(0, 0),
-			.extent = GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent
+			.extent = GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent
 		};
 		vkCmdSetViewport(commandBuffer, 0, 1, &VIEWPORT);
 		vkCmdSetScissor(commandBuffer, 0, 1, &SCISSOR);
@@ -193,12 +193,12 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().GRAPHICS_QF_INDEX);
+		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().getGraphicsQfIndex());
 		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().images[1], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
-		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().GRAPHICS_QF_INDEX);
+		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().getGraphicsQfIndex());
 
 		// draw!
 		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
@@ -212,7 +212,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, GlobalState::Core::getDevices().GRAPHICS_QF_INDEX);
+		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, GlobalState::Core::getDevices().getGraphicsQfIndex());
 
 		// end recording
 		CHECK_VK_SUCCESS(
@@ -225,7 +225,7 @@ namespace Engine {
 	};
 
 	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex) {
-		const VkResult RESULT = vkAcquireNextImageKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().mpSwapchainKHR, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
+		const VkResult RESULT = vkAcquireNextImageKHR(GlobalState::Core::getDevices().logicalDevice, GlobalState::Core::getSwapchain().swapchain, UINT64_MAX, killhouse.mHitmen[gHitmanIndex].mpRenderReady, VK_NULL_HANDLE, &nextImageIndex);
 		return RESULT;
 	}
 
@@ -250,7 +250,7 @@ namespace Engine {
 			.waitSemaphoreCount = 1,
 			.pWaitSemaphores = &hitman.mpRenderFinished,
 			.swapchainCount = 1,
-			.pSwapchains = &GlobalState::Core::getSwapchain().mpSwapchainKHR,
+			.pSwapchains = &GlobalState::Core::getSwapchain().swapchain,
 			.pImageIndices = &SWAPCHAIN_IMAGE_INDEX,
 		};
 		return vkQueuePresentKHR(queue, &QUEUE_PRESENT_INFO);	
@@ -276,7 +276,7 @@ namespace Engine {
 		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
-			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.width) / static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.mSwapchainKHRCreateInfo.imageExtent.height), 0.1f, 1000.0f)}
+			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent.width) / static_cast<float>(GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.mProjection[1][1] *= -1.0f;
 	}

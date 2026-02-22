@@ -50,7 +50,7 @@ namespace Backend {
 	// public:
 	Instance::Instance(Window* givenWindow, CreateInfo&& givenCreateInfo) :
 		instance{},
-		WINDOW{ givenWindow },
+		window{ givenWindow },
 		CREATE_INFO{ std::move(givenCreateInfo) } {
 
 		// checks
