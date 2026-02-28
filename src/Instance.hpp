@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include <string>
+#include <iostream>
 #include "Common.h"
 #include "Window.hpp"
 
@@ -19,9 +20,9 @@ namespace Backend {
 			void reroutePointers() {
 				createInfo.pApplicationInfo = &appInfo;
 			}
-			CreateInfo(std::vector<const char*> const& GIVEN_LAYERS, std::vector<const char*> const& GIVEN_EXTENSIONS, VkApplicationInfo const& GIVEN_APP_INFO, VkInstanceCreateInfo const& GIVEN_INSTANCE_INFO) :
-				layers(GIVEN_LAYERS),
-				extensions(GIVEN_EXTENSIONS),
+			CreateInfo(std::vector<const char*>&& salvageLayers, std::vector<const char*>&& salvageExtensions, VkApplicationInfo const& GIVEN_APP_INFO, VkInstanceCreateInfo const& GIVEN_INSTANCE_INFO) :
+				layers(std::move(salvageLayers)),
+				extensions(std::move(salvageExtensions)),
 				appInfo(GIVEN_APP_INFO),
 				createInfo(GIVEN_INSTANCE_INFO) {
 				reroutePointers();

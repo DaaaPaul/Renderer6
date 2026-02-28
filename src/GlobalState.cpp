@@ -34,12 +34,12 @@ namespace GlobalState {
 	Backend::Instance& Core::getInstance() {
 		static Backend::Instance gBackend(&getWindow(), 
 			[]() -> Backend::Instance::CreateInfo {
-				const std::vector<const char*> ENABLED_LAYERS{ "VK_LAYER_KHRONOS_validation" };
+				std::vector<const char*> enabledLayers{ "VK_LAYER_KHRONOS_validation" };
 				#ifdef _WIN32
-				const std::vector<const char*> ENABLED_EXTENSIONS(Backend::Window::getInstanceRequiredWindowExtensions());
+				std::vector<const char*> enabledExtensions(Backend::Window::getInstanceRequiredWindowExtensions());
 				#endif
 				#ifdef __APPLE__
-				const std::vector<const char*> ENABLED_EXTENSIONS(
+				std::vector<const char*> enabledExtensions(
 				[]() -> const std::vector<const char*> {
 					std::vector<const char*> init(Backend::Window::getInstanceRequiredWindowExtensions());
 					init.push_back("VK_KHR_portability_enumeration");
@@ -62,13 +62,13 @@ namespace GlobalState {
 					VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
 					#endif
 					.pApplicationInfo = nullptr, // reroute needed
-					.enabledLayerCount = static_cast<uint32_t>(ENABLED_LAYERS.size()),
-					.ppEnabledLayerNames = ENABLED_LAYERS.data(),
-					.enabledExtensionCount = static_cast<uint32_t>(ENABLED_EXTENSIONS.size()),
-					.ppEnabledExtensionNames = ENABLED_EXTENSIONS.data(),
+					.enabledLayerCount = static_cast<uint32_t>(enabledLayers.size()),
+					.ppEnabledLayerNames = enabledLayers.data(),
+					.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size()),
+					.ppEnabledExtensionNames = enabledExtensions.data(),
 				};
 
-				return Backend::Instance::CreateInfo(ENABLED_LAYERS, ENABLED_EXTENSIONS, APP_INFO, INSTANCE_CREATE_INFO);
+				return Backend::Instance::CreateInfo(std::move(enabledLayers), std::move(enabledExtensions), APP_INFO, INSTANCE_CREATE_INFO);
 			}()
 		);
 
