@@ -1,4 +1,5 @@
 #include <iostream>
+#include "GlobalState.h"
 #include "Swapchain.hpp"
 
 namespace Backend {
@@ -47,7 +48,7 @@ namespace Backend {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(devices->getLogicalDevice(), &CREATE_INFO.createInfo, nullptr, &swapchain),
+			vkCreateSwapchainKHR(devices->getLogicalDevice(), &SWAPCHAIN_INFO, nullptr, &swapchain),
 			"Failed to create the swapchain"
 		)
 	}

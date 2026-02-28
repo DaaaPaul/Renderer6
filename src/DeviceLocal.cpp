@@ -76,12 +76,12 @@ namespace DeviceMemory {
 			}
 
 			// create the memory
-			VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
+			VkMemoryAllocateInfo deviceLocalMemoryAllocateInfo{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 				.allocationSize = Common::fGetMemoryAllocationSizeAndOffsets(allMemoryRequirements).first,
 				.memoryTypeIndex = Common::fGetMemoryTypeIndex(devices->getPhysicalDevice(), allMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
 			};
-			vkAllocateMemory(devices->getLogicalDevice(), &hostVisibleMemoryAllocateInfo, nullptr, &deviceLocalMemory);
+			vkAllocateMemory(devices->getLogicalDevice(), &deviceLocalMemoryAllocateInfo, nullptr, &deviceLocalMemory);
 
 			// bind buffers and images
 			const std::vector<VkDeviceSize> MEMORY_OFFSETS{ Common::fGetMemoryAllocationSizeAndOffsets(allMemoryRequirements).second };

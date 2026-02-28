@@ -8,9 +8,8 @@ namespace Backend {
 		physicalDevice{},
 		logicalDevice{},
 		CREATE_INFO{ std::move(givenCreateInfo) },
-		GRAPHICS_QF_INDEX{ UINT32_MAX } {
+		GRAPHICS_QF_INDEX{ CREATE_INFO.queueFamilyInfos[0].queueFamilyIndex } {
 
-		// hit the physical device
 		physicalDevice = CREATE_INFO.physicalDevice;
 
 		// construct the logical device and queues

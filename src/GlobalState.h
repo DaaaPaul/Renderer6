@@ -18,21 +18,15 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	class Core {
-		private:
-		inline static bool loaded = false;
-
-		public:
-		static void load();
-
-		// only call these after the call to load()
-		static [[nodiscard]] ktxTexture2 const* getKtxTexture2();
-		static [[nodiscard]] Backend::Window& getWindow();
-		static [[nodiscard]] Backend::Instance& getInstance();
-		static [[nodiscard]] Backend::Devices& getDevices();
-		static [[nodiscard]] Backend::Swapchain& getSwapchain();
-		static [[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
-		static [[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
-		static [[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
+	namespace Core {
+		void load();
+		[[nodiscard]] ktxTexture2 const* getKtxTexture2();
+		[[nodiscard]] Backend::Window& getWindow();
+		[[nodiscard]] Backend::Instance& getInstance();
+		[[nodiscard]] Backend::Devices& getDevices();
+		[[nodiscard]] Backend::Swapchain& getSwapchain();
+		[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
+		[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+		[[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
 	};
 }

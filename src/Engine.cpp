@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include "GlobalState.h"
 #include "Engine.h"
 #include "DeviceMemoryCommon.h"
 

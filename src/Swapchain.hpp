@@ -3,7 +3,6 @@
 #include <vulkan/vulkan.h>
 #include "Common.h"
 #include "Devices.hpp"
-#include "GlobalState.h"
 
 namespace Backend {
 	class Swapchain {

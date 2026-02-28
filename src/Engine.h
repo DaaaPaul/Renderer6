@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GlobalState.h"
 #include "Devices.hpp"
 #include "Swapchain.hpp"
 #include "HostVisible.hpp"

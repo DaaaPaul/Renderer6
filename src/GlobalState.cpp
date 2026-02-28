@@ -13,21 +13,15 @@ namespace GlobalState {
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getGraphicsPipeline();
-
-		loaded = true;
 	}
 
 	ktxTexture2 const* Core::getKtxTexture2() {
-		assert(loaded);
-
 		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::Common::fKtxLoadImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)");
 		
 		return gKTX_TEXTURE2;
 	}
 
 	Backend::Window& Core::getWindow() {
-		assert(loaded);
-
 		static Backend::Window gWindowWrapper({
 			.width = 800,
 			.height = 600,
@@ -38,8 +32,6 @@ namespace GlobalState {
 	}
 
 	Backend::Instance& Core::getInstance() {
-		assert(loaded);
-
 		static Backend::Instance gBackend(&getWindow(), 
 			[]() -> Backend::Instance::CreateInfo {
 				const std::vector<const char*> ENABLED_LAYERS{ "VK_LAYER_KHRONOS_validation" };
@@ -57,23 +49,23 @@ namespace GlobalState {
 				#endif
 
 				const VkApplicationInfo APP_INFO{
-						.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-						.apiVersion = VK_API_VERSION_1_3,
+					.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+					.apiVersion = VK_API_VERSION_1_3,
 				};
 				const VkInstanceCreateInfo INSTANCE_CREATE_INFO{
-						.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-						.flags =
-						#ifdef _WIN32 
-						0,
-						#endif
-						#ifdef __APPLE__
-						VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
-						#endif
-						.pApplicationInfo = nullptr, // reroute needed
-						.enabledLayerCount = static_cast<uint32_t>(ENABLED_LAYERS.size()),
-						.ppEnabledLayerNames = ENABLED_LAYERS.data(),
-						.enabledExtensionCount = static_cast<uint32_t>(ENABLED_EXTENSIONS.size()),
-						.ppEnabledExtensionNames = ENABLED_EXTENSIONS.data(),
+					.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+					.flags =
+					#ifdef _WIN32 
+					0,
+					#endif
+					#ifdef __APPLE__
+					VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
+					#endif
+					.pApplicationInfo = nullptr, // reroute needed
+					.enabledLayerCount = static_cast<uint32_t>(ENABLED_LAYERS.size()),
+					.ppEnabledLayerNames = ENABLED_LAYERS.data(),
+					.enabledExtensionCount = static_cast<uint32_t>(ENABLED_EXTENSIONS.size()),
+					.ppEnabledExtensionNames = ENABLED_EXTENSIONS.data(),
 				};
 
 				return Backend::Instance::CreateInfo(ENABLED_LAYERS, ENABLED_EXTENSIONS, APP_INFO, INSTANCE_CREATE_INFO);
@@ -84,8 +76,6 @@ namespace GlobalState {
 	}
 
 	Backend::Devices& Core::getDevices() {
-		assert(loaded);
-
 		static Backend::Devices gDevices(
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
@@ -271,8 +261,6 @@ namespace GlobalState {
 	}
 
 	Backend::Swapchain& Core::getSwapchain() {
-		assert(loaded);
-
 		static Backend::Swapchain gSwapchainWrapper(
 			&getDevices(),
 			[]() -> Backend::Swapchain::CreateInfo {
@@ -326,8 +314,6 @@ namespace GlobalState {
 	}
 
 	DeviceMemory::HostVisible& Core::getHostVisibleMemory() {
-		assert(loaded);
-
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			const std::vector<Vertex::Vertex> VERTICIES{
 				Vertex::Vertex(
@@ -406,8 +392,6 @@ namespace GlobalState {
 	}
 
 	DeviceMemory::DeviceLocal& Core::getDeviceLocalMemory() {
-		assert(loaded);
-
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 8)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 12)});
@@ -491,8 +475,6 @@ namespace GlobalState {
 	}
 
 	Engine::GraphicsPipeline& Core::getGraphicsPipeline() {
-		assert(loaded);
-
 		static Engine::GraphicsPipeline gGraphicsPipeline(
 			&getDevices(),
 			[]() -> Engine::GraphicsPipeline::CreateInfo {
