@@ -102,7 +102,7 @@ namespace GlobalState {
 					}
 				};
 
-				const std::vector<const char*> EXTENSIONS{
+				std::vector<const char*> extensions{
 					"VK_KHR_swapchain",
 					"VK_KHR_synchronization2",
 					"VK_KHR_spirv_1_4",
@@ -111,7 +111,7 @@ namespace GlobalState {
 					#endif
 				};
 
-				const std::vector<std::vector<float>> QUEUE_PRIORITIES{
+				std::vector<std::vector<float>> queuePriorities{
 					{0.5f}
 				};
 				std::vector<VkDeviceQueueCreateInfo> queueFamilyInfos{
@@ -119,7 +119,7 @@ namespace GlobalState {
 						.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
 						.queueFamilyIndex = UINT32_MAX, // this will be set properly later (*)
 						.queueCount = 1,
-						.pQueuePriorities = QUEUE_PRIORITIES[0].data()
+						.pQueuePriorities = queuePriorities[0].data()
 					}
 				};
 
@@ -163,7 +163,7 @@ namespace GlobalState {
 					}
 
 					// has graphics queue family with enough queues check
-					if (getPhysicalDeviceGraphicsQfIndex(systemPhysicalDevices[i], queueFamilyInfos[0].queueCount) == UINT32_MAX) {
+					if ((queueFamilyInfos[0].queueFamilyIndex = getPhysicalDeviceGraphicsQfIndex(systemPhysicalDevices[i], queueFamilyInfos[0].queueCount) /* (*) */) == UINT32_MAX) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 						continue;
 					}
@@ -179,8 +179,8 @@ namespace GlobalState {
 						physicalDeviceExtensionNames.push_back(physicalDeviceExtension.extensionName);
 					}
 					std::vector<std::string> logicalDeviceExtensionNames{};
-					for (int i = 0; i < EXTENSIONS.size(); i++) {
-						logicalDeviceExtensionNames.push_back(EXTENSIONS[i]);
+					for (int i = 0; i < extensions.size(); i++) {
+						logicalDeviceExtensionNames.push_back(extensions[i]);
 					}
 
 					if (!Common::fContainsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
@@ -249,11 +249,11 @@ namespace GlobalState {
 					.flags = 0,
 					.queueCreateInfoCount = static_cast<uint32_t>(queueFamilyInfos.size()),
 					.pQueueCreateInfos = queueFamilyInfos.data(),
-					.enabledExtensionCount = static_cast<uint32_t>(EXTENSIONS.size()),
-					.ppEnabledExtensionNames = EXTENSIONS.data(),
+					.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+					.ppEnabledExtensionNames = extensions.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(finalSelection), DEVICE_INFO, queueFamilyInfos, QUEUE_PRIORITIES, EXTENSIONS, EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
+				return Backend::Devices::CreateInfo(std::move(finalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
 			}()
 		);
 
@@ -283,7 +283,7 @@ namespace GlobalState {
 					surfaceExtentInPixels = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 				}
 
-				const std::vector<uint32_t> ACCESSOR_GFXQF{ getDevices().getGraphicsQfIndex() };
+				std::vector<uint32_t> accessorGfxQf{ getDevices().getGraphicsQfIndex() };
     
 				const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
 					.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
@@ -297,8 +297,8 @@ namespace GlobalState {
 					.imageArrayLayers = 1,
 					.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 					.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-					.queueFamilyIndexCount = static_cast<uint32_t>(ACCESSOR_GFXQF.size()),
-					.pQueueFamilyIndices = ACCESSOR_GFXQF.data(),
+					.queueFamilyIndexCount = static_cast<uint32_t>(accessorGfxQf.size()),
+					.pQueueFamilyIndices = accessorGfxQf.data(),
 					.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
 					.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 					.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR,
@@ -306,7 +306,7 @@ namespace GlobalState {
 					.oldSwapchain = VK_NULL_HANDLE,
 				};
 
-				return Backend::Swapchain::CreateInfo(std::move(returnSurface), SWAPCHAIN_INFO, ACCESSOR_GFXQF);
+				return Backend::Swapchain::CreateInfo(std::move(returnSurface), SWAPCHAIN_INFO, std::move(accessorGfxQf));
 			}()
 		);
 
@@ -616,17 +616,17 @@ namespace GlobalState {
 
 				return Engine::GraphicsPipeline::CreateInfo(
 					pipelineCreateInfo,
-					rendering, colorAttachmentFormats,
-					stages,
-					vertexInput, vertexBindings, vertexAttributes,
+					rendering, std::move(colorAttachmentFormats),
+					std::move(stages),
+					vertexInput, std::move(vertexBindings), std::move(vertexAttributes),
 					inputAssembly, 
 					tessellation,
 					viewport,
 					rasterization,
 					multisampling,
 					depthStencil,
-					colorBlend, colorBlendAttachments,
-					dynamicStateInfo, dynamicStates
+					colorBlend, std::move(colorBlendAttachments),
+					dynamicStateInfo, std::move(dynamicStates)
 				);
 			}()
 		);

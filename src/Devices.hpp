@@ -24,12 +24,12 @@ namespace Backend {
 				sync2Features.pNext = &dynamicRenderingFeatures;
 				dynamicRenderingFeatures.pNext = &extendedDynamicStateFeatures;
 			}
-			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo> const& GIVEN_QF_INFOS, std::vector<std::vector<float>> const& GIVEN_QF_PRIORITIES, std::vector<const char*> const& GIVEN_EXTENSIONS, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
+			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo>&& salvageQfInfos, std::vector<std::vector<float>>&& salvageQfPriorities, std::vector<const char*>&& salvageExtensions, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
 				physicalDevice{ givenPhysicalDevice },
 				logicalDeviceInfo{ GIVEN_LOGICAL_DEVICE_INFO },
-				queueFamilyInfos{ GIVEN_QF_INFOS },
-				queueFamilyPriorities{ GIVEN_QF_PRIORITIES },
-				extensions{ GIVEN_EXTENSIONS },
+				queueFamilyInfos{ std::move(salvageQfInfos) },
+				queueFamilyPriorities{ std::move(salvageQfPriorities) },
+				extensions{ std::move(salvageExtensions) },
 				extendedDynamicStateFeatures{ GIVEN_EXTENDED_DYNAMIC },
 				dynamicRenderingFeatures{ GIVEN_DYNAMIC_RENDERING },
 				sync2Features{ GIVEN_SYNC2 },

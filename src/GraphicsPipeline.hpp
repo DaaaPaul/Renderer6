@@ -56,14 +56,14 @@ namespace Engine {
 				graphicsPipeline.pColorBlendState = &colorBlend;
 				graphicsPipeline.pDynamicState = &dynamicStateInfo;
 			}
-			CreateInfo(const VkGraphicsPipelineCreateInfo& GRAPHICS_PIPELINE, const VkPipelineRenderingCreateInfo& RENDERING, const std::vector<VkFormat>& COLOR_ATTACHMENT_FORMATS, const std::vector<VkPipelineShaderStageCreateInfo>& STAGES, const VkPipelineVertexInputStateCreateInfo& VERTEX_INPUT, const std::vector<VkVertexInputBindingDescription>& VERTEX_BINDINGS, const std::vector<VkVertexInputAttributeDescription>& VERTEX_ATTRIBUTES, const VkPipelineInputAssemblyStateCreateInfo& INPUT_ASSEMBLY, const VkPipelineTessellationStateCreateInfo& TESSELLATION, const VkPipelineViewportStateCreateInfo& VIEWPORT, const VkPipelineRasterizationStateCreateInfo& RASTERIZATION, const VkPipelineMultisampleStateCreateInfo& MULTISAMPLING, const VkPipelineDepthStencilStateCreateInfo& DEPTH_STENCIL, const VkPipelineColorBlendStateCreateInfo& COLOR_BLEND, const std::vector<VkPipelineColorBlendAttachmentState>& COLOR_BLEND_ATTACHMENTS, const VkPipelineDynamicStateCreateInfo& DYNAMIC_STATE_INFO, const std::vector<VkDynamicState>& DYNAMIC_STATES) : 
+			CreateInfo(const VkGraphicsPipelineCreateInfo& GRAPHICS_PIPELINE, const VkPipelineRenderingCreateInfo& RENDERING, std::vector<VkFormat>&& salvageCAFormats, std::vector<VkPipelineShaderStageCreateInfo>&& salvageStages, VkPipelineVertexInputStateCreateInfo const& VERTEX_INPUT, std::vector<VkVertexInputBindingDescription>&& salvageVertexBindings, std::vector<VkVertexInputAttributeDescription>&& salvageVertexAttributes, VkPipelineInputAssemblyStateCreateInfo const& INPUT_ASSEMBLY, VkPipelineTessellationStateCreateInfo const& TESSELLATION, VkPipelineViewportStateCreateInfo const& VIEWPORT, VkPipelineRasterizationStateCreateInfo const& RASTERIZATION, VkPipelineMultisampleStateCreateInfo const& MULTISAMPLING, VkPipelineDepthStencilStateCreateInfo const& DEPTH_STENCIL, VkPipelineColorBlendStateCreateInfo const& COLOR_BLEND, std::vector<VkPipelineColorBlendAttachmentState>&& salvageColorBlendAttachments, VkPipelineDynamicStateCreateInfo const& DYNAMIC_STATE_INFO, std::vector<VkDynamicState>&& salvageDynamicStates) : 
 				graphicsPipeline(GRAPHICS_PIPELINE), 
 				rendering(RENDERING), 
-				colorAttachmentFormats(COLOR_ATTACHMENT_FORMATS), 
-				stages(STAGES), 
+				colorAttachmentFormats(std::move(salvageCAFormats)),
+				stages(std::move(salvageStages)),
 				vertexInput(VERTEX_INPUT), 
-				vertexBindings(VERTEX_BINDINGS), 
-				vertexAttributes(VERTEX_ATTRIBUTES), 
+				vertexBindings(std::move(salvageVertexBindings)),
+				vertexAttributes(std::move(salvageVertexAttributes)),
 				inputAssembly(INPUT_ASSEMBLY), 
 				tesselation(TESSELLATION), 
 				viewport(VIEWPORT), 
@@ -71,9 +71,9 @@ namespace Engine {
 				multisampling(MULTISAMPLING), 
 				depthStencil(DEPTH_STENCIL), 
 				colorBlend(COLOR_BLEND), 
-				colorBlendAttachments(COLOR_BLEND_ATTACHMENTS), 
+				colorBlendAttachments(std::move(salvageColorBlendAttachments)),
 				dynamicStateInfo(DYNAMIC_STATE_INFO), 
-				dynamicStates(DYNAMIC_STATES) {
+				dynamicStates(std::move(salvageDynamicStates)) {
 					reroutePointers();
 			}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 

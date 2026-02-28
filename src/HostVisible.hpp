@@ -11,12 +11,9 @@ namespace DeviceMemory {
 			std::vector<Common::BufferInfo> bufferInfos{};
 			std::vector<Common::DescriptorSetInfo> descriptorSetInfos{};
 
-			CreateInfo() :
-				bufferInfos{},
-				descriptorSetInfos{} {}
-			CreateInfo(std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFOS, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) :
-				bufferInfos{GIVEN_BUFFER_INFOS},
-				descriptorSetInfos{GIVEN_DESCRIPTOR_SET_INFOS} {}
+			CreateInfo(std::vector<Common::BufferInfo>&& salvageBufferInfos, std::vector<Common::DescriptorSetInfo>&& salvageDescriptorSetInfos) :
+				bufferInfos{ std::move(salvageBufferInfos) },
+				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
 				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
 				descriptorSetInfos{ std::move(salvageCreateInfo.descriptorSetInfos) } {}
@@ -27,7 +24,7 @@ namespace DeviceMemory {
 		Backend::Devices* devices{};
 		VkDeviceMemory hostVisibleMemory{};
 
-		const CreateInfo CREATE_INFO{};
+		const CreateInfo CREATE_INFO;
 
 		std::vector<VkBuffer> buffers{};
 		std::vector<VkDeviceSize> bufferOffsets{};

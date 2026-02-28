@@ -15,10 +15,10 @@ namespace Backend {
 			void reroutePointers() {
 				createInfo.surface = surface;
 			}
-			CreateInfo(VkSurfaceKHR&& salvageSurface, VkSwapchainCreateInfoKHR const& GIVEN_CREATE_INFO, std::vector<uint32_t> const& GIVEN_ACCESSOR_QFs) :
+			CreateInfo(VkSurfaceKHR&& salvageSurface, VkSwapchainCreateInfoKHR const& GIVEN_CREATE_INFO, std::vector<uint32_t>&& salvageAccessorQfIndices) :
 				surface{ salvageSurface },
 				createInfo{ GIVEN_CREATE_INFO }, 
-				accessorQfIndices{ GIVEN_ACCESSOR_QFs } {
+				accessorQfIndices{ std::move(salvageAccessorQfIndices) } {
 				reroutePointers();
 			}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 

@@ -13,16 +13,11 @@ namespace DeviceMemory {
 			std::vector<Common::SamplerInfo> samplerInfos{};
 			std::vector<Common::DescriptorSetInfo> descriptorSetInfos{};
 
-			CreateInfo() :
-				bufferInfos{},
-				imageInfos{},
-				samplerInfos{},
-				descriptorSetInfos{} {}
-			CreateInfo(std::vector<Common::BufferInfo> const& GIVEN_BUFFER_INFOS, std::vector<Common::ImageInfo> const& GIVEN_IMAGE_INFOS, std::vector<Common::SamplerInfo> const& GIVEN_SAMPLER_INFOS, std::vector<Common::DescriptorSetInfo> const& GIVEN_DESCRIPTOR_SET_INFOS) :
-				bufferInfos{GIVEN_BUFFER_INFOS},
-				imageInfos{GIVEN_IMAGE_INFOS},
-				samplerInfos{GIVEN_SAMPLER_INFOS},
-				descriptorSetInfos{GIVEN_DESCRIPTOR_SET_INFOS} {}
+			CreateInfo(std::vector<Common::BufferInfo>&& salvageBufferInfos, std::vector<Common::ImageInfo>&& salvageImageInfos, std::vector<Common::SamplerInfo>&& salvageSamplerInfos, std::vector<Common::DescriptorSetInfo>&& salvageDescriptorSetInfos) :
+				bufferInfos{ std::move(salvageBufferInfos) },
+				imageInfos{ std::move(salvageImageInfos) },
+				samplerInfos{ std::move(salvageSamplerInfos) },
+				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
 				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
 				imageInfos{ std::move(salvageCreateInfo.imageInfos) },
@@ -35,7 +30,7 @@ namespace DeviceMemory {
 		Backend::Devices* devices{};
 		VkDeviceMemory deviceLocalMemory{};
 
-		const CreateInfo CREATE_INFO{};
+		const CreateInfo CREATE_INFO;
 
 		std::vector<VkBuffer> buffers{};
 		std::vector<VkDeviceSize> bufferOffsets{};
