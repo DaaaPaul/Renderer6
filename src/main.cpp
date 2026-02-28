@@ -19,7 +19,7 @@ int main() {
     try {
 		GlobalState::Core::load();
 
-		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::Core::getSwapchain().CREATE_INFO.createInfo.minImageCount };
+		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::Core::getSwapchain().getCreateInfo().createInfo.minImageCount };
 		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::Core::getDevices().getGraphicsQfIndex() };
 
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);

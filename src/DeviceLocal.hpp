@@ -5,7 +5,8 @@
 #include "DeviceMemoryCommon.h"
 
 namespace DeviceMemory {
-	struct DeviceLocal {
+	class DeviceLocal {
+		public:
 		struct CreateInfo {
 			std::vector<Common::BufferInfo> bufferInfos{};
 			std::vector<Common::ImageInfo> imageInfos{};
@@ -30,6 +31,7 @@ namespace DeviceMemory {
 			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
+		private:
 		Backend::Devices* devices{};
 		VkDeviceMemory deviceLocalMemory{};
 
@@ -49,6 +51,15 @@ namespace DeviceMemory {
 		VkDescriptorPool descriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
+
+		public:
+		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
+		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
+		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
+		[[nodiscard]] std::vector<VkImage>& getImages() { return images; }
+		[[nodiscard]] std::vector<VkImageView>& getImageViews() { return imageViews; }
+		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
+		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
 
 		void copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS);
 		void copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS);

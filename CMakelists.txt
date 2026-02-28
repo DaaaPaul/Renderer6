@@ -30,8 +30,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.cpp

@@ -21,20 +21,20 @@ namespace DeviceMemory {
 		// memory and buffer and image stuff
 		{
 			// create the buffers themselves with their memory requirements info
-			const size_t BUFFERS_COUNT{ bufferInfos.size() };
+			const size_t BUFFERS_COUNT{ CREATE_INFO.bufferInfos.size() };
 
 			buffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
 			bufferSizes.resize(BUFFERS_COUNT, 0);
 			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), bufferInfos[i]);
+				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
 				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
 				bufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
 
 			// create the images themselves with their memory requirements info
-			const size_t IMAGES_COUNT{ imageInfos.size() };
+			const size_t IMAGES_COUNT{ CREATE_INFO.imageInfos.size() };
 
 			images.resize(IMAGES_COUNT, VK_NULL_HANDLE);
 			imageViews.resize(IMAGES_COUNT, VK_NULL_HANDLE);
@@ -49,14 +49,14 @@ namespace DeviceMemory {
 				.queueFamilyIndexCount = 1
 			};
 			for(int i = 0; i < IMAGES_COUNT; i++) {
-				rollingImageCreateInfo.imageType = imageInfos[i].mImageType;
-				rollingImageCreateInfo.format = imageInfos[i].mFormat;
-				rollingImageCreateInfo.extent = imageInfos[i].mExtent3D;
-				rollingImageCreateInfo.mipLevels = imageInfos[i].mMipLevels;
-				rollingImageCreateInfo.samples = imageInfos[i].mSampleCount;
-				rollingImageCreateInfo.usage = imageInfos[i].mUsage;
-				rollingImageCreateInfo.pQueueFamilyIndices = &imageInfos[i].graphicsQfIndex;
-				rollingImageCreateInfo.initialLayout = imageInfos[i].mInitialLayout;
+				rollingImageCreateInfo.imageType = CREATE_INFO.imageInfos[i].mImageType;
+				rollingImageCreateInfo.format = CREATE_INFO.imageInfos[i].mFormat;
+				rollingImageCreateInfo.extent = CREATE_INFO.imageInfos[i].mExtent3D;
+				rollingImageCreateInfo.mipLevels = CREATE_INFO.imageInfos[i].mMipLevels;
+				rollingImageCreateInfo.samples = CREATE_INFO.imageInfos[i].mSampleCount;
+				rollingImageCreateInfo.usage = CREATE_INFO.imageInfos[i].mUsage;
+				rollingImageCreateInfo.pQueueFamilyIndices = &CREATE_INFO.imageInfos[i].graphicsQfIndex;
+				rollingImageCreateInfo.initialLayout = CREATE_INFO.imageInfos[i].mInitialLayout;
 
 				CHECK_VK_SUCCESS(
 					vkCreateImage(devices->getLogicalDevice(), &rollingImageCreateInfo, nullptr, &images[i]),
@@ -97,14 +97,14 @@ namespace DeviceMemory {
 
 			// finally create image views after binding images to memory
 			for(int i = 0; i < IMAGES_COUNT; i++) {
-				bool hasImageView{ imageInfos[i].mImageViewInfo.mImageViewType != 0 && imageInfos[i].mImageViewInfo.mFormat != 0 };
+				bool hasImageView{ CREATE_INFO.imageInfos[i].mImageViewInfo.mImageViewType != 0 && CREATE_INFO.imageInfos[i].mImageViewInfo.mFormat != 0 };
 				if(hasImageView) {
 					VkImageViewCreateInfo rollingImageViewCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 						.image = images[i],
-						.viewType = imageInfos[i].mImageViewInfo.mImageViewType,
-						.format = imageInfos[i].mImageViewInfo.mFormat,
-						.subresourceRange = imageInfos[i].mImageViewInfo.mImageSubresourceRange
+						.viewType = CREATE_INFO.imageInfos[i].mImageViewInfo.mImageViewType,
+						.format = CREATE_INFO.imageInfos[i].mImageViewInfo.mFormat,
+						.subresourceRange = CREATE_INFO.imageInfos[i].mImageViewInfo.mImageSubresourceRange
 					};
 
 					CHECK_VK_SUCCESS(
@@ -116,8 +116,8 @@ namespace DeviceMemory {
 		}
 
 		// sampler stuff
-		if(!samplerInfos.empty()) {
-			samplers.resize(samplerInfos.size(), VK_NULL_HANDLE);
+		if(!CREATE_INFO.samplerInfos.empty()) {
+			samplers.resize(CREATE_INFO.samplerInfos.size(), VK_NULL_HANDLE);
 
 			VkSamplerCreateInfo rollingSamplerInfo{
 				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -125,18 +125,18 @@ namespace DeviceMemory {
 				.unnormalizedCoordinates = VK_FALSE
 			};
 
-			for(int i = 0; i < samplerInfos.size(); i++) {
-				rollingSamplerInfo.magFilter = samplerInfos[i].mMagFilter;
-				rollingSamplerInfo.minFilter = samplerInfos[i].mMinFilter;
-				rollingSamplerInfo.mipmapMode = samplerInfos[i].mMipmapMode;
-				rollingSamplerInfo.addressModeU = samplerInfos[i].mAddressModeU;
-				rollingSamplerInfo.addressModeV = samplerInfos[i].mAddressModeV;
-				rollingSamplerInfo.mipLodBias = samplerInfos[i].mMipLodBias;
-				rollingSamplerInfo.anisotropyEnable = samplerInfos[i].mAnisotropyEnable;
-				rollingSamplerInfo.maxAnisotropy = samplerInfos[i].mMaxAnisotropy;
-				rollingSamplerInfo.minLod = samplerInfos[i].mMinLod;
-				rollingSamplerInfo.maxLod = samplerInfos[i].mMaxLod;
-				rollingSamplerInfo.borderColor = samplerInfos[i].mBorderColor;
+			for(int i = 0; i < CREATE_INFO.samplerInfos.size(); i++) {
+				rollingSamplerInfo.magFilter = CREATE_INFO.samplerInfos[i].mMagFilter;
+				rollingSamplerInfo.minFilter = CREATE_INFO.samplerInfos[i].mMinFilter;
+				rollingSamplerInfo.mipmapMode = CREATE_INFO.samplerInfos[i].mMipmapMode;
+				rollingSamplerInfo.addressModeU = CREATE_INFO.samplerInfos[i].mAddressModeU;
+				rollingSamplerInfo.addressModeV = CREATE_INFO.samplerInfos[i].mAddressModeV;
+				rollingSamplerInfo.mipLodBias = CREATE_INFO.samplerInfos[i].mMipLodBias;
+				rollingSamplerInfo.anisotropyEnable = CREATE_INFO.samplerInfos[i].mAnisotropyEnable;
+				rollingSamplerInfo.maxAnisotropy = CREATE_INFO.samplerInfos[i].mMaxAnisotropy;
+				rollingSamplerInfo.minLod = CREATE_INFO.samplerInfos[i].mMinLod;
+				rollingSamplerInfo.maxLod = CREATE_INFO.samplerInfos[i].mMaxLod;
+				rollingSamplerInfo.borderColor = CREATE_INFO.samplerInfos[i].mBorderColor;
 
 				CHECK_VK_SUCCESS(
 					vkCreateSampler(devices->getLogicalDevice(), &rollingSamplerInfo, nullptr, &samplers[i]),
@@ -144,17 +144,17 @@ namespace DeviceMemory {
 				)
 			}
 		}
-
+		
 		// descriptor set stuff
-		if(!descriptorSetInfos.empty()) {
-			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), descriptorSetInfos);
+		if(!CREATE_INFO.descriptorSetInfos.empty()) {
+			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
 
 			// create the descriptor sets
-			descriptorSetLayouts.resize(descriptorSetInfos.size(), VK_NULL_HANDLE);
-			descriptorSets.resize(descriptorSetInfos.size(), VK_NULL_HANDLE);
+			descriptorSetLayouts.resize(CREATE_INFO.descriptorSetInfos.size(), VK_NULL_HANDLE);
+			descriptorSets.resize(CREATE_INFO.descriptorSetInfos.size(), VK_NULL_HANDLE);
 
-			for(size_t i = 0; i < descriptorSetInfos.size(); i++) {
-				createDescriptorSetAndLayout(descriptorSetInfos[i], i);
+			for(size_t i = 0; i < CREATE_INFO.descriptorSetInfos.size(); i++) {
+				createDescriptorSetAndLayout(CREATE_INFO.descriptorSetInfos[i], i);
 			}
 		}
 
@@ -191,7 +191,7 @@ namespace DeviceMemory {
 
 		Common::fAllocateBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
 		vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, buffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-		Common::fEndSubmitDeallocateOneTimeCommandBuffer(devices->getLogicalDevice(), devices->graphicsQueues[0], tempCommandPool, tempCommandBuffer);
+		Common::fEndSubmitDeallocateOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS) {
@@ -216,7 +216,7 @@ namespace DeviceMemory {
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 		// end of recorded commands
 
-		Common::fEndSubmitDeallocateOneTimeCommandBuffer(devices->getLogicalDevice(), devices->graphicsQueues[0], tempCommandPool, tempCommandBuffer);
+		Common::fEndSubmitDeallocateOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
@@ -246,7 +246,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
@@ -260,8 +260,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 
@@ -269,7 +269,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
-		if(SAMPLER_IMAGE_INDICES.size() != descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(SAMPLER_IMAGE_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 
@@ -283,8 +283,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
 			.pImageInfo = toWriteImageSamplers.data()
 		};
 

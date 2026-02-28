@@ -26,13 +26,13 @@ namespace GlobalState {
 		static void load();
 
 		// only call these after the call to load()
-		[[nodiscard]] static ktxTexture2 const* getKtxTexture2();
-		[[nodiscard]] static Backend::Window& getWindow();
-		[[nodiscard]] static Backend::Instance& getInstance();
-		[[nodiscard]] static Backend::Devices& getDevices();
-		[[nodiscard]] static Backend::Swapchain& getSwapchain();
-		[[nodiscard]] static DeviceMemory::HostVisible& getHostVisibleMemory();
-		[[nodiscard]] static DeviceMemory::DeviceLocal& getDeviceLocalMemory();
-		[[nodiscard]] static Engine::GraphicsPipeline& getGraphicsPipeline();
+		static [[nodiscard]] ktxTexture2 const* getKtxTexture2();
+		static [[nodiscard]] Backend::Window& getWindow();
+		static [[nodiscard]] Backend::Instance& getInstance();
+		static [[nodiscard]] Backend::Devices& getDevices();
+		static [[nodiscard]] Backend::Swapchain& getSwapchain();
+		static [[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
+		static [[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+		static [[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
 	};
 }

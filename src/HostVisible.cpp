@@ -5,7 +5,7 @@
 #include "HostVisible.hpp"
 
 namespace DeviceMemory {
-	HostVisible::HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, void (*const populate)(DeviceMemory::HostVisible& self) :
+	HostVisible::HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, void (*const populate)(DeviceMemory::HostVisible& self)) :
 		devices{ givenDevices },
 		hostVisibleMemory{},
 		CREATE_INFO(std::move(givenCreateInfo)),
@@ -18,14 +18,14 @@ namespace DeviceMemory {
 
 		// memory and buffer stuff
 		{
-			const size_t BUFFERS_COUNT{ bufferInfos.size() };
+			const size_t BUFFERS_COUNT{ CREATE_INFO.bufferInfos.size() };
 
 			// create the buffers themselves with their memory requirements info
 			buffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
 			bufferSizes.resize(BUFFERS_COUNT, 0);
 			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), bufferInfos[i]);
+				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
 				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
 				bufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
@@ -46,19 +46,20 @@ namespace DeviceMemory {
 		}
 
 		// descriptor set stuff
-		if(!descriptorSetInfos.empty()) {
-			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), descriptorSetInfos);
+		if(!CREATE_INFO.descriptorSetInfos.empty()) {
+			const size_t DESCRIPTOR_SET_COUNT = CREATE_INFO.descriptorSetInfos.size();
+			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
 
 			// create the descriptor sets
-			descriptorSetLayouts.resize(descriptorSetInfos.size(), VK_NULL_HANDLE);
-			descriptorSets.resize(descriptorSetInfos.size(), VK_NULL_HANDLE);
+			descriptorSetLayouts.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
+			descriptorSets.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
 
-			for(size_t i = 0; i < descriptorSetInfos.size(); i++) {
-				createDescriptorSetAndLayout(descriptorSetInfos[i], i);
+			for(size_t i = 0; i < DESCRIPTOR_SET_COUNT; i++) {
+				createDescriptorSetAndLayout(CREATE_INFO.descriptorSetInfos[i], i);
 			}
 		}
 
-		pPOPULATE_FUNCTION(*this);
+		populate(*this);
 	}
 
 	HostVisible::~HostVisible() {
@@ -115,7 +116,7 @@ namespace DeviceMemory {
 	}
 
 	void HostVisible::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
@@ -129,8 +130,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 

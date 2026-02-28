@@ -409,9 +409,9 @@ namespace GlobalState {
 		assert(loaded);
 
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
-			self.copyBufferToBuffer(0, getHostVisibleMemory().buffers[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 8)});
-			self.copyBufferToBuffer(1, getHostVisibleMemory().buffers[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 12)});
-			self.copyBufferToImage(0, getHostVisibleMemory().buffers[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))}); // buffer is tightly packed row by row
+			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 8)});
+			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 12)});
+			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))}); // buffer is tightly packed row by row
 			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
 		};
 
@@ -426,7 +426,7 @@ namespace GlobalState {
 					}()
 				);
 
-				const DeviceMemory::DeviceLocal::CreateInfo ARGUEMENT(
+				return DeviceMemory::DeviceLocal::CreateInfo(
 					{ 
 						DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
 						DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
@@ -446,7 +446,7 @@ namespace GlobalState {
 						DeviceMemory::Common::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							VK_FORMAT_D32_SFLOAT,
-							VkExtent3D(getSwapchain().CREATE_INFO.createInfo.imageExtent.width, getSwapchain().CREATE_INFO.createInfo.imageExtent.height, 1),
+							VkExtent3D(getSwapchain().getCreateInfo().createInfo.imageExtent.width, getSwapchain().getCreateInfo().createInfo.imageExtent.height, 1),
 							1,
 							VK_SAMPLE_COUNT_1_BIT,
 							VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -493,17 +493,160 @@ namespace GlobalState {
 	Engine::GraphicsPipeline& Core::getGraphicsPipeline() {
 		assert(loaded);
 
-		static const std::vector<VkDescriptorSetLayout> gDESCRIPTOR_SET_LAYOUTS{
-			[&]() -> std::vector<VkDescriptorSetLayout> {
-				std::vector<VkDescriptorSetLayout> initialValue{ getHostVisibleMemory().descriptorSetLayouts };
-				initialValue.insert(initialValue.end(), getDeviceLocalMemory().descriptorSetLayouts.begin(), getDeviceLocalMemory().descriptorSetLayouts.end());
-				return initialValue;
-			}()
-		};
-
 		static Engine::GraphicsPipeline gGraphicsPipeline(
 			&getDevices(),
-			Engine::GraphicsPipeline::sGetConstructParameters(gDESCRIPTOR_SET_LAYOUTS)
+			[]() -> Engine::GraphicsPipeline::CreateInfo {
+				VkGraphicsPipelineCreateInfo pipelineCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+					// reroute needed for everything
+				};
+
+				std::vector<VkFormat> colorAttachmentFormats{ VK_FORMAT_R8G8B8A8_SRGB };
+				VkPipelineRenderingCreateInfo rendering{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+					.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size()),
+					.pColorAttachmentFormats = colorAttachmentFormats.data(),
+					.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
+					.stencilAttachmentFormat = {},
+				};
+
+				std::vector<char> sprivFileBytes(Common::fLoadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
+				VkShaderModuleCreateInfo shaderModuleForEverythingInfo{
+					.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
+					.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
+				};
+				VkShaderModule shaderModuleForEverything{};
+				CHECK_VK_SUCCESS(
+					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleForEverythingInfo, nullptr, &shaderModuleForEverything),
+					"Failed to create shader module"
+				)
+				std::vector<VkPipelineShaderStageCreateInfo> stages{
+					VkPipelineShaderStageCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+						.stage = VK_SHADER_STAGE_VERTEX_BIT,
+						.module = shaderModuleForEverything,
+						.pName = "vertexShader"
+					},
+					VkPipelineShaderStageCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+						.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+						.module = shaderModuleForEverything,
+						.pName = "fragmentShader"
+					}
+				};
+				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
+				pipelineCreateInfo.pStages = stages.data();
+
+				std::vector<VkVertexInputBindingDescription> vertexBindings{ Vertex::Vertex::sGetInputBindingDescription() };
+				std::vector<VkVertexInputAttributeDescription> vertexAttributes{ Vertex::Vertex::sGetInputAttributeDescriptions() };
+				VkPipelineVertexInputStateCreateInfo vertexInput{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+					.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size()),
+					.pVertexBindingDescriptions = vertexBindings.data(),
+					.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributes.size()),
+					.pVertexAttributeDescriptions = vertexAttributes.data(),
+				};
+
+				VkPipelineInputAssemblyStateCreateInfo inputAssembly{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+					.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+					.primitiveRestartEnable = VK_FALSE
+				};
+
+				// UNUSED CURRENTLY
+				VkPipelineTessellationStateCreateInfo tessellation{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO
+				};
+
+				VkPipelineViewportStateCreateInfo viewport{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+					.viewportCount = 1,
+					.pViewports = nullptr, // will dynamically set
+					.scissorCount = 1,
+					.pScissors = nullptr // will dynamically set
+				};
+
+				VkPipelineRasterizationStateCreateInfo rasterization{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+					.depthClampEnable = VK_FALSE,
+					.rasterizerDiscardEnable = VK_FALSE,
+					.polygonMode = VK_POLYGON_MODE_FILL,
+					.cullMode = VK_CULL_MODE_NONE,
+					.frontFace = VK_FRONT_FACE_CLOCKWISE,
+					.depthBiasEnable = VK_FALSE,
+					.depthBiasConstantFactor = 0.0f,
+					.depthBiasClamp = 0.0f,
+					.depthBiasSlopeFactor = 1.0f,
+					.lineWidth = 1.0f
+				};
+
+				// UNUSED CURRENTLY
+				VkPipelineMultisampleStateCreateInfo multisampling{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+					.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+					.sampleShadingEnable = VK_FALSE,
+					.alphaToCoverageEnable = VK_FALSE,
+					.alphaToOneEnable = VK_FALSE,
+				};
+
+				VkPipelineDepthStencilStateCreateInfo depthStencil{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+					.depthTestEnable = VK_TRUE,
+					.depthWriteEnable = VK_TRUE,
+					.depthCompareOp = VK_COMPARE_OP_LESS,
+					.depthBoundsTestEnable = VK_FALSE,
+					.stencilTestEnable = VK_FALSE,
+				};
+
+				// UNUSED CURRENTLY
+				std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{
+					VkPipelineColorBlendAttachmentState{
+						.blendEnable = VK_FALSE,
+						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
+					}
+				};
+				VkPipelineColorBlendStateCreateInfo colorBlend{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+					.logicOpEnable = VK_FALSE,	
+					.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size()),
+					.pAttachments = colorBlendAttachments.data()
+				};
+
+				std::vector<VkDynamicState> dynamicStates{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+				VkPipelineDynamicStateCreateInfo dynamicStateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+					.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
+					.pDynamicStates = dynamicStates.data(),
+				};
+
+				std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ getHostVisibleMemory().getDescriptorSetLayouts() };
+				descriptorSetLayouts.insert(descriptorSetLayouts.end(), getDeviceLocalMemory().getDescriptorSetLayouts().begin(), getDeviceLocalMemory().getDescriptorSetLayouts().end());
+				VkPipelineLayoutCreateInfo layoutInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+					.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
+					.pSetLayouts = descriptorSetLayouts.data()
+				};
+				CHECK_VK_SUCCESS(
+					vkCreatePipelineLayout(getDevices().getLogicalDevice(), &layoutInfo, nullptr, &pipelineCreateInfo.layout),
+					"Failed to create pipeline layout"
+				)
+
+				return Engine::GraphicsPipeline::CreateInfo(
+					pipelineCreateInfo,
+					rendering, colorAttachmentFormats,
+					stages,
+					vertexInput, vertexBindings, vertexAttributes,
+					inputAssembly, 
+					tessellation,
+					viewport,
+					rasterization,
+					multisampling,
+					depthStencil,
+					colorBlend, colorBlendAttachments,
+					dynamicStateInfo, dynamicStates
+				);
+			}()
 		);
 
 		return gGraphicsPipeline;

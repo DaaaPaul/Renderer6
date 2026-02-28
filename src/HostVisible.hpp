@@ -5,7 +5,8 @@
 #include "DeviceMemoryCommon.h"
 
 namespace DeviceMemory {
-	struct HostVisible {
+	class HostVisible {
+		public:
 		struct CreateInfo {
 			std::vector<Common::BufferInfo> bufferInfos{};
 			std::vector<Common::DescriptorSetInfo> descriptorSetInfos{};
@@ -22,6 +23,7 @@ namespace DeviceMemory {
 			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
+		private:
 		Backend::Devices* devices{};
 		VkDeviceMemory hostVisibleMemory{};
 
@@ -34,6 +36,13 @@ namespace DeviceMemory {
 		VkDescriptorPool descriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
+
+		public:
+		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
+		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
+		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
+		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
+		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
 
 		void writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES);
 		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);

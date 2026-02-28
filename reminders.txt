@@ -14,3 +14,5 @@
 
 - remove the shizz names in the memory structs !DONE!
 - clean up the code debt!! !DONE!
+
+- make different uniform buffer for each frame
