@@ -59,7 +59,7 @@ namespace DeviceMemory {
 						// Get texture coordinates if available
 						if (HAS_TEXCOORDS) {
 							float const* TEXCOORD = reinterpret_cast<float const*>(&TEXCOORD_BUFFER->data[TEXCOORD_BUFFER_VIEW->byteOffset + TEXCOORD_ACCESSOR->byteOffset + i * 8]);
-							vertex.texCoord = {TEXCOORD[0], 1.0f - TEXCOORD[1]};
+							vertex.texCoord = {TEXCOORD[0], TEXCOORD[1]};
 						} else {
 							vertex.texCoord = {0.0f, 0.0f};
 						}
