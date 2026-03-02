@@ -48,7 +48,6 @@ namespace Backend {
 				features{ salvageCreateInfo.features } {
 				reroutePointers();
 			}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:

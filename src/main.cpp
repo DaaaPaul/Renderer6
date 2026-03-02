@@ -23,7 +23,7 @@ int main() {
 		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::Core::getDevices().getGraphicsQfIndex() };
 
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
-		Engine::fRenderLoop(killhouse);
+		Engine::renderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

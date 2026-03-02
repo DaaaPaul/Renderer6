@@ -34,7 +34,6 @@ namespace Backend {
 				createInfo(salvageCreateInfo.createInfo) {
 				reroutePointers();
 			}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:

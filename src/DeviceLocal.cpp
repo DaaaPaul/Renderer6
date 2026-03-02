@@ -49,14 +49,14 @@ namespace DeviceMemory {
 				.queueFamilyIndexCount = 1
 			};
 			for(int i = 0; i < IMAGES_COUNT; i++) {
-				rollingImageCreateInfo.imageType = CREATE_INFO.imageInfos[i].mImageType;
-				rollingImageCreateInfo.format = CREATE_INFO.imageInfos[i].mFormat;
-				rollingImageCreateInfo.extent = CREATE_INFO.imageInfos[i].mExtent3D;
-				rollingImageCreateInfo.mipLevels = CREATE_INFO.imageInfos[i].mMipLevels;
-				rollingImageCreateInfo.samples = CREATE_INFO.imageInfos[i].mSampleCount;
-				rollingImageCreateInfo.usage = CREATE_INFO.imageInfos[i].mUsage;
+				rollingImageCreateInfo.imageType = CREATE_INFO.imageInfos[i].type;
+				rollingImageCreateInfo.format = CREATE_INFO.imageInfos[i].format;
+				rollingImageCreateInfo.extent = CREATE_INFO.imageInfos[i].extent;
+				rollingImageCreateInfo.mipLevels = CREATE_INFO.imageInfos[i].mipLevelsCount;
+				rollingImageCreateInfo.samples = CREATE_INFO.imageInfos[i].sampleCount;
+				rollingImageCreateInfo.usage = CREATE_INFO.imageInfos[i].usage;
 				rollingImageCreateInfo.pQueueFamilyIndices = &CREATE_INFO.imageInfos[i].graphicsQfIndex;
-				rollingImageCreateInfo.initialLayout = CREATE_INFO.imageInfos[i].mInitialLayout;
+				rollingImageCreateInfo.initialLayout = CREATE_INFO.imageInfos[i].initialLayout;
 
 				CHECK_VK_SUCCESS(
 					vkCreateImage(devices->getLogicalDevice(), &rollingImageCreateInfo, nullptr, &images[i]),
@@ -97,14 +97,14 @@ namespace DeviceMemory {
 
 			// finally create image views after binding images to memory
 			for(int i = 0; i < IMAGES_COUNT; i++) {
-				bool hasImageView{ CREATE_INFO.imageInfos[i].mImageViewInfo.mImageViewType != 0 && CREATE_INFO.imageInfos[i].mImageViewInfo.mFormat != 0 };
+				bool hasImageView = CREATE_INFO.imageInfos[i].viewInfo.type != 0 && CREATE_INFO.imageInfos[i].viewInfo.format != 0;
 				if(hasImageView) {
 					VkImageViewCreateInfo rollingImageViewCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 						.image = images[i],
-						.viewType = CREATE_INFO.imageInfos[i].mImageViewInfo.mImageViewType,
-						.format = CREATE_INFO.imageInfos[i].mImageViewInfo.mFormat,
-						.subresourceRange = CREATE_INFO.imageInfos[i].mImageViewInfo.mImageSubresourceRange
+						.viewType = CREATE_INFO.imageInfos[i].viewInfo.type,
+						.format = CREATE_INFO.imageInfos[i].viewInfo.format,
+						.subresourceRange = CREATE_INFO.imageInfos[i].viewInfo.subresourceRange
 					};
 
 					CHECK_VK_SUCCESS(
@@ -126,17 +126,17 @@ namespace DeviceMemory {
 			};
 
 			for(int i = 0; i < CREATE_INFO.samplerInfos.size(); i++) {
-				rollingSamplerInfo.magFilter = CREATE_INFO.samplerInfos[i].mMagFilter;
-				rollingSamplerInfo.minFilter = CREATE_INFO.samplerInfos[i].mMinFilter;
-				rollingSamplerInfo.mipmapMode = CREATE_INFO.samplerInfos[i].mMipmapMode;
-				rollingSamplerInfo.addressModeU = CREATE_INFO.samplerInfos[i].mAddressModeU;
-				rollingSamplerInfo.addressModeV = CREATE_INFO.samplerInfos[i].mAddressModeV;
-				rollingSamplerInfo.mipLodBias = CREATE_INFO.samplerInfos[i].mMipLodBias;
-				rollingSamplerInfo.anisotropyEnable = CREATE_INFO.samplerInfos[i].mAnisotropyEnable;
-				rollingSamplerInfo.maxAnisotropy = CREATE_INFO.samplerInfos[i].mMaxAnisotropy;
-				rollingSamplerInfo.minLod = CREATE_INFO.samplerInfos[i].mMinLod;
-				rollingSamplerInfo.maxLod = CREATE_INFO.samplerInfos[i].mMaxLod;
-				rollingSamplerInfo.borderColor = CREATE_INFO.samplerInfos[i].mBorderColor;
+				rollingSamplerInfo.magFilter = CREATE_INFO.samplerInfos[i].magFilter;
+				rollingSamplerInfo.minFilter = CREATE_INFO.samplerInfos[i].minFilter;
+				rollingSamplerInfo.mipmapMode = CREATE_INFO.samplerInfos[i].mipmapMode;
+				rollingSamplerInfo.addressModeU = CREATE_INFO.samplerInfos[i].addressModeU;
+				rollingSamplerInfo.addressModeV = CREATE_INFO.samplerInfos[i].addressModeV;
+				rollingSamplerInfo.mipLodBias = CREATE_INFO.samplerInfos[i].mipLodBias;
+				rollingSamplerInfo.anisotropyEnable = CREATE_INFO.samplerInfos[i].anisotropyEnable;
+				rollingSamplerInfo.maxAnisotropy = CREATE_INFO.samplerInfos[i].maxAnisotropy;
+				rollingSamplerInfo.minLod = CREATE_INFO.samplerInfos[i].minLod;
+				rollingSamplerInfo.maxLod = CREATE_INFO.samplerInfos[i].maxLod;
+				rollingSamplerInfo.borderColor = CREATE_INFO.samplerInfos[i].borderColor;
 
 				CHECK_VK_SUCCESS(
 					vkCreateSampler(devices->getLogicalDevice(), &rollingSamplerInfo, nullptr, &samplers[i]),
@@ -223,8 +223,8 @@ namespace DeviceMemory {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,
-			.bindingCount = static_cast<uint32_t>(INFO.mLayoutBindings.size()),
-			.pBindings = INFO.mLayoutBindings.data(),
+			.bindingCount = static_cast<uint32_t>(INFO.layoutBindings.size()),
+			.pBindings = INFO.layoutBindings.data(),
 		};
 
 		CHECK_VK_SUCCESS(
@@ -246,7 +246,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
@@ -260,8 +260,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 
@@ -269,7 +269,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
-		if(SAMPLER_IMAGE_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(SAMPLER_IMAGE_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 
@@ -283,15 +283,33 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pImageInfo = toWriteImageSamplers.data()
 		};
 
 		vkUpdateDescriptorSets(devices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 
-	void DeviceLocal::recreateImage(size_t const& INDEX, Common::ImageInfo const& NEW_INFO) {
-		
+	void DeviceLocal::recreateDepthResources() {
+		const int DEPTH_IMAGE_INDEX = searchForDepthImageIndex();
+
+		if(DEPTH_IMAGE_INDEX == -1) {
+			throw std::runtime_error("No depth image found!");
+		} else {
+			vkDestroyImage(devices->getLogicalDevice(), images[DEPTH_IMAGE_INDEX], nullptr);
+			vkDestroyImageView(devices->getLogicalDevice(), imageViews[DEPTH_IMAGE_INDEX], nullptr);
+		}
+	}
+
+	[[nodiscard]] int DeviceLocal::searchForDepthImageIndex() const noexcept {
+		int depthImageIndex = -1;
+		for(int i = 0; i < CREATE_INFO.imageInfos.size() && depthImageIndex == -1; i++) {
+			if(CREATE_INFO.imageInfos[i].usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+				depthImageIndex = i;
+			}
+		}
+
+		return depthImageIndex;
 	}
 }

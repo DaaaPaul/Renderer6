@@ -124,19 +124,70 @@ namespace DeviceMemory {
 		}
 
 		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
-			VkBufferCreateInfo bufferInfo{
+			VkBuffer buffer{};
+
+			const VkBufferCreateInfo BUFFER_CREATE{
 				.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-				.size = INFO.mBufferSize,
-				.usage = INFO.mBufferUsage,
+				.size = INFO.size,
+				.usage = INFO.usage,
 				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 				.queueFamilyIndexCount = 1,
 				.pQueueFamilyIndices = &INFO.graphicsQfIndex,
 			};
 
-			VkBuffer returnBuffer{};
-			vkCreateBuffer(pLogicalDevice, &bufferInfo, nullptr, &returnBuffer);
+			
+			CHECK_VK_SUCCESS(
+			vkCreateBuffer(pLogicalDevice, &BUFFER_CREATE, nullptr, &buffer),
+			"Failed to create buffer"
+			)
 
-			return returnBuffer;
+			return buffer;
+		}
+
+		[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO) {
+			VkImage image{};
+
+			const VkImageCreateInfo IMAGE_CREATE{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+				.imageType = IMAGE_INFO.type,
+				.format = IMAGE_INFO.format,
+				.extent = IMAGE_INFO.extent,
+				.mipLevels = IMAGE_INFO.mipLevelsCount,
+				.arrayLayers = 1,
+				.samples = IMAGE_INFO.sampleCount,
+				.tiling = VK_IMAGE_TILING_OPTIMAL,
+				.usage = IMAGE_INFO.usage,
+				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+				.queueFamilyIndexCount = 1,
+				.pQueueFamilyIndices = &IMAGE_INFO.graphicsQfIndex,
+				.initialLayout = IMAGE_INFO.initialLayout,
+			};
+
+			CHECK_VK_SUCCESS(
+			vkCreateImage(pLogicalDevice, &IMAGE_CREATE, nullptr, &image),
+			"Failed to create image"
+			)
+
+			return image;
+		}
+
+		[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO) {
+			VkImageView imageView{};
+
+			const VkImageViewCreateInfo IMAGE_VIEW_CREATE{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+				.image = image,
+				.viewType = IMAGE_VIEW_INFO.type,
+				.format = IMAGE_VIEW_INFO.format,
+				.subresourceRange = IMAGE_VIEW_INFO.subresourceRange,
+			};
+
+			CHECK_VK_SUCCESS(
+			vkCreateImageView(pLogicalDevice, &IMAGE_VIEW_CREATE, nullptr, &imageView),
+			"Failed to create image view"
+			)
+
+			return imageView;
 		}
 
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
@@ -183,7 +234,7 @@ namespace DeviceMemory {
 			// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
 			std::vector<VkDescriptorPoolSize> poolSizes{};
 			for(Common::DescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
-				const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.mLayoutBindings };
+				const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.layoutBindings };
 
 				for(VkDescriptorSetLayoutBinding const& BINDING : BINDINGS) {
 					poolSizes.emplace_back(BINDING.descriptorType, BINDING.descriptorCount);

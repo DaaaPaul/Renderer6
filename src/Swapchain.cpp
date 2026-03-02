@@ -3,39 +3,44 @@
 #include "Swapchain.hpp"
 
 namespace Backend {
-	void Swapchain::recreateThyself() {
-		vkDestroySwapchainKHR(devices->getLogicalDevice(), swapchain, nullptr);
-		vkDestroySurfaceKHR(devices->getInstance()->getInstance(), surface, nullptr);
-
-		// obtain updated construct info and put it into createInfo and surface
-		VkSurfaceKHR newSurface{};
-		CHECK_VK_SUCCESS(
-			glfwCreateWindowSurface(GlobalState::Core::getInstance().getInstance(), GlobalState::Core::getWindow().getGlfwWindow(), nullptr, &newSurface),
-			"Failed to create surface"
-		)
-
-		VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-		CHECK_VK_SUCCESS(
-			vkGetPhysicalDeviceSurfaceCapabilitiesKHR(GlobalState::Core::getDevices().getPhysicalDevice(), newSurface, &surfaceCapabilities),
-			"Failed to get physical device surface capabilities"
-		)
+	[[nodiscard]] VkExtent2D Swapchain::getCurrentExtent() const noexcept {
+		const VkSurfaceCapabilitiesKHR SURFACE_CAPABILITIES(
+			[this]() -> VkSurfaceCapabilitiesKHR {
+				VkSurfaceCapabilitiesKHR capabilities{};
+				CHECK_VK_SUCCESS(
+					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(GlobalState::Core::getDevices().getPhysicalDevice(), surface, &capabilities),
+					"Failed to get physical device surface capabilities"
+				)
+				return capabilities;
+			}()
+		);
 
 		VkExtent2D surfaceExtentInPixels{};
-		if (surfaceCapabilities.currentExtent.width == UINT32_MAX && surfaceCapabilities.currentExtent.height == UINT32_MAX) {
+		if (SURFACE_CAPABILITIES.currentExtent.width == UINT32_MAX && SURFACE_CAPABILITIES.currentExtent.height == UINT32_MAX) {
 			glfwGetFramebufferSize(GlobalState::Core::getWindow().getGlfwWindow(), reinterpret_cast<int*>(&surfaceExtentInPixels.width), reinterpret_cast<int*>(&surfaceExtentInPixels.height));
 		} else {
-			surfaceExtentInPixels = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+			surfaceExtentInPixels = VkExtent2D(SURFACE_CAPABILITIES.currentExtent.width, SURFACE_CAPABILITIES.currentExtent.height);
 		}
 
+		return surfaceExtentInPixels;
+	}
+
+	void Swapchain::recreateThyself() {
+		while(getCurrentExtent().width == 0 && getCurrentExtent().height == 0) {
+			glfwWaitEvents(); // do not process anything when window is minimized
+		}
+
+		vkDestroySwapchainKHR(devices->getLogicalDevice(), swapchain, nullptr);
+		const VkExtent2D SURFACE_EXTENT(getCurrentExtent());
 		const std::vector<uint32_t> ACCESSOR_GFXQF{ GlobalState::Core::getDevices().getGraphicsQfIndex() };
     
 		const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
 			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-			.surface = newSurface,
+			.surface = surface,
 			.minImageCount = 4,
 			.imageFormat = VK_FORMAT_R8G8B8A8_SRGB,
 			.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
-			.imageExtent = surfaceExtentInPixels,
+			.imageExtent = SURFACE_EXTENT,
 			.imageArrayLayers = 1,
 			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -53,7 +58,7 @@ namespace Backend {
 		)
 	}
 
-	void Swapchain::sCheckHaveVkFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
+	void Swapchain::checkHaveFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
 		uint32_t supportedVkFormatColorspacesCount{};
 		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedVkFormatColorspacesCount, nullptr);
 		std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
@@ -70,7 +75,7 @@ namespace Backend {
 		CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired format")
 	}
 
-	void Swapchain::sCheckHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
+	void Swapchain::checkHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
 		uint32_t supportedPresentModeCount{};
 		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedPresentModeCount, nullptr);
 		std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
@@ -94,8 +99,8 @@ namespace Backend {
 		CREATE_INFO{ std::move(salvageCreateInfo) } {
 
 		// check that this gpu-surface pair supports the given format and present mode
-		sCheckHaveVkFormatColorspace(*this, VkSurfaceFormatKHR(CREATE_INFO.createInfo.imageFormat, CREATE_INFO.createInfo.imageColorSpace));
-		sCheckHavePresentModeKHR(*this, CREATE_INFO.createInfo.presentMode);
+		checkHaveFormatColorspace(*this, VkSurfaceFormatKHR(CREATE_INFO.createInfo.imageFormat, CREATE_INFO.createInfo.imageColorSpace));
+		checkHavePresentModeKHR(*this, CREATE_INFO.createInfo.presentMode);
 
 		// construct the swapchainKHR
 		CHECK_VK_SUCCESS(

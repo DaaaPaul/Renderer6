@@ -93,8 +93,8 @@ namespace DeviceMemory {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,
-			.bindingCount = static_cast<uint32_t>(INFO.mLayoutBindings.size()),
-			.pBindings = INFO.mLayoutBindings.data(),
+			.bindingCount = static_cast<uint32_t>(INFO.layoutBindings.size()),
+			.pBindings = INFO.layoutBindings.data(),
 		};
 
 		CHECK_VK_SUCCESS(
@@ -116,7 +116,7 @@ namespace DeviceMemory {
 	}
 
 	void HostVisible::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
@@ -130,8 +130,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].mLayoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 

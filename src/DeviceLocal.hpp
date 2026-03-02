@@ -24,7 +24,6 @@ namespace DeviceMemory {
 				imageInfos{ std::move(salvageCreateInfo.imageInfos) },
 				samplerInfos{ std::move(salvageCreateInfo.samplerInfos) },
 				descriptorSetInfos{ std::move(salvageCreateInfo.descriptorSetInfos) } {}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:
@@ -62,7 +61,8 @@ namespace DeviceMemory {
 		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
 		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 		void updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES);
-		void recreateImage(size_t const& INDEX, Common::ImageInfo const& NEW_INFO);
+		void recreateDepthResources();
+		[[nodiscard]] int searchForDepthImageIndex() const noexcept;
 
 		explicit DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION);
 		~DeviceLocal();

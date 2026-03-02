@@ -18,3 +18,4 @@
 - make different uniform buffer for each frame
 - put prefix p for pointers
 - finish refactor
+- make window resizable

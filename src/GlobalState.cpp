@@ -354,8 +354,8 @@ namespace GlobalState {
 	}
 
 	DeviceMemory::DeviceLocal& Core::getDeviceLocalMemory() {
-		const static uint32_t VERTEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[0].mBufferSize;
-		const static uint32_t INDEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[1].mBufferSize;
+		const static uint32_t VERTEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[0].size;
+		const static uint32_t INDEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[1].size;
 
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, VERTEX_BUFFER_SIZE)});
@@ -382,6 +382,7 @@ namespace GlobalState {
 						DeviceMemory::Common::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
+						// texture image
 						DeviceMemory::Common::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							static_cast<VkFormat>(getKtxTexture2()->vkFormat),
@@ -393,6 +394,7 @@ namespace GlobalState {
 							VK_IMAGE_LAYOUT_UNDEFINED,
 							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
 						),
+						// depth image
 						DeviceMemory::Common::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							VK_FORMAT_D32_SFLOAT,

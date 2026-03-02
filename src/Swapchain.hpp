@@ -27,7 +27,6 @@ namespace Backend {
 				accessorQfIndices(std::move(salvageCreateInfo.accessorQfIndices)) {
 				reroutePointers();
 			}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:
@@ -38,10 +37,11 @@ namespace Backend {
 
 		public:
 		void recreateThyself();
+		[[nodiscard]] VkExtent2D getCurrentExtent() const noexcept;
 
 		private:
-		static void sCheckHaveVkFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
-		static void sCheckHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
+		static void checkHaveFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);
+		static void checkHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
 
 		public:
 		explicit Swapchain(Devices* givenDevices, CreateInfo&& salvageCreateInfo);

@@ -34,17 +34,17 @@ namespace Engine {
 	inline uint32_t gHitmanIndex{};
 	inline Vertex::Transforms gCurrentTransformation{};
 
-	[[nodiscard]] std::vector<VkImage> fGetSwapchainImages();
-	[[nodiscard]] VkImageView fGetSwapchainImageView(uint32_t const& IMAGE_INDEX);
-	void fRecordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX);
-	const VkResult fAcquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
-	void fSubmitDrawCommands(VkQueue& queue, ImageHitman& hitman);
-	const VkResult fQueueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
-	const bool fRecreateSwapchainIfNecessary(VkResult const& RESULT);
-	void fInitializegCurrentTransformation();
-	[[nodiscard]] const float fGetTimeSinceFirstCall();
-	void fReactToInput();
-	void fWriteToUniformBuffer();
-	void fRunThroughNextSwapchainImage(ImageKillhouse& killhouse);
-	void fRenderLoop(ImageKillhouse& killhouse);
+	[[nodiscard]] std::vector<VkImage> getSwapchainImages();
+	[[nodiscard]] VkImageView getSwapchainImageView(uint32_t const& IMAGE_INDEX, VkFormat const& FORMAT, VkImageSubresourceRange const& SUBRESOURCE_RANGE);
+	void recordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX);
+	VkResult acquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
+	void submitDrawCommands(VkQueue& queue, ImageHitman& hitman);
+	VkResult queueImageForPresentation(VkQueue& queue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
+	bool recreateSwapchainIfNecessary(VkResult const& RESULT);
+	void initializeCurrentTransformation();
+	[[nodiscard]] float getTimeSinceFirstCall();
+	void reactToInput();
+	void writeToUniformBuffer();
+	void runThroughNextSwapchainImage(ImageKillhouse& killhouse);
+	void renderLoop(ImageKillhouse& killhouse);
 }

@@ -10,50 +10,52 @@
 namespace DeviceMemory {
 	namespace Common {
 		struct BufferInfo {
-			VkDeviceSize mBufferSize{};
-			VkBufferUsageFlags mBufferUsage{};
+			VkDeviceSize size{};
+			VkBufferUsageFlags usage{};
 			uint32_t graphicsQfIndex{};
 		};
 
 		struct DescriptorSetInfo {
-			std::vector<VkDescriptorSetLayoutBinding> mLayoutBindings{};
-		};
-
-		struct ImageViewInfo {
-			VkImageViewType mImageViewType{};
-			VkFormat mFormat{};
-			VkImageSubresourceRange mImageSubresourceRange{};
+			std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
 		};
 
 		struct ImageInfo {
-			VkImageType mImageType{};
-			VkFormat mFormat{};
-			VkExtent3D mExtent3D{};
-			uint32_t mMipLevels{};
-			VkSampleCountFlagBits mSampleCount{};
-			VkImageUsageFlags mUsage{};
+			VkImageType type{};
+			VkFormat format{};
+			VkExtent3D extent{};
+			uint32_t mipLevelsCount{};
+			VkSampleCountFlagBits sampleCount{};
+			VkImageUsageFlags usage{};
 			uint32_t graphicsQfIndex{};
-			VkImageLayout mInitialLayout{};
-			ImageViewInfo mImageViewInfo{};
+			VkImageLayout initialLayout{};
+			ImageViewInfo viewInfo{};
+		};
+
+		struct ImageViewInfo {
+			VkImageViewType type{};
+			VkFormat format{};
+			VkImageSubresourceRange subresourceRange{};
 		};
 
 		struct SamplerInfo {
-			VkFilter mMagFilter{};
-			VkFilter mMinFilter{};
-			VkSamplerMipmapMode mMipmapMode{};
-			VkSamplerAddressMode mAddressModeU{};
-			VkSamplerAddressMode mAddressModeV{};
-			float mMipLodBias{};
-			VkBool32 mAnisotropyEnable{};
-			float mMaxAnisotropy{};
-			float mMinLod{};
-			float mMaxLod{};
-			VkBorderColor mBorderColor{};
+			VkFilter magFilter{};
+			VkFilter minFilter{};
+			VkSamplerMipmapMode mipmapMode{};
+			VkSamplerAddressMode addressModeU{};
+			VkSamplerAddressMode addressModeV{};
+			float mipLodBias{};
+			VkBool32 anisotropyEnable{};
+			float maxAnisotropy{};
+			float minLod{};
+			float maxLod{};
+			VkBorderColor borderColor{};
 		};
 
 		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
 		ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
-		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO);
+		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
+		[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);
+		[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO);
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
 		[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
 		[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);

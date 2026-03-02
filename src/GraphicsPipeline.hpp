@@ -96,7 +96,6 @@ namespace Engine {
 				dynamicStates(std::move(salvageCreateInfo.dynamicStates)) {
 					reroutePointers();
 			}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:

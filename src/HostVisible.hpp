@@ -18,7 +18,6 @@ namespace DeviceMemory {
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
 				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
 				descriptorSetInfos{ std::move(salvageCreateInfo.descriptorSetInfos) } {}
-			DELETE_COPY_CONSTRUCTORS(CreateInfo)
 		};
 
 		private:
