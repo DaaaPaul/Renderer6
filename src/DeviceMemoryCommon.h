@@ -19,6 +19,12 @@ namespace DeviceMemory {
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
 		};
 
+		struct ImageViewInfo {
+			VkImageViewType type{};
+			VkFormat format{};
+			VkImageSubresourceRange subresourceRange{};
+		};
+
 		struct ImageInfo {
 			VkImageType type{};
 			VkFormat format{};
@@ -29,12 +35,6 @@ namespace DeviceMemory {
 			uint32_t graphicsQfIndex{};
 			VkImageLayout initialLayout{};
 			ImageViewInfo viewInfo{};
-		};
-
-		struct ImageViewInfo {
-			VkImageViewType type{};
-			VkFormat format{};
-			VkImageSubresourceRange subresourceRange{};
 		};
 
 		struct SamplerInfo {
