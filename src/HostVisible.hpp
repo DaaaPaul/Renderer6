@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "Devices.hpp"
 #include "Common.h"
 #include "DeviceMemoryCommon.h"
@@ -45,7 +46,7 @@ namespace DeviceMemory {
 		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
 		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
-		explicit HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, void (*const populate)(DeviceMemory::HostVisible& self));
+		explicit HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION);
 		~HostVisible();
 
 		DELETE_COPY_CONSTRUCTORS(HostVisible)

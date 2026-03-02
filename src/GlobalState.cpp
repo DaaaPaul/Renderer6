@@ -16,9 +16,19 @@ namespace GlobalState {
 	}
 
 	ktxTexture2 const* Core::getKtxTexture2() {
-		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::Common::fKtxLoadImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\textures\Lumberjack Sion Compressed.ktx2)");
+		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::Common::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 		
 		return gKTX_TEXTURE2;
+	}
+
+	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& Core::getGltfModel() {
+		static std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>> uniqueVerticesAndVertexIndices{};
+
+		if(uniqueVerticesAndVertexIndices.first.empty() && uniqueVerticesAndVertexIndices.second.empty()) {
+			DeviceMemory::Common::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", uniqueVerticesAndVertexIndices.first, uniqueVerticesAndVertexIndices.second);
+		}
+
+		return uniqueVerticesAndVertexIndices;
 	}
 
 	Backend::Window& Core::getWindow() {
@@ -314,70 +324,22 @@ namespace GlobalState {
 	}
 
 	DeviceMemory::HostVisible& Core::getHostVisibleMemory() {
-		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
-			const std::vector<Vertex::Vertex> VERTICIES{
-				Vertex::Vertex(
-					glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f), 
-					glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 
-					glm::vec2(0.0f, 0.0f)
-				), // top left
-				Vertex::Vertex(
-					glm::vec4(0.5f, -0.5f, -0.5f, 1.0f), 
-					glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
-					glm::vec2(1.0f, 0.0f)
-				), // top right
-				Vertex::Vertex(
-					glm::vec4(-0.5f, 0.5f, -0.5f, 1.0f), 
-					glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 
-					glm::vec2(0.0f, 1.0f)
-				), // bottom left
-				Vertex::Vertex(
-					glm::vec4(0.5f, 0.5f, -0.5f, 1.0f), 
-					glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
-					glm::vec2(1.0f, 1.0f)
-				), // bottom right
+		const static uint32_t VERTEX_BUFFER_SIZE = getGltfModel().first.size() * sizeof(Vertex::Vertex);
+		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
 
-				Vertex::Vertex(
-					glm::vec4(-0.5f, -0.5f, 0.0f, 1.0f), 
-					glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), 
-					glm::vec2(0.0f, 0.0f)
-				), // top left
-				Vertex::Vertex(
-					glm::vec4(0.5f, -0.5f, 0.0f, 1.0f), 
-					glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
-					glm::vec2(1.0f, 0.0f)
-				), // top right
-				Vertex::Vertex(
-					glm::vec4(-0.5f, 0.5f, 0.0f, 1.0f), 
-					glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 
-					glm::vec2(0.0f, 1.0f)
-				), // bottom left
-				Vertex::Vertex(
-					glm::vec4(0.5f, 0.5f, 0.0f, 1.0f), 
-					glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 
-					glm::vec2(1.0f, 1.0f)
-				), // bottom right
-			};
-			const std::vector<uint32_t> INDICES{
-				0 + 4, 1 + 4, 3 + 4,
-				0 + 4, 3 + 4, 2 + 4,
-
-				0, 1, 3,
-				0, 3, 2,
-			};
-
-			self.writeToBuffer(0, VERTICIES.data(), sizeof(Vertex::Vertex) * 8);
-			self.writeToBuffer(1, INDICES.data(), sizeof(uint32_t) * 12);
-			self.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
-			self.updateDescriptorSetBuffer(0, 0, {2});
+		static auto gPopulate = [](DeviceMemory::HostVisible& hostVisibleMemory) -> void {
+			hostVisibleMemory.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
+			hostVisibleMemory.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
+			hostVisibleMemory.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+			hostVisibleMemory.updateDescriptorSetBuffer(0, 0, {2});
 		};
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
 			&getDevices(),
 			DeviceMemory::HostVisible::CreateInfo(
-				{ 
-					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+				{
+					DeviceMemory::Common::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::Common::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::Common::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				},
@@ -392,10 +354,14 @@ namespace GlobalState {
 	}
 
 	DeviceMemory::DeviceLocal& Core::getDeviceLocalMemory() {
+		const static uint32_t VERTEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[0].mBufferSize;
+		const static uint32_t INDEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[1].mBufferSize;
+
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
-			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, sizeof(Vertex::Vertex) * 8)});
-			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, sizeof(uint32_t) * 12)});
-			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))}); // buffer is tightly packed row by row
+			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, VERTEX_BUFFER_SIZE)});
+			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, INDEX_BUFFER_SIZE)});
+			// assumes buffer is tightly packed row by row
+			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
 		};
 
@@ -412,8 +378,8 @@ namespace GlobalState {
 
 				return DeviceMemory::DeviceLocal::CreateInfo(
 					{ 
-						DeviceMemory::Common::BufferInfo(sizeof(Vertex::Vertex) * 8, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::Common::BufferInfo(sizeof(uint32_t) * 12, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
+						DeviceMemory::Common::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+						DeviceMemory::Common::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
 						DeviceMemory::Common::ImageInfo(

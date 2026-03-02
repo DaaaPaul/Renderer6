@@ -190,12 +190,12 @@ namespace Engine {
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::Core::getGraphicsPipeline().getCreateInfo().graphicsPipeline.layout, 1, 1, GlobalState::Core::getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);
 			
 		// layout transitions to optimal
-		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::transitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().getGraphicsQfIndex());
-		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[1], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::transitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[1], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
@@ -209,7 +209,7 @@ namespace Engine {
 		vkCmdEndRendering(commandBuffer);
 
 		// layout transition to present optimal
-		DeviceMemory::Common::fTransitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::transitionImageLayout(commandBuffer, fGetSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
@@ -275,11 +275,11 @@ namespace Engine {
 
 	void fInitializegCurrentTransformation() {
 		gCurrentTransformation = Vertex::Transforms(
-			glm::mat4{1.0f},
+			glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)),
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
 			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.width) / static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
-		gCurrentTransformation.mProjection[1][1] *= -1.0f;
+		gCurrentTransformation.projection[1][1] *= -1.0f;
 	}
 
 	[[nodiscard]] const float fGetTimeSinceFirstCall() {
@@ -292,21 +292,21 @@ namespace Engine {
 
 	void fReactToInput() {
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(-0.001f, 0.0f, 0.0f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(-0.001f, 0.0f, 0.0f));
 		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.001f, 0.0f, 0.0f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.001f, 0.0f, 0.0f));
 		}
 		
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, -0.001f, 0.0f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, -0.001f, 0.0f));
 		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.001f, 0.0f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, 0.001f, 0.0f));
 		}
 
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.0f, -0.001f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, 0.0f, -0.001f));
 		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
-			gCurrentTransformation.mModel = glm::translate(gCurrentTransformation.mModel, glm::vec3(0.0f, 0.0f, 0.001f));
+			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, 0.0f, 0.001f));
 		}
 	}
 

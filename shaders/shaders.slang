@@ -1,19 +1,19 @@
 struct VertexIn {
-    [[vk::location(0)]] float4 mPosition;
-    [[vk::location(1)]] float4 mColor;
-    [[vk::location(2)]] float2 mTextureCoordinate;
+    [[vk::location(0)]] float4 position;
+    [[vk::location(1)]] float4 color;
+    [[vk::location(2)]] float2 texCoord;
 };
 
 struct VertexOut {
-    float4 mPosition : SV_Position;
-    float4 mColor;
-    float2 mTextureCoordinate;
+    float4 position : SV_Position;
+    float4 color;
+    float2 texCoord;
 };
 
 struct TransformationMatrices {
-    const float4x4 mMODEL;
-    const float4x4 mVIEW;
-    const float4x4 mPROJECTION;
+    float4x4 model;
+    float4x4 view;
+    float4x4 projection;
 };
 
 // first arguement binding #, second arguement is set #
@@ -24,14 +24,14 @@ Sampler2D combinedImageSampler;
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn vertexData) {
-    vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mMODEL, vertexData.mPosition);
-    vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mVIEW, vertexData.mPosition);
-    vertexData.mPosition = mul(TRANSFORMATION_MATRICES.mPROJECTION, vertexData.mPosition);
+    vertexData.position = mul(TRANSFORMATION_MATRICES.model, vertexData.position);
+    vertexData.position = mul(TRANSFORMATION_MATRICES.view, vertexData.position);
+    vertexData.position = mul(TRANSFORMATION_MATRICES.projection, vertexData.position);
 
-    return VertexOut(vertexData.mPosition, vertexData.mColor, vertexData.mTextureCoordinate);
+    return VertexOut(vertexData.position, vertexData.color, vertexData.texCoord);
 }
 
 [shader("fragment")]
 float4 fragmentShader(VertexOut interpolatedVertex) {
-    return combinedImageSampler.Sample(interpolatedVertex.mTextureCoordinate);
+    return combinedImageSampler.Sample(interpolatedVertex.texCoord);
 }

@@ -16,19 +16,19 @@ namespace Vertex {
 			.location = 0,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-			.offset = offsetof(Vertex, mPOSITION)
+			.offset = offsetof(Vertex, position)
 		};
 		const VkVertexInputAttributeDescription COLOR_ATTRIBUTE = {
 			.location = 1,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-			.offset = offsetof(Vertex, mCOLOR)
+			.offset = offsetof(Vertex, color)
 		};
 		const VkVertexInputAttributeDescription TEXTURE_COORDINATE_ATTRIBUTE = {
 			.location = 2,
 			.binding = 0,
 			.format = VK_FORMAT_R32G32_SFLOAT,
-			.offset = offsetof(Vertex, mTEXTURE_COORDINATE)
+			.offset = offsetof(Vertex, texCoord)
 		};
 
 		return { POSITION_ATTRIBUTE, COLOR_ATTRIBUTE, TEXTURE_COORDINATE_ATTRIBUTE };

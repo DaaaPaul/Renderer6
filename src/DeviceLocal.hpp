@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "Devices.hpp"
 #include "Common.h"
 #include "DeviceMemoryCommon.h"
@@ -63,7 +64,7 @@ namespace DeviceMemory {
 		void updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES);
 		void recreateImage(size_t const& INDEX, Common::ImageInfo const& NEW_INFO);
 
-		explicit DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, void (*const populate)(DeviceMemory::DeviceLocal& self));
+		explicit DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION);
 		~DeviceLocal();
 
 		DELETE_COPY_CONSTRUCTORS(DeviceLocal)

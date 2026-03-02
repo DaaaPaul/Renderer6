@@ -16,3 +16,5 @@
 - clean up the code debt!! !DONE!
 
 - make different uniform buffer for each frame
+- put prefix p for pointers
+- finish refactor

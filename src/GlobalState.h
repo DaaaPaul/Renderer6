@@ -20,6 +20,7 @@
 namespace GlobalState {
 	namespace Core {
 		void load();
+		std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
 		[[nodiscard]] ktxTexture2 const* getKtxTexture2();
 		[[nodiscard]] Backend::Window& getWindow();
 		[[nodiscard]] Backend::Instance& getInstance();

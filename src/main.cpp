@@ -25,7 +25,7 @@ int main() {
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
 		Engine::fRenderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
-        std::cout << "ERROR: " << RUNTIME_ERROR.what() << "\n";
+        std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }
 
     return 0;

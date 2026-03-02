@@ -5,7 +5,7 @@
 #include "HostVisible.hpp"
 
 namespace DeviceMemory {
-	HostVisible::HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, void (*const populate)(DeviceMemory::HostVisible& self)) :
+	HostVisible::HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION) :
 		devices{ givenDevices },
 		hostVisibleMemory{},
 		CREATE_INFO(std::move(givenCreateInfo)),
@@ -25,7 +25,7 @@ namespace DeviceMemory {
 			bufferSizes.resize(BUFFERS_COUNT, 0);
 			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::fCreateBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
+				buffers[i] = Common::createBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
 				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
 				bufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
@@ -33,13 +33,13 @@ namespace DeviceMemory {
 			// create the memory
 			VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.allocationSize = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
-				.memoryTypeIndex = Common::fGetMemoryTypeIndex(devices->getPhysicalDevice(), buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				.allocationSize = Common::getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
+				.memoryTypeIndex = Common::getMemoryTypeIndex(devices->getPhysicalDevice(), buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			};
 			vkAllocateMemory(devices->getLogicalDevice(), &hostVisibleMemoryAllocateInfo, nullptr, &hostVisibleMemory);
 	
 			// bind buffers
-			bufferOffsets = Common::fGetMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
+			bufferOffsets = Common::getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
 			for(int i = 0; i < BUFFERS_COUNT; i++) {
 				vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], hostVisibleMemory, bufferOffsets[i]);
 			}
@@ -48,7 +48,7 @@ namespace DeviceMemory {
 		// descriptor set stuff
 		if(!CREATE_INFO.descriptorSetInfos.empty()) {
 			const size_t DESCRIPTOR_SET_COUNT = CREATE_INFO.descriptorSetInfos.size();
-			descriptorPool = Common::fCreateDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
+			descriptorPool = Common::createDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
 
 			// create the descriptor sets
 			descriptorSetLayouts.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
@@ -59,7 +59,7 @@ namespace DeviceMemory {
 			}
 		}
 
-		populate(*this);
+		POPULATE_FUNCTION(*this);
 	}
 
 	HostVisible::~HostVisible() {

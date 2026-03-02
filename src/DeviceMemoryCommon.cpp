@@ -1,14 +1,115 @@
 #include <iostream>
 #include "DeviceMemoryCommon.h"
 #include "Common.h"
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "tiny_gltf.h"
 
 namespace DeviceMemory {
 	namespace Common {
-		ktxTexture2* fKtxLoadImage(const char* const& FILE_PATH) {
-			ktxTexture2* pKtxTexture{};
+		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices) {
+			tinygltf::Model model{};
+			tinygltf::TinyGLTF loader{};
+			std::string error{};
+			std::string warning{};
 
-			if(ktxTexture_CreateFromNamedFile(FILE_PATH, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, reinterpret_cast<ktxTexture**>(&pKtxTexture)) != KTX_SUCCESS) {
-				throw std::runtime_error("Failed to load ktx texture from " + std::string(FILE_PATH));
+			if(!loader.LoadASCIIFromFile(&model, &error, &warning, PATH)) {
+				throw std::runtime_error("Failed to load gltf model: " + error);
+			}
+			if(!warning.empty()) {
+				std::cerr << "Load gltf model attempt warning: " + warning << "\n";
+			}
+
+			// Process all meshes in the model
+			std::unordered_map<Vertex::Vertex, uint32_t> uniqueVertices{};
+
+			for (tinygltf::Mesh const& MESH : model.meshes) {
+				for (tinygltf::Primitive const& PRIMITIVE : MESH.primitives) {
+					// Get indices
+					tinygltf::Accessor const& INDEX_ACCESSOR = model.accessors[PRIMITIVE.indices];
+					tinygltf::BufferView const& INDEX_BUFFER_VIEW = model.bufferViews[INDEX_ACCESSOR.bufferView];
+					tinygltf::Buffer const& INDEX_BUFFER = model.buffers[INDEX_BUFFER_VIEW.buffer];
+
+					// Get vertex positions
+					tinygltf::Accessor const& POSITION_ACCESSOR = model.accessors[PRIMITIVE.attributes.at("POSITION")];
+					tinygltf::BufferView const& POSITION_BUFFER_VIEW = model.bufferViews[POSITION_ACCESSOR.bufferView];
+					tinygltf::Buffer const& POSITION_BUFFER = model.buffers[POSITION_BUFFER_VIEW.buffer];
+
+					// Get texture coordinates if available
+					const bool HAS_TEXCOORDS = PRIMITIVE.attributes.find("TEXCOORD_0") != PRIMITIVE.attributes.end();
+					tinygltf::Accessor const* TEXCOORD_ACCESSOR = nullptr;
+					tinygltf::BufferView const* TEXCOORD_BUFFER_VIEW = nullptr;
+					tinygltf::Buffer const* TEXCOORD_BUFFER = nullptr;
+
+					if (HAS_TEXCOORDS) {
+						TEXCOORD_ACCESSOR = &model.accessors[PRIMITIVE.attributes.at("TEXCOORD_0")];
+						TEXCOORD_BUFFER_VIEW = &model.bufferViews[TEXCOORD_ACCESSOR->bufferView];
+						TEXCOORD_BUFFER = &model.buffers[TEXCOORD_BUFFER_VIEW->buffer];
+					}
+
+					// Process vertices
+					for (size_t i = 0; i < POSITION_ACCESSOR.count; i++) {
+						Vertex::Vertex vertex{};
+
+						// Get position
+						float const* POSITION = reinterpret_cast<float const*>(&POSITION_BUFFER.data[POSITION_BUFFER_VIEW.byteOffset + POSITION_ACCESSOR.byteOffset + i * 12]);
+						vertex.position = {POSITION[0], POSITION[1], POSITION[2], 1.0f};
+
+						// Get texture coordinates if available
+						if (HAS_TEXCOORDS) {
+							float const* TEXCOORD = reinterpret_cast<float const*>(&TEXCOORD_BUFFER->data[TEXCOORD_BUFFER_VIEW->byteOffset + TEXCOORD_ACCESSOR->byteOffset + i * 8]);
+							vertex.texCoord = {TEXCOORD[0], 1.0f - TEXCOORD[1]};
+						} else {
+							vertex.texCoord = {0.0f, 0.0f};
+						}
+
+						// Set default color
+						vertex.color = {1.0f, 1.0f, 1.0f, 1.0f};
+
+						// Add vertex if unique
+						if (!uniqueVertices.contains(vertex)) {
+							uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+							vertices.push_back(vertex);
+						}
+					}
+
+					// Process indices
+					unsigned char const* INDEX_DATA = &INDEX_BUFFER.data[INDEX_BUFFER_VIEW.byteOffset + INDEX_ACCESSOR.byteOffset];
+
+					// Handle different index component types
+					if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+						uint16_t const* UI16 = reinterpret_cast<const uint16_t*>(INDEX_DATA);
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+							Vertex::Vertex vertex = vertices[UI16[i]];
+							indices.push_back(uniqueVertices[vertex]);
+						}
+					} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
+						uint32_t const* UI32 = reinterpret_cast<const uint32_t*>(INDEX_DATA);
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+							Vertex::Vertex vertex = vertices[UI32[i]];
+							indices.push_back(uniqueVertices[vertex]);
+						}
+					} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+						uint8_t const* UI8 = reinterpret_cast<const uint8_t*>(INDEX_DATA);
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+							Vertex::Vertex vertex = vertices[UI8[i]];
+							indices.push_back(uniqueVertices[vertex]);
+						}
+					}
+				}
+			}
+
+			std::cout << "Model at " << PATH << " unique vertices : " << vertices.size() << "\n";
+			std::cout << "Model at " << PATH << " total vertices : " << indices.size() << "\n";
+		}
+
+		ktxTexture2* loadKtxImage(const char* const& FILE_PATH) {
+			ktxTexture2* pKtxTexture{};
+			ktx_error_code_e error{};
+
+			if((error = ktxTexture_CreateFromNamedFile(FILE_PATH, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, reinterpret_cast<ktxTexture**>(&pKtxTexture))) != KTX_SUCCESS) {
+				throw std::runtime_error("Failed to load ktx texture from " + std::string(FILE_PATH) + ". Error code is " + std::to_string(static_cast<int>(error)));
 			}
 
 			if(ktxTexture2_NeedsTranscoding(pKtxTexture)) {
@@ -22,7 +123,7 @@ namespace DeviceMemory {
 			return pKtxTexture;
 		}
 
-		[[nodiscard]] VkBuffer fCreateBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
+		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
 			VkBufferCreateInfo bufferInfo{
 				.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 				.size = INFO.mBufferSize,
@@ -38,7 +139,7 @@ namespace DeviceMemory {
 			return returnBuffer;
 		}
 
-		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> fGetMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
+		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
 			std::pair<VkDeviceSize, std::vector<VkDeviceSize>> allocationSizeAndBufferOffsets{};
 			uint32_t buffersCount = static_cast<uint32_t>(BUFFER_MEMORY_REQUIREMENTS.size());
 			allocationSizeAndBufferOffsets.second.resize(buffersCount, UINT64_MAX);
@@ -56,7 +157,7 @@ namespace DeviceMemory {
 			return allocationSizeAndBufferOffsets;
 		}
 
-		[[nodiscard]] uint32_t fGetMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES) {
+		[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES) {
 			uint32_t finalMemoryRequirementsMask = UINT32_MAX;
 			for (VkMemoryRequirements const& BUFFER_MEMORY_REQUIREMENT : BUFFER_MEMORY_REQUIREMENTS) {
 				finalMemoryRequirementsMask &= BUFFER_MEMORY_REQUIREMENT.memoryTypeBits;
@@ -76,7 +177,7 @@ namespace DeviceMemory {
 			return memoryTypeIndexReturn;
 		}
 
-		[[nodiscard]] VkDescriptorPool fCreateDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
+		[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
 			VkDescriptorPool pReturnDescriptorPool{};
 		
 			// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
@@ -105,7 +206,7 @@ namespace DeviceMemory {
 			return pReturnDescriptorPool;
 		}
 
-		void fAllocateBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
+		void createBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
 			// create transient command pool
 			{
 				const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
@@ -143,7 +244,7 @@ namespace DeviceMemory {
 			}
 		}
 
-		void fEndSubmitDeallocateOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
+		void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
 			// end command buffer
 			{
 				CHECK_VK_SUCCESS(
@@ -186,7 +287,7 @@ namespace DeviceMemory {
 			vkDestroyCommandPool(rpDevice, rpCmdPool, nullptr);
 		}
 
-		void fTransitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
+		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
 		VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
 		VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
 			const VkImageMemoryBarrier2 IMAGE_MEMORY_BARRIER2{

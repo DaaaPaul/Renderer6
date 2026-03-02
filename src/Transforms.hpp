@@ -8,9 +8,9 @@
 
 namespace Vertex {
 	struct Transforms {
-		glm::mat4 mModel{};
-		glm::mat4 mView{};
-		glm::mat4 mProjection{};
+		glm::mat4 model{};
+		glm::mat4 view{};
+		glm::mat4 projection{};
 
 		[[nodiscard]] const static VkDescriptorSetLayoutBinding sGetTransformationMatricesDescriptorSetLayoutBinding(uint32_t const& BINDING_NUMBER);
 	};
