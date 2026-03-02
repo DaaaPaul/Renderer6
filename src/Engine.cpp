@@ -204,7 +204,7 @@ namespace Engine {
 		// draw!
 		vkCmdBeginRendering(commandBuffer, &RENDERING_INFO);
 
-		vkCmdDrawIndexed(commandBuffer, 12, 1, 0, 0, 0);
+		vkCmdDrawIndexed(commandBuffer, GlobalState::Core::getGltfModel().second.size(), 1, 0, 0, 0);
 
 		vkCmdEndRendering(commandBuffer);
 
@@ -275,7 +275,7 @@ namespace Engine {
 
 	void fInitializegCurrentTransformation() {
 		gCurrentTransformation = Vertex::Transforms(
-			glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f)),
+			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
 			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.width) / static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.height), 0.1f, 1000.0f)}
 		);
@@ -307,6 +307,12 @@ namespace Engine {
 			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, 0.0f, -0.001f));
 		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
 			gCurrentTransformation.model = glm::translate(gCurrentTransformation.model, glm::vec3(0.0f, 0.0f, 0.001f));
+		}
+
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_S)) {
+			gCurrentTransformation.model = glm::scale(gCurrentTransformation.model, glm::vec3(0.999f, 0.999f, 0.999f));
+		} else if(CHECK_PRESSED(GLFW_KEY_S)) {
+			gCurrentTransformation.model = glm::scale(gCurrentTransformation.model, glm::vec3(1.001f, 1.001f, 1.001f));
 		}
 	}
 
