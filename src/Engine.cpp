@@ -129,7 +129,7 @@ namespace Engine {
 	void recordDrawCommands(VkCommandBuffer& commandBuffer, uint32_t const& IMAGE_INDEX) {
 		// rendering info/attachment info
 		VkImageView colorImageView{ getSwapchainImageView(IMAGE_INDEX, VK_FORMAT_R8G8B8A8_SRGB, VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)) };
-		VkImageView depthImageView{ GlobalState::Core::getDeviceLocalMemory().getImageViews()[1] };
+		VkImageView depthImageView{ GlobalState::Core::getDeviceLocalMemory().getImageViews()[GlobalState::Core::getDeviceLocalMemory().searchForDepthImageIndex()] };
 		const VkRenderingAttachmentInfo COLOR_ATTACHMENT{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = colorImageView,
@@ -195,7 +195,7 @@ namespace Engine {
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().getGraphicsQfIndex());
-		DeviceMemory::Common::transitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[1], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		DeviceMemory::Common::transitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[GlobalState::Core::getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
@@ -263,6 +263,7 @@ namespace Engine {
 		if(RESULT == VK_ERROR_OUT_OF_DATE_KHR || GlobalState::Core::getWindow().framebufferResized) {
 			vkDeviceWaitIdle(GlobalState::Core::getDevices().getLogicalDevice());
 			GlobalState::Core::getSwapchain().recreateThyself();
+			GlobalState::Core::getDeviceLocalMemory().recreateDepthResources();
 			GlobalState::Core::getWindow().framebufferResized = false;
 
 			resized = true;
@@ -277,7 +278,7 @@ namespace Engine {
 		gCurrentTransformation = Vertex::Transforms(
 			glm::mat4{1.0f},
 			glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
-			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.width) / static_cast<float>(GlobalState::Core::getSwapchain().getCreateInfo().createInfo.imageExtent.height), 0.1f, 1000.0f)}
+			glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(GlobalState::Core::getSwapchain().getCurrentExtent().width) / static_cast<float>(GlobalState::Core::getSwapchain().getCurrentExtent().height), 0.1f, 1000.0f)}
 		);
 		gCurrentTransformation.projection[1][1] *= -1.0f;
 	}

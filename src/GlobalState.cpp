@@ -398,7 +398,7 @@ namespace GlobalState {
 						DeviceMemory::Common::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							VK_FORMAT_D32_SFLOAT,
-							VkExtent3D(getSwapchain().getCreateInfo().createInfo.imageExtent.width, getSwapchain().getCreateInfo().createInfo.imageExtent.height, 1),
+							VkExtent3D(getSwapchain().getCurrentExtent().width, getSwapchain().getCurrentExtent().height, 1),
 							1,
 							VK_SAMPLE_COUNT_1_BIT,
 							VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,

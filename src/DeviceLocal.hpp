@@ -30,7 +30,7 @@ namespace DeviceMemory {
 		Backend::Devices* devices{};
 		VkDeviceMemory deviceLocalMemory{};
 
-		const CreateInfo CREATE_INFO;
+		CreateInfo createInfo;
 
 		std::vector<VkBuffer> buffers{};
 		std::vector<VkDeviceSize> bufferOffsets{};
@@ -47,9 +47,18 @@ namespace DeviceMemory {
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
 
+		void createBuffers();
+		void createImages();
+		void createMemoryAndBind();
+		void createImageViews();
+		void createSamplers();
+		void createDescriptorSets();
+
+		void recreateMemory();
+
 		public:
 		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
-		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
+		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
 		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
 		[[nodiscard]] std::vector<VkImage>& getImages() { return images; }
 		[[nodiscard]] std::vector<VkImageView>& getImageViews() { return imageViews; }

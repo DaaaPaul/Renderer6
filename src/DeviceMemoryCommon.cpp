@@ -190,6 +190,34 @@ namespace DeviceMemory {
 			return imageView;
 		}
 
+		[[nodiscard]] VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO) {
+			VkSampler sampler{};
+
+			const VkSamplerCreateInfo SAMPLER_CREATE{
+				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+				.magFilter = SAMPLER_INFO.magFilter,
+				.minFilter = SAMPLER_INFO.minFilter,
+				.mipmapMode = SAMPLER_INFO.mipmapMode,
+				.addressModeU = SAMPLER_INFO.addressModeU,
+				.addressModeV = SAMPLER_INFO.addressModeV,
+				.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+				.mipLodBias = SAMPLER_INFO.mipLodBias,
+				.anisotropyEnable = SAMPLER_INFO.anisotropyEnable,
+				.maxAnisotropy = SAMPLER_INFO.maxAnisotropy,
+				.minLod = SAMPLER_INFO.minLod,
+				.maxLod = SAMPLER_INFO.maxLod,
+				.borderColor = SAMPLER_INFO.borderColor,
+				.unnormalizedCoordinates = VK_FALSE
+			};
+
+			CHECK_VK_SUCCESS(
+				vkCreateSampler(pLogicalDevice, &SAMPLER_CREATE, nullptr, &sampler),
+				"Failed to create sampler"
+			)
+
+			return sampler;
+		}
+
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
 			std::pair<VkDeviceSize, std::vector<VkDeviceSize>> allocationSizeAndBufferOffsets{};
 			uint32_t buffersCount = static_cast<uint32_t>(BUFFER_MEMORY_REQUIREMENTS.size());

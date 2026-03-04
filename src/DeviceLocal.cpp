@@ -1,11 +1,116 @@
-#include "DeviceLocal.hpp"
 #include <iostream>
+#include "DeviceLocal.hpp"
+#include "GlobalState.h"
 
 namespace DeviceMemory {
+	void DeviceLocal::createBuffers() {
+		if(!createInfo.bufferInfos.empty()) {
+			const uint16_t BUFFER_COUNT = createInfo.bufferInfos.size();
+
+			buffers.resize(BUFFER_COUNT, VK_NULL_HANDLE);
+			bufferSizes.resize(BUFFER_COUNT, 0);
+			bufferOffsets.resize(BUFFER_COUNT, 0);
+
+			for (int i = 0; i < BUFFER_COUNT; i++) {
+				buffers[i] = Common::createBuffer(devices->getLogicalDevice(), createInfo.bufferInfos[i]);
+			}
+		}
+	}
+
+	void DeviceLocal::createImages() {
+		if(!createInfo.imageInfos.empty()) {
+			const uint16_t IMAGE_COUNT = createInfo.imageInfos.size();
+
+			images.resize(IMAGE_COUNT, VK_NULL_HANDLE);
+			imageOffsets.resize(IMAGE_COUNT, 0);
+			imageSizes.resize(IMAGE_COUNT, 0);
+
+			for(int i = 0; i < IMAGE_COUNT; i++) {
+				images[i] = Common::createImage(devices->getLogicalDevice(), createInfo.imageInfos[i]);
+			}
+		}
+	}
+
+	void DeviceLocal::createMemoryAndBind() {
+		const uint16_t BUFFER_COUNT = createInfo.bufferInfos.size();
+		std::vector<VkMemoryRequirements> bufferRequirements(BUFFER_COUNT, {});
+		for (int i = 0; i < BUFFER_COUNT; i++) {
+			vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &bufferRequirements[i]);
+			bufferSizes[i] = bufferRequirements[i].size;
+		}
+
+		const uint16_t IMAGE_COUNT = createInfo.imageInfos.size();
+		std::vector<VkMemoryRequirements> imageRequirements(IMAGE_COUNT, {});
+		for (int i = 0; i < IMAGE_COUNT; i++) {
+			vkGetImageMemoryRequirements(devices->getLogicalDevice(), images[i], &imageRequirements[i]);
+			imageSizes[i] = imageRequirements[i].size;
+		}
+
+		std::vector<VkMemoryRequirements> concatenation(bufferRequirements);
+		concatenation.insert(concatenation.end(), imageRequirements.begin(), imageRequirements.end());
+
+		// create the memory
+		const std::pair<VkDeviceSize, std::vector<VkDeviceSize>> SIZE_AND_OFFSETS(Common::getMemoryAllocationSizeAndOffsets(concatenation));
+		const uint32_t MEMORY_TYPE = Common::getMemoryTypeIndex(devices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		VkMemoryAllocateInfo allocateInfo{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+			.allocationSize = SIZE_AND_OFFSETS.first,
+			.memoryTypeIndex = MEMORY_TYPE
+		};
+		vkAllocateMemory(devices->getLogicalDevice(), &allocateInfo, nullptr, &deviceLocalMemory);
+
+		// bind buffers and images
+		bufferOffsets.assign(SIZE_AND_OFFSETS.second.begin(), SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size());
+		imageOffsets.assign(SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size(), SIZE_AND_OFFSETS.second.end());
+
+		for(int i = 0; i < BUFFER_COUNT; i++) {
+			vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], deviceLocalMemory, bufferOffsets[i]);
+		}
+		for(int i = 0; i < IMAGE_COUNT; i++) {
+			vkBindImageMemory(devices->getLogicalDevice(), images[i], deviceLocalMemory, imageOffsets[i]);
+		}
+	}
+
+	void DeviceLocal::createImageViews() {
+		const uint16_t IMAGE_COUNT = createInfo.imageInfos.size();
+
+		imageViews.resize(IMAGE_COUNT, VK_NULL_HANDLE);
+		for(int i = 0; i < IMAGE_COUNT; i++) {
+			if(createInfo.imageInfos[i].viewInfo != Common::ImageViewInfo{}) {
+				imageViews[i] = Common::createImageView(devices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
+			}
+		}
+	}
+
+	void DeviceLocal::createSamplers() {
+		if(!createInfo.samplerInfos.empty()) {
+			const uint16_t SAMPLER_COUNT = createInfo.samplerInfos.size();
+
+			samplers.resize(SAMPLER_COUNT, VK_NULL_HANDLE);
+
+			for(int i = 0; i < SAMPLER_COUNT; i++) {
+				samplers[i] = Common::createSampler(devices->getLogicalDevice(), createInfo.samplerInfos[i]);
+			}
+		}
+	}
+
+	void DeviceLocal::createDescriptorSets() {
+		if(!createInfo.descriptorSetInfos.empty()) {
+			descriptorPool = Common::createDescriptorPool(devices->getLogicalDevice(), createInfo.descriptorSetInfos);
+
+			descriptorSetLayouts.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
+			descriptorSets.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
+
+			for(size_t i = 0; i < createInfo.descriptorSetInfos.size(); i++) {
+				createDescriptorSetAndLayout(createInfo.descriptorSetInfos[i], i);
+			}
+		}
+	}
+
 	DeviceLocal::DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION) : 
 		devices{ givenDevices },
 		deviceLocalMemory{},
-		CREATE_INFO(std::move(givenCreateInfo)),
+		createInfo(std::move(givenCreateInfo)),
 		buffers{},
 		bufferOffsets{},
 		bufferSizes{},
@@ -18,145 +123,12 @@ namespace DeviceMemory {
 		descriptorSetLayouts{},
 		descriptorSets{} {
 
-		// memory and buffer and image stuff
-		{
-			// create the buffers themselves with their memory requirements info
-			const size_t BUFFERS_COUNT{ CREATE_INFO.bufferInfos.size() };
-
-			buffers.resize(BUFFERS_COUNT, VK_NULL_HANDLE);
-			bufferSizes.resize(BUFFERS_COUNT, 0);
-			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
-
-			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::createBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
-				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
-				bufferSizes[i] = buffersMemoryRequirements[i].size;
-			}
-
-			// create the images themselves with their memory requirements info
-			const size_t IMAGES_COUNT{ CREATE_INFO.imageInfos.size() };
-
-			images.resize(IMAGES_COUNT, VK_NULL_HANDLE);
-			imageViews.resize(IMAGES_COUNT, VK_NULL_HANDLE);
-			imageSizes.resize(IMAGES_COUNT, 0);
-			std::vector<VkMemoryRequirements> imagesMemoryRequirements(IMAGES_COUNT, {});
-
-			VkImageCreateInfo rollingImageCreateInfo{
-				.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-				.arrayLayers = 1,
-				.tiling = VK_IMAGE_TILING_OPTIMAL,
-				.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-				.queueFamilyIndexCount = 1
-			};
-			for(int i = 0; i < IMAGES_COUNT; i++) {
-				rollingImageCreateInfo.imageType = CREATE_INFO.imageInfos[i].type;
-				rollingImageCreateInfo.format = CREATE_INFO.imageInfos[i].format;
-				rollingImageCreateInfo.extent = CREATE_INFO.imageInfos[i].extent;
-				rollingImageCreateInfo.mipLevels = CREATE_INFO.imageInfos[i].mipLevelsCount;
-				rollingImageCreateInfo.samples = CREATE_INFO.imageInfos[i].sampleCount;
-				rollingImageCreateInfo.usage = CREATE_INFO.imageInfos[i].usage;
-				rollingImageCreateInfo.pQueueFamilyIndices = &CREATE_INFO.imageInfos[i].graphicsQfIndex;
-				rollingImageCreateInfo.initialLayout = CREATE_INFO.imageInfos[i].initialLayout;
-
-				CHECK_VK_SUCCESS(
-					vkCreateImage(devices->getLogicalDevice(), &rollingImageCreateInfo, nullptr, &images[i]),
-					"Failed to create VkImage"
-				)
-
-				vkGetImageMemoryRequirements(devices->getLogicalDevice(), images[i], &imagesMemoryRequirements[i]);
-				imageSizes[i] = imagesMemoryRequirements[i].size;
-			}
-
-			std::vector<VkMemoryRequirements> allMemoryRequirements{};
-			for(VkMemoryRequirements const& BUFFER_MEM_REQUIREMENTS : buffersMemoryRequirements) {
-				allMemoryRequirements.push_back(BUFFER_MEM_REQUIREMENTS);
-			}
-			for(VkMemoryRequirements const& IMAGE_MEM_REQUIREMENTS : imagesMemoryRequirements) {
-				allMemoryRequirements.push_back(IMAGE_MEM_REQUIREMENTS);
-			}
-
-			// create the memory
-			VkMemoryAllocateInfo deviceLocalMemoryAllocateInfo{
-				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.allocationSize = Common::getMemoryAllocationSizeAndOffsets(allMemoryRequirements).first,
-				.memoryTypeIndex = Common::getMemoryTypeIndex(devices->getPhysicalDevice(), allMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-			};
-			vkAllocateMemory(devices->getLogicalDevice(), &deviceLocalMemoryAllocateInfo, nullptr, &deviceLocalMemory);
-
-			// bind buffers and images
-			const std::vector<VkDeviceSize> MEMORY_OFFSETS{ Common::getMemoryAllocationSizeAndOffsets(allMemoryRequirements).second };
-			bufferOffsets.assign(MEMORY_OFFSETS.begin(), MEMORY_OFFSETS.begin() + buffersMemoryRequirements.size());
-			imageOffsets.assign(MEMORY_OFFSETS.begin() + buffersMemoryRequirements.size(), MEMORY_OFFSETS.end());
-
-			for(int i = 0; i < BUFFERS_COUNT; i++) {
-				vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], deviceLocalMemory, bufferOffsets[i]);
-			}
-			for(int i = 0; i < IMAGES_COUNT; i++) {
-				vkBindImageMemory(devices->getLogicalDevice(), images[i], deviceLocalMemory, imageOffsets[i]);
-			}
-
-			// finally create image views after binding images to memory
-			for(int i = 0; i < IMAGES_COUNT; i++) {
-				bool hasImageView = CREATE_INFO.imageInfos[i].viewInfo.type != 0 && CREATE_INFO.imageInfos[i].viewInfo.format != 0;
-				if(hasImageView) {
-					VkImageViewCreateInfo rollingImageViewCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-						.image = images[i],
-						.viewType = CREATE_INFO.imageInfos[i].viewInfo.type,
-						.format = CREATE_INFO.imageInfos[i].viewInfo.format,
-						.subresourceRange = CREATE_INFO.imageInfos[i].viewInfo.subresourceRange
-					};
-
-					CHECK_VK_SUCCESS(
-						vkCreateImageView(devices->getLogicalDevice(), &rollingImageViewCreateInfo, nullptr, &imageViews[i]),
-						"Failed to create VkImageView"
-					)
-				}
-			}
-		}
-
-		// sampler stuff
-		if(!CREATE_INFO.samplerInfos.empty()) {
-			samplers.resize(CREATE_INFO.samplerInfos.size(), VK_NULL_HANDLE);
-
-			VkSamplerCreateInfo rollingSamplerInfo{
-				.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-				.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-				.unnormalizedCoordinates = VK_FALSE
-			};
-
-			for(int i = 0; i < CREATE_INFO.samplerInfos.size(); i++) {
-				rollingSamplerInfo.magFilter = CREATE_INFO.samplerInfos[i].magFilter;
-				rollingSamplerInfo.minFilter = CREATE_INFO.samplerInfos[i].minFilter;
-				rollingSamplerInfo.mipmapMode = CREATE_INFO.samplerInfos[i].mipmapMode;
-				rollingSamplerInfo.addressModeU = CREATE_INFO.samplerInfos[i].addressModeU;
-				rollingSamplerInfo.addressModeV = CREATE_INFO.samplerInfos[i].addressModeV;
-				rollingSamplerInfo.mipLodBias = CREATE_INFO.samplerInfos[i].mipLodBias;
-				rollingSamplerInfo.anisotropyEnable = CREATE_INFO.samplerInfos[i].anisotropyEnable;
-				rollingSamplerInfo.maxAnisotropy = CREATE_INFO.samplerInfos[i].maxAnisotropy;
-				rollingSamplerInfo.minLod = CREATE_INFO.samplerInfos[i].minLod;
-				rollingSamplerInfo.maxLod = CREATE_INFO.samplerInfos[i].maxLod;
-				rollingSamplerInfo.borderColor = CREATE_INFO.samplerInfos[i].borderColor;
-
-				CHECK_VK_SUCCESS(
-					vkCreateSampler(devices->getLogicalDevice(), &rollingSamplerInfo, nullptr, &samplers[i]),
-					"Failed to create sampler"
-				)
-			}
-		}
-		
-		// descriptor set stuff
-		if(!CREATE_INFO.descriptorSetInfos.empty()) {
-			descriptorPool = Common::createDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
-
-			// create the descriptor sets
-			descriptorSetLayouts.resize(CREATE_INFO.descriptorSetInfos.size(), VK_NULL_HANDLE);
-			descriptorSets.resize(CREATE_INFO.descriptorSetInfos.size(), VK_NULL_HANDLE);
-
-			for(size_t i = 0; i < CREATE_INFO.descriptorSetInfos.size(); i++) {
-				createDescriptorSetAndLayout(CREATE_INFO.descriptorSetInfos[i], i);
-			}
-		}
+		createBuffers();
+		createImages();
+		createMemoryAndBind();
+		createImageViews();
+		createSamplers();
+		createDescriptorSets();
 
 		POPULATE_FUNCTION(*this);
 	}
@@ -166,11 +138,11 @@ namespace DeviceMemory {
 		for(VkBuffer& buffer : buffers) {
 			vkDestroyBuffer(devices->getLogicalDevice(), buffer, nullptr);
 		}
-		for(VkImageView& imageView : imageViews) {
-			vkDestroyImageView(devices->getLogicalDevice(), imageView, nullptr);
-		}
 		for(VkImage& image : images) {
 			vkDestroyImage(devices->getLogicalDevice(), image, nullptr);
+		}
+		for(VkImageView& imageView : imageViews) {
+			vkDestroyImageView(devices->getLogicalDevice(), imageView, nullptr);
 		}
 		for(VkSampler& sampler : samplers) {
 			vkDestroySampler(devices->getLogicalDevice(), sampler, nullptr);
@@ -246,7 +218,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(BUFFER_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
@@ -260,8 +232,8 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
 		};
 
@@ -269,7 +241,7 @@ namespace DeviceMemory {
 	}
 
 	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
-		if(SAMPLER_IMAGE_INDICES.size() != CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
+		if(SAMPLER_IMAGE_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 
@@ -283,29 +255,48 @@ namespace DeviceMemory {
 			.dstSet = descriptorSets[SET_INDEX],
 			.dstBinding = SET_BINDING_NUM,
 			.dstArrayElement = 0,
-			.descriptorCount = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = CREATE_INFO.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
+			.descriptorCount = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
+			.descriptorType = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pImageInfo = toWriteImageSamplers.data()
 		};
 
 		vkUpdateDescriptorSets(devices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 
-	void DeviceLocal::recreateDepthResources() {
-		const int DEPTH_IMAGE_INDEX = searchForDepthImageIndex();
+	void DeviceLocal::recreateMemory() {
+		vkFreeMemory(devices->getLogicalDevice(), deviceLocalMemory, nullptr);
+		for(VkBuffer& buffer : buffers) {
+			vkDestroyBuffer(devices->getLogicalDevice(), buffer, nullptr);
+		}
+		for(VkImage& image : images) {
+			vkDestroyImage(devices->getLogicalDevice(), image, nullptr);
+		}
 
-		if(DEPTH_IMAGE_INDEX == -1) {
-			throw std::runtime_error("No depth image found!");
+		createBuffers();
+		createImages();
+		createMemoryAndBind();
+	}
+
+	void DeviceLocal::recreateDepthResources() {
+		const int DEPTH_INDEX = searchForDepthImageIndex();
+
+		if(DEPTH_INDEX != -1) {
+			vkDestroyImageView(devices->getLogicalDevice(), imageViews[DEPTH_INDEX], nullptr);
+
+			createInfo.imageInfos[DEPTH_INDEX].extent.width = GlobalState::Core::getSwapchain().getCurrentExtent().width;
+			createInfo.imageInfos[DEPTH_INDEX].extent.height = GlobalState::Core::getSwapchain().getCurrentExtent().height;
+			recreateMemory();
+
+			imageViews[DEPTH_INDEX] = Common::createImageView(devices->getLogicalDevice(), images[DEPTH_INDEX], createInfo.imageInfos[DEPTH_INDEX].viewInfo);
 		} else {
-			vkDestroyImage(devices->getLogicalDevice(), images[DEPTH_IMAGE_INDEX], nullptr);
-			vkDestroyImageView(devices->getLogicalDevice(), imageViews[DEPTH_IMAGE_INDEX], nullptr);
+			throw std::runtime_error("No depth image found!");
 		}
 	}
 
 	[[nodiscard]] int DeviceLocal::searchForDepthImageIndex() const noexcept {
 		int depthImageIndex = -1;
-		for(int i = 0; i < CREATE_INFO.imageInfos.size() && depthImageIndex == -1; i++) {
-			if(CREATE_INFO.imageInfos[i].usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		for(int i = 0; i < createInfo.imageInfos.size() && depthImageIndex == -1; i++) {
+			if(createInfo.imageInfos[i].usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 				depthImageIndex = i;
 			}
 		}

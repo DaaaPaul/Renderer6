@@ -23,6 +23,17 @@ namespace DeviceMemory {
 			VkImageViewType type{};
 			VkFormat format{};
 			VkImageSubresourceRange subresourceRange{};
+
+			bool operator!=(ImageViewInfo const& RIGHT) const noexcept {
+				return 
+					!(type == RIGHT.type &&
+					format == RIGHT.format &&
+					subresourceRange.aspectMask == RIGHT.subresourceRange.aspectMask &&
+					subresourceRange.baseMipLevel == RIGHT.subresourceRange.baseMipLevel &&
+					subresourceRange.levelCount == RIGHT.subresourceRange.levelCount &&
+					subresourceRange.baseArrayLayer == RIGHT.subresourceRange.baseArrayLayer &&
+					subresourceRange.layerCount == RIGHT.subresourceRange.layerCount);
+			}
 		};
 
 		struct ImageInfo {
@@ -53,9 +64,12 @@ namespace DeviceMemory {
 
 		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
 		ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
+
 		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
 		[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);
 		[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO);
+		[[nodiscard]] VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO);
+
 		[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
 		[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
 		[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
