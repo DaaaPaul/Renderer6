@@ -111,6 +111,7 @@ namespace DeviceMemory {
 		devices{ givenDevices },
 		deviceLocalMemory{},
 		createInfo(std::move(givenCreateInfo)),
+		POPULATE(POPULATE_FUNCTION),
 		buffers{},
 		bufferOffsets{},
 		bufferSizes{},
@@ -130,7 +131,7 @@ namespace DeviceMemory {
 		createSamplers();
 		createDescriptorSets();
 
-		POPULATE_FUNCTION(*this);
+		POPULATE(*this);
 	}
 
 	DeviceLocal::~DeviceLocal() {
@@ -277,17 +278,22 @@ namespace DeviceMemory {
 		createMemoryAndBind();
 	}
 
+	void DeviceLocal::recreateImageViews() {
+		for(VkImageView& imageView : imageViews) {
+			vkDestroyImageView(devices->getLogicalDevice(), imageView, nullptr);
+		}
+		createImageViews();
+	}
+
 	void DeviceLocal::recreateDepthResources() {
 		const int DEPTH_INDEX = searchForDepthImageIndex();
 
 		if(DEPTH_INDEX != -1) {
-			vkDestroyImageView(devices->getLogicalDevice(), imageViews[DEPTH_INDEX], nullptr);
-
 			createInfo.imageInfos[DEPTH_INDEX].extent.width = GlobalState::Core::getSwapchain().getCurrentExtent().width;
 			createInfo.imageInfos[DEPTH_INDEX].extent.height = GlobalState::Core::getSwapchain().getCurrentExtent().height;
 			recreateMemory();
-
-			imageViews[DEPTH_INDEX] = Common::createImageView(devices->getLogicalDevice(), images[DEPTH_INDEX], createInfo.imageInfos[DEPTH_INDEX].viewInfo);
+			recreateImageViews();
+			POPULATE(*this);
 		} else {
 			throw std::runtime_error("No depth image found!");
 		}
