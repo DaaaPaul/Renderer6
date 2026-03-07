@@ -25,7 +25,7 @@ namespace DeviceMemory {
 			bufferSizes.resize(BUFFERS_COUNT, 0);
 			std::vector<VkMemoryRequirements> buffersMemoryRequirements(BUFFERS_COUNT, {});
 			for (int i = 0; i < BUFFERS_COUNT; i++) {
-				buffers[i] = Common::createBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
+				buffers[i] = createBuffer(devices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
 				vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &buffersMemoryRequirements[i]);
 				bufferSizes[i] = buffersMemoryRequirements[i].size;
 			}
@@ -33,13 +33,13 @@ namespace DeviceMemory {
 			// create the memory
 			VkMemoryAllocateInfo hostVisibleMemoryAllocateInfo{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-				.allocationSize = Common::getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
-				.memoryTypeIndex = Common::getMemoryTypeIndex(devices->getPhysicalDevice(), buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
+				.allocationSize = getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).first,
+				.memoryTypeIndex = getMemoryTypeIndex(devices->getPhysicalDevice(), buffersMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)
 			};
 			vkAllocateMemory(devices->getLogicalDevice(), &hostVisibleMemoryAllocateInfo, nullptr, &hostVisibleMemory);
 	
 			// bind buffers
-			bufferOffsets = Common::getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
+			bufferOffsets = getMemoryAllocationSizeAndOffsets(buffersMemoryRequirements).second;
 			for(int i = 0; i < BUFFERS_COUNT; i++) {
 				vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], hostVisibleMemory, bufferOffsets[i]);
 			}
@@ -48,7 +48,7 @@ namespace DeviceMemory {
 		// descriptor set stuff
 		if(!CREATE_INFO.descriptorSetInfos.empty()) {
 			const size_t DESCRIPTOR_SET_COUNT = CREATE_INFO.descriptorSetInfos.size();
-			descriptorPool = Common::createDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
+			descriptorPool = createDescriptorPool(devices->getLogicalDevice(), CREATE_INFO.descriptorSetInfos);
 
 			// create the descriptor sets
 			descriptorSetLayouts.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
@@ -89,7 +89,7 @@ namespace DeviceMemory {
 		vkUnmapMemory(devices->getLogicalDevice(), hostVisibleMemory);
 	}
 
-	void HostVisible::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
+	void HostVisible::createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX) {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,

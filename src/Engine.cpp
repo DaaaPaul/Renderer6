@@ -190,12 +190,12 @@ namespace Engine {
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::Core::getGraphicsPipeline().getCreateInfo().graphicsPipeline.layout, 1, 1, GlobalState::Core::getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);
 			
 		// layout transitions to optimal
-		DeviceMemory::Common::transitionImageLayout(commandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::transitionImageLayout(commandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, GlobalState::Core::getDevices().getGraphicsQfIndex());
-		DeviceMemory::Common::transitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[GlobalState::Core::getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		DeviceMemory::transitionImageLayout(commandBuffer, GlobalState::Core::getDeviceLocalMemory().getImages()[GlobalState::Core::getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
 		VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
@@ -209,7 +209,7 @@ namespace Engine {
 		vkCmdEndRendering(commandBuffer);
 
 		// layout transition to present optimal
-		DeviceMemory::Common::transitionImageLayout(commandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::transitionImageLayout(commandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,

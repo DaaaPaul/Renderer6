@@ -3,9 +3,9 @@
 #include "Common.h"
 
 namespace Common {
-    bool fContainsAll(std::vector<std::string> const& big, std::vector<std::string> const& small) {
-        std::vector<std::string> bigCopy(big);
-        std::vector<std::string> smallCopy(small);
+    bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL) {
+        std::vector<std::string> bigCopy(BIG);
+        std::vector<std::string> smallCopy(SMALL);
 
         std::sort(bigCopy.begin(), bigCopy.end());
         std::sort(smallCopy.begin(), smallCopy.end());
@@ -13,7 +13,7 @@ namespace Common {
         return std::ranges::includes(bigCopy, smallCopy);
     }
 
-	[[nodiscard]] const std::vector<char> fLoadSprivFileBytes(std::string const& PATH) {
+	[[nodiscard]] const std::vector<char> loadSprivFileBytes(std::string const& PATH) {
 		std::ifstream fileIn(PATH, std::ios::binary | std::ios::ate);
 		if(!fileIn.good()) {
 			throw std::runtime_error("Failure reading file at " + std::string(PATH));

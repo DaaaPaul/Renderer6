@@ -9,12 +9,12 @@ namespace DeviceMemory {
 	class DeviceLocal {
 		public:
 		struct CreateInfo {
-			std::vector<Common::BufferInfo> bufferInfos{};
-			std::vector<Common::ImageInfo> imageInfos{};
-			std::vector<Common::SamplerInfo> samplerInfos{};
-			std::vector<Common::DescriptorSetInfo> descriptorSetInfos{};
+			std::vector<BufferInfo> bufferInfos{};
+			std::vector<ImageInfo> imageInfos{};
+			std::vector<SamplerInfo> samplerInfos{};
+			std::vector<DescriptorSetInfo> descriptorSetInfos{};
 
-			CreateInfo(std::vector<Common::BufferInfo>&& salvageBufferInfos, std::vector<Common::ImageInfo>&& salvageImageInfos, std::vector<Common::SamplerInfo>&& salvageSamplerInfos, std::vector<Common::DescriptorSetInfo>&& salvageDescriptorSetInfos) :
+			CreateInfo(std::vector<BufferInfo>&& salvageBufferInfos, std::vector<ImageInfo>&& salvageImageInfos, std::vector<SamplerInfo>&& salvageSamplerInfos, std::vector<DescriptorSetInfo>&& salvageDescriptorSetInfos) :
 				bufferInfos{ std::move(salvageBufferInfos) },
 				imageInfos{ std::move(salvageImageInfos) },
 				samplerInfos{ std::move(salvageSamplerInfos) },
@@ -71,7 +71,7 @@ namespace DeviceMemory {
 
 		void copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS);
 		void copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS);
-		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
+		void createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX);
 		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 		void updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES);
 		void recreateDepthResources();

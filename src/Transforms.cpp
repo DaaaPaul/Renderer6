@@ -1,7 +1,7 @@
 #include "Transforms.hpp"
 
 namespace Vertex {
-	[[nodiscard]] const VkDescriptorSetLayoutBinding Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(uint32_t const& BINDING_NUMBER) {
+	[[nodiscard]] const VkDescriptorSetLayoutBinding Transforms::getTransformationMatricesDescriptorSetLayoutBinding(uint32_t const& BINDING_NUMBER) {
 		const VkDescriptorSetLayoutBinding RETURN_LAYOUT_BINDING{
 			.binding = BINDING_NUMBER,
 			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

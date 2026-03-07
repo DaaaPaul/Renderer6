@@ -16,7 +16,7 @@ namespace GlobalState {
 	}
 
 	ktxTexture2 const* Core::getKtxTexture2() {
-		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::Common::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
+		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 		
 		return gKTX_TEXTURE2;
 	}
@@ -25,7 +25,7 @@ namespace GlobalState {
 		static std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>> uniqueVerticesAndVertexIndices{};
 
 		if(uniqueVerticesAndVertexIndices.first.empty() && uniqueVerticesAndVertexIndices.second.empty()) {
-			DeviceMemory::Common::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", uniqueVerticesAndVertexIndices.first, uniqueVerticesAndVertexIndices.second);
+			DeviceMemory::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", uniqueVerticesAndVertexIndices.first, uniqueVerticesAndVertexIndices.second);
 		}
 
 		return uniqueVerticesAndVertexIndices;
@@ -193,7 +193,7 @@ namespace GlobalState {
 						logicalDeviceExtensionNames.push_back(extensions[i]);
 					}
 
-					if (!Common::fContainsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
+					if (!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 						continue;
 					}
@@ -338,13 +338,13 @@ namespace GlobalState {
 			&getDevices(),
 			DeviceMemory::HostVisible::CreateInfo(
 				{
-					DeviceMemory::Common::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::Common::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::Common::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::Common::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
+					DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				},
 				{
-					DeviceMemory::Common::DescriptorSetInfo({Vertex::Transforms::sGetTransformationMatricesDescriptorSetLayoutBinding(0)})
+					DeviceMemory::DescriptorSetInfo({Vertex::Transforms::getTransformationMatricesDescriptorSetLayoutBinding(0)})
 				}
 			),
 			gPopulate
@@ -378,24 +378,24 @@ namespace GlobalState {
 
 				return DeviceMemory::DeviceLocal::CreateInfo(
 					{ 
-						DeviceMemory::Common::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::Common::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
+						DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+						DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
 						// texture image
-						DeviceMemory::Common::ImageInfo(
+						DeviceMemory::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							static_cast<VkFormat>(getKtxTexture2()->vkFormat),
 							VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1),
-							DeviceMemory::Common::calculateMipLevels(VkExtent2D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight)),
+							DeviceMemory::calculateMipLevels(VkExtent2D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight)),
 							VK_SAMPLE_COUNT_1_BIT,
 							VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 							getDevices().getGraphicsQfIndex(),
 							VK_IMAGE_LAYOUT_UNDEFINED,
-							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
+							DeviceMemory::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
 						),
 						// depth image
-						DeviceMemory::Common::ImageInfo(
+						DeviceMemory::ImageInfo(
 							VK_IMAGE_TYPE_2D,
 							VK_FORMAT_D32_SFLOAT,
 							VkExtent3D(getSwapchain().getCurrentExtent().width, getSwapchain().getCurrentExtent().height, 1),
@@ -404,11 +404,11 @@ namespace GlobalState {
 							VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 							getDevices().getGraphicsQfIndex(),
 							VK_IMAGE_LAYOUT_UNDEFINED,
-							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1))
+							DeviceMemory::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_D32_SFLOAT, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1))
 						),
 					},
 					{
-						DeviceMemory::Common::SamplerInfo(
+						DeviceMemory::SamplerInfo(
 							VK_FILTER_LINEAR,
 							VK_FILTER_LINEAR,
 							VK_SAMPLER_MIPMAP_MODE_LINEAR,
@@ -423,7 +423,7 @@ namespace GlobalState {
 						)
 					},
 					{
-						DeviceMemory::Common::DescriptorSetInfo(
+						DeviceMemory::DescriptorSetInfo(
 							{
 								VkDescriptorSetLayoutBinding{
 									.binding = 0,
@@ -460,7 +460,7 @@ namespace GlobalState {
 					.stencilAttachmentFormat = {},
 				};
 
-				std::vector<char> sprivFileBytes(Common::fLoadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
+				std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
 				VkShaderModuleCreateInfo shaderModuleForEverythingInfo{
 					.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
 					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
@@ -488,8 +488,8 @@ namespace GlobalState {
 				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
 				pipelineCreateInfo.pStages = stages.data();
 
-				std::vector<VkVertexInputBindingDescription> vertexBindings{ Vertex::Vertex::sGetInputBindingDescription() };
-				std::vector<VkVertexInputAttributeDescription> vertexAttributes{ Vertex::Vertex::sGetInputAttributeDescriptions() };
+				std::vector<VkVertexInputBindingDescription> vertexBindings{ Vertex::Vertex::getInputBindingDescription() };
+				std::vector<VkVertexInputAttributeDescription> vertexAttributes{ Vertex::Vertex::getInputAttributeDescriptions() };
 				VkPipelineVertexInputStateCreateInfo vertexInput{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 					.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size()),

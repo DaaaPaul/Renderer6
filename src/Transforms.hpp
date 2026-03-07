@@ -12,6 +12,6 @@ namespace Vertex {
 		glm::mat4 view{};
 		glm::mat4 projection{};
 
-		[[nodiscard]] const static VkDescriptorSetLayoutBinding sGetTransformationMatricesDescriptorSetLayoutBinding(uint32_t const& BINDING_NUMBER);
+		[[nodiscard]] const static VkDescriptorSetLayoutBinding getTransformationMatricesDescriptorSetLayoutBinding(uint32_t const& BINDING_NUMBER);
 	};
 }

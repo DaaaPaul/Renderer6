@@ -26,7 +26,7 @@
 	}
 
 #define CHECK_CONTAINS_ALL(big, small, errMsg) \
-	if(!Common::fContainsAll(big, small)) { \
+	if(!Common::containsAll(big, small)) { \
 		throw std::runtime_error(errMsg); \
 	}
 
@@ -46,8 +46,8 @@
 	(num == 4210688) ? "VK_API_VERSION_1_4" : "Invalid vulkan api version!") \
 
 namespace Common {
-	[[nodiscard]] bool fContainsAll(std::vector<std::string> const& big, std::vector<std::string> const& small);
-	[[nodiscard]] const std::vector<char> fLoadSprivFileBytes(std::string const& PATH);
+	[[nodiscard]] bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
+	[[nodiscard]] const std::vector<char> loadSprivFileBytes(std::string const& PATH);
 }
 
 using VkLogicalDevice = VkDevice;

@@ -12,7 +12,7 @@ namespace DeviceMemory {
 			bufferOffsets.resize(BUFFER_COUNT, 0);
 
 			for (int i = 0; i < BUFFER_COUNT; i++) {
-				buffers[i] = Common::createBuffer(devices->getLogicalDevice(), createInfo.bufferInfos[i]);
+				buffers[i] = createBuffer(devices->getLogicalDevice(), createInfo.bufferInfos[i]);
 			}
 		}
 	}
@@ -24,7 +24,7 @@ namespace DeviceMemory {
 	//	VkCommandPool tempCommandPool{};
 	//	VkCommandBuffer tempCommandBuffer{};
 
-	//	Common::createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+	//	createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
 
 	//	// assume mipLevelsCount includes the original image
 	//	size_t dstMipLevel = 1;
@@ -34,7 +34,7 @@ namespace DeviceMemory {
 	//		srcMipLevel = i - 1;
 
 	//		// transfer image srcMipLevel to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-	//		Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
+	//		transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
 	//			VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
 	//			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, devices->getGraphicsQfIndex());
@@ -48,7 +48,7 @@ namespace DeviceMemory {
 	//		vkCmdBlitImage(tempCommandBuffer, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 	//	
 	//		// transfer image srcMipLevel to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	//		Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
+	//		transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
 	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
 	//			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
 	//			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
@@ -62,12 +62,12 @@ namespace DeviceMemory {
 	//	}
 
 	//	// transfer last mip level to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	//	Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount - 1, 1, 0, 1), 
+	//	transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount - 1, 1, 0, 1), 
 	//		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 	//		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
 	//		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 
-	//	Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+	//	endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	//}
 
 	void DeviceLocal::createImages() {
@@ -79,7 +79,7 @@ namespace DeviceMemory {
 			imageSizes.resize(IMAGE_COUNT, 0);
 
 			for(int i = 0; i < IMAGE_COUNT; i++) {
-				images[i] = Common::createImage(devices->getLogicalDevice(), createInfo.imageInfos[i]);
+				images[i] = createImage(devices->getLogicalDevice(), createInfo.imageInfos[i]);
 			}
 		}
 	}
@@ -103,8 +103,8 @@ namespace DeviceMemory {
 		concatenation.insert(concatenation.end(), imageRequirements.begin(), imageRequirements.end());
 
 		// create the memory
-		const std::pair<VkDeviceSize, std::vector<VkDeviceSize>> SIZE_AND_OFFSETS(Common::getMemoryAllocationSizeAndOffsets(concatenation));
-		const uint32_t MEMORY_TYPE = Common::getMemoryTypeIndex(devices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		const std::pair<VkDeviceSize, std::vector<VkDeviceSize>> SIZE_AND_OFFSETS(getMemoryAllocationSizeAndOffsets(concatenation));
+		const uint32_t MEMORY_TYPE = getMemoryTypeIndex(devices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VkMemoryAllocateInfo allocateInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.allocationSize = SIZE_AND_OFFSETS.first,
@@ -129,8 +129,8 @@ namespace DeviceMemory {
 
 		imageViews.resize(IMAGE_COUNT, VK_NULL_HANDLE);
 		for(int i = 0; i < IMAGE_COUNT; i++) {
-			if(createInfo.imageInfos[i].viewInfo != Common::ImageViewInfo{}) {
-				imageViews[i] = Common::createImageView(devices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
+			if(createInfo.imageInfos[i].viewInfo != ImageViewInfo{}) {
+				imageViews[i] = createImageView(devices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
 			}
 		}
 	}
@@ -142,14 +142,14 @@ namespace DeviceMemory {
 			samplers.resize(SAMPLER_COUNT, VK_NULL_HANDLE);
 
 			for(int i = 0; i < SAMPLER_COUNT; i++) {
-				samplers[i] = Common::createSampler(devices->getLogicalDevice(), createInfo.samplerInfos[i]);
+				samplers[i] = createSampler(devices->getLogicalDevice(), createInfo.samplerInfos[i]);
 			}
 		}
 	}
 
 	void DeviceLocal::createDescriptorSets() {
 		if(!createInfo.descriptorSetInfos.empty()) {
-			descriptorPool = Common::createDescriptorPool(devices->getLogicalDevice(), createInfo.descriptorSetInfos);
+			descriptorPool = createDescriptorPool(devices->getLogicalDevice(), createInfo.descriptorSetInfos);
 
 			descriptorSetLayouts.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
 			descriptorSets.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
@@ -215,19 +215,19 @@ namespace DeviceMemory {
 		VkCommandPool tempCommandPool{};
 		VkCommandBuffer tempCommandBuffer{};
 
-		Common::createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+		createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
 		vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, buffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-		Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+		endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS) {
 		VkCommandPool tempCommandPool{};
 		VkCommandBuffer tempCommandBuffer{};
 
-		Common::createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+		createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
 		
 		// recorded commands
-		Common::transitionImageLayout(tempCommandBuffer, images[INDEX],
+		transitionImageLayout(tempCommandBuffer, images[INDEX],
 		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
 		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
@@ -235,17 +235,17 @@ namespace DeviceMemory {
 
 		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, images[INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
 		
-		Common::transitionImageLayout(tempCommandBuffer, images[INDEX],
+		transitionImageLayout(tempCommandBuffer, images[INDEX],
 		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,	
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 		// end of recorded commands
 
-		Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+		endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
-	void DeviceLocal::createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX) {
+	void DeviceLocal::createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX) {
 		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.flags = 0,

@@ -9,10 +9,10 @@ namespace DeviceMemory {
 	class HostVisible {
 		public:
 		struct CreateInfo {
-			std::vector<Common::BufferInfo> bufferInfos{};
-			std::vector<Common::DescriptorSetInfo> descriptorSetInfos{};
+			std::vector<BufferInfo> bufferInfos{};
+			std::vector<DescriptorSetInfo> descriptorSetInfos{};
 
-			CreateInfo(std::vector<Common::BufferInfo>&& salvageBufferInfos, std::vector<Common::DescriptorSetInfo>&& salvageDescriptorSetInfos) :
+			CreateInfo(std::vector<BufferInfo>&& salvageBufferInfos, std::vector<DescriptorSetInfo>&& salvageDescriptorSetInfos) :
 				bufferInfos{ std::move(salvageBufferInfos) },
 				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
@@ -42,7 +42,7 @@ namespace DeviceMemory {
 		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
 
 		void writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES);
-		void createDescriptorSetAndLayout(Common::DescriptorSetInfo const& INFO, size_t const& INDEX);
+		void createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX);
 		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
 		explicit HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION);
