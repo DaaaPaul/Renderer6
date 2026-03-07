@@ -17,58 +17,58 @@ namespace DeviceMemory {
 		}
 	}
 
-	void DeviceLocal::generateImageMipmaps(size_t const& IMAGE_INDEX) {
-		uint16_t mipWidth = createInfo.imageInfos[IMAGE_INDEX].extent.width;
-		uint16_t mipHeight = createInfo.imageInfos[IMAGE_INDEX].extent.height;
+	//void DeviceLocal::generateImageMipmaps(size_t const& IMAGE_INDEX) {
+	//	uint16_t mipWidth = createInfo.imageInfos[IMAGE_INDEX].extent.width;
+	//	uint16_t mipHeight = createInfo.imageInfos[IMAGE_INDEX].extent.height;
 
-		VkCommandPool tempCommandPool{};
-		VkCommandBuffer tempCommandBuffer{};
+	//	VkCommandPool tempCommandPool{};
+	//	VkCommandBuffer tempCommandBuffer{};
 
-		Common::createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+	//	Common::createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
 
-		// assume mipLevelsCount includes the original image
-		size_t dstMipLevel = 1;
-		size_t srcMipLevel = 0;
-		for(size_t i = 1; i < createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount; i++) {
-			dstMipLevel = i;
-			srcMipLevel = i - 1;
+	//	// assume mipLevelsCount includes the original image
+	//	size_t dstMipLevel = 1;
+	//	size_t srcMipLevel = 0;
+	//	for(size_t i = 1; i < createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount; i++) {
+	//		dstMipLevel = i;
+	//		srcMipLevel = i - 1;
 
-			// transfer image srcMipLevel to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-			Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
-				VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
-				VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, devices->getGraphicsQfIndex());
+	//		// transfer image srcMipLevel to VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+	//		Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
+	//			VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
+	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
+	//			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, devices->getGraphicsQfIndex());
 
-			VkImageBlit blit{
-				.srcSubresource = VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 0, 1),
-				.srcOffsets = { VkOffset3D(0, 0, 0), VkOffset3D(mipWidth, mipHeight, 1) },
-				.dstSubresource = VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, dstMipLevel, 0, 1),
-				.dstOffsets = { VkOffset3D(0, 0, 0), VkOffset3D((mipWidth > 1) ? mipWidth / 2 : 1, (mipHeight > 1) ? mipHeight / 2 : 1, 1) }
-			};
-			vkCmdBlitImage(tempCommandBuffer, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
-		
-			// transfer image srcMipLevel to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-			Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
-				VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
-				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
+	//		VkImageBlit blit{
+	//			.srcSubresource = VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 0, 1),
+	//			.srcOffsets = { VkOffset3D(0, 0, 0), VkOffset3D(mipWidth, mipHeight, 1) },
+	//			.dstSubresource = VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, dstMipLevel, 0, 1),
+	//			.dstOffsets = { VkOffset3D(0, 0, 0), VkOffset3D((mipWidth > 1) ? mipWidth / 2 : 1, (mipHeight > 1) ? mipHeight / 2 : 1, 1) }
+	//		};
+	//		vkCmdBlitImage(tempCommandBuffer, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images[IMAGE_INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+	//	
+	//		// transfer image srcMipLevel to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	//		Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
+	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
+	//			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
+	//			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 
-			if(mipWidth > 1) {
-				mipWidth /= 2;
-			}
-			if(mipHeight > 1) {
-				mipHeight /= 2;
-			}
-		}
+	//		if(mipWidth > 1) {
+	//			mipWidth /= 2;
+	//		}
+	//		if(mipHeight > 1) {
+	//			mipHeight /= 2;
+	//		}
+	//	}
 
-		// transfer last mip level to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-		Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount - 1, 1, 0, 1), 
-			VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
-			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
+	//	// transfer last mip level to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	//	Common::transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount - 1, 1, 0, 1), 
+	//		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
+	//		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
+	//		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 
-		Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
-	}
+	//	Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+	//}
 
 	void DeviceLocal::createImages() {
 		if(!createInfo.imageInfos.empty()) {
@@ -185,12 +185,6 @@ namespace DeviceMemory {
 		createDescriptorSets();
 
 		POPULATE(*this);
-
-		for(int i = 0; i < createInfo.imageInfos.size(); i++) {
-			if(createInfo.imageInfos[i].mipLevelsCount > 1) {
-				generateImageMipmaps(i);
-			}
-		}
 	}
 
 	DeviceLocal::~DeviceLocal() {
@@ -240,6 +234,12 @@ namespace DeviceMemory {
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, devices->getGraphicsQfIndex());
 
 		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, images[INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
+		
+		Common::transitionImageLayout(tempCommandBuffer, images[INDEX],
+		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
+		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,	
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
 		// end of recorded commands
 
 		Common::endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
