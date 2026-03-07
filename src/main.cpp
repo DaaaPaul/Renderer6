@@ -17,10 +17,10 @@
 
 int main() {
     try {
-		GlobalState::Core::load();
+		GlobalState::load();
 
-		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::Core::getSwapchain().getCreateInfo().createInfo.minImageCount };
-		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::Core::getDevices().getGraphicsQfIndex() };
+		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::getSwapchain().getCreateInfo().createInfo.minImageCount };
+		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::getDevices().getGraphicsQfIndex() };
 
 		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
 		Engine::renderLoop(killhouse);

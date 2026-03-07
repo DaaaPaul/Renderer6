@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include "Vertex.hpp"
 #include "Transforms.hpp"
+#include "Particle.hpp"
 #include "Window.hpp"
 #include "Instance.hpp"
 #include "Devices.hpp"
@@ -18,16 +19,15 @@
 #include "Engine.h"
 
 namespace GlobalState {
-	namespace Core {
-		void load();
-		std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
-		[[nodiscard]] ktxTexture2 const* getKtxTexture2();
-		[[nodiscard]] Backend::Window& getWindow();
-		[[nodiscard]] Backend::Instance& getInstance();
-		[[nodiscard]] Backend::Devices& getDevices();
-		[[nodiscard]] Backend::Swapchain& getSwapchain();
-		[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
-		[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
-		[[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
-	};
+	void load();
+	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
+	[[nodiscard]] ktxTexture2 const* getKtxTexture2();
+	[[nodiscard]] std::vector<Particle> getParticlesData();
+	[[nodiscard]] Backend::Window& getWindow();
+	[[nodiscard]] Backend::Instance& getInstance();
+	[[nodiscard]] Backend::Devices& getDevices();
+	[[nodiscard]] Backend::Swapchain& getSwapchain();
+	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
+	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+	[[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
 }

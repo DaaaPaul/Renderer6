@@ -342,8 +342,8 @@ namespace DeviceMemory {
 		const int DEPTH_INDEX = searchForDepthImageIndex();
 
 		if(DEPTH_INDEX != -1) {
-			createInfo.imageInfos[DEPTH_INDEX].extent.width = GlobalState::Core::getSwapchain().getCurrentExtent().width;
-			createInfo.imageInfos[DEPTH_INDEX].extent.height = GlobalState::Core::getSwapchain().getCurrentExtent().height;
+			createInfo.imageInfos[DEPTH_INDEX].extent.width = GlobalState::getSwapchain().getCurrentExtent().width;
+			createInfo.imageInfos[DEPTH_INDEX].extent.height = GlobalState::getSwapchain().getCurrentExtent().height;
 			recreateMemory();
 			recreateImageViews();
 			POPULATE(*this);

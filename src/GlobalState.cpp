@@ -1,11 +1,16 @@
 #include <cassert>
+#include <ctime>
+#include <cmath>
+#include <random>
 #include <array>
 #include "Common.h"
 #include "GlobalState.h"
 
 namespace GlobalState {
-	void Core::load() {
+	void load() {
 		(void) getKtxTexture2();
+		(void) getGltfModel();
+		(void) getParticlesData();
 		(void) getWindow();
 		(void) getInstance();
 		(void) getDevices();
@@ -15,13 +20,13 @@ namespace GlobalState {
 		(void) getGraphicsPipeline();
 	}
 
-	ktxTexture2 const* Core::getKtxTexture2() {
+	ktxTexture2 const* getKtxTexture2() {
 		static ktxTexture2 const*const gpKTX_TEXTURE2 = DeviceMemory::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 		
 		return gpKTX_TEXTURE2;
 	}
 
-	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& Core::getGltfModel() {
+	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel() {
 		static std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>> uniqueVerticesAndVertexIndices{};
 
 		if(uniqueVerticesAndVertexIndices.first.empty() && uniqueVerticesAndVertexIndices.second.empty()) {
@@ -31,7 +36,7 @@ namespace GlobalState {
 		return uniqueVerticesAndVertexIndices;
 	}
 
-	Backend::Window& Core::getWindow() {
+	Backend::Window& getWindow() {
 		static Backend::Window gWindowWrapper({
 			.width = 800,
 			.height = 600,
@@ -41,7 +46,39 @@ namespace GlobalState {
 		return gWindowWrapper;
 	}
 
-	Backend::Instance& Core::getInstance() {
+	[[nodiscard]] std::vector<Particle> getParticlesData() {
+		static auto gRandom = []() -> float {
+			static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
+			static std::uniform_real_distribution gNormal(0.0f, 1.0f);
+
+			return gNormal(gEngine);
+		};
+
+		static std::vector<Particle> particles(
+			[]() -> std::vector<Particle> {
+				std::vector<Particle> particles(8192, {});
+
+				float r{}, theta{}, x{}, y{};
+				for(Particle& p : particles) {
+					r = sqrtf(gRandom());
+					theta = 2.0f * 3.14159265358979323846f * gRandom();
+					x = cosf(theta) * getWindow().getCreateInfo().height / getWindow().getCreateInfo().width;
+					y = sinf(theta);
+
+					p.position = glm::vec4(x, y, 1.0f, 1.0f);
+					p.velocity = normalize(p.position) * 0.00025f;
+					p.color = glm::vec4(x, y, r, 1.0f);
+				}
+
+				return particles;
+			}()
+		);
+
+
+		return particles;
+	}
+
+	Backend::Instance& getInstance() {
 		static Backend::Instance gBackend(&getWindow(), 
 			[]() -> Backend::Instance::CreateInfo {
 				std::vector<const char*> enabledLayers{ "VK_LAYER_KHRONOS_validation" };
@@ -85,7 +122,7 @@ namespace GlobalState {
 		return gBackend;
 	}
 
-	Backend::Devices& Core::getDevices() {
+	Backend::Devices& getDevices() {
 		static Backend::Devices gDevices(
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
@@ -270,7 +307,7 @@ namespace GlobalState {
 		return gDevices;
 	}
 
-	Backend::Swapchain& Core::getSwapchain() {
+	Backend::Swapchain& getSwapchain() {
 		static Backend::Swapchain gSwapchainWrapper(
 			&getDevices(),
 			[]() -> Backend::Swapchain::CreateInfo {
@@ -323,15 +360,17 @@ namespace GlobalState {
 		return gSwapchainWrapper;
 	}
 
-	DeviceMemory::HostVisible& Core::getHostVisibleMemory() {
+	DeviceMemory::HostVisible& getHostVisibleMemory() {
 		const static uint32_t VERTEX_BUFFER_SIZE = getGltfModel().first.size() * sizeof(Vertex::Vertex);
 		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
+		const static uint32_t PARTICLE_BUFFER_SIZE = getParticlesData().size() * sizeof(Particle);
 
-		static auto gPopulate = [](DeviceMemory::HostVisible& pHostVisibleMemory) -> void {
-			pHostVisibleMemory.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
-			pHostVisibleMemory.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
-			pHostVisibleMemory.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
-			pHostVisibleMemory.updateDescriptorSetBuffer(0, 0, {2});
+		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
+			self.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
+			self.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
+			self.writeToBuffer(2, getParticlesData().data(), PARTICLE_BUFFER_SIZE);
+			self.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+			self.updateDescriptorSetBuffer(0, 0, {4});
 		};
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
@@ -340,8 +379,9 @@ namespace GlobalState {
 				{
 					DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				},
 				{
 					DeviceMemory::DescriptorSetInfo({Vertex::Transforms::getTransformationMatricesDescriptorSetLayoutBinding(0)})
@@ -353,13 +393,15 @@ namespace GlobalState {
 		return gHostVisibleMemory;
 	}
 
-	DeviceMemory::DeviceLocal& Core::getDeviceLocalMemory() {
+	DeviceMemory::DeviceLocal& getDeviceLocalMemory() {
 		const static uint32_t VERTEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[0].size;
 		const static uint32_t INDEX_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[1].size;
+		const static uint32_t PARTICLE_BUFFER_SIZE = getHostVisibleMemory().getCreateInfo().bufferInfos[2].size;
 
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, VERTEX_BUFFER_SIZE)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, INDEX_BUFFER_SIZE)});
+			self.copyBufferToBuffer(2, getHostVisibleMemory().getBuffers()[2], {VkBufferCopy(0, 0, PARTICLE_BUFFER_SIZE)});
 			// assumes buffer is tightly packed row by row
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
@@ -379,7 +421,8 @@ namespace GlobalState {
 				return DeviceMemory::DeviceLocal::CreateInfo(
 					{ 
 						DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex())
+						DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+						DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
 						// texture image
@@ -442,7 +485,7 @@ namespace GlobalState {
 		return gDeviceLocalMemory;
 	}
 
-	Engine::GraphicsPipeline& Core::getGraphicsPipeline() {
+	Engine::GraphicsPipeline& getGraphicsPipeline() {
 		static Engine::GraphicsPipeline gGraphicsPipeline(
 			&getDevices(),
 			[]() -> Engine::GraphicsPipeline::CreateInfo {
@@ -488,14 +531,16 @@ namespace GlobalState {
 				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
 				pipelineCreateInfo.pStages = stages.data();
 
-				std::vector<VkVertexInputBindingDescription> vertexBindings{ Vertex::Vertex::getInputBindingDescription() };
-				std::vector<VkVertexInputAttributeDescription> vertexAttributes{ Vertex::Vertex::getInputAttributeDescriptions() };
+				std::vector<VkVertexInputBindingDescription> inputBindings{ Vertex::Vertex::getInputBindingDescription(), Particle::getInputBindingDescription() };
+				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributeDescriptions() };
+				std::vector<VkVertexInputAttributeDescription> particleAttributes{ Particle::getInputAttributeDescriptions() };
+				attributes.insert(attributes.end(), particleAttributes.begin(), particleAttributes.end());
 				VkPipelineVertexInputStateCreateInfo vertexInput{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-					.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexBindings.size()),
-					.pVertexBindingDescriptions = vertexBindings.data(),
-					.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributes.size()),
-					.pVertexAttributeDescriptions = vertexAttributes.data(),
+					.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindings.size()),
+					.pVertexBindingDescriptions = inputBindings.data(),
+					.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size()),
+					.pVertexAttributeDescriptions = attributes.data(),
 				};
 
 				VkPipelineInputAssemblyStateCreateInfo inputAssembly{
@@ -586,7 +631,7 @@ namespace GlobalState {
 					pipelineCreateInfo,
 					rendering, std::move(colorAttachmentFormats),
 					std::move(stages),
-					vertexInput, std::move(vertexBindings), std::move(vertexAttributes),
+					vertexInput, std::move(inputBindings), std::move(attributes),
 					inputAssembly, 
 					tessellation,
 					viewport,
