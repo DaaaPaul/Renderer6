@@ -174,9 +174,8 @@ namespace Engine {
 		};
 		vkCmdSetViewport(pCommandBuffer, 0, 1, &VIEWPORT);
 		vkCmdSetScissor(pCommandBuffer, 0, 1, &SCISSOR);
-		const std::vector<VkDeviceSize> ZEROES{ 0, 0 };
-		std::vector<VkBuffer> vertexBuffers{ GlobalState::getDeviceLocalMemory().getBuffers()[0], GlobalState::getDeviceLocalMemory().getBuffers()[2] };
-		vkCmdBindVertexBuffers(pCommandBuffer, 0, 2, vertexBuffers.data(), ZEROES.data());
+		const std::vector<VkDeviceSize> ZERO{ 0 };
+		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &GlobalState::getDeviceLocalMemory().getBuffers()[0], ZERO.data());
 		vkCmdBindIndexBuffer(pCommandBuffer, GlobalState::getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pGraphicsPipeline.layout, 0, 1, GlobalState::getHostVisibleMemory().getDescriptorSets().data(), 0, nullptr);
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pGraphicsPipeline.layout, 1, 1, GlobalState::getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);

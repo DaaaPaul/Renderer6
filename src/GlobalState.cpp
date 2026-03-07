@@ -531,14 +531,12 @@ namespace GlobalState {
 				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
 				pipelineCreateInfo.pStages = stages.data();
 
-				std::vector<VkVertexInputBindingDescription> inputBindings{ Vertex::Vertex::getInputBindingDescription(), Particle::getInputBindingDescription() };
+				std::vector<VkVertexInputBindingDescription> binding{ Vertex::Vertex::getInputBindingDescription() };
 				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributeDescriptions() };
-				std::vector<VkVertexInputAttributeDescription> particleAttributes{ Particle::getInputAttributeDescriptions() };
-				attributes.insert(attributes.end(), particleAttributes.begin(), particleAttributes.end());
 				VkPipelineVertexInputStateCreateInfo vertexInput{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-					.vertexBindingDescriptionCount = static_cast<uint32_t>(inputBindings.size()),
-					.pVertexBindingDescriptions = inputBindings.data(),
+					.vertexBindingDescriptionCount = static_cast<uint32_t>(binding.size()),
+					.pVertexBindingDescriptions = binding.data(),
 					.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size()),
 					.pVertexAttributeDescriptions = attributes.data(),
 				};
@@ -631,7 +629,7 @@ namespace GlobalState {
 					pipelineCreateInfo,
 					rendering, std::move(colorAttachmentFormats),
 					std::move(stages),
-					vertexInput, std::move(inputBindings), std::move(attributes),
+					vertexInput, std::move(binding), std::move(attributes),
 					inputAssembly, 
 					tessellation,
 					viewport,
