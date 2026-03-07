@@ -3,7 +3,7 @@
 #include <functional>
 #include "Devices.hpp"
 #include "Common.h"
-#include "DeviceMemoryCommon.h"
+#include "DeviceMemory.h"
 
 namespace DeviceMemory {
 	class DeviceLocal {
@@ -27,8 +27,8 @@ namespace DeviceMemory {
 		};
 
 		private:
-		Backend::Devices* devices{};
-		VkDeviceMemory deviceLocalMemory{};
+		Backend::Devices* pDevices{};
+		VkDeviceMemory pDeviceLocalMemory{};
 
 		CreateInfo createInfo;
 		const std::function<void(DeviceLocal&)> POPULATE;
@@ -44,7 +44,7 @@ namespace DeviceMemory {
 
 		std::vector<VkSampler> samplers{};
 
-		VkDescriptorPool descriptorPool{};
+		VkDescriptorPool pDescriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
 
@@ -61,7 +61,7 @@ namespace DeviceMemory {
 		void recreateImageViews();
 
 		public:
-		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
+		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
 		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
 		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
 		[[nodiscard]] std::vector<VkImage>& getImages() { return images; }
@@ -77,7 +77,7 @@ namespace DeviceMemory {
 		void recreateDepthResources();
 		[[nodiscard]] int searchForDepthImageIndex() const noexcept;
 
-		explicit DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION);
+		explicit DeviceLocal(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION);
 		~DeviceLocal();
 
 		DELETE_COPY_CONSTRUCTORS(DeviceLocal)

@@ -3,19 +3,19 @@
 #include "Vertex.hpp"
 
 namespace Engine {
-	GraphicsPipeline::GraphicsPipeline(Backend::Devices* givenDevices, CreateInfo&& salvageCreateInfo) :
-		devices{ givenDevices },
-		graphicsPipeline{},
+	GraphicsPipeline::GraphicsPipeline(Backend::Devices* pGivenDevices, CreateInfo&& salvageCreateInfo) :
+		pDevices{ pGivenDevices },
+		pGraphicsPipeline{},
 		createInfo(std::move(salvageCreateInfo)) {
 		CHECK_VK_SUCCESS(
-		vkCreateGraphicsPipelines(devices->getLogicalDevice(), nullptr, 1, &createInfo.graphicsPipeline, nullptr, &graphicsPipeline),
+		vkCreateGraphicsPipelines(pDevices->getLogicalDevice(), nullptr, 1, &createInfo.pGraphicsPipeline, nullptr, &pGraphicsPipeline),
 		"Failed to create graphics pipeline"
 		)
 	}
 
 	GraphicsPipeline::~GraphicsPipeline() {
-		vkDestroyShaderModule(devices->getLogicalDevice(), createInfo.stages[0].module, nullptr);
-		vkDestroyPipelineLayout(devices->getLogicalDevice(), createInfo.graphicsPipeline.layout, nullptr);
-		vkDestroyPipeline(devices->getLogicalDevice(), graphicsPipeline, nullptr);
+		vkDestroyShaderModule(pDevices->getLogicalDevice(), createInfo.stages[0].module, nullptr);
+		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), createInfo.pGraphicsPipeline.layout, nullptr);
+		vkDestroyPipeline(pDevices->getLogicalDevice(), pGraphicsPipeline, nullptr);
 	}
 }

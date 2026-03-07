@@ -3,7 +3,7 @@
 #include <functional>
 #include "Devices.hpp"
 #include "Common.h"
-#include "DeviceMemoryCommon.h"
+#include "DeviceMemory.h"
 
 namespace DeviceMemory {
 	class HostVisible {
@@ -21,8 +21,8 @@ namespace DeviceMemory {
 		};
 
 		private:
-		Backend::Devices* devices{};
-		VkDeviceMemory hostVisibleMemory{};
+		Backend::Devices* pDevices{};
+		VkDeviceMemory pHostVisibleMemory{};
 
 		const CreateInfo CREATE_INFO;
 
@@ -30,12 +30,12 @@ namespace DeviceMemory {
 		std::vector<VkDeviceSize> bufferOffsets{};
 		std::vector<VkDeviceSize> bufferSizes{};
 
-		VkDescriptorPool descriptorPool{};
+		VkDescriptorPool pDescriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
 
 		public:
-		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
+		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
 		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
@@ -45,7 +45,7 @@ namespace DeviceMemory {
 		void createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX);
 		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
 
-		explicit HostVisible(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION);
+		explicit HostVisible(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION);
 		~HostVisible();
 
 		DELETE_COPY_CONSTRUCTORS(HostVisible)

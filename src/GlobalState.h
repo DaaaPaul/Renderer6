@@ -11,7 +11,7 @@
 #include "Instance.hpp"
 #include "Devices.hpp"
 #include "Swapchain.hpp"
-#include "DeviceMemoryCommon.h"
+#include "DeviceMemory.h"
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
 #include "GraphicsPipeline.hpp"

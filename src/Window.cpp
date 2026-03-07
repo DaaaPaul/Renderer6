@@ -3,29 +3,27 @@
 #include "Common.h"
 
 namespace Backend {
-	// private:
 	void Window::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
-		Window* self = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
-		self->framebufferResized = true;
+		Window* pSelf = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
+		pSelf->framebufferResized = true;
 	}
 
-	// public:
 	Window::Window(CreateInfo const& CREATE_INFO) :
-		glfwWindow{},
+		pGlfwWindow{},
 		CREATE_INFO{ CREATE_INFO },
 		framebufferResized{ false } {
 		glfwInit();
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		glfwWindow = glfwCreateWindow(CREATE_INFO.width, CREATE_INFO.height, CREATE_INFO.NAME, nullptr, nullptr);
-		glfwSetWindowUserPointer(glfwWindow, this);
-		glfwSetFramebufferSizeCallback(glfwWindow, framebufferResizeCallback);
+		pGlfwWindow = glfwCreateWindow(CREATE_INFO.width, CREATE_INFO.height, CREATE_INFO.NAME, nullptr, nullptr);
+		glfwSetWindowUserPointer(pGlfwWindow, this);
+		glfwSetFramebufferSizeCallback(pGlfwWindow, framebufferResizeCallback);
 
-		CHECK_NULLPTR(glfwWindow, "glfwCreateWindow failed");
+		CHECK_NULLPTR(pGlfwWindow, "glfwCreateWindow failed");
 	}
 
 	Window::~Window() {
-		glfwDestroyWindow(glfwWindow);
+		glfwDestroyWindow(pGlfwWindow);
 		glfwTerminate();
 	}
 

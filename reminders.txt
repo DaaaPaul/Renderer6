@@ -5,7 +5,7 @@
 - fellow, add (m) prefix for class members !DONE!
 - just be safer and add those default construct things to classes !DONE!
 
-- bro add that cool pointer feature thing to print the features !KIND OF DONE!
+- bro add that cool pointer feature thing to print the features !DONE!
 
 
 - remove vulkan name put in namespace !DONE!
@@ -18,11 +18,11 @@
 - finish refactor !DONE!
 - make window resizable !DONE!
 - Remove DeviceMemory::Common ns, just put into DeviceMemory !DONE!
+- put prefix p for pointers !DONE!
+- vkGetPhysicalDeviceSurfaceSupportKHR??? !IGNORED!
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-- vkGetPhysicalDeviceSurfaceSupportKHR???
 - make different uniform buffer for each frame
-- put prefix p for pointers
 - Load mipmaps from texture itself
 - consider multisampling

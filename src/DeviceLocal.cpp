@@ -12,7 +12,7 @@ namespace DeviceMemory {
 			bufferOffsets.resize(BUFFER_COUNT, 0);
 
 			for (int i = 0; i < BUFFER_COUNT; i++) {
-				buffers[i] = createBuffer(devices->getLogicalDevice(), createInfo.bufferInfos[i]);
+				buffers[i] = createBuffer(pDevices->getLogicalDevice(), createInfo.bufferInfos[i]);
 			}
 		}
 	}
@@ -24,7 +24,7 @@ namespace DeviceMemory {
 	//	VkCommandPool tempCommandPool{};
 	//	VkCommandBuffer tempCommandBuffer{};
 
-	//	createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+	//	createBeginOneTimeCommandBuffer(pDevices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, pDevices->getGraphicsQfIndex());
 
 	//	// assume mipLevelsCount includes the original image
 	//	size_t dstMipLevel = 1;
@@ -37,7 +37,7 @@ namespace DeviceMemory {
 	//		transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
 	//			VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
-	//			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, devices->getGraphicsQfIndex());
+	//			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, pDevices->getGraphicsQfIndex());
 
 	//		VkImageBlit blit{
 	//			.srcSubresource = VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 0, 1),
@@ -51,7 +51,7 @@ namespace DeviceMemory {
 	//		transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, srcMipLevel, 1, 0, 1), 
 	//			VK_PIPELINE_STAGE_2_BLIT_BIT, VK_ACCESS_2_TRANSFER_READ_BIT, 
 	//			VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
-	//			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
+	//			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, pDevices->getGraphicsQfIndex());
 
 	//		if(mipWidth > 1) {
 	//			mipWidth /= 2;
@@ -65,9 +65,9 @@ namespace DeviceMemory {
 	//	transitionImageLayout(tempCommandBuffer, images[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, createInfo.imageInfos[IMAGE_INDEX].mipLevelsCount - 1, 1, 0, 1), 
 	//		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 	//		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT, 
-	//		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
+	//		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, pDevices->getGraphicsQfIndex());
 
-	//	endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+	//	endSubmitDestroyOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	//}
 
 	void DeviceLocal::createImages() {
@@ -79,7 +79,7 @@ namespace DeviceMemory {
 			imageSizes.resize(IMAGE_COUNT, 0);
 
 			for(int i = 0; i < IMAGE_COUNT; i++) {
-				images[i] = createImage(devices->getLogicalDevice(), createInfo.imageInfos[i]);
+				images[i] = createImage(pDevices->getLogicalDevice(), createInfo.imageInfos[i]);
 			}
 		}
 	}
@@ -88,14 +88,14 @@ namespace DeviceMemory {
 		const uint16_t BUFFER_COUNT = createInfo.bufferInfos.size();
 		std::vector<VkMemoryRequirements> bufferRequirements(BUFFER_COUNT, {});
 		for (int i = 0; i < BUFFER_COUNT; i++) {
-			vkGetBufferMemoryRequirements(devices->getLogicalDevice(), buffers[i], &bufferRequirements[i]);
+			vkGetBufferMemoryRequirements(pDevices->getLogicalDevice(), buffers[i], &bufferRequirements[i]);
 			bufferSizes[i] = bufferRequirements[i].size;
 		}
 
 		const uint16_t IMAGE_COUNT = createInfo.imageInfos.size();
 		std::vector<VkMemoryRequirements> imageRequirements(IMAGE_COUNT, {});
 		for (int i = 0; i < IMAGE_COUNT; i++) {
-			vkGetImageMemoryRequirements(devices->getLogicalDevice(), images[i], &imageRequirements[i]);
+			vkGetImageMemoryRequirements(pDevices->getLogicalDevice(), images[i], &imageRequirements[i]);
 			imageSizes[i] = imageRequirements[i].size;
 		}
 
@@ -104,23 +104,23 @@ namespace DeviceMemory {
 
 		// create the memory
 		const std::pair<VkDeviceSize, std::vector<VkDeviceSize>> SIZE_AND_OFFSETS(getMemoryAllocationSizeAndOffsets(concatenation));
-		const uint32_t MEMORY_TYPE = getMemoryTypeIndex(devices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		const uint32_t MEMORY_TYPE = getMemoryTypeIndex(pDevices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VkMemoryAllocateInfo allocateInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.allocationSize = SIZE_AND_OFFSETS.first,
 			.memoryTypeIndex = MEMORY_TYPE
 		};
-		vkAllocateMemory(devices->getLogicalDevice(), &allocateInfo, nullptr, &deviceLocalMemory);
+		vkAllocateMemory(pDevices->getLogicalDevice(), &allocateInfo, nullptr, &pDeviceLocalMemory);
 
 		// bind buffers and images
 		bufferOffsets.assign(SIZE_AND_OFFSETS.second.begin(), SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size());
 		imageOffsets.assign(SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size(), SIZE_AND_OFFSETS.second.end());
 
 		for(int i = 0; i < BUFFER_COUNT; i++) {
-			vkBindBufferMemory(devices->getLogicalDevice(), buffers[i], deviceLocalMemory, bufferOffsets[i]);
+			vkBindBufferMemory(pDevices->getLogicalDevice(), buffers[i], pDeviceLocalMemory, bufferOffsets[i]);
 		}
 		for(int i = 0; i < IMAGE_COUNT; i++) {
-			vkBindImageMemory(devices->getLogicalDevice(), images[i], deviceLocalMemory, imageOffsets[i]);
+			vkBindImageMemory(pDevices->getLogicalDevice(), images[i], pDeviceLocalMemory, imageOffsets[i]);
 		}
 	}
 
@@ -130,7 +130,7 @@ namespace DeviceMemory {
 		imageViews.resize(IMAGE_COUNT, VK_NULL_HANDLE);
 		for(int i = 0; i < IMAGE_COUNT; i++) {
 			if(createInfo.imageInfos[i].viewInfo != ImageViewInfo{}) {
-				imageViews[i] = createImageView(devices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
+				imageViews[i] = createImageView(pDevices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
 			}
 		}
 	}
@@ -142,14 +142,14 @@ namespace DeviceMemory {
 			samplers.resize(SAMPLER_COUNT, VK_NULL_HANDLE);
 
 			for(int i = 0; i < SAMPLER_COUNT; i++) {
-				samplers[i] = createSampler(devices->getLogicalDevice(), createInfo.samplerInfos[i]);
+				samplers[i] = createSampler(pDevices->getLogicalDevice(), createInfo.samplerInfos[i]);
 			}
 		}
 	}
 
 	void DeviceLocal::createDescriptorSets() {
 		if(!createInfo.descriptorSetInfos.empty()) {
-			descriptorPool = createDescriptorPool(devices->getLogicalDevice(), createInfo.descriptorSetInfos);
+			pDescriptorPool = createDescriptorPool(pDevices->getLogicalDevice(), createInfo.descriptorSetInfos);
 
 			descriptorSetLayouts.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
 			descriptorSets.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
@@ -160,9 +160,9 @@ namespace DeviceMemory {
 		}
 	}
 
-	DeviceLocal::DeviceLocal(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION) : 
-		devices{ givenDevices },
-		deviceLocalMemory{},
+	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION) : 
+		pDevices{ pGivenDevices },
+		pDeviceLocalMemory{},
 		createInfo(std::move(givenCreateInfo)),
 		POPULATE(POPULATE_FUNCTION),
 		buffers{},
@@ -173,7 +173,7 @@ namespace DeviceMemory {
 		imageViews{},
 		imageOffsets{},
 		imageSizes{},
-		descriptorPool{}, 
+		pDescriptorPool{}, 
 		descriptorSetLayouts{},
 		descriptorSets{} {
 
@@ -188,26 +188,26 @@ namespace DeviceMemory {
 	}
 
 	DeviceLocal::~DeviceLocal() {
-		vkFreeMemory(devices->getLogicalDevice(), deviceLocalMemory, nullptr);
+		vkFreeMemory(pDevices->getLogicalDevice(), pDeviceLocalMemory, nullptr);
 		for(VkBuffer& buffer : buffers) {
-			vkDestroyBuffer(devices->getLogicalDevice(), buffer, nullptr);
+			vkDestroyBuffer(pDevices->getLogicalDevice(), buffer, nullptr);
 		}
 		for(VkImage& image : images) {
-			vkDestroyImage(devices->getLogicalDevice(), image, nullptr);
+			vkDestroyImage(pDevices->getLogicalDevice(), image, nullptr);
 		}
 		for(VkImageView& imageView : imageViews) {
-			vkDestroyImageView(devices->getLogicalDevice(), imageView, nullptr);
+			vkDestroyImageView(pDevices->getLogicalDevice(), imageView, nullptr);
 		}
 		for(VkSampler& sampler : samplers) {
-			vkDestroySampler(devices->getLogicalDevice(), sampler, nullptr);
+			vkDestroySampler(pDevices->getLogicalDevice(), sampler, nullptr);
 		}
 
 		for(size_t i = 0; i < descriptorSets.size(); i++) {
-			vkFreeDescriptorSets(devices->getLogicalDevice(), descriptorPool, 1, &descriptorSets[i]);
-			vkDestroyDescriptorSetLayout(devices->getLogicalDevice(), descriptorSetLayouts[i], nullptr);
+			vkFreeDescriptorSets(pDevices->getLogicalDevice(), pDescriptorPool, 1, &descriptorSets[i]);
+			vkDestroyDescriptorSetLayout(pDevices->getLogicalDevice(), descriptorSetLayouts[i], nullptr);
 		}
-		if(descriptorPool) {
-			vkDestroyDescriptorPool(devices->getLogicalDevice(), descriptorPool, nullptr);
+		if(pDescriptorPool) {
+			vkDestroyDescriptorPool(pDevices->getLogicalDevice(), pDescriptorPool, nullptr);
 		}
 	}
 
@@ -215,23 +215,23 @@ namespace DeviceMemory {
 		VkCommandPool tempCommandPool{};
 		VkCommandBuffer tempCommandBuffer{};
 
-		createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+		createBeginOneTimeCommandBuffer(pDevices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, pDevices->getGraphicsQfIndex());
 		vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, buffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-		endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+		endSubmitDestroyOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS) {
 		VkCommandPool tempCommandPool{};
 		VkCommandBuffer tempCommandBuffer{};
 
-		createBeginOneTimeCommandBuffer(devices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, devices->getGraphicsQfIndex());
+		createBeginOneTimeCommandBuffer(pDevices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, pDevices->getGraphicsQfIndex());
 		
 		// recorded commands
 		transitionImageLayout(tempCommandBuffer, images[INDEX],
 		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
 		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, devices->getGraphicsQfIndex());
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pDevices->getGraphicsQfIndex());
 
 		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, images[INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
 		
@@ -239,10 +239,10 @@ namespace DeviceMemory {
 		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,	
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, devices->getGraphicsQfIndex());
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, pDevices->getGraphicsQfIndex());
 		// end of recorded commands
 
-		endSubmitDestroyOneTimeCommandBuffer(devices->getLogicalDevice(), devices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
+		endSubmitDestroyOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
 	void DeviceLocal::createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX) {
@@ -254,19 +254,19 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateDescriptorSetLayout(devices->getLogicalDevice(), &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &descriptorSetLayouts[INDEX]),
+			vkCreateDescriptorSetLayout(pDevices->getLogicalDevice(), &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &descriptorSetLayouts[INDEX]),
 			"Failed to create descriptor set layout"
 		)
 
 		const VkDescriptorSetAllocateInfo DESCRIPTOR_SET_ALLOCATE_INFO{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-			.descriptorPool = descriptorPool,
+			.descriptorPool = pDescriptorPool,
 			.descriptorSetCount = 1,
 			.pSetLayouts = &descriptorSetLayouts[INDEX],
 		};
 
 		CHECK_VK_SUCCESS(
-			vkAllocateDescriptorSets(devices->getLogicalDevice(), &DESCRIPTOR_SET_ALLOCATE_INFO, &descriptorSets[INDEX]),
+			vkAllocateDescriptorSets(pDevices->getLogicalDevice(), &DESCRIPTOR_SET_ALLOCATE_INFO, &descriptorSets[INDEX]),
 			"Failed to create descriptor set"
 		)
 	}
@@ -291,7 +291,7 @@ namespace DeviceMemory {
 			.pBufferInfo = toWriteBuffers.data()
 		};
 
-		vkUpdateDescriptorSets(devices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
+		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 
 	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
@@ -314,16 +314,16 @@ namespace DeviceMemory {
 			.pImageInfo = toWriteImageSamplers.data()
 		};
 
-		vkUpdateDescriptorSets(devices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
+		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 
 	void DeviceLocal::recreateMemory() {
-		vkFreeMemory(devices->getLogicalDevice(), deviceLocalMemory, nullptr);
+		vkFreeMemory(pDevices->getLogicalDevice(), pDeviceLocalMemory, nullptr);
 		for(VkBuffer& buffer : buffers) {
-			vkDestroyBuffer(devices->getLogicalDevice(), buffer, nullptr);
+			vkDestroyBuffer(pDevices->getLogicalDevice(), buffer, nullptr);
 		}
 		for(VkImage& image : images) {
-			vkDestroyImage(devices->getLogicalDevice(), image, nullptr);
+			vkDestroyImage(pDevices->getLogicalDevice(), image, nullptr);
 		}
 
 		createBuffers();
@@ -333,7 +333,7 @@ namespace DeviceMemory {
 
 	void DeviceLocal::recreateImageViews() {
 		for(VkImageView& imageView : imageViews) {
-			vkDestroyImageView(devices->getLogicalDevice(), imageView, nullptr);
+			vkDestroyImageView(pDevices->getLogicalDevice(), imageView, nullptr);
 		}
 		createImageViews();
 	}

@@ -24,8 +24,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemoryCommon.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemoryCommon.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemory.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemory.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp

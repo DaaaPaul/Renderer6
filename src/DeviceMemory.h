@@ -74,9 +74,9 @@ namespace DeviceMemory {
 	[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
 	[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
 
-	void createBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
-	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf);
-	void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
+	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
+	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);
+	void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
 	VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
 	VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 }

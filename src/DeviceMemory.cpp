@@ -1,6 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include "DeviceMemoryCommon.h"
+#include "DeviceMemory.h"
 #include "Common.h"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -38,14 +38,14 @@ namespace DeviceMemory {
 
 				// Get texture coordinates if available
 				const bool HAS_TEXCOORDS = PRIMITIVE.attributes.find("TEXCOORD_0") != PRIMITIVE.attributes.end();
-				tinygltf::Accessor const* TEXCOORD_ACCESSOR = nullptr;
-				tinygltf::BufferView const* TEXCOORD_BUFFER_VIEW = nullptr;
-				tinygltf::Buffer const* TEXCOORD_BUFFER = nullptr;
+				tinygltf::Accessor const* pTEXCOORD_ACCESSOR = nullptr;
+				tinygltf::BufferView const* pTEXCOORD_BUFFER_VIEW = nullptr;
+				tinygltf::Buffer const* pTEXCOORD_BUFFER = nullptr;
 
 				if (HAS_TEXCOORDS) {
-					TEXCOORD_ACCESSOR = &model.accessors[PRIMITIVE.attributes.at("TEXCOORD_0")];
-					TEXCOORD_BUFFER_VIEW = &model.bufferViews[TEXCOORD_ACCESSOR->bufferView];
-					TEXCOORD_BUFFER = &model.buffers[TEXCOORD_BUFFER_VIEW->buffer];
+					pTEXCOORD_ACCESSOR = &model.accessors[PRIMITIVE.attributes.at("TEXCOORD_0")];
+					pTEXCOORD_BUFFER_VIEW = &model.bufferViews[pTEXCOORD_ACCESSOR->bufferView];
+					pTEXCOORD_BUFFER = &model.buffers[pTEXCOORD_BUFFER_VIEW->buffer];
 				}
 
 				// Process vertices
@@ -53,13 +53,13 @@ namespace DeviceMemory {
 					Vertex::Vertex vertex{};
 
 					// Get position
-					float const* POSITION = reinterpret_cast<float const*>(&POSITION_BUFFER.data[POSITION_BUFFER_VIEW.byteOffset + POSITION_ACCESSOR.byteOffset + i * 12]);
-					vertex.position = {POSITION[0], POSITION[1], POSITION[2], 1.0f};
+					float const* pPOSITION = reinterpret_cast<float const*>(&POSITION_BUFFER.data[POSITION_BUFFER_VIEW.byteOffset + POSITION_ACCESSOR.byteOffset + i * 12]);
+					vertex.position = {pPOSITION[0], pPOSITION[1], pPOSITION[2], 1.0f};
 
 					// Get texture coordinates if available
 					if (HAS_TEXCOORDS) {
-						float const* TEXCOORD = reinterpret_cast<float const*>(&TEXCOORD_BUFFER->data[TEXCOORD_BUFFER_VIEW->byteOffset + TEXCOORD_ACCESSOR->byteOffset + i * 8]);
-						vertex.texCoord = {TEXCOORD[0], TEXCOORD[1]};
+						float const* pTEXCOORD = reinterpret_cast<float const*>(&pTEXCOORD_BUFFER->data[pTEXCOORD_BUFFER_VIEW->byteOffset + pTEXCOORD_ACCESSOR->byteOffset + i * 8]);
+						vertex.texCoord = {pTEXCOORD[0], pTEXCOORD[1]};
 					} else {
 						vertex.texCoord = {0.0f, 0.0f};
 					}
@@ -75,25 +75,25 @@ namespace DeviceMemory {
 				}
 
 				// Process indices
-				unsigned char const* INDEX_DATA = &INDEX_BUFFER.data[INDEX_BUFFER_VIEW.byteOffset + INDEX_ACCESSOR.byteOffset];
+				unsigned char const* pINDEX_DATA = &INDEX_BUFFER.data[INDEX_BUFFER_VIEW.byteOffset + INDEX_ACCESSOR.byteOffset];
 
 				// Handle different index component types
 				if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-					uint16_t const* UI16 = reinterpret_cast<const uint16_t*>(INDEX_DATA);
+					uint16_t const* pUI16 = reinterpret_cast<const uint16_t*>(pINDEX_DATA);
 					for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
-						Vertex::Vertex vertex = vertices[UI16[i]];
+						Vertex::Vertex vertex = vertices[pUI16[i]];
 						indices.push_back(uniqueVertices[vertex]);
 					}
 				} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-					uint32_t const* UI32 = reinterpret_cast<const uint32_t*>(INDEX_DATA);
+					uint32_t const* pUI32 = reinterpret_cast<const uint32_t*>(pINDEX_DATA);
 					for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
-						Vertex::Vertex vertex = vertices[UI32[i]];
+						Vertex::Vertex vertex = vertices[pUI32[i]];
 						indices.push_back(uniqueVertices[vertex]);
 					}
 				} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-					uint8_t const* UI8 = reinterpret_cast<const uint8_t*>(INDEX_DATA);
+					uint8_t const* pUI8 = reinterpret_cast<const uint8_t*>(pINDEX_DATA);
 					for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
-						Vertex::Vertex vertex = vertices[UI8[i]];
+						Vertex::Vertex vertex = vertices[pUI8[i]];
 						indices.push_back(uniqueVertices[vertex]);
 					}
 				}
@@ -175,12 +175,12 @@ namespace DeviceMemory {
 		return image;
 	}
 
-	[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO) {
+	[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage pImage, ImageViewInfo const& IMAGE_VIEW_INFO) {
 		VkImageView imageView{};
 
 		const VkImageViewCreateInfo IMAGE_VIEW_CREATE{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-			.image = image,
+			.image = pImage,
 			.viewType = IMAGE_VIEW_INFO.type,
 			.format = IMAGE_VIEW_INFO.format,
 			.subresourceRange = IMAGE_VIEW_INFO.subresourceRange,
@@ -289,88 +289,73 @@ namespace DeviceMemory {
 		return pReturnDescriptorPool;
 	}
 
-	void createBeginOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
+	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {
 		// create transient command pool
-		{
-			const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
-				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-				.queueFamilyIndex = GRAPHICS_QF_INDEX
-			};
-			CHECK_VK_SUCCESS(
-				vkCreateCommandPool(rpDevice, &COMMAND_POOL_INFO, nullptr, &rpCmdPool),
-				"Failed to create temporary command pool"
-			)
-		}
+		const VkCommandPoolCreateInfo COMMAND_POOL_INFO{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+			.queueFamilyIndex = GRAPHICS_QF_INDEX
+		};
+		CHECK_VK_SUCCESS(
+			vkCreateCommandPool(pDevice, &COMMAND_POOL_INFO, nullptr, &pCmdPool),
+			"Failed to create temporary command pool"
+		)
 
 		// create command buffer
-		{
-			const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
-				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-				.commandPool = rpCmdPool,
-				.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-				.commandBufferCount = 1,
-			};
-			CHECK_VK_SUCCESS(
-				vkAllocateCommandBuffers(rpDevice, &COMMAND_BUFFER_INFO, &rpCmdBuf),
-				"Failed to create temporary command buffer"
-			)
-		}
+		const VkCommandBufferAllocateInfo COMMAND_BUFFER_INFO{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.commandPool = pCmdPool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1,
+		};
+		CHECK_VK_SUCCESS(
+			vkAllocateCommandBuffers(pDevice, &COMMAND_BUFFER_INFO, &pCmdBuf),
+			"Failed to create temporary command buffer"
+		)
 
 		// begin recording
-		{
-			const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
-			CHECK_VK_SUCCESS(
-				vkBeginCommandBuffer(rpCmdBuf, &ONE_TIME_SUBMIT_BEGIN),
-				"Failed to begin temporary command buffer recording"
-			)
-		}
+		const VkCommandBufferBeginInfo ONE_TIME_SUBMIT_BEGIN(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, nullptr, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, nullptr);
+		CHECK_VK_SUCCESS(
+			vkBeginCommandBuffer(pCmdBuf, &ONE_TIME_SUBMIT_BEGIN),
+			"Failed to begin temporary command buffer recording"
+		)
 	}
 
-	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& rpDevice, VkQueue& rpQueue, VkCommandPool& rpCmdPool, VkCommandBuffer& rpCmdBuf) {
-		// end command buffer
-		{
-			CHECK_VK_SUCCESS(
-				vkEndCommandBuffer(rpCmdBuf),
-				"Failed to end temporary command buffer recording"
-			)
-		}
+	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf) {
+		CHECK_VK_SUCCESS(
+			vkEndCommandBuffer(pCmdBuf),
+			"Failed to end temporary command buffer recording"
+		)
 
-		// create fence to wait on
-		VkFence copyCommandDone{};
-		{
-			const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
-			CHECK_VK_SUCCESS(
-				vkCreateFence(rpDevice, &FENCE_INFO, nullptr, &copyCommandDone),
-				"Failed to create copy command done fence"
-			)
-		}
+		VkFence pCopyCommandDone{};
+		const VkFenceCreateInfo FENCE_INFO(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, 0);
+		CHECK_VK_SUCCESS(
+			vkCreateFence(pDevice, &FENCE_INFO, nullptr, &pCopyCommandDone),
+			"Failed to create copy command done fence"
+		)
 
-		// submit it
-		{
-			const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
-				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-				.commandBufferCount = 1,
-				.pCommandBuffers = &rpCmdBuf,
-			};
-
-			CHECK_VK_SUCCESS(
-				vkQueueSubmit(rpQueue, 1, &ONE_TIME_SUBMIT_INFO, copyCommandDone),
-				"Failed to submit temporary command buffer"
-			)
-		}
+		const VkSubmitInfo ONE_TIME_SUBMIT_INFO{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.commandBufferCount = 1,
+			.pCommandBuffers = &pCmdBuf,
+		};
 
 		CHECK_VK_SUCCESS(
-			vkWaitForFences(rpDevice, 1, &copyCommandDone, VK_TRUE, UINT64_MAX),
+			vkQueueSubmit(pQueue, 1, &ONE_TIME_SUBMIT_INFO, pCopyCommandDone),
+			"Failed to submit temporary command buffer"
+		)
+
+		CHECK_VK_SUCCESS(
+			vkWaitForFences(pDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX),
 			"Failed to wait for copy command done fence"
 		)
 
-		vkDestroyFence(rpDevice, copyCommandDone, nullptr);
-		vkFreeCommandBuffers(rpDevice, rpCmdPool, 1, &rpCmdBuf);
-		vkDestroyCommandPool(rpDevice, rpCmdPool, nullptr);
+		vkDestroyFence(pDevice, pCopyCommandDone, nullptr);
+		vkFreeCommandBuffers(pDevice, pCmdPool, 1, &pCmdBuf);
+		vkDestroyCommandPool(pDevice, pCmdPool, nullptr);
 	}
 
-	void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage const& pIMAGE, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
+	void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE,
 	VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, 
 	VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
 		const VkImageMemoryBarrier2 IMAGE_MEMORY_BARRIER2{
@@ -383,7 +368,7 @@ namespace DeviceMemory {
 			.newLayout = NEW_LAYOUT,
 			.srcQueueFamilyIndex = GRAPHICS_QF_INDEX,
 			.dstQueueFamilyIndex = GRAPHICS_QF_INDEX,
-			.image = pIMAGE,
+			.image = pImage,
 			.subresourceRange = SUBRESOURCE_RANGE,
 		};
 

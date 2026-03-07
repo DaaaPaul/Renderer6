@@ -8,7 +8,7 @@ namespace Backend {
 			[this]() -> VkSurfaceCapabilitiesKHR {
 				VkSurfaceCapabilitiesKHR capabilities{};
 				CHECK_VK_SUCCESS(
-					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(GlobalState::Core::getDevices().getPhysicalDevice(), surface, &capabilities),
+					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(GlobalState::Core::getDevices().getPhysicalDevice(), pSurface, &capabilities),
 					"Failed to get physical device surface capabilities"
 				)
 				return capabilities;
@@ -25,18 +25,18 @@ namespace Backend {
 		return surfaceExtentInPixels;
 	}
 
-	void Swapchain::recreateThyself() {
+	void Swapchain::recreate() {
 		while(getCurrentExtent().width == 0 && getCurrentExtent().height == 0) {
 			glfwWaitEvents(); // do not process anything when window is minimized
 		}
 
-		vkDestroySwapchainKHR(devices->getLogicalDevice(), swapchain, nullptr);
+		vkDestroySwapchainKHR(pDevices->getLogicalDevice(), pSwapchain, nullptr);
 		const VkExtent2D SURFACE_EXTENT(getCurrentExtent());
 		const std::vector<uint32_t> ACCESSOR_GFXQF{ GlobalState::Core::getDevices().getGraphicsQfIndex() };
     
 		const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
 			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-			.surface = surface,
+			.surface = pSurface,
 			.minImageCount = 4,
 			.imageFormat = VK_FORMAT_R8G8B8A8_SRGB,
 			.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
@@ -53,16 +53,16 @@ namespace Backend {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(devices->getLogicalDevice(), &SWAPCHAIN_INFO, nullptr, &swapchain),
+			vkCreateSwapchainKHR(pDevices->getLogicalDevice(), &SWAPCHAIN_INFO, nullptr, &pSwapchain),
 			"Failed to create the swapchain"
 		)
 	}
 
-	void Swapchain::checkHaveFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
+	void Swapchain::checkHaveFormatColorspace(Swapchain const& SWAPCHAIN, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
 		uint32_t supportedVkFormatColorspacesCount{};
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedVkFormatColorspacesCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedVkFormatColorspacesCount, nullptr);
 		std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 
@@ -75,11 +75,11 @@ namespace Backend {
 		CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired format")
 	}
 
-	void Swapchain::checkHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
+	void Swapchain::checkHavePresentModeKHR(Swapchain const& SWAPCHAIN, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
 		uint32_t supportedPresentModeCount{};
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedPresentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedPresentModeCount, nullptr);
 		std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(VULKAN_SWAPCHAIN_WRAPPER.devices->getPhysicalDevice(), VULKAN_SWAPCHAIN_WRAPPER.surface, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
 
 		bool checkSuccess{ false };
 
@@ -92,25 +92,23 @@ namespace Backend {
 		CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired present mode")
 	}
 
-	Swapchain::Swapchain(Devices* givenDevices, CreateInfo&& salvageCreateInfo) :
-		devices{ givenDevices },
-		swapchain{},
-		surface{ salvageCreateInfo.surface },
+	Swapchain::Swapchain(Devices* pGivenDevices, CreateInfo&& salvageCreateInfo) :
+		pDevices{ pGivenDevices },
+		pSwapchain{},
+		pSurface{ salvageCreateInfo.pSurface },
 		CREATE_INFO{ std::move(salvageCreateInfo) } {
 
-		// check that this gpu-surface pair supports the given format and present mode
 		checkHaveFormatColorspace(*this, VkSurfaceFormatKHR(CREATE_INFO.createInfo.imageFormat, CREATE_INFO.createInfo.imageColorSpace));
 		checkHavePresentModeKHR(*this, CREATE_INFO.createInfo.presentMode);
 
-		// construct the swapchainKHR
 		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(devices->getLogicalDevice(), &CREATE_INFO.createInfo, nullptr, &swapchain),
+			vkCreateSwapchainKHR(pDevices->getLogicalDevice(), &CREATE_INFO.createInfo, nullptr, &pSwapchain),
 			"Failed to create the swapchain"
 		)
 	}
 
 	Swapchain::~Swapchain() {
-		vkDestroySwapchainKHR(devices->getLogicalDevice(), swapchain, nullptr);
-		vkDestroySurfaceKHR(devices->getInstance()->getInstance(), surface, nullptr);
+		vkDestroySwapchainKHR(pDevices->getLogicalDevice(), pSwapchain, nullptr);
+		vkDestroySurfaceKHR(pDevices->getInstance()->getInstance(), pSurface, nullptr);
 	}
 }

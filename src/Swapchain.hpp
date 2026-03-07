@@ -8,21 +8,21 @@ namespace Backend {
 	class Swapchain {
 		public:
 		struct CreateInfo {
-			VkSurfaceKHR surface{};
+			VkSurfaceKHR pSurface{};
 			VkSwapchainCreateInfoKHR createInfo{};
 			std::vector<uint32_t> accessorQfIndices{};
 
 			void reroutePointers() {
-				createInfo.surface = surface;
+				createInfo.surface = pSurface;
 			}
 			CreateInfo(VkSurfaceKHR&& salvageSurface, VkSwapchainCreateInfoKHR const& GIVEN_CREATE_INFO, std::vector<uint32_t>&& salvageAccessorQfIndices) :
-				surface{ salvageSurface },
+				pSurface{ salvageSurface },
 				createInfo{ GIVEN_CREATE_INFO }, 
 				accessorQfIndices{ std::move(salvageAccessorQfIndices) } {
 				reroutePointers();
 			}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
-				surface{ salvageCreateInfo.surface },
+				pSurface{ salvageCreateInfo.pSurface },
 				createInfo{ salvageCreateInfo.createInfo }, 
 				accessorQfIndices(std::move(salvageCreateInfo.accessorQfIndices)) {
 				reroutePointers();
@@ -30,13 +30,13 @@ namespace Backend {
 		};
 
 		private:
-		Devices* devices{};
-		VkSwapchainKHR swapchain{};
-		VkSurfaceKHR surface{};
+		Devices* pDevices{};
+		VkSwapchainKHR pSwapchain{};
+		VkSurfaceKHR pSurface{};
 		const CreateInfo CREATE_INFO;
 
 		public:
-		void recreateThyself();
+		void recreate();
 		[[nodiscard]] VkExtent2D getCurrentExtent() const noexcept;
 
 		private:
@@ -44,10 +44,10 @@ namespace Backend {
 		static void checkHavePresentModeKHR(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE);
 
 		public:
-		explicit Swapchain(Devices* givenDevices, CreateInfo&& salvageCreateInfo);
+		explicit Swapchain(Devices* pGivenDevices, CreateInfo&& salvageCreateInfo);
 		~Swapchain();
-		[[nodiscard]] Devices*& getDevices() { return devices; }
-		[[nodiscard]] VkSwapchainKHR& getSwapchain() { return swapchain; }
+		[[nodiscard]] Devices*& getDevices() { return pDevices; }
+		[[nodiscard]] VkSwapchainKHR& getSwapchain() { return pSwapchain; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(Swapchain)

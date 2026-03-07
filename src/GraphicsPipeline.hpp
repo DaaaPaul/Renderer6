@@ -9,15 +9,12 @@ namespace Engine {
 	class GraphicsPipeline {
 		public:
 		struct CreateInfo {
-			VkGraphicsPipelineCreateInfo graphicsPipeline{};
+			VkGraphicsPipelineCreateInfo pGraphicsPipeline{};
 
 			VkPipelineRenderingCreateInfo rendering{};
 			std::vector<VkFormat> colorAttachmentFormats{};
 
 			std::vector<VkPipelineShaderStageCreateInfo> stages{};
-			//VkShaderModule shaderModules{};
-			//VkShaderModuleCreateInfo shaderModuleInfos{};
-			//std::vector<char> sprivFileBytes{};
 
 			VkPipelineVertexInputStateCreateInfo vertexInput{};
 			std::vector<VkVertexInputBindingDescription> vertexBindings{};
@@ -40,24 +37,21 @@ namespace Engine {
 
 			VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
 			std::vector<VkDynamicState> dynamicStates{};
-			//VkPipelineLayout layout{};
-			//VkPipelineLayoutCreateInfo layoutInfo{};
-			//std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 
 			void reroutePointers() {
-				graphicsPipeline.pNext = &rendering;
-				graphicsPipeline.pVertexInputState = &vertexInput;
-				graphicsPipeline.pInputAssemblyState = &inputAssembly;
-				graphicsPipeline.pTessellationState = &tesselation;
-				graphicsPipeline.pViewportState = &viewport;
-				graphicsPipeline.pRasterizationState = &rasterization;
-				graphicsPipeline.pMultisampleState = &multisampling;
-				graphicsPipeline.pDepthStencilState = &depthStencil;
-				graphicsPipeline.pColorBlendState = &colorBlend;
-				graphicsPipeline.pDynamicState = &dynamicStateInfo;
+				pGraphicsPipeline.pNext = &rendering;
+				pGraphicsPipeline.pVertexInputState = &vertexInput;
+				pGraphicsPipeline.pInputAssemblyState = &inputAssembly;
+				pGraphicsPipeline.pTessellationState = &tesselation;
+				pGraphicsPipeline.pViewportState = &viewport;
+				pGraphicsPipeline.pRasterizationState = &rasterization;
+				pGraphicsPipeline.pMultisampleState = &multisampling;
+				pGraphicsPipeline.pDepthStencilState = &depthStencil;
+				pGraphicsPipeline.pColorBlendState = &colorBlend;
+				pGraphicsPipeline.pDynamicState = &dynamicStateInfo;
 			}
 			CreateInfo(const VkGraphicsPipelineCreateInfo& GRAPHICS_PIPELINE, const VkPipelineRenderingCreateInfo& RENDERING, std::vector<VkFormat>&& salvageCAFormats, std::vector<VkPipelineShaderStageCreateInfo>&& salvageStages, VkPipelineVertexInputStateCreateInfo const& VERTEX_INPUT, std::vector<VkVertexInputBindingDescription>&& salvageVertexBindings, std::vector<VkVertexInputAttributeDescription>&& salvageVertexAttributes, VkPipelineInputAssemblyStateCreateInfo const& INPUT_ASSEMBLY, VkPipelineTessellationStateCreateInfo const& TESSELLATION, VkPipelineViewportStateCreateInfo const& VIEWPORT, VkPipelineRasterizationStateCreateInfo const& RASTERIZATION, VkPipelineMultisampleStateCreateInfo const& MULTISAMPLING, VkPipelineDepthStencilStateCreateInfo const& DEPTH_STENCIL, VkPipelineColorBlendStateCreateInfo const& COLOR_BLEND, std::vector<VkPipelineColorBlendAttachmentState>&& salvageColorBlendAttachments, VkPipelineDynamicStateCreateInfo const& DYNAMIC_STATE_INFO, std::vector<VkDynamicState>&& salvageDynamicStates) : 
-				graphicsPipeline(GRAPHICS_PIPELINE), 
+				pGraphicsPipeline(GRAPHICS_PIPELINE), 
 				rendering(RENDERING), 
 				colorAttachmentFormats(std::move(salvageCAFormats)),
 				stages(std::move(salvageStages)),
@@ -77,7 +71,7 @@ namespace Engine {
 					reroutePointers();
 			}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
-				graphicsPipeline(salvageCreateInfo.graphicsPipeline), 
+				pGraphicsPipeline(salvageCreateInfo.pGraphicsPipeline), 
 				rendering(salvageCreateInfo.rendering), 
 				colorAttachmentFormats(std::move(salvageCreateInfo.colorAttachmentFormats)), 
 				stages(std::move(salvageCreateInfo.stages)), 
@@ -99,15 +93,15 @@ namespace Engine {
 		};
 
 		private:
-		Backend::Devices* devices{};
-		VkPipeline graphicsPipeline{};
+		Backend::Devices* pDevices{};
+		VkPipeline pGraphicsPipeline{};
 		CreateInfo createInfo;
 
 		public:
 		explicit GraphicsPipeline(Backend::Devices* givenDevices, CreateInfo&& salvageCreateInfo);
 		~GraphicsPipeline();
-		[[nodiscard]] Backend::Devices*& getDevices() { return devices; }
-		[[nodiscard]] VkPipeline& getGraphicsPipeline() { return graphicsPipeline; }
+		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
+		[[nodiscard]] VkPipeline& getGraphicsPipeline() { return pGraphicsPipeline; }
 		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
 
 		DELETE_COPY_CONSTRUCTORS(GraphicsPipeline)

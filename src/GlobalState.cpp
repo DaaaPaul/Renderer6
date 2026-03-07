@@ -16,9 +16,9 @@ namespace GlobalState {
 	}
 
 	ktxTexture2 const* Core::getKtxTexture2() {
-		static ktxTexture2 const*const gKTX_TEXTURE2 = DeviceMemory::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
+		static ktxTexture2 const*const gpKTX_TEXTURE2 = DeviceMemory::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 		
-		return gKTX_TEXTURE2;
+		return gpKTX_TEXTURE2;
 	}
 
 	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& Core::getGltfModel() {
@@ -144,11 +144,11 @@ namespace GlobalState {
 					"Failed to enumerate physical devices on your instance"
 				);
 
-				auto getPhysicalDeviceGraphicsQfIndex = [](VkPhysicalDevice& physicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
+				auto getPhysicalDeviceGraphicsQfIndex = [](VkPhysicalDevice& pPhysicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
 					uint32_t physicalDeviceQueueFamilyCount{};
-					vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, nullptr);
+					vkGetPhysicalDeviceQueueFamilyProperties(pPhysicalDevice, &physicalDeviceQueueFamilyCount, nullptr);
 					std::vector<VkQueueFamilyProperties> queueFamilyProperties(physicalDeviceQueueFamilyCount);
-					vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &physicalDeviceQueueFamilyCount, queueFamilyProperties.data());
+					vkGetPhysicalDeviceQueueFamilyProperties(pPhysicalDevice, &physicalDeviceQueueFamilyCount, queueFamilyProperties.data());
 
 					uint32_t graphicsQfIndex = UINT32_MAX;
 					for (int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
@@ -247,9 +247,9 @@ namespace GlobalState {
 				}
 
 				const size_t SELECTED_PHYSICAL_DEVICE_INDEX = std::distance(niceToHaveSumsBySystemPhysicalDevice.begin(), std::max_element(niceToHaveSumsBySystemPhysicalDevice.begin(), niceToHaveSumsBySystemPhysicalDevice.end()));
-				VkPhysicalDevice finalSelection = systemPhysicalDevices[SELECTED_PHYSICAL_DEVICE_INDEX];
+				VkPhysicalDevice pFinalSelection = systemPhysicalDevices[SELECTED_PHYSICAL_DEVICE_INDEX];
 				VkPhysicalDeviceProperties selectedPhysicalDeviceProperties{};
-				vkGetPhysicalDeviceProperties(finalSelection, &selectedPhysicalDeviceProperties);
+				vkGetPhysicalDeviceProperties(pFinalSelection, &selectedPhysicalDeviceProperties);
 				std::cout << "SELECTED PHYSICAL DEVICE: " << selectedPhysicalDeviceProperties.deviceName << "\n";
 				std::cout << "DISCRETE GPU? " << ((niceToHavesBySystemPhysicalDevice[SELECTED_PHYSICAL_DEVICE_INDEX][0]) ? "Yes\n" : "No\n");
 
@@ -263,7 +263,7 @@ namespace GlobalState {
 					.ppEnabledExtensionNames = extensions.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(finalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
+				return Backend::Devices::CreateInfo(std::move(pFinalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
 			}()
 		);
 
@@ -274,15 +274,15 @@ namespace GlobalState {
 		static Backend::Swapchain gSwapchainWrapper(
 			&getDevices(),
 			[]() -> Backend::Swapchain::CreateInfo {
-				VkSurfaceKHR returnSurface{};
+				VkSurfaceKHR pReturnSurface{};
 				CHECK_VK_SUCCESS(
-					glfwCreateWindowSurface(getInstance().getInstance(), getWindow().getGlfwWindow(), nullptr, &returnSurface),
+					glfwCreateWindowSurface(getInstance().getInstance(), getWindow().getGlfwWindow(), nullptr, &pReturnSurface),
 					"Failed to create surface"
 				)
 
 				VkSurfaceCapabilitiesKHR surfaceCapabilities{};
 				CHECK_VK_SUCCESS(
-					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(getDevices().getPhysicalDevice(), returnSurface, &surfaceCapabilities),
+					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(getDevices().getPhysicalDevice(), pReturnSurface, &surfaceCapabilities),
 					"Failed to get physical device surface capabilities"
 				)
 
@@ -316,7 +316,7 @@ namespace GlobalState {
 					.oldSwapchain = VK_NULL_HANDLE,
 				};
 
-				return Backend::Swapchain::CreateInfo(std::move(returnSurface), SWAPCHAIN_INFO, std::move(accessorGfxQf));
+				return Backend::Swapchain::CreateInfo(std::move(pReturnSurface), SWAPCHAIN_INFO, std::move(accessorGfxQf));
 			}()
 		);
 
@@ -327,11 +327,11 @@ namespace GlobalState {
 		const static uint32_t VERTEX_BUFFER_SIZE = getGltfModel().first.size() * sizeof(Vertex::Vertex);
 		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
 
-		static auto gPopulate = [](DeviceMemory::HostVisible& hostVisibleMemory) -> void {
-			hostVisibleMemory.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
-			hostVisibleMemory.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
-			hostVisibleMemory.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
-			hostVisibleMemory.updateDescriptorSetBuffer(0, 0, {2});
+		static auto gPopulate = [](DeviceMemory::HostVisible& pHostVisibleMemory) -> void {
+			pHostVisibleMemory.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
+			pHostVisibleMemory.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
+			pHostVisibleMemory.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+			pHostVisibleMemory.updateDescriptorSetBuffer(0, 0, {2});
 		};
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
@@ -466,22 +466,22 @@ namespace GlobalState {
 					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
 					.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
 				};
-				VkShaderModule shaderModuleForEverything{};
+				VkShaderModule pShaderModuleForEverything{};
 				CHECK_VK_SUCCESS(
-					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleForEverythingInfo, nullptr, &shaderModuleForEverything),
+					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleForEverythingInfo, nullptr, &pShaderModuleForEverything),
 					"Failed to create shader module"
 				)
 				std::vector<VkPipelineShaderStageCreateInfo> stages{
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 						.stage = VK_SHADER_STAGE_VERTEX_BIT,
-						.module = shaderModuleForEverything,
+						.module = pShaderModuleForEverything,
 						.pName = "vertexShader"
 					},
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 						.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-						.module = shaderModuleForEverything,
+						.module = pShaderModuleForEverything,
 						.pName = "fragmentShader"
 					}
 				};

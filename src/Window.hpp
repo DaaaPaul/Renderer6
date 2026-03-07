@@ -16,7 +16,7 @@ namespace Backend {
 		};
 
 		private:
-		GLFWwindow* glfwWindow{};
+		GLFWwindow* pGlfwWindow{};
 		const CreateInfo CREATE_INFO{};
 		static void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
 
@@ -25,7 +25,7 @@ namespace Backend {
 		~Window();
 		bool framebufferResized{};
 		[[nodiscard]] static std::vector<const char*> getInstanceRequiredWindowExtensions();
-		[[nodiscard]] GLFWwindow*& getGlfwWindow() { return glfwWindow; }
+		[[nodiscard]] GLFWwindow*& getGlfwWindow() { return pGlfwWindow; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(Window)

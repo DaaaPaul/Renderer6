@@ -8,7 +8,7 @@ namespace Backend {
 	class Devices {
 		public:
 		struct CreateInfo {
-			VkPhysicalDevice physicalDevice{};
+			VkPhysicalDevice pPhysicalDevice{};
 			VkDeviceCreateInfo logicalDeviceInfo{};
 			std::vector<VkDeviceQueueCreateInfo> queueFamilyInfos{};
 			std::vector<std::vector<float>> queueFamilyPriorities{};
@@ -25,7 +25,7 @@ namespace Backend {
 				dynamicRenderingFeatures.pNext = &extendedDynamicStateFeatures;
 			}
 			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo>&& salvageQfInfos, std::vector<std::vector<float>>&& salvageQfPriorities, std::vector<const char*>&& salvageExtensions, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
-				physicalDevice{ givenPhysicalDevice },
+				pPhysicalDevice{ givenPhysicalDevice },
 				logicalDeviceInfo{ GIVEN_LOGICAL_DEVICE_INFO },
 				queueFamilyInfos{ std::move(salvageQfInfos) },
 				queueFamilyPriorities{ std::move(salvageQfPriorities) },
@@ -37,7 +37,7 @@ namespace Backend {
 				reroutePointers();
 			}
 			CreateInfo(CreateInfo&& salvageCreateInfo) : 
-				physicalDevice{ salvageCreateInfo.physicalDevice },
+				pPhysicalDevice{ salvageCreateInfo.pPhysicalDevice },
 				logicalDeviceInfo{ salvageCreateInfo.logicalDeviceInfo },
 				queueFamilyInfos(std::move(salvageCreateInfo.queueFamilyInfos)),
 				queueFamilyPriorities(std::move(salvageCreateInfo.queueFamilyPriorities)),
@@ -51,19 +51,19 @@ namespace Backend {
 		};
 
 		private:
-		Instance* instance{};
-		VkPhysicalDevice physicalDevice{};
-		VkLogicalDevice logicalDevice{};
+		Instance* pInstance{};
+		VkPhysicalDevice pPhysicalDevice{};
+		VkLogicalDevice pLogicalDevice{};
 		std::vector<VkQueue> graphicsQueues{};
 		const CreateInfo CREATE_INFO;
 		const uint32_t GRAPHICS_QF_INDEX{ UINT32_MAX };
 
 		public:		
-		explicit Devices(Instance* givenInstance, CreateInfo&& givenCreateInfo);
+		explicit Devices(Instance* pGivenInstance, CreateInfo&& givenCreateInfo);
 		~Devices();
-		[[nodiscard]] Instance*& getInstance() { return instance; }
-		[[nodiscard]] VkPhysicalDevice& getPhysicalDevice() { return physicalDevice; }
-		[[nodiscard]] VkLogicalDevice& getLogicalDevice() { return logicalDevice; }
+		[[nodiscard]] Instance*& getInstance() { return pInstance; }
+		[[nodiscard]] VkPhysicalDevice& getPhysicalDevice() { return pPhysicalDevice; }
+		[[nodiscard]] VkLogicalDevice& getLogicalDevice() { return pLogicalDevice; }
 		[[nodiscard]] std::vector<VkQueue>& getGraphicsQueues() { return graphicsQueues; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() { return CREATE_INFO; }
 		[[nodiscard]] uint32_t const& getGraphicsQfIndex() { return GRAPHICS_QF_INDEX; }

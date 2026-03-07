@@ -37,17 +37,17 @@ namespace Backend {
 		};
 
 		private:
-		VkInstance instance{};
-		Window* window{};
+		VkInstance pInstance{};
+		Window* pWindow{};
 		const CreateInfo CREATE_INFO;
 		static void checkHaveExtensions(std::vector<const char*> const& NECESSARY_EXTENSIONS);
 		static void checkHaveLayers(std::vector<const char*> const& NECESSARY_LAYERS);
 
 		public:
-		explicit Instance(Window* givenWindow, CreateInfo&& givenCreateInfo);
+		explicit Instance(Window* pGivenWindow, CreateInfo&& givenCreateInfo);
 		~Instance();
-		[[nodiscard]] VkInstance& getInstance() { return instance; }
-		[[nodiscard]] Window*& getWindow() { return window; }
+		[[nodiscard]] VkInstance& getInstance() { return pInstance; }
+		[[nodiscard]] Window*& getWindow() { return pWindow; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(Instance)
