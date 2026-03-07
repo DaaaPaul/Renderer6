@@ -55,6 +55,8 @@ namespace DeviceMemory {
 		void createSamplers();
 		void createDescriptorSets();
 
+		void generateImageMipmaps(size_t const& IMAGE_INDEX);
+
 		void recreateMemory();
 		void recreateImageViews();
 

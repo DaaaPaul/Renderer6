@@ -387,9 +387,9 @@ namespace GlobalState {
 							VK_IMAGE_TYPE_2D,
 							static_cast<VkFormat>(getKtxTexture2()->vkFormat),
 							VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1),
-							1,
+							DeviceMemory::Common::calculateMipLevels(VkExtent2D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight)),
 							VK_SAMPLE_COUNT_1_BIT,
-							VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+							VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 							getDevices().getGraphicsQfIndex(),
 							VK_IMAGE_LAYOUT_UNDEFINED,
 							DeviceMemory::Common::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))

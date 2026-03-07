@@ -64,6 +64,7 @@ namespace DeviceMemory {
 
 		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
 		ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
+		[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept;
 
 		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
 		[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);

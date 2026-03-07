@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "DeviceMemoryCommon.h"
 #include "Common.h"
 #define TINYGLTF_IMPLEMENTATION
@@ -121,6 +122,10 @@ namespace DeviceMemory {
 			}
 
 			return pKtxTexture;
+		}
+
+		[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept {
+			return std::floor(std::log2(std::max(EXTENT.width, EXTENT.width))) + 1;
 		}
 
 		[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
