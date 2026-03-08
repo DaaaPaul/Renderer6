@@ -6,8 +6,18 @@
 #include <vulkan/vulkan.h>
 #include "Common.h"
 
-struct Particle {
-	glm::vec4 position{};
-	glm::vec4 color{};
-	glm::vec2 velocity{};
-};
+namespace Particle {
+	struct Particle {
+		glm::vec4 position{};
+		glm::vec4 color{};
+		glm::vec2 velocity{};
+
+		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+	};
+
+	struct DeltaTime {
+		float deltaTime{};
+
+		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+	};
+}

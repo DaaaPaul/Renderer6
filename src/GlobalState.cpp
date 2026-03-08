@@ -46,7 +46,7 @@ namespace GlobalState {
 		return gWindowWrapper;
 	}
 
-	[[nodiscard]] std::vector<Particle> getParticlesData() {
+	[[nodiscard]] std::vector<Particle::Particle> getParticlesData() {
 		static auto gRandom = []() -> float {
 			static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
 			static std::uniform_real_distribution gNormal(0.0f, 1.0f);
@@ -54,12 +54,12 @@ namespace GlobalState {
 			return gNormal(gEngine);
 		};
 
-		static std::vector<Particle> particles(
-			[]() -> std::vector<Particle> {
-				std::vector<Particle> particles(8192, {});
+		static std::vector<Particle::Particle> particles(
+			[]() -> std::vector<Particle::Particle> {
+				std::vector<Particle::Particle> particles(8192, {});
 
 				float r{}, theta{}, x{}, y{};
-				for(Particle& p : particles) {
+				for(Particle::Particle& p : particles) {
 					r = sqrtf(gRandom());
 					theta = 2.0f * 3.14159265358979323846f * gRandom();
 					x = cosf(theta) * getWindow().getCreateInfo().height / getWindow().getCreateInfo().width;
@@ -181,7 +181,7 @@ namespace GlobalState {
 					"Failed to enumerate physical devices on your instance"
 				);
 
-				auto getPhysicalDeviceGraphicsQfIndex = [](VkPhysicalDevice& pPhysicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
+				auto getQfIndex = [](VkPhysicalDevice& pPhysicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
 					uint32_t physicalDeviceQueueFamilyCount{};
 					vkGetPhysicalDeviceQueueFamilyProperties(pPhysicalDevice, &physicalDeviceQueueFamilyCount, nullptr);
 					std::vector<VkQueueFamilyProperties> queueFamilyProperties(physicalDeviceQueueFamilyCount);
@@ -190,6 +190,7 @@ namespace GlobalState {
 					uint32_t graphicsQfIndex = UINT32_MAX;
 					for (int i = 0; i < physicalDeviceQueueFamilyCount; i++) {
 						if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
+							(queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) &&
 							(queueFamilyProperties[i].queueCount >= MINIMUM_QUEUES)) {
 							graphicsQfIndex = i;
 						}
@@ -209,8 +210,8 @@ namespace GlobalState {
 						continue;
 					}
 
-					// has graphics queue family with enough queues check
-					if ((queueFamilyInfos[0].queueFamilyIndex = getPhysicalDeviceGraphicsQfIndex(systemPhysicalDevices[i], queueFamilyInfos[0].queueCount) /* (*) */) == UINT32_MAX) {
+					// has graphics and compute queue family with enough queues check
+					if ((queueFamilyInfos[0].queueFamilyIndex = getQfIndex(systemPhysicalDevices[i], queueFamilyInfos[0].queueCount) /* (*) */) == UINT32_MAX) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 						continue;
 					}
@@ -352,6 +353,7 @@ namespace GlobalState {
 					.clipped = VK_TRUE,
 					.oldSwapchain = VK_NULL_HANDLE,
 				};
+				Engine::gHitmenInFlight = SWAPCHAIN_INFO.minImageCount; /* (*) */
 
 				return Backend::Swapchain::CreateInfo(std::move(pReturnSurface), SWAPCHAIN_INFO, std::move(accessorGfxQf));
 			}()
@@ -363,7 +365,7 @@ namespace GlobalState {
 	DeviceMemory::HostVisible& getHostVisibleMemory() {
 		const static uint32_t VERTEX_BUFFER_SIZE = getGltfModel().first.size() * sizeof(Vertex::Vertex);
 		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
-		const static uint32_t PARTICLE_BUFFER_SIZE = getParticlesData().size() * sizeof(Particle);
+		const static uint32_t PARTICLE_BUFFER_SIZE = getParticlesData().size() * sizeof(Particle::Particle);
 
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			self.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
@@ -371,6 +373,7 @@ namespace GlobalState {
 			self.writeToBuffer(2, getParticlesData().data(), PARTICLE_BUFFER_SIZE);
 			self.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
 			self.updateDescriptorSetBuffer(0, 0, {4});
+			self.updateDescriptorSetBuffer(1, 0, {5});
 		};
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
@@ -382,9 +385,11 @@ namespace GlobalState {
 					DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(sizeof(Particle::DeltaTime), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 				},
 				{
-					DeviceMemory::DescriptorSetInfo({Vertex::Transforms::getTransformationMatricesDescriptorSetLayoutBinding(0)})
+					DeviceMemory::DescriptorSetInfo({Vertex::Transforms::getDescriptorSetBinding(0)}),
+					DeviceMemory::DescriptorSetInfo({Particle::DeltaTime::getDescriptorSetBinding(0)})
 				}
 			),
 			gPopulate
@@ -531,8 +536,8 @@ namespace GlobalState {
 				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
 				pipelineCreateInfo.pStages = stages.data();
 
-				std::vector<VkVertexInputBindingDescription> binding{ Vertex::Vertex::getInputBindingDescription() };
-				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributeDescriptions() };
+				std::vector<VkVertexInputBindingDescription> binding{ Vertex::Vertex::getInputBinding() };
+				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributes() };
 				VkPipelineVertexInputStateCreateInfo vertexInput{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 					.vertexBindingDescriptionCount = static_cast<uint32_t>(binding.size()),
@@ -644,4 +649,34 @@ namespace GlobalState {
 
 		return gGraphicsPipeline;
 	}
+
+	//[[nodiscard]] Engine::ComputePipeline& getComputePipeline() {
+	//	static Engine::ComputePipeline computePipeline(
+	//		&getDevices(),
+	//		[]() -> Engine::ComputePipeline::CreateInfo {
+	//			VkComputePipelineCreateInfo create{
+	//				.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
+	//			};
+
+	//			std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
+	//			VkShaderModuleCreateInfo shaderModuleInfo{
+	//				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+	//				.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
+	//				.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
+	//			};
+	//			VkShaderModule pShaderModule{};
+	//			CHECK_VK_SUCCESS(
+	//				vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleInfo, nullptr, &pShaderModule),
+	//				"Failed to create shader module"
+	//			)
+
+	//			create.stage = 	VkPipelineShaderStageCreateInfo{
+	//				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+	//				.stage = VK_SHADER_STAGE_COMPUTE_BIT,
+	//				.module = pShaderModule,
+	//				.pName = "computeShader"
+	//			};
+	//		}()
+	//	)
+	//}
 }

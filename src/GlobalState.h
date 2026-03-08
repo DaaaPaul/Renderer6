@@ -16,13 +16,14 @@
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
 #include "GraphicsPipeline.hpp"
+#include "ComputePipeline.hpp"
 #include "Engine.h"
 
 namespace GlobalState {
 	void load();
 	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
 	[[nodiscard]] ktxTexture2 const* getKtxTexture2();
-	[[nodiscard]] std::vector<Particle> getParticlesData();
+	[[nodiscard]] std::vector<Particle::Particle> getParticlesData();
 	[[nodiscard]] Backend::Window& getWindow();
 	[[nodiscard]] Backend::Instance& getInstance();
 	[[nodiscard]] Backend::Devices& getDevices();
@@ -30,4 +31,5 @@ namespace GlobalState {
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
 	[[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
+	[[nodiscard]] Engine::ComputePipeline& getComputePipeline();
 }

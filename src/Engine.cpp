@@ -177,8 +177,8 @@ namespace Engine {
 		const std::vector<VkDeviceSize> ZERO{ 0 };
 		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &GlobalState::getDeviceLocalMemory().getBuffers()[0], ZERO.data());
 		vkCmdBindIndexBuffer(pCommandBuffer, GlobalState::getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pGraphicsPipeline.layout, 0, 1, GlobalState::getHostVisibleMemory().getDescriptorSets().data(), 0, nullptr);
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pGraphicsPipeline.layout, 1, 1, GlobalState::getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);
+		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 0, 2, GlobalState::getHostVisibleMemory().getDescriptorSets().data(), 0, nullptr);
+		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GlobalState::getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 2, 1, GlobalState::getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);
 			
 		// layout transitions to optimal
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -274,12 +274,13 @@ namespace Engine {
 		gCurrentTransformation.projection[1][1] *= -1.0f;
 	}
 
-	[[nodiscard]] float getTimeSinceFirstCall() {
-		const static std::chrono::steady_clock::time_point FIRST_CALL_TIME = std::chrono::high_resolution_clock::now();
-		const std::chrono::steady_clock::time_point THIS_CALL_TIME = std::chrono::high_resolution_clock::now();
-		const float TIME_SINCE_FIRST_CALL = std::chrono::duration<float, std::chrono::seconds::period>(THIS_CALL_TIME - FIRST_CALL_TIME).count();
+	[[nodiscard]] float getDeltaTime() {
+		static std::chrono::steady_clock::time_point previousCallTime = std::chrono::high_resolution_clock::now();
+		std::chrono::steady_clock::time_point nowTime = std::chrono::high_resolution_clock::now();
+		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nowTime - previousCallTime).count();
+		previousCallTime = nowTime;
 
-		return TIME_SINCE_FIRST_CALL;
+		return deltaTime;
 	}
 
 	void reactToInput() {
@@ -309,7 +310,9 @@ namespace Engine {
 	}
 
 	void writeToUniformBuffer() {
+		float deltaTime = getDeltaTime();
 		GlobalState::getHostVisibleMemory().writeToBuffer(4, &gCurrentTransformation, sizeof(Vertex::Transforms));
+		GlobalState::getHostVisibleMemory().writeToBuffer(5, &deltaTime, sizeof(float));
 	}
 
 	void runThroughNextSwapchainImage(ImageKillhouse& killhouse) {

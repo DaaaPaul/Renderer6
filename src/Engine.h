@@ -31,7 +31,8 @@ namespace Engine {
 		~ImageKillhouse();
 	};
 
-	inline uint32_t gHitmanIndex{};
+	inline uint32_t gHitmanIndex = 0;
+	inline uint32_t gHitmenInFlight{ 0xFFFFFFFF }; /* (*) */
 	inline Vertex::Transforms gCurrentTransformation{};
 
 	[[nodiscard]] std::vector<VkImage> getSwapchainImages();
@@ -42,7 +43,7 @@ namespace Engine {
 	VkResult queueImageForPresentation(VkQueue& pQueue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
 	bool recreateSwapchainIfNecessary(VkResult const& RESULT);
 	void initializeCurrentTransformation();
-	[[nodiscard]] float getTimeSinceFirstCall();
+	[[nodiscard]] float getDeltaTime() noexcept;
 	void reactToInput();
 	void writeToUniformBuffer();
 	void runThroughNextSwapchainImage(ImageKillhouse& killhouse);

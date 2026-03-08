@@ -26,3 +26,4 @@
 - make different uniform buffer for each frame
 - Load mipmaps from texture itself
 - consider multisampling
+- add noexcepts to warnings

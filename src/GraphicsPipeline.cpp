@@ -8,14 +8,14 @@ namespace Engine {
 		pGraphicsPipeline{},
 		createInfo(std::move(salvageCreateInfo)) {
 		CHECK_VK_SUCCESS(
-		vkCreateGraphicsPipelines(pDevices->getLogicalDevice(), nullptr, 1, &createInfo.pGraphicsPipeline, nullptr, &pGraphicsPipeline),
+		vkCreateGraphicsPipelines(pDevices->getLogicalDevice(), nullptr, 1, &createInfo.pipelineInfo, nullptr, &pGraphicsPipeline),
 		"Failed to create graphics pipeline"
 		)
 	}
 
 	GraphicsPipeline::~GraphicsPipeline() {
 		vkDestroyShaderModule(pDevices->getLogicalDevice(), createInfo.stages[0].module, nullptr);
-		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), createInfo.pGraphicsPipeline.layout, nullptr);
+		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), createInfo.pipelineInfo.layout, nullptr);
 		vkDestroyPipeline(pDevices->getLogicalDevice(), pGraphicsPipeline, nullptr);
 	}
 }

@@ -16,10 +16,16 @@ struct TransformationMatrices {
     float4x4 projection;
 };
 
+struct DeltaTime {
+    float deltaTime;
+};
+
 // first arguement binding #, second arguement is set #
 [[vk::binding(0, 0)]]
 ConstantBuffer<TransformationMatrices> TRANSFORMATION_MATRICES;
 [[vk::binding(0, 1)]]
+ConstantBuffer<DeltaTime> DELTA_TIME;
+[[vk::binding(0, 2)]]
 Sampler2D combinedImageSampler;
 
 [shader("vertex")]

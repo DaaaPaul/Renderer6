@@ -19,10 +19,7 @@ int main() {
     try {
 		GlobalState::load();
 
-		const uint32_t SWAPCHAIN_IMAGE_COUNT{ GlobalState::getSwapchain().getCreateInfo().createInfo.minImageCount };
-		const uint32_t GRAPHICS_QF_INDEX{ GlobalState::getDevices().getGraphicsQfIndex() };
-
-		Engine::ImageKillhouse killhouse(SWAPCHAIN_IMAGE_COUNT, GRAPHICS_QF_INDEX);
+		Engine::ImageKillhouse killhouse(Engine::gHitmenInFlight, GlobalState::getDevices().getGraphicsQfIndex());
 		Engine::renderLoop(killhouse);
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
