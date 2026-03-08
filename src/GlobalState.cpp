@@ -407,9 +407,11 @@ namespace GlobalState {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, VERTEX_BUFFER_SIZE)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, INDEX_BUFFER_SIZE)});
 			self.copyBufferToBuffer(2, getHostVisibleMemory().getBuffers()[2], {VkBufferCopy(0, 0, PARTICLE_BUFFER_SIZE)});
-			// assumes buffer is tightly packed row by row
+			self.copyBufferToBuffer(3, getHostVisibleMemory().getBuffers()[2], {VkBufferCopy(0, 0, PARTICLE_BUFFER_SIZE)});
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[3], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
+			self.updateDescriptorSetBuffer(1, 0, {2});
+			self.updateDescriptorSetBuffer(2, 0, {3});
 		};
 
 		static DeviceMemory::DeviceLocal gDeviceLocalMemory(
@@ -427,6 +429,7 @@ namespace GlobalState {
 					{ 
 						DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
 						DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+						DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
 						DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex())
 					},
 					{
@@ -480,7 +483,9 @@ namespace GlobalState {
 									.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
 								}
 							}
-						)
+						),
+						DeviceMemory::DescriptorSetInfo({Particle::Particle::getDescriptorSetBinding(0)}),
+						DeviceMemory::DescriptorSetInfo({Particle::Particle::getDescriptorSetBinding(0)})
 					}
 				);
 			}(),
@@ -618,12 +623,14 @@ namespace GlobalState {
 					.pDynamicStates = dynamicStates.data(),
 				};
 
-				std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ getHostVisibleMemory().getDescriptorSetLayouts() };
-				descriptorSetLayouts.insert(descriptorSetLayouts.end(), getDeviceLocalMemory().getDescriptorSetLayouts().begin(), getDeviceLocalMemory().getDescriptorSetLayouts().end());
+				std::vector<VkDescriptorSetLayout> graphicsLayout{};
+				graphicsLayout.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[0]);
+				graphicsLayout.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[0]);
+
 				VkPipelineLayoutCreateInfo layoutInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-					.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
-					.pSetLayouts = descriptorSetLayouts.data()
+					.setLayoutCount = static_cast<uint32_t>(graphicsLayout.size()),
+					.pSetLayouts = graphicsLayout.data()
 				};
 				CHECK_VK_SUCCESS(
 					vkCreatePipelineLayout(getDevices().getLogicalDevice(), &layoutInfo, nullptr, &pipelineCreateInfo.layout),
@@ -650,33 +657,49 @@ namespace GlobalState {
 		return gGraphicsPipeline;
 	}
 
-	//[[nodiscard]] Engine::ComputePipeline& getComputePipeline() {
-	//	static Engine::ComputePipeline computePipeline(
-	//		&getDevices(),
-	//		[]() -> Engine::ComputePipeline::CreateInfo {
-	//			VkComputePipelineCreateInfo create{
-	//				.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
-	//			};
+	[[nodiscard]] Engine::ComputePipeline& getComputePipeline() {
+		static Engine::ComputePipeline computePipeline(
+			&getDevices(),
+			[]() -> Engine::ComputePipeline::CreateInfo {
+				VkComputePipelineCreateInfo create{
+					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
+				};
 
-	//			std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
-	//			VkShaderModuleCreateInfo shaderModuleInfo{
-	//				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-	//				.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
-	//				.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
-	//			};
-	//			VkShaderModule pShaderModule{};
-	//			CHECK_VK_SUCCESS(
-	//				vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleInfo, nullptr, &pShaderModule),
-	//				"Failed to create shader module"
-	//			)
+				std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
+				VkShaderModuleCreateInfo shaderModuleInfo{
+					.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
+					.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
+				};
+				VkShaderModule pShaderModule{};
+				CHECK_VK_SUCCESS(
+					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleInfo, nullptr, &pShaderModule),
+					"Failed to create shader module"
+				)
 
-	//			create.stage = 	VkPipelineShaderStageCreateInfo{
-	//				.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-	//				.stage = VK_SHADER_STAGE_COMPUTE_BIT,
-	//				.module = pShaderModule,
-	//				.pName = "computeShader"
-	//			};
-	//		}()
-	//	)
-	//}
+				create.stage = 	VkPipelineShaderStageCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+					.stage = VK_SHADER_STAGE_COMPUTE_BIT,
+					.module = pShaderModule,
+					.pName = "computeShader"
+				};
+
+				std::vector<VkDescriptorSetLayout> computeLayouts{};
+				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[1]);
+				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]);
+				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[2]);
+				VkPipelineLayoutCreateInfo layoutInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+					.setLayoutCount = 3,
+					.pSetLayouts = computeLayouts.data()
+				};
+				CHECK_VK_SUCCESS(
+					vkCreatePipelineLayout(getDevices().getLogicalDevice(), &layoutInfo, nullptr, &create.layout),
+					"Failed to create pipeline layout"
+				)
+
+				return Engine::ComputePipeline::CreateInfo(create);
+			}()
+		);
+	}
 }

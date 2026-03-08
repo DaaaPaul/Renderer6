@@ -16,6 +16,16 @@ struct TransformationMatrices {
     float4x4 projection;
 };
 
+struct Particle {
+    float4 position;
+    float4 color;
+    float2 velocity;
+};
+
+struct ParticleSSBO {
+    Particle particle;
+};
+
 struct DeltaTime {
     float deltaTime;
 };
@@ -27,6 +37,10 @@ ConstantBuffer<TransformationMatrices> TRANSFORMATION_MATRICES;
 ConstantBuffer<DeltaTime> DELTA_TIME;
 [[vk::binding(0, 2)]]
 Sampler2D combinedImageSampler;
+[[vk::binding(0, 3)]]
+StructuredBuffer<ParticleSSBO> particlesIn;
+[[vk::binding(0, 4)]]
+RWStructuredBuffer<ParticleSSBO> particlesOut;
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn vertexData) {
@@ -40,4 +54,12 @@ VertexOut vertexShader(VertexIn vertexData) {
 [shader("fragment")]
 float4 fragmentShader(VertexOut interpolatedVertex) {
     return combinedImageSampler.Sample(interpolatedVertex.texCoord);
+}
+
+[shader("compute")]
+[numthreads(256, 1, 1)]
+void computeShader(uint3 invocation: SV_DispatchThreadID) {
+    uint i = invocation.x;
+
+    particlesOut[i].particle.position.xy = particlesIn[i].particle.position.xy + float2(particlesIn[i].particle.velocity.x * DELTA_TIME, particlesIn[i].particle.velocity.y * DELTA_TIME);
 }
