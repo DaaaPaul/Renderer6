@@ -1,6 +1,5 @@
 #include <iostream>
 #include "GraphicsPipeline.hpp"
-#include "Vertex.hpp"
 
 namespace Engine {
 	GraphicsPipeline::GraphicsPipeline(Backend::Devices* pGivenDevices, CreateInfo&& salvageCreateInfo) :

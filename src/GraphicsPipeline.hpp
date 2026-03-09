@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Devices.hpp"
-#include "HostVisible.hpp"
-#include "DeviceLocal.hpp"
 #include "Common.h"
 
 namespace Engine {

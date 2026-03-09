@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 #define CHECK_NULLPTR(ptr, errMsg) \
     if(!ptr) { \

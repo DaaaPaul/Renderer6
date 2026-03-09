@@ -1,9 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <GLFW/glfw3.h>
 #include <vector>
-#include <string>
 #include <iostream>
 #include "Common.h"
 #include "Window.hpp"

@@ -1,6 +1,4 @@
 #include "Devices.hpp"
-#include <iostream>
-#include <array>
 
 namespace Backend {
 	Devices::Devices(Instance* pGivenInstance, CreateInfo&& givenCreateInfo) :

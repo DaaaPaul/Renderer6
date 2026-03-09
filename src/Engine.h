@@ -1,13 +1,6 @@
 #pragma once
 
-#include "Devices.hpp"
-#include "Swapchain.hpp"
-#include "HostVisible.hpp"
-#include "DeviceLocal.hpp"
-#include "GraphicsPipeline.hpp"
-#include "Vertex.hpp"
-#include "Transforms.hpp"
-#include "Common.h"
+#include <vulkan/vulkan.h>
 
 namespace Engine {
 	struct Hitman {

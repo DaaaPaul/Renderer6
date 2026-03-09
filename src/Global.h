@@ -1,10 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <GLFW/glfw3.h>
-#include "glm/glm.hpp"
-#include <iostream>
-#include <stdexcept>
 #include "Vertex.hpp"
 #include "Transforms.hpp"
 #include "Particle.hpp"

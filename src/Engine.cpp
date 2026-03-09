@@ -5,7 +5,7 @@
 #include "DeviceMemory.h"
 
 #define CHECK_PRESSED(glfwKey) \
-glfwGetKey(Global::getWindow().getGlfwWindow(), glfwKey) == GLFW_PRESS
+	glfwGetKey(Global::getWindow().getGlfwWindow(), glfwKey) == GLFW_PRESS
 
 namespace Engine {
 	Hitman::Hitman(VkCommandPool pPool) :
@@ -343,17 +343,8 @@ namespace Engine {
 	}
 
 	void renderLoop() {
-		uint16_t nextSecondMark{ 1 };
-		uint16_t accumulatedFramesCount{ 0 };
-
-		auto incrementFramesCountAndCheck = [&accumulatedFramesCount, &nextSecondMark]() -> void {
-			accumulatedFramesCount++;
-			if(glfwGetTime() > nextSecondMark) {
-				nextSecondMark++;
-				std::cout << "Frames last second: " << accumulatedFramesCount << '\n';
-				accumulatedFramesCount = 0;
-			}
-		};
+		uint16_t nextSecondMark = 1;
+		uint16_t accumulatedFramesCount = 0;
 
 		while(!glfwWindowShouldClose(Global::getWindow().getGlfwWindow())) {
 			glfwPollEvents();
@@ -362,7 +353,13 @@ namespace Engine {
 			}
 
 			runNextSwapchainImage();
-			incrementFramesCountAndCheck();
+			
+			accumulatedFramesCount++;
+			if(glfwGetTime() > nextSecondMark) {
+				nextSecondMark++;
+				std::cout << "Frames last second: " << accumulatedFramesCount << '\n';
+				accumulatedFramesCount = 0;
+			}
 		}
 
 		vkDeviceWaitIdle(Global::getDevices().getLogicalDevice());
