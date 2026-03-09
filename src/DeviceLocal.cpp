@@ -1,6 +1,6 @@
 #include <iostream>
 #include "DeviceLocal.hpp"
-#include "GlobalState.h"
+#include "Global.h"
 
 namespace DeviceMemory {
 	void DeviceLocal::createBuffers() {
@@ -342,8 +342,8 @@ namespace DeviceMemory {
 		const int DEPTH_INDEX = searchForDepthImageIndex();
 
 		if(DEPTH_INDEX != -1) {
-			createInfo.imageInfos[DEPTH_INDEX].extent.width = GlobalState::getSwapchain().getCurrentExtent().width;
-			createInfo.imageInfos[DEPTH_INDEX].extent.height = GlobalState::getSwapchain().getCurrentExtent().height;
+			createInfo.imageInfos[DEPTH_INDEX].extent.width = Global::getSwapchain().getCurrentExtent().width;
+			createInfo.imageInfos[DEPTH_INDEX].extent.height = Global::getSwapchain().getCurrentExtent().height;
 			recreateMemory();
 			recreateImageViews();
 			POPULATE(*this);

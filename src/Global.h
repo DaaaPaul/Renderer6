@@ -19,8 +19,21 @@
 #include "ComputePipeline.hpp"
 #include "Engine.h"
 
-namespace GlobalState {
+namespace Global {
+	namespace Engine {
+		inline uint32_t gHitmanIndex = 0;
+		inline uint32_t gHitmenInFlight{ 0xFFFFFFFF }; /* (*) */
+
+		void load();
+		inline bool gGlobalEngineLoaded = false;
+
+		[[nodiscard]] ::Engine::Killhouse& getKillhouse();
+		[[nodiscard]] Vertex::Transforms& getCurrentTransformation();
+	}
+
 	void load();
+	inline bool gGlobalLoaded = false;
+
 	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
 	[[nodiscard]] ktxTexture2 const* getKtxTexture2();
 	[[nodiscard]] std::vector<Particle::Particle> getParticlesData();
@@ -28,8 +41,9 @@ namespace GlobalState {
 	[[nodiscard]] Backend::Instance& getInstance();
 	[[nodiscard]] Backend::Devices& getDevices();
 	[[nodiscard]] Backend::Swapchain& getSwapchain();
+	[[nodiscard]] std::vector<VkImage>& getSwapchainImages();
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
-	[[nodiscard]] Engine::GraphicsPipeline& getGraphicsPipeline();
-	[[nodiscard]] Engine::ComputePipeline& getComputePipeline();
+	[[nodiscard]] ::Engine::GraphicsPipeline& getGraphicsPipeline();
+	[[nodiscard]] ::Engine::ComputePipeline& getComputePipeline();
 }

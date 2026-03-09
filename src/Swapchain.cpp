@@ -1,5 +1,5 @@
 #include <iostream>
-#include "GlobalState.h"
+#include "Global.h"
 #include "Swapchain.hpp"
 
 namespace Backend {
@@ -8,7 +8,7 @@ namespace Backend {
 			[this]() -> VkSurfaceCapabilitiesKHR {
 				VkSurfaceCapabilitiesKHR capabilities{};
 				CHECK_VK_SUCCESS(
-					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(GlobalState::getDevices().getPhysicalDevice(), pSurface, &capabilities),
+					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Global::getDevices().getPhysicalDevice(), pSurface, &capabilities),
 					"Failed to get physical device surface capabilities"
 				)
 				return capabilities;
@@ -17,7 +17,7 @@ namespace Backend {
 
 		VkExtent2D surfaceExtentInPixels{};
 		if (SURFACE_CAPABILITIES.currentExtent.width == UINT32_MAX && SURFACE_CAPABILITIES.currentExtent.height == UINT32_MAX) {
-			glfwGetFramebufferSize(GlobalState::getWindow().getGlfwWindow(), reinterpret_cast<int*>(&surfaceExtentInPixels.width), reinterpret_cast<int*>(&surfaceExtentInPixels.height));
+			glfwGetFramebufferSize(Global::getWindow().getGlfwWindow(), reinterpret_cast<int*>(&surfaceExtentInPixels.width), reinterpret_cast<int*>(&surfaceExtentInPixels.height));
 		} else {
 			surfaceExtentInPixels = VkExtent2D(SURFACE_CAPABILITIES.currentExtent.width, SURFACE_CAPABILITIES.currentExtent.height);
 		}
@@ -32,7 +32,7 @@ namespace Backend {
 
 		vkDestroySwapchainKHR(pDevices->getLogicalDevice(), pSwapchain, nullptr);
 		const VkExtent2D SURFACE_EXTENT(getCurrentExtent());
-		const std::vector<uint32_t> ACCESSOR_GFXQF{ GlobalState::getDevices().getGraphicsQfIndex() };
+		const std::vector<uint32_t> ACCESSOR_GFXQF{ Global::getDevices().getGraphicsQfIndex() };
     
 		const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
 			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,

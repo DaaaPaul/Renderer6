@@ -13,14 +13,14 @@
 #include "DeviceLocal.hpp"
 #include "GraphicsPipeline.hpp"
 #include "Engine.h"
-#include "GlobalState.h"
+#include "Global.h"
 
 int main() {
     try {
-		GlobalState::load();
+		Global::load();
+		Global::Engine::load();
 
-		Engine::ImageKillhouse killhouse(Engine::gHitmenInFlight, GlobalState::getDevices().getGraphicsQfIndex());
-		Engine::renderLoop(killhouse);
+		Engine::renderLoop();
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

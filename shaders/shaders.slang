@@ -34,9 +34,9 @@ struct DeltaTime {
 [[vk::binding(0, 0)]]
 ConstantBuffer<TransformationMatrices> TRANSFORMATION_MATRICES;
 [[vk::binding(0, 1)]]
-ConstantBuffer<DeltaTime> DELTA_TIME;
-[[vk::binding(0, 2)]]
 Sampler2D combinedImageSampler;
+[[vk::binding(0, 2)]]
+ConstantBuffer<DeltaTime> DELTA_TIME;
 [[vk::binding(0, 3)]]
 StructuredBuffer<ParticleSSBO> particlesIn;
 [[vk::binding(0, 4)]]
@@ -61,5 +61,14 @@ float4 fragmentShader(VertexOut interpolatedVertex) {
 void computeShader(uint3 invocation: SV_DispatchThreadID) {
     uint i = invocation.x;
 
-    particlesOut[i].particle.position.xy = particlesIn[i].particle.position.xy + float2(particlesIn[i].particle.velocity.x * DELTA_TIME, particlesIn[i].particle.velocity.y * DELTA_TIME);
+    particlesOut[i].particle.position = particlesIn[i].particle.position;
+    particlesOut[i].particle.position.x += particlesIn[i].particle.velocity.x * DELTA_TIME.deltaTime;
+    particlesOut[i].particle.position.y += particlesIn[i].particle.velocity.y * DELTA_TIME.deltaTime;
+
+    if ((particlesOut[i].particle.position.x <= -1.0) || (particlesOut[i].particle.position.x >= 1.0)) {
+        particlesOut[i].particle.velocity.x *= -1.0;
+    }
+    if ((particlesOut[i].particle.position.y <= -1.0) || (particlesOut[i].particle.position.y >= 1.0)) {
+        particlesOut[i].particle.velocity.y *= -1.0;
+    }
 }

@@ -22,6 +22,8 @@ add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemory.cpp
@@ -30,8 +32,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Devices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/GlobalState.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.cpp
@@ -39,6 +41,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.cpp

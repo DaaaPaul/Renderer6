@@ -4,9 +4,42 @@
 #include <random>
 #include <array>
 #include "Common.h"
-#include "GlobalState.h"
+#include "Global.h"
 
-namespace GlobalState {
+namespace Global {
+	namespace Engine {
+		void load() {
+			assert(Global::gGlobalLoaded);
+
+			(void) getKillhouse();
+			(void) getCurrentTransformation();
+
+			gGlobalEngineLoaded = true;
+		}
+
+		[[nodiscard]] Vertex::Transforms& getCurrentTransformation() {
+			static Vertex::Transforms gCurrentTransformation(
+				[]() -> Vertex::Transforms {
+					Vertex::Transforms currentTransformation(
+						glm::mat4{1.0f},
+						glm::mat4{glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))},
+						glm::mat4{glm::perspective(glm::radians(45.0f), static_cast<float>(Global::getSwapchain().getCurrentExtent().width) / static_cast<float>(Global::getSwapchain().getCurrentExtent().height), 0.1f, 1000.0f)}
+					);
+					currentTransformation.projection[1][1] *= -1.0f;
+
+					return currentTransformation;
+				}()
+			);
+
+			return gCurrentTransformation;
+		}
+
+		[[nodiscard]] ::Engine::Killhouse& getKillhouse() {
+			static ::Engine::Killhouse gKillhouse(gHitmenInFlight, Global::getDevices().getGraphicsQfIndex());
+			return gKillhouse;
+		}
+	}
+
 	void load() {
 		(void) getKtxTexture2();
 		(void) getGltfModel();
@@ -15,9 +48,12 @@ namespace GlobalState {
 		(void) getInstance();
 		(void) getDevices();
 		(void) getSwapchain();
+		(void) getSwapchainImages();
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getGraphicsPipeline();
+
+		gGlobalLoaded = true;
 	}
 
 	ktxTexture2 const* getKtxTexture2() {
@@ -362,6 +398,21 @@ namespace GlobalState {
 		return gSwapchainWrapper;
 	}
 
+	[[nodiscard]] std::vector<VkImage>& getSwapchainImages() {
+		static std::vector<VkImage> images(
+			[]() -> std::vector<VkImage> {
+				uint32_t imageCount = 0xFFFFFFFF;
+				vkGetSwapchainImagesKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), &imageCount, nullptr);
+				std::vector<VkImage> images(imageCount);
+				vkGetSwapchainImagesKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), &imageCount, images.data());
+
+				return images;
+			}()
+		);
+
+		return images;
+	}
+
 	DeviceMemory::HostVisible& getHostVisibleMemory() {
 		const static uint32_t VERTEX_BUFFER_SIZE = getGltfModel().first.size() * sizeof(Vertex::Vertex);
 		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
@@ -495,10 +546,10 @@ namespace GlobalState {
 		return gDeviceLocalMemory;
 	}
 
-	Engine::GraphicsPipeline& getGraphicsPipeline() {
-		static Engine::GraphicsPipeline gGraphicsPipeline(
+	::Engine::GraphicsPipeline& getGraphicsPipeline() {
+		static ::Engine::GraphicsPipeline gGraphicsPipeline(
 			&getDevices(),
-			[]() -> Engine::GraphicsPipeline::CreateInfo {
+			[]() -> ::Engine::GraphicsPipeline::CreateInfo {
 				VkGraphicsPipelineCreateInfo pipelineCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 					// reroute needed for everything
@@ -637,7 +688,7 @@ namespace GlobalState {
 					"Failed to create pipeline layout"
 				)
 
-				return Engine::GraphicsPipeline::CreateInfo(
+				return ::Engine::GraphicsPipeline::CreateInfo(
 					pipelineCreateInfo,
 					rendering, std::move(colorAttachmentFormats),
 					std::move(stages),
@@ -657,10 +708,10 @@ namespace GlobalState {
 		return gGraphicsPipeline;
 	}
 
-	[[nodiscard]] Engine::ComputePipeline& getComputePipeline() {
-		static Engine::ComputePipeline computePipeline(
+	[[nodiscard]] ::Engine::ComputePipeline& getComputePipeline() {
+		static ::Engine::ComputePipeline computePipeline(
 			&getDevices(),
-			[]() -> Engine::ComputePipeline::CreateInfo {
+			[]() -> ::Engine::ComputePipeline::CreateInfo {
 				VkComputePipelineCreateInfo create{
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
 				};
@@ -698,7 +749,7 @@ namespace GlobalState {
 					"Failed to create pipeline layout"
 				)
 
-				return Engine::ComputePipeline::CreateInfo(create);
+				return ::Engine::ComputePipeline::CreateInfo(create);
 			}()
 		);
 	}

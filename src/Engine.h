@@ -10,42 +10,32 @@
 #include "Common.h"
 
 namespace Engine {
-	struct ImageHitman {
+	struct Hitman {
 		VkFence pOneAtATime{};
-		VkSemaphore pRenderReady{};
-		VkSemaphore pRenderFinished{};
+		VkSemaphore pTimeline{};
 		VkCommandPool pCommandPool{};
 		VkCommandBuffer pDrawCommands{};
 
-		explicit ImageHitman(VkCommandPool pool);
-		~ImageHitman();
+		explicit Hitman(VkCommandPool pCommandPool);
+		~Hitman();
 	};
 
-	struct ImageKillhouse {
+	struct Killhouse {
 		VkCommandPool pCommandPoolUsed{};
-		std::vector<ImageHitman> hitmen{};
+		std::vector<Hitman> hitmen{};
 
 		void recreateHitmen();
 
-		explicit ImageKillhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX);
-		~ImageKillhouse();
+		Killhouse();
+		explicit Killhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX);
+		~Killhouse();
 	};
 
-	inline uint32_t gHitmanIndex = 0;
-	inline uint32_t gHitmenInFlight{ 0xFFFFFFFF }; /* (*) */
-	inline Vertex::Transforms gCurrentTransformation{};
-
-	[[nodiscard]] std::vector<VkImage> getSwapchainImages();
-	[[nodiscard]] VkImageView getSwapchainImageView(uint32_t const& IMAGE_INDEX, VkFormat const& FORMAT, VkImageSubresourceRange const& SUBRESOURCE_RANGE);
-	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
-	VkResult acquireNextSwapchainImageIndex(ImageKillhouse& killhouse, uint32_t& nextImageIndex);
-	void submitDrawCommands(VkQueue& pQueue, ImageHitman& hitman);
-	VkResult queueImageForPresentation(VkQueue& pQueue, uint32_t const& SWAPCHAIN_IMAGE_INDEX, ImageHitman& hitman);
-	bool recreateSwapchainIfNecessary(VkResult const& RESULT);
-	void initializeCurrentTransformation();
 	[[nodiscard]] float getDeltaTime() noexcept;
+	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
+	void recordComputeCommands(VkCommandBuffer& pCommandBuffer);
+	void windowResizeRecreate();
 	void reactToInput();
-	void writeToUniformBuffer();
-	void runThroughNextSwapchainImage(ImageKillhouse& killhouse);
-	void renderLoop(ImageKillhouse& killhouse);
+	void runNextSwapchainImage();
+	void renderLoop();
 }
