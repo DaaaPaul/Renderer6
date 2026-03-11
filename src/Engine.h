@@ -4,10 +4,12 @@
 
 namespace Engine {
 	struct Hitman {
-		VkFence pOneAtATime{};
+		VkFence pDrawOneAtATime{};
+		VkFence pComputeOneAtATime{};
 		VkSemaphore pTimeline{};
 		VkCommandPool pCommandPool{};
 		VkCommandBuffer pDrawCommands{};
+		VkCommandBuffer pComputeCommands{};
 
 		explicit Hitman(VkCommandPool pCommandPool);
 		~Hitman();
@@ -28,7 +30,7 @@ namespace Engine {
 	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
 	void recordComputeCommands(VkCommandBuffer& pCommandBuffer);
 	void windowResizeRecreate();
-	void reactToInput();
+	void freshenTransformation();
 	void runNextSwapchainImage();
 	void renderLoop();
 }

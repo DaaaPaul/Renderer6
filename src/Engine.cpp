@@ -9,50 +9,60 @@
 
 namespace Engine {
 	Hitman::Hitman(VkCommandPool pPool) :
-	pOneAtATime{},
+	pDrawOneAtATime{},
+	pComputeOneAtATime{},
 	pTimeline{},
 	pCommandPool{ pPool },
 	pDrawCommands{} {
-		const VkFenceCreateInfo FENCE_INFO{
+		VkFenceCreateInfo signedFenceCreate{
 			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
 			.flags = VK_FENCE_CREATE_SIGNALED_BIT
 		};
 		CHECK_VK_SUCCESS(
-			vkCreateFence(Global::getDevices().getLogicalDevice(), &FENCE_INFO, nullptr, &pOneAtATime),
+			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pDrawOneAtATime),
+			"Fence creation failed"
+		)
+		CHECK_VK_SUCCESS(
+			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pComputeOneAtATime),
 			"Fence creation failed"
 		)
 
-		const VkSemaphoreTypeCreateInfo SEM_TYPE_INFO{
+		VkSemaphoreTypeCreateInfo timelineType{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
 			.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
 			.initialValue = 0
 		};
-		const VkSemaphoreCreateInfo SEMAPHORE_INFO{
+		VkSemaphoreCreateInfo timelineSemaphoreInfo{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-			.pNext = &SEMAPHORE_INFO
+			.pNext = &timelineSemaphoreInfo
 		};
 		CHECK_VK_SUCCESS(
-			vkCreateSemaphore(Global::getDevices().getLogicalDevice(), &SEMAPHORE_INFO, nullptr, &pTimeline),
+			vkCreateSemaphore(Global::getDevices().getLogicalDevice(), &timelineSemaphoreInfo, nullptr, &pTimeline),
 			"Semaphore creation failed"
 		)
 
-		const VkCommandBufferAllocateInfo DRAW_COMMANDS_INFO{
+		VkCommandBufferAllocateInfo commandBufferInfo{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 			.commandPool = pCommandPool,
 			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			.commandBufferCount = 1,
 		};
-
 		CHECK_VK_SUCCESS(
-			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &DRAW_COMMANDS_INFO, &pDrawCommands),
+			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pDrawCommands),
+			"Command buffer creation failed"
+		)
+		CHECK_VK_SUCCESS(
+			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pComputeCommands),
 			"Command buffer creation failed"
 		)
 	}
 
 	Hitman::~Hitman() {
-		vkDestroyFence(Global::getDevices().getLogicalDevice(), pOneAtATime, nullptr);
+		vkDestroyFence(Global::getDevices().getLogicalDevice(), pDrawOneAtATime, nullptr);
+		vkDestroyFence(Global::getDevices().getLogicalDevice(), pComputeOneAtATime, nullptr);
 		vkDestroySemaphore(Global::getDevices().getLogicalDevice(), pTimeline, nullptr);
 		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pDrawCommands);
+		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pComputeCommands);
 	}
 
 	Killhouse::Killhouse() :
@@ -64,14 +74,14 @@ namespace Engine {
 	Killhouse::Killhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
 		pCommandPoolUsed{},
 		hitmen{} {
-		const VkCommandPoolCreateInfo POOL_INFO{
+		VkCommandPoolCreateInfo poolCreate{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 			.queueFamilyIndex = GRAPHICS_QF_INDEX
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateCommandPool(Global::getDevices().getLogicalDevice(), &POOL_INFO, nullptr, &pCommandPoolUsed),
+			vkCreateCommandPool(Global::getDevices().getLogicalDevice(), &poolCreate, nullptr, &pCommandPoolUsed),
 			"Failed to create command pool"
 		)
 
@@ -254,7 +264,7 @@ namespace Engine {
 		gHitmanIndex = 0;
 	}
 
-	void reactToInput() {
+	void freshenTransformation() {
 		using namespace Global::Engine;
 		bool updatedCurrentTransformation = false;
 
@@ -298,6 +308,10 @@ namespace Engine {
 	void runNextSwapchainImage() {
 		using namespace Global::Engine;
 		Hitman& hitman = getKillhouse().hitmen[gHitmanIndex];
+		uint64_t computeWait = gTimelineValue;
+		uint64_t computeFinished = ++gTimelineValue;
+		uint64_t graphicsWait = computeFinished;
+		uint64_t graphicsFinished = ++gTimelineValue;
 
 		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
 		uint32_t nextImageIndex = 0xFFFFFFFF;
@@ -309,8 +323,31 @@ namespace Engine {
 		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime);
 		vkResetCommandBuffer(hitman.pDrawCommands, 0);
 
+		{
+			recordComputeCommands(hitman.pComputeCommands);
+			VkTimelineSemaphoreSubmitInfo computeWaitSignalValues{
+				.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+				.waitSemaphoreValueCount = 1,
+				.pWaitSemaphoreValues = &computeWait,
+				.signalSemaphoreValueCount = 1,
+				.pSignalSemaphoreValues = &computeFinished
+			};
+			constexpr VkPipelineStageFlags WAIT_BEFORE = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+			VkSubmitInfo computeSubmit{
+				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+				.pNext = &computeWaitSignalValues,
+				.waitSemaphoreCount = 1,
+				.pWaitSemaphores = &hitman.pTimeline,
+				.pWaitDstStageMask = &WAIT_BEFORE,
+				.commandBufferCount = 1,
+				.pCommandBuffers = &hitman.pComputeCommands,
+				.signalSemaphoreCount = 1,
+				.pSignalSemaphores = &hitman.pTimeline
+			};
+		}
+
 		recordDrawCommands(hitman.pDrawCommands, nextImageIndex);
-		reactToInput();
+		freshenTransformation();
 
 		VkPipelineStageFlags waitBefore = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		VkSubmitInfo drawSubmitInfo{

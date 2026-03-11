@@ -35,6 +35,8 @@ namespace Global {
 		}
 
 		[[nodiscard]] ::Engine::Killhouse& getKillhouse() {
+			assert(Engine::gHitmenInFlight != 0xFFFFFFFF);
+
 			static ::Engine::Killhouse gKillhouse(gHitmenInFlight, Global::getDevices().getGraphicsQfIndex());
 			return gKillhouse;
 		}
@@ -162,21 +164,26 @@ namespace Global {
 		static Backend::Devices gDevices(
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
-				const VkPhysicalDeviceExtendedDynamicState2FeaturesEXT EXTENDED_DYNAMIC_STATE{
+				VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
 					.extendedDynamicState2 = true
 				};
-				const VkPhysicalDeviceDynamicRenderingFeatures DYNAMIC_RENDERING{
+				VkPhysicalDeviceDynamicRenderingFeatures dynamicRendering{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
 					.pNext = nullptr, // reroute needed
 					.dynamicRendering = true
 				};
-				const VkPhysicalDeviceSynchronization2Features SYNC2{
+				VkPhysicalDeviceSynchronization2Features sync2{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
 					.pNext = nullptr, // reroute needed
 					.synchronization2 = true
 				};
-				const VkPhysicalDeviceFeatures2 FEATURES{
+				VkPhysicalDeviceTimelineSemaphoreFeatures timeline{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+					.pNext = nullptr, // reroute needed
+					.timelineSemaphore = true
+				};
+				VkPhysicalDeviceFeatures2 features{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
 					.pNext = nullptr, // reroute needed
 					.features = {
@@ -273,24 +280,36 @@ namespace Global {
 					}
 
 					// features check
-					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT physicalDeviceExtendedDynamicStateFeaturesStatus{
+					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT
 					};
-					VkPhysicalDeviceDynamicRenderingFeatures physicalDeviceDynamicRenderingFeaturesStatus{
+					VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-						.pNext = &physicalDeviceExtendedDynamicStateFeaturesStatus
+						.pNext = &extendedDynamicState
 					};
-					VkPhysicalDeviceSynchronization2Features physicalDeviceSyncFeaturesStatus{
+					VkPhysicalDeviceSynchronization2Features sync2Status{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-						.pNext = &physicalDeviceDynamicRenderingFeaturesStatus
+						.pNext = &dynamicRenderingStatus
 					};
-					VkPhysicalDeviceFeatures2 physicalDeviceFeaturesStatus{
+					VkPhysicalDeviceTimelineSemaphoreFeatures timelineStatus{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+						.pNext = &sync2Status,
+						.timelineSemaphore = true
+					};
+					VkPhysicalDeviceFeatures2 featuresStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-						.pNext = &physicalDeviceSyncFeaturesStatus
+						.pNext = &timeline
 					};
-					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &physicalDeviceFeaturesStatus);
+					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &featuresStatus);
 
-					if (!(physicalDeviceFeaturesStatus.features.samplerAnisotropy && physicalDeviceFeaturesStatus.features.textureCompressionBC && physicalDeviceSyncFeaturesStatus.synchronization2 && physicalDeviceDynamicRenderingFeaturesStatus.dynamicRendering && physicalDeviceExtendedDynamicStateFeaturesStatus.extendedDynamicState2)) {
+					bool allNeeded = featuresStatus.features.samplerAnisotropy && 
+						featuresStatus.features.textureCompressionBC && 
+						timelineStatus.timelineSemaphore && 
+						sync2Status.synchronization2 && 
+						dynamicRenderingStatus.dynamicRendering && 
+						extendedDynamicState.extendedDynamicState2;
+					
+					if (!allNeeded) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 						continue;
 					}
@@ -337,7 +356,7 @@ namespace Global {
 					.ppEnabledExtensionNames = extensions.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(pFinalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), EXTENDED_DYNAMIC_STATE, DYNAMIC_RENDERING, SYNC2, FEATURES);
+				return Backend::Devices::CreateInfo(std::move(pFinalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), extendedDynamicState, dynamicRendering, sync2, timeline, features);
 			}()
 		);
 

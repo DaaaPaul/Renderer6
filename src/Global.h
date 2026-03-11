@@ -17,7 +17,8 @@
 namespace Global {
 	namespace Engine {
 		inline uint32_t gHitmanIndex = 0;
-		inline uint32_t gHitmenInFlight{ 0xFFFFFFFF }; /* (*) */
+		inline uint32_t gHitmenInFlight = 0xFFFFFFFF; /* (*) */
+		inline uint64_t gTimelineValue = 0;
 
 		void load();
 		inline bool gGlobalEngineLoaded = false;
