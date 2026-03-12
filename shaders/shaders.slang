@@ -1,13 +1,20 @@
 struct VertexIn {
     [[vk::location(0)]] float4 position;
     [[vk::location(1)]] float4 color;
-    [[vk::location(2)]] float2 texCoord;
+    //[[vk::location(2)]] float2 texCoord;
 };
 
 struct VertexOut {
     float4 position : SV_Position;
-    float4 color;
-    float2 texCoord;
+    float pointSize : SV_PointSize;
+    float4 color : COLOR0;
+    //float2 texCoord;
+};
+
+struct FragmentIn {
+    float4 position : SV_Position;
+    float2 pointCoord : SV_PointCoord;
+    float4 color : COLOR0;
 };
 
 struct TransformationMatrices {
@@ -43,17 +50,20 @@ StructuredBuffer<ParticleSSBO> particlesIn;
 RWStructuredBuffer<ParticleSSBO> particlesOut;
 
 [shader("vertex")]
-VertexOut vertexShader(VertexIn vertexData) {
-    vertexData.position = mul(TRANSFORMATION_MATRICES.model, vertexData.position);
-    vertexData.position = mul(TRANSFORMATION_MATRICES.view, vertexData.position);
-    vertexData.position = mul(TRANSFORMATION_MATRICES.projection, vertexData.position);
+VertexOut vertexShader(VertexIn in) {
+    VertexOut out;
+    out.position = in.position;
+    out.pointSize = 14.0;
+    out.color = in.color;
 
-    return VertexOut(vertexData.position, vertexData.color, vertexData.texCoord);
+    return out;
 }
 
 [shader("fragment")]
-float4 fragmentShader(VertexOut interpolatedVertex) {
-    return combinedImageSampler.Sample(interpolatedVertex.texCoord);
+float4 fragmentShader(FragmentIn in) {
+    float2 adjusted = in.pointCoord - 0.5;
+
+    return float4(in.color.xyz, 0.5 - length(adjusted));
 }
 
 [shader("compute")]

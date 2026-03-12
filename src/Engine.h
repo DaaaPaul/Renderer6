@@ -4,8 +4,7 @@
 
 namespace Engine {
 	struct Hitman {
-		VkFence pDrawOneAtATime{};
-		VkFence pComputeOneAtATime{};
+		VkFence pOneAtATime{};
 		VkSemaphore pTimeline{};
 		VkCommandPool pCommandPool{};
 		VkCommandBuffer pDrawCommands{};

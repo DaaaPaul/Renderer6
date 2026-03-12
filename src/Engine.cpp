@@ -9,8 +9,7 @@
 
 namespace Engine {
 	Hitman::Hitman(VkCommandPool pPool) :
-	pDrawOneAtATime{},
-	pComputeOneAtATime{},
+	pOneAtATime{},
 	pTimeline{},
 	pCommandPool{ pPool },
 	pDrawCommands{} {
@@ -19,11 +18,7 @@ namespace Engine {
 			.flags = VK_FENCE_CREATE_SIGNALED_BIT
 		};
 		CHECK_VK_SUCCESS(
-			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pDrawOneAtATime),
-			"Fence creation failed"
-		)
-		CHECK_VK_SUCCESS(
-			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pComputeOneAtATime),
+			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pOneAtATime),
 			"Fence creation failed"
 		)
 
@@ -58,8 +53,7 @@ namespace Engine {
 	}
 
 	Hitman::~Hitman() {
-		vkDestroyFence(Global::getDevices().getLogicalDevice(), pDrawOneAtATime, nullptr);
-		vkDestroyFence(Global::getDevices().getLogicalDevice(), pComputeOneAtATime, nullptr);
+		vkDestroyFence(Global::getDevices().getLogicalDevice(), pOneAtATime, nullptr);
 		vkDestroySemaphore(Global::getDevices().getLogicalDevice(), pTimeline, nullptr);
 		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pDrawCommands);
 		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pComputeCommands);
@@ -119,6 +113,7 @@ namespace Engine {
 
 	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
 		using namespace Global;
+		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
 		VkImageView pColorImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
@@ -226,6 +221,8 @@ namespace Engine {
 	};
 
 	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
+		vkResetCommandBuffer(pCommandBuffer, 0);
+
 		const VkCommandBufferBeginInfo BEGIN_INFO{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 		};
@@ -308,75 +305,98 @@ namespace Engine {
 	void runNextSwapchainImage() {
 		using namespace Global::Engine;
 		Hitman& hitman = getKillhouse().hitmen[gHitmanIndex];
-		uint64_t computeWait = gTimelineValue;
-		uint64_t computeFinished = ++gTimelineValue;
-		uint64_t graphicsWait = computeFinished;
-		uint64_t graphicsFinished = ++gTimelineValue;
-
-		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
+		uint64_t computeWaitVal = gTimelineValue;
+		uint64_t computeSignalVal = ++gTimelineValue;
+		uint64_t drawWaitVal = computeSignalVal;
+		uint64_t drawSignalVal = ++gTimelineValue;
 		uint32_t nextImageIndex = 0xFFFFFFFF;
-		VkResult acquireResult = vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, killhouse.hitmen[gHitmanIndex].pRenderReady, VK_NULL_HANDLE, &nextImageIndex);
-		if(acquireResult == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
+
+		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, hitman.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();
 			return;
 		}
+		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
 		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime);
-		vkResetCommandBuffer(hitman.pDrawCommands, 0);
 
-		{
-			recordComputeCommands(hitman.pComputeCommands);
-			VkTimelineSemaphoreSubmitInfo computeWaitSignalValues{
-				.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-				.waitSemaphoreValueCount = 1,
-				.pWaitSemaphoreValues = &computeWait,
-				.signalSemaphoreValueCount = 1,
-				.pSignalSemaphoreValues = &computeFinished
-			};
-			constexpr VkPipelineStageFlags WAIT_BEFORE = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-			VkSubmitInfo computeSubmit{
-				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-				.pNext = &computeWaitSignalValues,
-				.waitSemaphoreCount = 1,
-				.pWaitSemaphores = &hitman.pTimeline,
-				.pWaitDstStageMask = &WAIT_BEFORE,
-				.commandBufferCount = 1,
-				.pCommandBuffers = &hitman.pComputeCommands,
-				.signalSemaphoreCount = 1,
-				.pSignalSemaphores = &hitman.pTimeline
-			};
-		}
+		// compute submit info
+		recordComputeCommands(hitman.pComputeCommands);
+		VkSemaphoreSubmitInfo computeWait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = hitman.pTimeline,
+			.value = computeWaitVal,
+			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+		};
+		VkCommandBufferSubmitInfo computeCommands{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+			.commandBuffer = hitman.pComputeCommands,
+		};
+		VkSemaphoreSubmitInfo computeSignal{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = hitman.pTimeline,
+			.value = computeSignalVal,
+			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+		};
+		VkSubmitInfo2 computeSubmit{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+			.waitSemaphoreInfoCount = 1,
+			.pWaitSemaphoreInfos = &computeWait,
+			.commandBufferInfoCount = 1,
+			.pCommandBufferInfos = &computeCommands,
+			.signalSemaphoreInfoCount = 1,
+			.pSignalSemaphoreInfos = &computeSignal
+		};
 
+		// graphics submit info
 		recordDrawCommands(hitman.pDrawCommands, nextImageIndex);
 		freshenTransformation();
-
-		VkPipelineStageFlags waitBefore = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		VkSubmitInfo drawSubmitInfo{
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &hitman.pRenderReady,
-			.pWaitDstStageMask = &waitBefore,
-			.commandBufferCount = 1,
-			.pCommandBuffers = &hitman.pDrawCommands,
-			.signalSemaphoreCount = 1,
-			.pSignalSemaphores = &hitman.pRenderFinished,
+		VkSemaphoreSubmitInfo drawWait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = hitman.pTimeline,
+			.value = drawWaitVal,
+			.stageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT,
 		};
-		vkQueueSubmit(Global::getDevices().getGraphicsQueues()[0], 1, &drawSubmitInfo, hitman.pOneAtATime);
+		VkCommandBufferSubmitInfo drawCommands{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+			.commandBuffer = hitman.pDrawCommands,
+		};
+		VkSemaphoreSubmitInfo drawSignal{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = hitman.pTimeline,
+			.value = drawSignalVal,
+			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+		};
+		VkSubmitInfo2 drawSubmit{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+			.waitSemaphoreInfoCount = 1,
+			.pWaitSemaphoreInfos = &drawWait,
+			.commandBufferInfoCount = 1,
+			.pCommandBufferInfos = &drawCommands,
+			.signalSemaphoreInfoCount = 1,
+			.pSignalSemaphoreInfos = &drawSignal
+		};
+		std::vector<VkSubmitInfo2> submitInfos{ computeSubmit, drawSubmit };
+		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 2, submitInfos.data(), hitman.pOneAtATime);
 
+		VkSemaphoreWaitInfo presentWait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+			.semaphoreCount = 1,
+			.pSemaphores = &hitman.pTimeline,
+			.pValues = &drawSignalVal
+		};
 		VkPresentInfoKHR presentInfo{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.waitSemaphoreCount = 1,
-			.pWaitSemaphores = &hitman.pRenderFinished,
 			.swapchainCount = 1,
 			.pSwapchains = &Global::getSwapchain().getSwapchain(),
-			.pImageIndices = &nextImageIndex,
+			.pImageIndices = &nextImageIndex
 		};
-		VkResult presentResult = vkQueuePresentKHR(Global::getDevices().getGraphicsQueues()[0], &presentInfo);	
-		if(presentResult == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
+		vkWaitSemaphores(Global::getDevices().getLogicalDevice(), &presentWait, UINT64_MAX);
+
+		if(vkQueuePresentKHR(Global::getDevices().getGraphicsQueues()[0], &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();
 			return;
 		}
 
-		gHitmanIndex = (gHitmanIndex + 1) % static_cast<uint32_t>(killhouse.hitmen.size());;
+		gHitmanIndex = (gHitmanIndex + 1) % gHitmenInFlight;
 	}
 
 	void renderLoop() {
