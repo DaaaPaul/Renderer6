@@ -285,12 +285,12 @@ namespace Global {
 					}
 
 					// features check
-					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState{
+					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicStateStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT
 					};
 					VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-						.pNext = &extendedDynamicState
+						.pNext = &extendedDynamicStateStatus
 					};
 					VkPhysicalDeviceSynchronization2Features sync2Status{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
@@ -299,11 +299,10 @@ namespace Global {
 					VkPhysicalDeviceTimelineSemaphoreFeatures timelineStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
 						.pNext = &sync2Status,
-						.timelineSemaphore = true
 					};
 					VkPhysicalDeviceFeatures2 featuresStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-						.pNext = &timeline
+						.pNext = &timelineStatus
 					};
 					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &featuresStatus);
 
@@ -312,7 +311,7 @@ namespace Global {
 						timelineStatus.timelineSemaphore && 
 						sync2Status.synchronization2 && 
 						dynamicRenderingStatus.dynamicRendering && 
-						extendedDynamicState.extendedDynamicState2;
+						extendedDynamicStateStatus.extendedDynamicState2;
 					
 					if (!allNeeded) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
@@ -840,5 +839,7 @@ namespace Global {
 				return ::Engine::ComputePipeline::CreateInfo(create);
 			}()
 		);
+
+		return computePipeline;
 	}
 }
