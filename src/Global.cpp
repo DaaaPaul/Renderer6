@@ -437,31 +437,75 @@ namespace Global {
 		const static uint32_t INDEX_BUFFER_SIZE = getGltfModel().second.size() * sizeof(uint32_t);
 		const static uint32_t PARTICLE_BUFFER_SIZE = getParticlesData().size() * sizeof(Particle::Particle);
 
+		/*
+		Buffer 0 - Model vertices
+		Buffer 1 - Model vertex indices
+		Buffer 2 - Model texture data
+		Buffer 3 to 6 - Model transform
+		Buffer 7 to 10 - Particle SSBO
+		Buffer 11 to 14 - Particle delta time
+		*/
+		/*
+		Descriptor Set 0 to 3 - matches uniform buffers 3 to 6
+		Descriptor Set 4 to 7 - matches uniform buffers 11 to 14
+		*/
+
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			self.writeToBuffer(0, getGltfModel().first.data(), VERTEX_BUFFER_SIZE);
 			self.writeToBuffer(1, getGltfModel().second.data(), INDEX_BUFFER_SIZE);
-			self.writeToBuffer(2, getParticlesData().data(), PARTICLE_BUFFER_SIZE);
-			self.writeToBuffer(3, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
-			self.updateDescriptorSetBuffer(0, 0, {4});
-			self.updateDescriptorSetBuffer(1, 0, {5});
+			self.writeToBuffer(2, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				self.writeToBuffer(7 + i, getParticlesData().data(), PARTICLE_BUFFER_SIZE);
+			}
+
+			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				self.updateDescriptorSetBuffer(i, 0, {static_cast<unsigned long long>(3 + i)});
+			}
+			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				self.updateDescriptorSetBuffer(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
+			}
 		};
+
+		static std::vector<DeviceMemory::BufferInfo> bufferInfos(
+			[]() -> std::vector<DeviceMemory::BufferInfo> {
+				std::vector<DeviceMemory::BufferInfo> lambdaReturn{
+					DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
+				};
+
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+				}
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
+				}
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(sizeof(Particle::DeltaTime), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+				}
+
+				return lambdaReturn;
+			}()
+		);
+
+		static std::vector<DeviceMemory::DescriptorSetInfo> descriptorSetInfos(
+			[]() -> std::vector<DeviceMemory::DescriptorSetInfo> {
+				std::vector<DeviceMemory::DescriptorSetInfo> lambdaReturn{};
+
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Vertex::Transforms::getDescriptorSetBinding(0)});
+				}
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::DeltaTime::getDescriptorSetBinding(0)});
+				}
+
+				return lambdaReturn;
+			}()
+		);
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
 			&getDevices(),
-			DeviceMemory::HostVisible::CreateInfo(
-				{
-					DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(sizeof(Particle::DeltaTime), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex())
-				},
-				{
-					DeviceMemory::DescriptorSetInfo({Vertex::Transforms::getDescriptorSetBinding(0)}),
-					DeviceMemory::DescriptorSetInfo({Particle::DeltaTime::getDescriptorSetBinding(0)})
-				}
-			),
+			DeviceMemory::HostVisible::CreateInfo(std::move(bufferInfos), std::move(descriptorSetInfos)),
 			gPopulate
 		);
 
@@ -484,24 +528,43 @@ namespace Global {
 			self.updateDescriptorSetBuffer(2, 0, {3});
 		};
 
+		static std::vector<DeviceMemory::BufferInfo> bufferInfos(
+			[]() -> std::vector<DeviceMemory::BufferInfo> {
+				std::vector<DeviceMemory::BufferInfo> lambdaReturn{
+					DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+					DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
+				};
+
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+				}
+
+				return lambdaReturn;
+			}()
+		);
+
+		static std::vector<DeviceMemory::DescriptorSetInfo> descriptorSetInfos(
+			[]() -> std::vector<DeviceMemory::DescriptorSetInfo> {
+				std::vector<DeviceMemory::DescriptorSetInfo> lambdaReturn{};
+
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Vertex::Transforms::getDescriptorSetBinding(0)});
+				}
+				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::DeltaTime::getDescriptorSetBinding(0)});
+				}
+
+				return lambdaReturn;
+			}()
+		);
+
 		static DeviceMemory::DeviceLocal gDeviceLocalMemory(
 			&getDevices(),
 			[]() -> DeviceMemory::DeviceLocal::CreateInfo {
-				const VkPhysicalDeviceProperties PHYSICAL_DEVICE_PROPERTIES(
-					[]() -> const VkPhysicalDeviceProperties {
-						VkPhysicalDeviceProperties arguement{};
-						vkGetPhysicalDeviceProperties(getDevices().getPhysicalDevice(), &arguement);
-						return arguement;
-					}()
-				);
+				VkPhysicalDeviceProperties physicalDeviceProperties{};
+				vkGetPhysicalDeviceProperties(getDevices().getPhysicalDevice(), &physicalDeviceProperties);
 
-				return DeviceMemory::DeviceLocal::CreateInfo(
-					{ 
-						DeviceMemory::BufferInfo(VERTEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::BufferInfo(INDEX_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-						DeviceMemory::BufferInfo(PARTICLE_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex())
-					},
+				return DeviceMemory::DeviceLocal::CreateInfo(std::move(bufferInfos),
 					{
 						// texture image
 						DeviceMemory::ImageInfo(

@@ -45,9 +45,26 @@ Sampler2D combinedImageSampler;
 [[vk::binding(0, 2)]]
 ConstantBuffer<DeltaTime> DELTA_TIME;
 [[vk::binding(0, 3)]]
-StructuredBuffer<ParticleSSBO> particlesIn;
+StructuredBuffer<ParticleSSBO> PARTICLES_IN;
 [[vk::binding(0, 4)]]
 RWStructuredBuffer<ParticleSSBO> particlesOut;
+
+[shader("compute")]
+[numthreads(256, 1, 1)]
+void computeShader(uint3 invocation: SV_DispatchThreadID) {
+    uint i = invocation.x;
+
+    particlesOut[i].particle.position = PARTICLES_IN[i].particle.position;
+    particlesOut[i].particle.position.x += PARTICLES_IN[i].particle.velocity.x * DELTA_TIME.deltaTime;
+    particlesOut[i].particle.position.y += PARTICLES_IN[i].particle.velocity.y * DELTA_TIME.deltaTime;
+
+    if ((particlesOut[i].particle.position.x <= -1.0) || (particlesOut[i].particle.position.x >= 1.0)) {
+        particlesOut[i].particle.velocity.x *= -1.0;
+    }
+    if ((particlesOut[i].particle.position.y <= -1.0) || (particlesOut[i].particle.position.y >= 1.0)) {
+        particlesOut[i].particle.velocity.y *= -1.0;
+    }
+}
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn in) {
@@ -64,21 +81,4 @@ float4 fragmentShader(FragmentIn in) {
     float2 adjusted = in.pointCoord - 0.5;
 
     return float4(in.color.xyz, 0.5 - length(adjusted));
-}
-
-[shader("compute")]
-[numthreads(256, 1, 1)]
-void computeShader(uint3 invocation: SV_DispatchThreadID) {
-    uint i = invocation.x;
-
-    particlesOut[i].particle.position = particlesIn[i].particle.position;
-    particlesOut[i].particle.position.x += particlesIn[i].particle.velocity.x * DELTA_TIME.deltaTime;
-    particlesOut[i].particle.position.y += particlesIn[i].particle.velocity.y * DELTA_TIME.deltaTime;
-
-    if ((particlesOut[i].particle.position.x <= -1.0) || (particlesOut[i].particle.position.x >= 1.0)) {
-        particlesOut[i].particle.velocity.x *= -1.0;
-    }
-    if ((particlesOut[i].particle.position.y <= -1.0) || (particlesOut[i].particle.position.y >= 1.0)) {
-        particlesOut[i].particle.velocity.y *= -1.0;
-    }
 }
