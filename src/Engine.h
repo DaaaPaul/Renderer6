@@ -26,10 +26,10 @@ namespace Engine {
 	};
 
 	[[nodiscard]] float getDeltaTime() noexcept;
-	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
-	void recordComputeCommands(VkCommandBuffer& pCommandBuffer);
 	void windowResizeRecreate();
 	void freshenTransformation();
-	void runNextSwapchainImage();
-	void renderLoop();
+	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
+	void recordComputeCommands(VkCommandBuffer& pCommandBuffer);
+	void renderNext();
+	void run();
 }

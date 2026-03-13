@@ -111,6 +111,59 @@ namespace Engine {
 		return deltaTime;
 	}
 
+	void windowResizeRecreate() {
+		using namespace Global::Engine;
+
+		vkDeviceWaitIdle(Global::getDevices().getLogicalDevice());
+
+		Global::getSwapchain().recreate();
+		Global::getDeviceLocalMemory().recreateDepthResources();
+		Global::getWindow().framebufferResized = false;
+		getKillhouse().recreateHitmen();
+		gHitmanIndex = 0;
+	}
+
+	void freshenTransformation() {
+		using namespace Global::Engine;
+		bool updatedCurrentTransformation = false;
+
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(-0.001f, 0.0f, 0.0f));
+			updatedCurrentTransformation = true;
+		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.001f, 0.0f, 0.0f));
+			updatedCurrentTransformation = true;
+		}
+		
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, -0.001f, 0.0f));
+			updatedCurrentTransformation = true;
+		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.001f, 0.0f));
+			updatedCurrentTransformation = true;
+		}
+
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, -0.001f));
+			updatedCurrentTransformation = true;
+		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
+			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, 0.001f));
+			updatedCurrentTransformation = true;
+		}
+
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_S)) {
+			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(0.999f, 0.999f, 0.999f));
+			updatedCurrentTransformation = true;
+		} else if(CHECK_PRESSED(GLFW_KEY_S)) {
+			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(1.001f, 1.001f, 1.001f));
+			updatedCurrentTransformation = true;
+		}
+
+		if(updatedCurrentTransformation) {
+			Global::getHostVisibleMemory().writeToBuffer(4, &Global::Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
+		}
+	}
+
 	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
 		using namespace Global;
 		vkResetCommandBuffer(pCommandBuffer, 0);
@@ -176,13 +229,17 @@ namespace Engine {
 		};
 		vkCmdSetViewport(pCommandBuffer, 0, 1, &VIEWPORT);
 		vkCmdSetScissor(pCommandBuffer, 0, 1, &SCISSOR);
-		const std::vector<VkDeviceSize> ZERO{ 0 };
-		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &getDeviceLocalMemory().getBuffers()[0], ZERO.data());
+
+		constexpr VkDeviceSize ZERO = 0;
+		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &getDeviceLocalMemory().getBuffers()[0], &ZERO);
 		vkCmdBindIndexBuffer(pCommandBuffer, getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
+
+		std::vector<VkDescriptorSet> drawDescriptorSets{
+			getHostVisibleMemory().getDescriptorSets()[3 + Global::Engine::gHitmanIndex], // Model transform uniform buffer
+			getHostVisibleMemory().getDescriptorSets()[0] // Combined image sampler
+		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
-			0, 1, getHostVisibleMemory().getDescriptorSets().data(), 0, nullptr);
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
-			1, 1, getDeviceLocalMemory().getDescriptorSets().data(), 0, nullptr);
+			0, 2, drawDescriptorSets.data(), 0, nullptr);
 			
 		// layout transitions to optimal
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -221,6 +278,7 @@ namespace Engine {
 	};
 
 	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
+		using namespace Global::Engine;
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		const VkCommandBufferBeginInfo BEGIN_INFO{
@@ -233,10 +291,11 @@ namespace Engine {
 		
 		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getComputePipeline());
 
-		std::vector<VkDescriptorSet> computeDescriptorSets{};
-		computeDescriptorSets.push_back(Global::getHostVisibleMemory().getDescriptorSets()[1]);
-		computeDescriptorSets.push_back(Global::getDeviceLocalMemory().getDescriptorSets()[1]);
-		computeDescriptorSets.push_back(Global::getDeviceLocalMemory().getDescriptorSets()[2]);
+		std::vector<VkDescriptorSet> computeDescriptorSets{
+			Global::getHostVisibleMemory().getDescriptorSets()[7 + gHitmanIndex], // Delta time uniform buffer
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gHitmanIndex], // PARTICLES_IN SSBO
+			Global::getDeviceLocalMemory().getDescriptorSets()[(1 + gHitmanIndex + 1) % gHitmenInFlight], // particlesOut SSBO
+		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
 			2, 3, computeDescriptorSets.data(), 0, nullptr);
 			
@@ -249,60 +308,7 @@ namespace Engine {
 		)
 	}
 
-	void windowResizeRecreate() {
-		using namespace Global::Engine;
-
-		vkDeviceWaitIdle(Global::getDevices().getLogicalDevice());
-
-		Global::getSwapchain().recreate();
-		Global::getDeviceLocalMemory().recreateDepthResources();
-		Global::getWindow().framebufferResized = false;
-		getKillhouse().recreateHitmen();
-		gHitmanIndex = 0;
-	}
-
-	void freshenTransformation() {
-		using namespace Global::Engine;
-		bool updatedCurrentTransformation = false;
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(-0.001f, 0.0f, 0.0f));
-			updatedCurrentTransformation = true;
-		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.001f, 0.0f, 0.0f));
-			updatedCurrentTransformation = true;
-		}
-		
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, -0.001f, 0.0f));
-			updatedCurrentTransformation = true;
-		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.001f, 0.0f));
-			updatedCurrentTransformation = true;
-		}
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, -0.001f));
-			updatedCurrentTransformation = true;
-		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
-			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, 0.001f));
-			updatedCurrentTransformation = true;
-		}
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_S)) {
-			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(0.999f, 0.999f, 0.999f));
-			updatedCurrentTransformation = true;
-		} else if(CHECK_PRESSED(GLFW_KEY_S)) {
-			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(1.001f, 1.001f, 1.001f));
-			updatedCurrentTransformation = true;
-		}
-
-		if(updatedCurrentTransformation) {
-			Global::getHostVisibleMemory().writeToBuffer(4, &Global::Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
-		}
-	}
-
-	void runNextSwapchainImage() {
+	void renderNext() {
 		using namespace Global::Engine;
 		Hitman& hitman = getKillhouse().hitmen[gHitmanIndex];
 		uint64_t computeWaitVal = gTimelineValue;
@@ -399,7 +405,7 @@ namespace Engine {
 		gHitmanIndex = (gHitmanIndex + 1) % gHitmenInFlight;
 	}
 
-	void renderLoop() {
+	void run() {
 		uint16_t nextSecondMark = 1;
 		uint16_t accumulatedFramesCount = 0;
 
@@ -409,7 +415,7 @@ namespace Engine {
 				glfwSetWindowShouldClose(Global::getWindow().getGlfwWindow(), GLFW_TRUE);
 			}
 
-			runNextSwapchainImage();
+			renderNext();
 			
 			accumulatedFramesCount++;
 			if(glfwGetTime() > nextSecondMark) {

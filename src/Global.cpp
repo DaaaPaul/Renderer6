@@ -449,7 +449,6 @@ namespace Global {
 			Descriptor Set 0 to 3 - matches uniform buffers 3 to 6
 			Descriptor Set 4 to 7 - matches uniform buffers 11 to 14
 		*/
-
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
 			self.writeToBuffer(1, getGltfModel().second.data(), gIndexBufferSize);
@@ -526,7 +525,6 @@ namespace Global {
 			Descriptor Set 0 - Matches sampler 0
 			Descriptor Set 1 to 4 - Matches buffers 2 to 5
 		*/
-
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, gIndexBufferSize)});
@@ -763,9 +761,10 @@ namespace Global {
 					.pDynamicStates = dynamicStates.data(),
 				};
 
-				std::vector<VkDescriptorSetLayout> graphicsLayout{};
-				graphicsLayout.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[0]);
-				graphicsLayout.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[0]);
+				std::vector<VkDescriptorSetLayout> graphicsLayout{
+					getHostVisibleMemory().getDescriptorSetLayouts()[3], // Model transform uniform buffer
+					getHostVisibleMemory().getDescriptorSetLayouts()[0] // Combined image sampler
+				};
 
 				VkPipelineLayoutCreateInfo layoutInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -825,9 +824,9 @@ namespace Global {
 				};
 
 				std::vector<VkDescriptorSetLayout> computeLayouts{};
-				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[1]);
-				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]);
-				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[2]);
+				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[11]); // Delta time uniform buffer
+				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]);  // PARTICLES_IN SSBO
+				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]); // particlesOut SSBO
 				VkPipelineLayoutCreateInfo layoutInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 					.setLayoutCount = 3,

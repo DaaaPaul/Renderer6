@@ -7,7 +7,7 @@ int main() {
     try {
 		Global::load();
 		Global::Engine::load();
-		Engine::renderLoop();
+		Engine::run();
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }
