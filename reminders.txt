@@ -30,3 +30,4 @@
 PEASY:
 - add noexcepts to warnings
 - create structure chain thing for features struct
+- wrap VkShaderModule

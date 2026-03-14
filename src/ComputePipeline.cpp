@@ -13,7 +13,6 @@ namespace Engine {
 
 	ComputePipeline::~ComputePipeline() {
 		vkDestroyShaderModule(pDevices->getLogicalDevice(), CREATE_INFO.pipelineInfo.stage.module, nullptr);
-		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), CREATE_INFO.pipelineInfo.layout, nullptr);
 		vkDestroyPipeline(pDevices->getLogicalDevice(), pComputePipeline, nullptr);
 	}
 }

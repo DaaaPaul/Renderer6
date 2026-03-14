@@ -10,6 +10,7 @@
 #include "DeviceMemory.h"
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
+#include "PipelineLayout.hpp"
 #include "GraphicsPipeline.hpp"
 #include "ComputePipeline.hpp"
 #include "Engine.h"
@@ -44,6 +45,7 @@ namespace Global {
 	[[nodiscard]] std::vector<VkImage>& getSwapchainImages();
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+	[[nodiscard]] ::Engine::PipelineLayout& getPipelineLayout();
 	[[nodiscard]] ::Engine::GraphicsPipeline& getGraphicsPipeline();
 	[[nodiscard]] ::Engine::ComputePipeline& getComputePipeline();
 }

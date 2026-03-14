@@ -53,6 +53,7 @@ namespace Global {
 		(void) getSwapchainImages();
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
+		(void) getPipelineLayout();
 		(void) getGraphicsPipeline();
 		(void) getComputePipeline();
 
@@ -523,7 +524,7 @@ namespace Global {
 			Sampler 0 - Model texture sampler
 
 			Descriptor Set 0 - Matches sampler 0
-			Descriptor Set 1 to 4 - Matches buffers 2 to 5
+			Descriptor Set 1 to 4 - Matches SSBOs 2 to 5
 		*/
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
@@ -633,11 +634,23 @@ namespace Global {
 		return gDeviceLocalMemory;
 	}
 
+	::Engine::PipelineLayout& getPipelineLayout() {
+		static ::Engine::PipelineLayout gPipelineLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{
+			getHostVisibleMemory().getDescriptorSetLayouts()[0], // vertex transformations uniform buffer (set 0)
+			getDeviceLocalMemory().getDescriptorSetLayouts()[0], // combined image sampler (set 1)
+			getHostVisibleMemory().getDescriptorSetLayouts()[4], // delta time uniform buffer (set 2)
+			getDeviceLocalMemory().getDescriptorSetLayouts()[1], // PARTICLES_IN SSBO (set 3),
+			getDeviceLocalMemory().getDescriptorSetLayouts()[1] // particlesOut SSBO (set 4)
+		});
+
+		return gPipelineLayout;
+	}
+
 	::Engine::GraphicsPipeline& getGraphicsPipeline() {
 		static ::Engine::GraphicsPipeline gGraphicsPipeline(
 			&getDevices(),
 			[]() -> ::Engine::GraphicsPipeline::CreateInfo {
-				VkGraphicsPipelineCreateInfo pipelineCreateInfo{
+				VkGraphicsPipelineCreateInfo graphicsPipelineCreate{
 					.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 					// reroute needed for everything
 				};
@@ -676,8 +689,8 @@ namespace Global {
 						.pName = "fragmentShader"
 					}
 				};
-				pipelineCreateInfo.stageCount = static_cast<uint32_t>(stages.size());
-				pipelineCreateInfo.pStages = stages.data();
+				graphicsPipelineCreate.stageCount = static_cast<uint32_t>(stages.size());
+				graphicsPipelineCreate.pStages = stages.data();
 
 				std::vector<VkVertexInputBindingDescription> binding{ Vertex::Vertex::getInputBinding() };
 				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributes() };
@@ -761,23 +774,10 @@ namespace Global {
 					.pDynamicStates = dynamicStates.data(),
 				};
 
-				std::vector<VkDescriptorSetLayout> graphicsLayout{
-					getHostVisibleMemory().getDescriptorSetLayouts()[3], // Model transform uniform buffer
-					getHostVisibleMemory().getDescriptorSetLayouts()[0] // Combined image sampler
-				};
-
-				VkPipelineLayoutCreateInfo layoutInfo{
-					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-					.setLayoutCount = static_cast<uint32_t>(graphicsLayout.size()),
-					.pSetLayouts = graphicsLayout.data()
-				};
-				CHECK_VK_SUCCESS(
-					vkCreatePipelineLayout(getDevices().getLogicalDevice(), &layoutInfo, nullptr, &pipelineCreateInfo.layout),
-					"Failed to create pipeline layout"
-				)
+				graphicsPipelineCreate.layout = getPipelineLayout().getLayout();
 
 				return ::Engine::GraphicsPipeline::CreateInfo(
-					pipelineCreateInfo,
+					graphicsPipelineCreate,
 					rendering, std::move(colorAttachmentFormats),
 					std::move(stages),
 					vertexInput, std::move(binding), std::move(attributes),
@@ -800,7 +800,7 @@ namespace Global {
 		static ::Engine::ComputePipeline computePipeline(
 			&getDevices(),
 			[]() -> ::Engine::ComputePipeline::CreateInfo {
-				VkComputePipelineCreateInfo create{
+				VkComputePipelineCreateInfo computePipelineCreate{
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
 				};
 
@@ -816,28 +816,16 @@ namespace Global {
 					"Failed to create shader module"
 				)
 
-				create.stage = 	VkPipelineShaderStageCreateInfo{
+				computePipelineCreate.stage = 	VkPipelineShaderStageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 					.stage = VK_SHADER_STAGE_COMPUTE_BIT,
 					.module = pShaderModule,
 					.pName = "computeShader"
 				};
 
-				std::vector<VkDescriptorSetLayout> computeLayouts{};
-				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[4]); // Delta time uniform buffer
-				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]);  // PARTICLES_IN SSBO
-				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]); // particlesOut SSBO
-				VkPipelineLayoutCreateInfo layoutInfo{
-					.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-					.setLayoutCount = 3,
-					.pSetLayouts = computeLayouts.data()
-				};
-				CHECK_VK_SUCCESS(
-					vkCreatePipelineLayout(getDevices().getLogicalDevice(), &layoutInfo, nullptr, &create.layout),
-					"Failed to create pipeline layout"
-				)
+				computePipelineCreate.layout = getPipelineLayout().getLayout();
 
-				return ::Engine::ComputePipeline::CreateInfo(create);
+				return ::Engine::ComputePipeline::CreateInfo(computePipelineCreate);
 			}()
 		);
 

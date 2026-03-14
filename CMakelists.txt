@@ -43,6 +43,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayout.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayout.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.cpp

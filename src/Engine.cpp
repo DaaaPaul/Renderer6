@@ -236,8 +236,8 @@ namespace Engine {
 		vkCmdBindIndexBuffer(pCommandBuffer, getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
 
 		std::vector<VkDescriptorSet> drawDescriptorSets{
-			getHostVisibleMemory().getDescriptorSets()[3 + Global::Engine::gHitmanIndex], // Model transform uniform buffer
-			getHostVisibleMemory().getDescriptorSets()[0] // Combined image sampler
+			getHostVisibleMemory().getDescriptorSets()[0 + Global::Engine::gHitmanIndex], // Model transform uniform buffer
+			getDeviceLocalMemory().getDescriptorSets()[0] // Combined image sampler
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
 			0, 2, drawDescriptorSets.data(), 0, nullptr);
@@ -295,7 +295,7 @@ namespace Engine {
 		std::vector<VkDescriptorSet> computeDescriptorSets{
 			Global::getHostVisibleMemory().getDescriptorSets()[4 + gHitmanIndex], // Delta time uniform buffer
 			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gHitmanIndex], // PARTICLES_IN SSBO
-			Global::getDeviceLocalMemory().getDescriptorSets()[(1 + gHitmanIndex + 1) % gHitmenInFlight], // particlesOut SSBO
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gHitmanIndex + 1) % gHitmenInFlight)], // particlesOut SSBO
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
 			2, 3, computeDescriptorSets.data(), 0, nullptr);
@@ -318,17 +318,10 @@ namespace Engine {
 		uint64_t drawSignalVal = ++hitman.timelineVal;
 		uint32_t nextImageIndex = 0xFFFFFFFF;
 
-		std::cout << "gHitmanIndex: " << gHitmanIndex << "\n";
-		std::cout << "computeWaitVal: " << computeWaitVal << "\n";
-		std::cout << "computeSignalVal: " << computeSignalVal << "\n";
-		std::cout << "drawWaitVal: " << drawWaitVal << "\n";
-		std::cout << "drawSignalVal: " << drawSignalVal << "\n";
-
 		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, hitman.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();
 			return;
 		}
-		std::cout << "nextImageIndex: " << nextImageIndex << "\n";
 		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
 		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime);
 

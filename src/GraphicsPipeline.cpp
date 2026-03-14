@@ -14,7 +14,6 @@ namespace Engine {
 
 	GraphicsPipeline::~GraphicsPipeline() {
 		vkDestroyShaderModule(pDevices->getLogicalDevice(), createInfo.stages[0].module, nullptr);
-		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), createInfo.pipelineInfo.layout, nullptr);
 		vkDestroyPipeline(pDevices->getLogicalDevice(), pGraphicsPipeline, nullptr);
 	}
 }

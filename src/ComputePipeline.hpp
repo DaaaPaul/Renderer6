@@ -24,7 +24,7 @@ namespace Engine {
 		const CreateInfo CREATE_INFO;
 
 		public:
-		explicit ComputePipeline(Backend::Devices* pDevices, CreateInfo&& givenCreateInfo);
+		explicit ComputePipeline(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo);
 		~ComputePipeline();
 		[[nodiscard]] Backend::Devices*& getDevices() noexcept { return pDevices; }
 		[[nodiscard]] VkPipeline& getComputePipeline() noexcept { return pComputePipeline; }
