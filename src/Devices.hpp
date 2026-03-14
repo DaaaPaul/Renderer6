@@ -38,7 +38,7 @@ namespace Backend {
 				features{ GIVEN_FEATURES } {
 				reroutePointers();
 			}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				pPhysicalDevice{ salvageCreateInfo.pPhysicalDevice },
 				logicalDeviceInfo{ salvageCreateInfo.logicalDeviceInfo },
 				queueFamilyInfos(std::move(salvageCreateInfo.queueFamilyInfos)),

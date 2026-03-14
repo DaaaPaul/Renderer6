@@ -25,7 +25,7 @@ namespace Backend {
 				createInfo(GIVEN_INSTANCE_INFO) {
 				reroutePointers();
 			}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				layers(std::move(salvageCreateInfo.layers)),
 				extensions(std::move(salvageCreateInfo.extensions)),
 				appInfo(salvageCreateInfo.appInfo),

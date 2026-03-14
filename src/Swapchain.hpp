@@ -21,7 +21,7 @@ namespace Backend {
 				accessorQfIndices{ std::move(salvageAccessorQfIndices) } {
 				reroutePointers();
 			}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				pSurface{ salvageCreateInfo.pSurface },
 				createInfo{ salvageCreateInfo.createInfo }, 
 				accessorQfIndices(std::move(salvageCreateInfo.accessorQfIndices)) {

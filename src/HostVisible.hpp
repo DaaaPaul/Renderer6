@@ -15,7 +15,7 @@ namespace DeviceMemory {
 			CreateInfo(std::vector<BufferInfo>&& salvageBufferInfos, std::vector<DescriptorSetInfo>&& salvageDescriptorSetInfos) :
 				bufferInfos{ std::move(salvageBufferInfos) },
 				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
 				descriptorSetInfos{ std::move(salvageCreateInfo.descriptorSetInfos) } {}
 		};

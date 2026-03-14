@@ -68,7 +68,7 @@ namespace Engine {
 				dynamicStates(std::move(salvageDynamicStates)) {
 					reroutePointers();
 			}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				pipelineInfo(salvageCreateInfo.pipelineInfo), 
 				rendering(salvageCreateInfo.rendering), 
 				colorAttachmentFormats(std::move(salvageCreateInfo.colorAttachmentFormats)), 

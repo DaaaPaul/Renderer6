@@ -21,13 +21,14 @@
 - put prefix p for pointers !DONE!
 - vkGetPhysicalDeviceSurfaceSupportKHR??? !IGNORED!
 
+- add noexcepts to warnings !DONE!
+- make different uniform buffer for each frame !DONE!
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-- make different uniform buffer for each frame
 - Load mipmaps from texture itself
 - consider multisampling
 
 PEASY:
-- add noexcepts to warnings
 - create structure chain thing for features struct
 - wrap VkShaderModule

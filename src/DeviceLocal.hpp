@@ -19,7 +19,7 @@ namespace DeviceMemory {
 				imageInfos{ std::move(salvageImageInfos) },
 				samplerInfos{ std::move(salvageSamplerInfos) },
 				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
-			CreateInfo(CreateInfo&& salvageCreateInfo) : 
+			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
 				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
 				imageInfos{ std::move(salvageCreateInfo.imageInfos) },
 				samplerInfos{ std::move(salvageCreateInfo.samplerInfos) },
