@@ -12,7 +12,6 @@ namespace Engine {
 	}
 
 	ComputePipeline::~ComputePipeline() {
-		vkDestroyShaderModule(pDevices->getLogicalDevice(), CREATE_INFO.pipelineInfo.stage.module, nullptr);
 		vkDestroyPipeline(pDevices->getLogicalDevice(), pComputePipeline, nullptr);
 	}
 }

@@ -3,6 +3,7 @@
 namespace Engine {
 	PipelineLayout::PipelineLayout(Backend::Devices* givenDevices, std::vector<VkDescriptorSetLayout>&& salvageDescriptorSetLayouts) :
 		pDevices{ givenDevices },
+		pLayout{}, 
 		descriptorSetLayouts(std::move(salvageDescriptorSetLayouts)) {
 		VkPipelineLayoutCreateInfo pipelineLayoutCreate{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,

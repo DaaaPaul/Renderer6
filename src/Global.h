@@ -11,6 +11,7 @@
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
 #include "PipelineLayout.hpp"
+#include "ShaderModule.hpp"
 #include "GraphicsPipeline.hpp"
 #include "ComputePipeline.hpp"
 #include "Engine.h"
@@ -46,6 +47,7 @@ namespace Global {
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
 	[[nodiscard]] ::Engine::PipelineLayout& getPipelineLayout();
+	[[nodiscard]] ::Engine::ShaderModule& getShaderModule();
 	[[nodiscard]] ::Engine::GraphicsPipeline& getGraphicsPipeline();
 	[[nodiscard]] ::Engine::ComputePipeline& getComputePipeline();
 }

@@ -645,6 +645,13 @@ namespace Global {
 
 		return gPipelineLayout;
 	}
+	
+	::Engine::ShaderModule& getShaderModule() {
+		static constexpr const char* gPATH = R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)";
+		static ::Engine::ShaderModule gShaderModule(&getDevices(), Common::getFileBytes(gPATH));
+
+		return gShaderModule;
+	}
 
 	::Engine::GraphicsPipeline& getGraphicsPipeline() {
 		static ::Engine::GraphicsPipeline gGraphicsPipeline(
@@ -664,28 +671,17 @@ namespace Global {
 					.stencilAttachmentFormat = {},
 				};
 
-				std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
-				VkShaderModuleCreateInfo shaderModuleForEverythingInfo{
-					.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
-					.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
-				};
-				VkShaderModule pShaderModuleForEverything{};
-				CHECK_VK_SUCCESS(
-					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleForEverythingInfo, nullptr, &pShaderModuleForEverything),
-					"Failed to create shader module"
-				)
 				std::vector<VkPipelineShaderStageCreateInfo> stages{
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 						.stage = VK_SHADER_STAGE_VERTEX_BIT,
-						.module = pShaderModuleForEverything,
+						.module = getShaderModule().getShaderModule(),
 						.pName = "vertexShader"
 					},
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 						.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-						.module = pShaderModuleForEverything,
+						.module = getShaderModule().getShaderModule(),
 						.pName = "fragmentShader"
 					}
 				};
@@ -804,22 +800,10 @@ namespace Global {
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO
 				};
 
-				std::vector<char> sprivFileBytes(Common::loadSprivFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
-				VkShaderModuleCreateInfo shaderModuleInfo{
-					.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-					.codeSize = static_cast<uint32_t>(sprivFileBytes.size()),
-					.pCode = reinterpret_cast<uint32_t const*>(sprivFileBytes.data())
-				};
-				VkShaderModule pShaderModule{};
-				CHECK_VK_SUCCESS(
-					vkCreateShaderModule(getDevices().getLogicalDevice(), &shaderModuleInfo, nullptr, &pShaderModule),
-					"Failed to create shader module"
-				)
-
 				computePipelineCreate.stage = 	VkPipelineShaderStageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 					.stage = VK_SHADER_STAGE_COMPUTE_BIT,
-					.module = pShaderModule,
+					.module = getShaderModule().getShaderModule(),
 					.pName = "computeShader"
 				};
 

@@ -13,7 +13,7 @@ namespace Common {
         return std::ranges::includes(bigCopy, smallCopy);
     }
 
-	[[nodiscard]] const std::vector<char> loadSprivFileBytes(std::string const& PATH) {
+	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH) {
 		std::ifstream fileIn(PATH, std::ios::binary | std::ios::ate);
 		if(!fileIn.good()) {
 			throw std::runtime_error("Failure reading file at " + std::string(PATH));
