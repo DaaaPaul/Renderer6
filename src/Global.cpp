@@ -11,17 +11,18 @@ namespace Global {
 		void load() {
 			assert(Global::gLoaded);
 
-			(void) getKillhouse();
+			(void) getFrames();
 			(void) getCurrentTransformation();
 
 			gLoaded = true;
 		}
 
-		[[nodiscard]] ::Engine::Killhouse& getKillhouse() {
-			assert(Engine::gHitmenInFlight != 0xFFFFFFFF);
+		[[nodiscard]] ::Engine::Frames& getFrames() {
+			assert(Engine::gFramesInFlight != 0xFFFFFFFF);
 
-			static ::Engine::Killhouse gKillhouse(gHitmenInFlight, Global::getDevices().getGraphicsQfIndex());
-			return gKillhouse;
+			static ::Engine::Frames gFrames(gFramesInFlight, Global::getDevices().getGraphicsQfIndex());
+
+			return gFrames;
 		}
 
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation() {
@@ -414,7 +415,7 @@ namespace Global {
 					.clipped = VK_TRUE,
 					.oldSwapchain = VK_NULL_HANDLE,
 				};
-				Engine::gHitmenInFlight = SWAPCHAIN_INFO.minImageCount; /* (*) */
+				Engine::gFramesInFlight = SWAPCHAIN_INFO.minImageCount; /* (*) */
 
 				return Backend::Swapchain::CreateInfo(std::move(pReturnSurface), SWAPCHAIN_INFO, std::move(accessorGfxQf));
 			}()
@@ -454,14 +455,14 @@ namespace Global {
 			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
 			self.writeToBuffer(1, getGltfModel().second.data(), gIndexBufferSize);
 			self.writeToBuffer(2, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
-			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.writeToBuffer(7 + i, getParticlesData().data(), gParticleBufferSize);
 			}
 
-			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.updateDescriptorSetBuffer(i, 0, {static_cast<unsigned long long>(3 + i)});
 			}
-			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.updateDescriptorSetBuffer(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
 			}
 		};
@@ -474,13 +475,13 @@ namespace Global {
 					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				};
 
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(gParticleBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
 				}
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(sizeof(Particle::DeltaTime), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 
@@ -492,10 +493,10 @@ namespace Global {
 			[]() -> std::vector<DeviceMemory::DescriptorSetInfo> {
 				std::vector<DeviceMemory::DescriptorSetInfo> lambdaReturn{};
 
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Vertex::Transforms::getDescriptorSetBinding(0)});
 				}
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::DeltaTime::getDescriptorSetBinding(0)});
 				}
 
@@ -529,14 +530,14 @@ namespace Global {
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, gIndexBufferSize)});
-			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			}
 
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			
 			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
-			for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.updateDescriptorSetBuffer(1 + i, 0, {static_cast<unsigned long long>(2 + i)});
 			}
 		};
@@ -548,7 +549,7 @@ namespace Global {
 					DeviceMemory::BufferInfo(gIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
 				};
 
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(gParticleBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 
@@ -617,7 +618,7 @@ namespace Global {
 					})
 				};
 
-				for(int i = 0; i < Engine::gHitmenInFlight; i++) {
+				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::Particle::getDescriptorSetBinding(0)});
 				}
 

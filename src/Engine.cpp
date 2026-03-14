@@ -2,107 +2,13 @@
 #include <chrono>
 #include "Global.h"
 #include "Engine.h"
+#include "Frames.hpp"
 #include "DeviceMemory.h"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Global::getWindow().getGlfwWindow(), glfwKey) == GLFW_PRESS
 
 namespace Engine {
-	Hitman::Hitman(VkCommandPool pPool) :
-	pOneAtATime{},
-	pTimeline{},
-	timelineVal{ 0 },
-	pCommandPool{ pPool },
-	pDrawCommands{} {
-		VkFenceCreateInfo signedFenceCreate{
-			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-			/*.flags = VK_FENCE_CREATE_SIGNALED_BIT*/
-		};
-		CHECK_VK_SUCCESS(
-			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pOneAtATime),
-			"Fence creation failed"
-		)
-
-		VkSemaphoreTypeCreateInfo timelineType{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
-			.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
-			.initialValue = 0
-		};
-		VkSemaphoreCreateInfo timelineSemaphoreInfo{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-			.pNext = &timelineType
-		};
-		CHECK_VK_SUCCESS(
-			vkCreateSemaphore(Global::getDevices().getLogicalDevice(), &timelineSemaphoreInfo, nullptr, &pTimeline),
-			"Semaphore creation failed"
-		)
-
-		VkCommandBufferAllocateInfo commandBufferInfo{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-			.commandPool = pCommandPool,
-			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-			.commandBufferCount = 1,
-		};
-		CHECK_VK_SUCCESS(
-			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pDrawCommands),
-			"Command buffer creation failed"
-		)
-		CHECK_VK_SUCCESS(
-			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pComputeCommands),
-			"Command buffer creation failed"
-		)
-	}
-
-	Hitman::~Hitman() {
-		vkDestroyFence(Global::getDevices().getLogicalDevice(), pOneAtATime, nullptr);
-		vkDestroySemaphore(Global::getDevices().getLogicalDevice(), pTimeline, nullptr);
-		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pDrawCommands);
-		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pCommandPool, 1, &pComputeCommands);
-	}
-
-	Killhouse::Killhouse() :
-		pCommandPoolUsed{},
-		hitmen{} {
-	
-	}
-
-	Killhouse::Killhouse(uint16_t const& HITMEN_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
-		pCommandPoolUsed{},
-		hitmen{} {
-		VkCommandPoolCreateInfo poolCreate{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-			.queueFamilyIndex = GRAPHICS_QF_INDEX
-		};
-
-		CHECK_VK_SUCCESS(
-			vkCreateCommandPool(Global::getDevices().getLogicalDevice(), &poolCreate, nullptr, &pCommandPoolUsed),
-			"Failed to create command pool"
-		)
-
-		hitmen.reserve(HITMEN_COUNT);
-		for(int i = 0; i < HITMEN_COUNT; i++) {
-			hitmen.emplace_back(pCommandPoolUsed);
-		}
-	}
-
-	Killhouse::~Killhouse() {
-		hitmen.clear();
-		vkDestroyCommandPool(Global::getDevices().getLogicalDevice(), pCommandPoolUsed, nullptr);
-	}
-
-	void Killhouse::recreateHitmen() {
-		const size_t PREVIOUS_HITMEN_COUNT{ hitmen.size() };
-
-		hitmen.clear();
-		hitmen.reserve(PREVIOUS_HITMEN_COUNT);
-		for(int i = 0; i < PREVIOUS_HITMEN_COUNT; i++) {
-			hitmen.emplace_back(pCommandPoolUsed);
-		}
-	}
-
-	/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
-
 	[[nodiscard]] float getDeltaTime() noexcept {
 		static std::chrono::steady_clock::time_point previousCallTime = std::chrono::high_resolution_clock::now();
 		std::chrono::steady_clock::time_point nowTime = std::chrono::high_resolution_clock::now();
@@ -120,8 +26,8 @@ namespace Engine {
 		Global::getSwapchain().recreate();
 		Global::getDeviceLocalMemory().recreateDepthResources();
 		Global::getWindow().framebufferResized = false;
-		getKillhouse().recreateHitmen();
-		gHitmanIndex = 0;
+		getFrames().recreateFrames();
+		gFrameIndex = 0;
 	}
 
 	void freshenTransformation() {
@@ -170,53 +76,49 @@ namespace Engine {
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
-		VkImageView pColorImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
+		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
 			DeviceMemory::ImageViewInfo{
 				.type = VK_IMAGE_VIEW_TYPE_2D,
 				.format = VK_FORMAT_R8G8B8A8_SRGB,
 				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
 			});
 		VkImageView pDepthImageView = getDeviceLocalMemory().getImageViews()[getDeviceLocalMemory().searchForDepthImageIndex()];
-		const VkRenderingAttachmentInfo COLOR_ATTACHMENT{
+		VkRenderingAttachmentInfo colorAttachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = pColorImageView,
+			.imageView = pSwapchainImageView,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = VkClearColorValue({0.2f, 0.2f, 0.2f, 1.0f}),
+			.clearValue = VkClearColorValue({0.4f, 0.2f, 0.2f, 1.0f}),
 		};
-		const VkRenderingAttachmentInfo DEPTH_ATTACHMENT{
+		VkRenderingAttachmentInfo depthAttachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = pDepthImageView,
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-			.clearValue = {.depthStencil = VkClearDepthStencilValue(1.0f, 0) },
+			.clearValue = { .depthStencil = VkClearDepthStencilValue(1.0f, 0) },
 		};
-		const VkRenderingInfo RENDERING_INFO{
+		VkRenderingInfo renderingInfo{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
 			.renderArea = VkRect2D(VkOffset2D(0, 0), getSwapchain().getCurrentExtent()),
 			.layerCount = 1,
-			.viewMask = 0,
 			.colorAttachmentCount = 1,
-			.pColorAttachments = &COLOR_ATTACHMENT,
-			.pDepthAttachment = &DEPTH_ATTACHMENT
+			.pColorAttachments = &colorAttachment,
+			.pDepthAttachment = &depthAttachment
 		};
 
 		// begin recording
-		const VkCommandBufferBeginInfo BEGIN_INFO{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		};
+		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(
-		vkBeginCommandBuffer(pCommandBuffer, &BEGIN_INFO),
+		vkBeginCommandBuffer(pCommandBuffer, &BEGIN),
 		"Failed to begin command buffer")
-		// began recording
 
 		// sets and bindings
 		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getGraphicsPipeline());
-		const VkViewport VIEWPORT{
+		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
 			.width = static_cast<float>(getSwapchain().getCurrentExtent().width),
@@ -224,24 +126,24 @@ namespace Engine {
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
-		const VkRect2D SCISSOR{
+		VkRect2D scissor{
 			.offset = VkOffset2D(0, 0),
 			.extent = getSwapchain().getCurrentExtent()
 		};
-		vkCmdSetViewport(pCommandBuffer, 0, 1, &VIEWPORT);
-		vkCmdSetScissor(pCommandBuffer, 0, 1, &SCISSOR);
+		vkCmdSetViewport(pCommandBuffer, 0, 1, &viewport);
+		vkCmdSetScissor(pCommandBuffer, 0, 1, &scissor);
 
 		constexpr VkDeviceSize ZERO = 0;
 		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &getDeviceLocalMemory().getBuffers()[0], &ZERO);
 		vkCmdBindIndexBuffer(pCommandBuffer, getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
 
 		std::vector<VkDescriptorSet> drawDescriptorSets{
-			getHostVisibleMemory().getDescriptorSets()[0 + Global::Engine::gHitmanIndex], // Model transform uniform buffer
+			getHostVisibleMemory().getDescriptorSets()[0 + Global::Engine::gFrameIndex], // Model transform uniform buffer
 			getDeviceLocalMemory().getDescriptorSets()[0] // Combined image sampler
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
 			0, 2, drawDescriptorSets.data(), 0, nullptr);
-			
+		
 		// layout transitions to optimal
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
@@ -255,10 +157,8 @@ namespace Engine {
 		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
 
 		// draw!
-		vkCmdBeginRendering(pCommandBuffer, &RENDERING_INFO);
-
+		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
 		vkCmdDrawIndexed(pCommandBuffer, getGltfModel().second.size(), 1, 0, 0, 0);
-
 		vkCmdEndRendering(pCommandBuffer);
 
 		// layout transition to present optimal
@@ -273,29 +173,26 @@ namespace Engine {
 		vkEndCommandBuffer(pCommandBuffer),
 		"Command buffer end recording failure"
 		)
-		// ended recording
 
-		vkDestroyImageView(getDevices().getLogicalDevice(), pColorImageView, nullptr);
+		vkDestroyImageView(getDevices().getLogicalDevice(), pSwapchainImageView, nullptr);
 	};
 
 	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
 		using namespace Global::Engine;
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
-		const VkCommandBufferBeginInfo BEGIN_INFO{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-		};
+		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(
-			vkBeginCommandBuffer(pCommandBuffer, &BEGIN_INFO),
+			vkBeginCommandBuffer(pCommandBuffer, &BEGIN),
 			"Failed to begin compute command buffer"
 		)
 		
 		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getComputePipeline());
 
 		std::vector<VkDescriptorSet> computeDescriptorSets{
-			Global::getHostVisibleMemory().getDescriptorSets()[4 + gHitmanIndex], // Delta time uniform buffer
-			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gHitmanIndex], // PARTICLES_IN SSBO
-			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gHitmanIndex + 1) % gHitmenInFlight)], // particlesOut SSBO
+			Global::getHostVisibleMemory().getDescriptorSets()[4 + gFrameIndex], // Delta time uniform buffer
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gFrameIndex], // PARTICLES_IN SSBO
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gFrameIndex + 1) % gFramesInFlight)], // particlesOut SSBO
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
 			2, 3, computeDescriptorSets.data(), 0, nullptr);
@@ -311,35 +208,35 @@ namespace Engine {
 
 	void renderNext() {
 		using namespace Global::Engine;
-		Hitman& hitman = getKillhouse().hitmen[gHitmanIndex];
-		uint64_t computeWaitVal = hitman.timelineVal;
-		uint64_t computeSignalVal = ++hitman.timelineVal;
+		Frames::Frame& frame = getFrames().frames[gFrameIndex];
+		uint64_t computeWaitVal = frame.timelineVal;
+		uint64_t computeSignalVal = ++frame.timelineVal;
 		uint64_t drawWaitVal = computeSignalVal;
-		uint64_t drawSignalVal = ++hitman.timelineVal;
+		uint64_t drawSignalVal = ++frame.timelineVal;
 		uint32_t nextImageIndex = 0xFFFFFFFF;
 
-		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, hitman.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
+		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, frame.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();
 			return;
 		}
-		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
-		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime);
+		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &frame.pOneAtATime, VK_TRUE, UINT64_MAX);
+		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &frame.pOneAtATime);
 
-		// compute submit info
-		recordComputeCommands(hitman.pComputeCommands);
+		// compute
+		recordComputeCommands(frame.pComputeCommands);
 		VkSemaphoreSubmitInfo computeWait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = hitman.pTimeline,
+			.semaphore = frame.pTimeline,
 			.value = computeWaitVal,
 			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
 		};
 		VkCommandBufferSubmitInfo computeCommands{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = hitman.pComputeCommands,
+			.commandBuffer = frame.pComputeCommands,
 		};
 		VkSemaphoreSubmitInfo computeSignal{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = hitman.pTimeline,
+			.semaphore = frame.pTimeline,
 			.value = computeSignalVal,
 			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
 		};
@@ -354,21 +251,21 @@ namespace Engine {
 		};
 
 		// graphics submit info
-		recordDrawCommands(hitman.pDrawCommands, nextImageIndex);
+		recordDrawCommands(frame.pDrawCommands, nextImageIndex);
 		freshenTransformation();
 		VkSemaphoreSubmitInfo drawWait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = hitman.pTimeline,
+			.semaphore = frame.pTimeline,
 			.value = drawWaitVal,
 			.stageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT,
 		};
 		VkCommandBufferSubmitInfo drawCommands{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = hitman.pDrawCommands,
+			.commandBuffer = frame.pDrawCommands,
 		};
 		VkSemaphoreSubmitInfo drawSignal{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = hitman.pTimeline,
+			.semaphore = frame.pTimeline,
 			.value = drawSignalVal,
 			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		};
@@ -384,17 +281,17 @@ namespace Engine {
 		std::vector<VkSubmitInfo2> submitInfos{ computeSubmit, drawSubmit };
 		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 2, submitInfos.data(), VK_NULL_HANDLE);
 
-		VkSemaphoreWaitInfo presentWait{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
-			.semaphoreCount = 1,
-			.pSemaphores = &hitman.pTimeline,
-			.pValues = &drawSignalVal
-		};
 		VkPresentInfoKHR presentInfo{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.swapchainCount = 1,
 			.pSwapchains = &Global::getSwapchain().getSwapchain(),
 			.pImageIndices = &nextImageIndex
+		};
+		VkSemaphoreWaitInfo presentWait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+			.semaphoreCount = 1,
+			.pSemaphores = &frame.pTimeline,
+			.pValues = &drawSignalVal
 		};
 		vkWaitSemaphores(Global::getDevices().getLogicalDevice(), &presentWait, UINT64_MAX);
 
@@ -403,7 +300,7 @@ namespace Engine {
 			return;
 		}
 
-		gHitmanIndex = (gHitmanIndex + 1) % gHitmenInFlight;
+		gFrameIndex = (gFrameIndex + 1) % gFramesInFlight;
 	}
 
 	void run() {

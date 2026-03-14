@@ -1,14 +1,14 @@
 struct VertexIn {
     [[vk::location(0)]] float4 position;
     [[vk::location(1)]] float4 color;
-    //[[vk::location(2)]] float2 texCoord;
+    [[vk::location(2)]] float2 texCoord;
 };
 
 struct VertexOut {
     float4 position : SV_Position;
     float pointSize : SV_PointSize;
     float4 color : COLOR0;
-    //float2 texCoord;
+    float2 texCoord;
 };
 
 struct FragmentIn {
@@ -41,7 +41,7 @@ struct DeltaTime {
 [[vk::binding(0, 0)]]
 ConstantBuffer<TransformationMatrices> TRANSFORMATION_MATRICES;
 [[vk::binding(0, 1)]]
-Sampler2D combinedImageSampler;
+Sampler2D COMBINED_IMAGE_SAMPLER;
 [[vk::binding(0, 2)]]
 ConstantBuffer<DeltaTime> DELTA_TIME;
 [[vk::binding(0, 3)]]

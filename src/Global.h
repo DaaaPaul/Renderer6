@@ -14,17 +14,17 @@
 #include "ShaderModule.hpp"
 #include "GraphicsPipeline.hpp"
 #include "ComputePipeline.hpp"
-#include "Engine.h"
+#include "Frames.hpp"
 
 namespace Global {
 	namespace Engine {
-		inline uint32_t gHitmanIndex = 0;
-		inline uint32_t gHitmenInFlight = 0xFFFFFFFF; /* (*) */
+		inline uint32_t gFrameIndex = 0;
+		inline uint32_t gFramesInFlight = 0xFFFFFFFF; /* (*) */
 
 		void load();
 		inline bool gLoaded = false;
 
-		[[nodiscard]] ::Engine::Killhouse& getKillhouse();
+		[[nodiscard]] ::Engine::Frames& getFrames();
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation();
 	}
 
