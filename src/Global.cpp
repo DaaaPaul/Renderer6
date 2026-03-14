@@ -9,12 +9,19 @@
 namespace Global {
 	namespace Engine {
 		void load() {
-			assert(Global::gGlobalLoaded);
+			assert(Global::gLoaded);
 
 			(void) getKillhouse();
 			(void) getCurrentTransformation();
 
-			gGlobalEngineLoaded = true;
+			gLoaded = true;
+		}
+
+		[[nodiscard]] ::Engine::Killhouse& getKillhouse() {
+			assert(Engine::gHitmenInFlight != 0xFFFFFFFF);
+
+			static ::Engine::Killhouse gKillhouse(gHitmenInFlight, Global::getDevices().getGraphicsQfIndex());
+			return gKillhouse;
 		}
 
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation() {
@@ -33,13 +40,6 @@ namespace Global {
 
 			return gCurrentTransformation;
 		}
-
-		[[nodiscard]] ::Engine::Killhouse& getKillhouse() {
-			assert(Engine::gHitmenInFlight != 0xFFFFFFFF);
-
-			static ::Engine::Killhouse gKillhouse(gHitmenInFlight, Global::getDevices().getGraphicsQfIndex());
-			return gKillhouse;
-		}
 	}
 
 	void load() {
@@ -55,7 +55,7 @@ namespace Global {
 		(void) getDeviceLocalMemory();
 		(void) getGraphicsPipeline();
 
-		gGlobalLoaded = true;
+		gLoaded = true;
 	}
 
 	ktxTexture2 const* getKtxTexture2() {

@@ -11,6 +11,7 @@ namespace Engine {
 	Hitman::Hitman(VkCommandPool pPool) :
 	pOneAtATime{},
 	pTimeline{},
+	timelineVal{ 0 },
 	pCommandPool{ pPool },
 	pDrawCommands{} {
 		VkFenceCreateInfo signedFenceCreate{
@@ -29,7 +30,7 @@ namespace Engine {
 		};
 		VkSemaphoreCreateInfo timelineSemaphoreInfo{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-			.pNext = &timelineSemaphoreInfo
+			.pNext = &timelineType
 		};
 		CHECK_VK_SUCCESS(
 			vkCreateSemaphore(Global::getDevices().getLogicalDevice(), &timelineSemaphoreInfo, nullptr, &pTimeline),
@@ -311,16 +312,23 @@ namespace Engine {
 	void renderNext() {
 		using namespace Global::Engine;
 		Hitman& hitman = getKillhouse().hitmen[gHitmanIndex];
-		uint64_t computeWaitVal = gTimelineValue;
-		uint64_t computeSignalVal = ++gTimelineValue;
+		uint64_t computeWaitVal = hitman.timelineVal;
+		uint64_t computeSignalVal = ++hitman.timelineVal;
 		uint64_t drawWaitVal = computeSignalVal;
-		uint64_t drawSignalVal = ++gTimelineValue;
+		uint64_t drawSignalVal = ++hitman.timelineVal;
 		uint32_t nextImageIndex = 0xFFFFFFFF;
+
+		std::cout << "gHitmanIndex: " << gHitmanIndex << "\n";
+		std::cout << "computeWaitVal: " << computeWaitVal << "\n";
+		std::cout << "computeSignalVal: " << computeSignalVal << "\n";
+		std::cout << "drawWaitVal: " << drawWaitVal << "\n";
+		std::cout << "drawSignalVal: " << drawSignalVal << "\n";
 
 		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, hitman.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();
 			return;
 		}
+		std::cout << "nextImageIndex: " << nextImageIndex << "\n";
 		vkWaitForFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime, VK_TRUE, UINT64_MAX);
 		vkResetFences(Global::getDevices().getLogicalDevice(), 1, &hitman.pOneAtATime);
 
@@ -381,7 +389,7 @@ namespace Engine {
 			.pSignalSemaphoreInfos = &drawSignal
 		};
 		std::vector<VkSubmitInfo2> submitInfos{ computeSubmit, drawSubmit };
-		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 2, submitInfos.data(), hitman.pOneAtATime);
+		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 2, submitInfos.data(), VK_NULL_HANDLE);
 
 		VkSemaphoreWaitInfo presentWait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,

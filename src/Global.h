@@ -18,10 +18,9 @@ namespace Global {
 	namespace Engine {
 		inline uint32_t gHitmanIndex = 0;
 		inline uint32_t gHitmenInFlight = 0xFFFFFFFF; /* (*) */
-		inline uint64_t gTimelineValue = 0;
 
 		void load();
-		inline bool gGlobalEngineLoaded = false;
+		inline bool gLoaded = false;
 
 		[[nodiscard]] ::Engine::Killhouse& getKillhouse();
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation();
@@ -33,7 +32,7 @@ namespace Global {
 	inline uint32_t gParticleBufferSize = 0xFFFFFFFF; /* (*) */
 
 	void load();
-	inline bool gGlobalLoaded = false;
+	inline bool gLoaded = false;
 
 	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
 	[[nodiscard]] ktxTexture2 const* getKtxTexture2();
