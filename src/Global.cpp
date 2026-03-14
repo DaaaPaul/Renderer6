@@ -54,6 +54,7 @@ namespace Global {
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getGraphicsPipeline();
+		(void) getComputePipeline();
 
 		gLoaded = true;
 	}
@@ -823,7 +824,7 @@ namespace Global {
 				};
 
 				std::vector<VkDescriptorSetLayout> computeLayouts{};
-				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[11]); // Delta time uniform buffer
+				computeLayouts.push_back(getHostVisibleMemory().getDescriptorSetLayouts()[4]); // Delta time uniform buffer
 				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]);  // PARTICLES_IN SSBO
 				computeLayouts.push_back(getDeviceLocalMemory().getDescriptorSetLayouts()[1]); // particlesOut SSBO
 				VkPipelineLayoutCreateInfo layoutInfo{

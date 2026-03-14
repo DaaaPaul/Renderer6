@@ -16,7 +16,7 @@ namespace Engine {
 	pDrawCommands{} {
 		VkFenceCreateInfo signedFenceCreate{
 			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-			.flags = VK_FENCE_CREATE_SIGNALED_BIT
+			/*.flags = VK_FENCE_CREATE_SIGNALED_BIT*/
 		};
 		CHECK_VK_SUCCESS(
 			vkCreateFence(Global::getDevices().getLogicalDevice(), &signedFenceCreate, nullptr, &pOneAtATime),
@@ -293,7 +293,7 @@ namespace Engine {
 		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getComputePipeline());
 
 		std::vector<VkDescriptorSet> computeDescriptorSets{
-			Global::getHostVisibleMemory().getDescriptorSets()[7 + gHitmanIndex], // Delta time uniform buffer
+			Global::getHostVisibleMemory().getDescriptorSets()[4 + gHitmanIndex], // Delta time uniform buffer
 			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gHitmanIndex], // PARTICLES_IN SSBO
 			Global::getDeviceLocalMemory().getDescriptorSets()[(1 + gHitmanIndex + 1) % gHitmenInFlight], // particlesOut SSBO
 		};
