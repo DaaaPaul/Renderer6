@@ -110,12 +110,13 @@ namespace Global {
 				for(Particle::Particle& p : particles) {
 					r = sqrtf(gRandom());
 					theta = 2.0f * 3.14159265358979323846f * gRandom();
-					x = cosf(theta) * getWindow().getCreateInfo().height / getWindow().getCreateInfo().width;
-					y = sinf(theta);
 
-					p.position = glm::vec4(x, y, 1.0f, 1.0f);
+					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
+					y = r * sinf(theta);
+
+					p.position = glm::vec2(x, y);
 					p.velocity = normalize(p.position) * 0.00025f;
-					p.color = glm::vec4(x, y, r, 1.0f);
+					p.color = glm::vec3(x, y, r);
 				}
 
 				gParticleBufferSize = particles.size() * sizeof(Particle::Particle);

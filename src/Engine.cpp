@@ -57,10 +57,52 @@ namespace Engine {
 			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(1.001f, 1.001f, 1.001f));
 		}
 
+		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_R)) {
+			getCurrentTransformation().model = glm::rotate(getCurrentTransformation().model, glm::radians(-0.1f), glm::vec3(1.0f, 0.0f, 0.0f));
+		} else if(CHECK_PRESSED(GLFW_KEY_R)) {
+			getCurrentTransformation().model = glm::rotate(getCurrentTransformation().model, glm::radians(0.1f), glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+
 		Global::getHostVisibleMemory().writeToBuffer(3 + gFrameIndex, &Global::Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 	}
 
-	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
+	void freshenDeltaTime() {
+		using namespace Global::Engine;
+
+		float deltaTime = getDeltaTime();
+		Global::getHostVisibleMemory().writeToBuffer(11 + gFrameIndex, &deltaTime, sizeof(float));
+	}
+
+	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
+		using namespace Global::Engine;
+		vkResetCommandBuffer(pCommandBuffer, 0);
+
+		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+		CHECK_VK_SUCCESS(
+			vkBeginCommandBuffer(pCommandBuffer, &BEGIN),
+			"Failed to begin compute command buffer"
+		)
+		
+		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getPipeline());
+
+		std::vector<VkDescriptorSet> computeDescriptorSets{
+			Global::getHostVisibleMemory().getDescriptorSets()[4 + gFrameIndex], // Delta time uniform buffer
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gFrameIndex], // PARTICLES_IN SSBO
+			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gFrameIndex + 1) % gFramesInFlight)], // particlesOut SSBO
+		};
+		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
+			0, 3, computeDescriptorSets.data(), 0, nullptr);
+			
+		assert((Global::getParticlesData().size() % 256) == 0);
+		vkCmdDispatch(pCommandBuffer, Global::getParticlesData().size() / 256, 1, 1);
+
+		CHECK_VK_SUCCESS(
+			vkEndCommandBuffer(pCommandBuffer),
+			"Failed to end compute command buffer"
+		)
+	}
+
+	void recordDrawModelCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
 		using namespace Global;
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
@@ -135,27 +177,18 @@ namespace Engine {
 		
 		// layout transitions to optimal
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE,
-		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
+		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
+		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getDeviceLocalMemory().getImages()[getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE,
-		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT,
-		VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
+		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
+		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
 
 		// draw!
 		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
 		vkCmdDrawIndexed(pCommandBuffer, getGltfModel().second.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(pCommandBuffer);
-
-		// layout transition to present optimal
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-		VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-		VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, getDevices().getGraphicsQfIndex());
 
 		// end recording
 		CHECK_VK_SUCCESS(
@@ -166,33 +199,76 @@ namespace Engine {
 		vkDestroyImageView(getDevices().getLogicalDevice(), pSwapchainImageView, nullptr);
 	};
 
-	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
-		using namespace Global::Engine;
+	void recordDrawParticlesCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
+		using namespace Global;
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
+		// rendering info/attachment info
+		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
+			DeviceMemory::ImageViewInfo{
+				.type = VK_IMAGE_VIEW_TYPE_2D,
+				.format = VK_FORMAT_R8G8B8A8_SRGB,
+				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
+			});
+		VkRenderingAttachmentInfo colorAttachment{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+			.imageView = pSwapchainImageView,
+			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		};
+		VkRenderingInfo renderingInfo{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+			.renderArea = VkRect2D(VkOffset2D(0, 0), getSwapchain().getCurrentExtent()),
+			.layerCount = 1,
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &colorAttachment,
+		};
+
+		// begin recording
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(
-			vkBeginCommandBuffer(pCommandBuffer, &BEGIN),
-			"Failed to begin compute command buffer"
-		)
-		
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getPipeline());
+		vkBeginCommandBuffer(pCommandBuffer, &BEGIN),
+		"Failed to begin command buffer")
 
-		std::vector<VkDescriptorSet> computeDescriptorSets{
-			Global::getHostVisibleMemory().getDescriptorSets()[4 + gFrameIndex], // Delta time uniform buffer
-			Global::getDeviceLocalMemory().getDescriptorSets()[1 + gFrameIndex], // PARTICLES_IN SSBO
-			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gFrameIndex + 1) % gFramesInFlight)], // particlesOut SSBO
+		// sets and bindings
+		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getParticlesGraphicsPipeline().getPipeline());
+		VkViewport viewport{
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = static_cast<float>(getSwapchain().getCurrentExtent().width),
+			.height = static_cast<float>(getSwapchain().getCurrentExtent().height),
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f,
 		};
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
-			0, 3, computeDescriptorSets.data(), 0, nullptr);
-			
-		assert((Global::getParticlesData().size() % 256) == 0);
-		vkCmdDispatch(pCommandBuffer, Global::getParticlesData().size() / 256, 1, 1);
+		VkRect2D scissor{
+			.offset = VkOffset2D(0, 0),
+			.extent = getSwapchain().getCurrentExtent()
+		};
+		vkCmdSetViewport(pCommandBuffer, 0, 1, &viewport);
+		vkCmdSetScissor(pCommandBuffer, 0, 1, &scissor);
 
+		constexpr VkDeviceSize ZERO = 0;
+		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &getDeviceLocalMemory().getBuffers()[1 + 1 + ((Global::Engine::gFrameIndex + 1) % Global::Engine::gFramesInFlight)], &ZERO);
+
+		// draw!
+		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
+		vkCmdDraw(pCommandBuffer, Global::gPARTICLES_COUNT, 1, 0, 0);
+		vkCmdEndRendering(pCommandBuffer);
+
+		// layout transition to present optimal
+		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, getDevices().getGraphicsQfIndex());
+
+		// end recording
 		CHECK_VK_SUCCESS(
-			vkEndCommandBuffer(pCommandBuffer),
-			"Failed to end compute command buffer"
+		vkEndCommandBuffer(pCommandBuffer),
+		"Command buffer end recording failure"
 		)
+
+		vkDestroyImageView(getDevices().getLogicalDevice(), pSwapchainImageView, nullptr);
 	}
 
 	void renderNext() {
@@ -200,8 +276,10 @@ namespace Engine {
 		Frames::Frame& frame = getFrames().frames[gFrameIndex];
 		uint64_t computeWaitVal = frame.timelineVal;
 		uint64_t computeSignalVal = ++frame.timelineVal;
-		uint64_t drawWaitVal = computeSignalVal;
-		uint64_t drawSignalVal = ++frame.timelineVal;
+		uint64_t modelWaitVal = computeSignalVal;
+		uint64_t modelSignalVal = ++frame.timelineVal;
+		uint64_t particlesWaitVal = modelSignalVal;
+		uint64_t particlesSignalVal = ++frame.timelineVal;
 		uint32_t nextImageIndex = 0xFFFFFFFF;
 
 		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, frame.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
@@ -213,6 +291,7 @@ namespace Engine {
 
 		// compute
 		recordComputeCommands(frame.pComputeCommands);
+		freshenDeltaTime();
 		VkSemaphoreSubmitInfo computeWait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
 			.semaphore = frame.pTimeline,
@@ -239,36 +318,65 @@ namespace Engine {
 			.pSignalSemaphoreInfos = &computeSignal
 		};
 
-		// graphics submit info
-		recordDrawCommands(frame.pDrawCommands, nextImageIndex);
+		// model
+		recordDrawModelCommands(frame.pModelCommands, nextImageIndex);
 		freshenTransformation();
-		VkSemaphoreSubmitInfo drawWait{
+		VkSemaphoreSubmitInfo modelWait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
 			.semaphore = frame.pTimeline,
-			.value = drawWaitVal,
+			.value = modelWaitVal,
 			.stageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT,
 		};
-		VkCommandBufferSubmitInfo drawCommands{
+		VkCommandBufferSubmitInfo modelCommands{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = frame.pDrawCommands,
+			.commandBuffer = frame.pModelCommands,
 		};
-		VkSemaphoreSubmitInfo drawSignal{
+		VkSemaphoreSubmitInfo modelSignal{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
 			.semaphore = frame.pTimeline,
-			.value = drawSignalVal,
+			.value = modelSignalVal,
 			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
 		};
-		VkSubmitInfo2 drawSubmit{
+		VkSubmitInfo2 modelSubmit{
 			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
 			.waitSemaphoreInfoCount = 1,
-			.pWaitSemaphoreInfos = &drawWait,
+			.pWaitSemaphoreInfos = &modelWait,
 			.commandBufferInfoCount = 1,
-			.pCommandBufferInfos = &drawCommands,
+			.pCommandBufferInfos = &modelCommands,
 			.signalSemaphoreInfoCount = 1,
-			.pSignalSemaphoreInfos = &drawSignal
+			.pSignalSemaphoreInfos = &modelSignal
 		};
-		std::vector<VkSubmitInfo2> submitInfos{ computeSubmit, drawSubmit };
-		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 2, submitInfos.data(), VK_NULL_HANDLE);
+
+		// particles
+		recordDrawParticlesCommands(frame.pParticleCommands, nextImageIndex);
+		VkSemaphoreSubmitInfo particlesWait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = frame.pTimeline,
+			.value = particlesWaitVal,
+			.stageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT,
+		};
+		VkCommandBufferSubmitInfo particlesCommands{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+			.commandBuffer = frame.pParticleCommands,
+		};
+		VkSemaphoreSubmitInfo particlesSignal{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+			.semaphore = frame.pTimeline,
+			.value = particlesSignalVal,
+			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+		};
+		VkSubmitInfo2 particlesSubmit{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+			.waitSemaphoreInfoCount = 1,
+			.pWaitSemaphoreInfos = &particlesWait,
+			.commandBufferInfoCount = 1,
+			.pCommandBufferInfos = &particlesCommands,
+			.signalSemaphoreInfoCount = 1,
+			.pSignalSemaphoreInfos = &particlesSignal
+		};
+
+		std::vector<VkSubmitInfo2> submitInfos{ computeSubmit, modelSubmit, particlesSubmit };
+		vkQueueSubmit2(Global::getDevices().getGraphicsQueues()[0], 3, submitInfos.data(), VK_NULL_HANDLE);
 
 		VkPresentInfoKHR presentInfo{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -280,7 +388,7 @@ namespace Engine {
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
 			.semaphoreCount = 1,
 			.pSemaphores = &frame.pTimeline,
-			.pValues = &drawSignalVal
+			.pValues = &particlesSignalVal
 		};
 		vkWaitSemaphores(Global::getDevices().getLogicalDevice(), &presentWait, UINT64_MAX);
 

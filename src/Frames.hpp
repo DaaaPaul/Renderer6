@@ -11,8 +11,9 @@ namespace Engine {
 			VkFence pOneAtATime{};
 			VkSemaphore pTimeline{};
 			uint64_t timelineVal{};
-			VkCommandBuffer pDrawCommands{};
+			VkCommandBuffer pModelCommands{};
 			VkCommandBuffer pComputeCommands{};
+			VkCommandBuffer pParticleCommands{};
 
 			explicit Frame(VkCommandPool pPool);
 			~Frame();

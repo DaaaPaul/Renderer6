@@ -8,7 +8,9 @@ namespace Engine {
 	pTimeline{},
 	timelineVal{ 0 },
 	pPoolUsed{ pPool },
-	pDrawCommands{} {
+	pModelCommands{},
+	pComputeCommands{},
+	pParticleCommands{} {
 		VkFenceCreateInfo signedFenceCreate{
 			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
 			/*.flags = VK_FENCE_CREATE_SIGNALED_BIT*/
@@ -39,11 +41,15 @@ namespace Engine {
 			.commandBufferCount = 1,
 		};
 		CHECK_VK_SUCCESS(
-			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pDrawCommands),
+			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pModelCommands),
 			"Command buffer creation failed"
 		)
 		CHECK_VK_SUCCESS(
 			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pComputeCommands),
+			"Command buffer creation failed"
+		)
+		CHECK_VK_SUCCESS(
+			vkAllocateCommandBuffers(Global::getDevices().getLogicalDevice(), &commandBufferInfo, &pParticleCommands),
 			"Command buffer creation failed"
 		)
 	}
@@ -51,8 +57,9 @@ namespace Engine {
 	Frames::Frame::~Frame() {
 		vkDestroyFence(Global::getDevices().getLogicalDevice(), pOneAtATime, nullptr);
 		vkDestroySemaphore(Global::getDevices().getLogicalDevice(), pTimeline, nullptr);
-		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pPoolUsed, 1, &pDrawCommands);
+		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pPoolUsed, 1, &pModelCommands);
 		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pPoolUsed, 1, &pComputeCommands);
+		vkFreeCommandBuffers(Global::getDevices().getLogicalDevice(), pPoolUsed, 1, &pParticleCommands);
 	}
 
 	Frames::Frames(uint16_t const& FRAMES_COUNT, uint32_t const& GRAPHICS_QF_INDEX) : 
