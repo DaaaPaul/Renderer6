@@ -459,6 +459,10 @@ namespace Global {
 			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
 			self.writeToBuffer(1, getGltfModel().second.data(), gIndexBufferSize);
 			self.writeToBuffer(2, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+
+			for(int i = 0; i < Engine::gFramesInFlight; i++) {
+				self.writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
+			}
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.writeToBuffer(7 + i, getParticlesData().data(), gParticleBufferSize);
 			}
@@ -535,7 +539,7 @@ namespace Global {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, gIndexBufferSize)});
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gVertexBufferSize)});
+				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gParticleBufferSize)});
 			}
 
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});

@@ -32,43 +32,32 @@ namespace Engine {
 
 	void freshenTransformation() {
 		using namespace Global::Engine;
-		bool updatedCurrentTransformation = false;
 
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(-0.001f, 0.0f, 0.0f));
-			updatedCurrentTransformation = true;
 		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.001f, 0.0f, 0.0f));
-			updatedCurrentTransformation = true;
 		}
 		
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, -0.001f, 0.0f));
-			updatedCurrentTransformation = true;
 		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.001f, 0.0f));
-			updatedCurrentTransformation = true;
 		}
 
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, -0.001f));
-			updatedCurrentTransformation = true;
 		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
 			getCurrentTransformation().model = glm::translate(getCurrentTransformation().model, glm::vec3(0.0f, 0.0f, 0.001f));
-			updatedCurrentTransformation = true;
 		}
 
 		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_S)) {
 			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(0.999f, 0.999f, 0.999f));
-			updatedCurrentTransformation = true;
 		} else if(CHECK_PRESSED(GLFW_KEY_S)) {
 			getCurrentTransformation().model = glm::scale(getCurrentTransformation().model, glm::vec3(1.001f, 1.001f, 1.001f));
-			updatedCurrentTransformation = true;
 		}
 
-		if(updatedCurrentTransformation) {
-			Global::getHostVisibleMemory().writeToBuffer(4, &Global::Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
-		}
+		Global::getHostVisibleMemory().writeToBuffer(3 + gFrameIndex, &Global::Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 	}
 
 	void recordDrawCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {

@@ -24,6 +24,8 @@
 - add noexcepts to warnings !DONE!
 - make different uniform buffer for each frame !DONE!
 
+- wrap VkShaderModule !DONE!
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 - Load mipmaps from texture itself
@@ -32,5 +34,5 @@
 
 PEASY:
 - create structure chain thing for features struct
-- wrap VkShaderModule
 - make cull mode back
+- persistantly map host visible buffers properly
