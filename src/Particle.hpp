@@ -15,12 +15,10 @@ namespace Particle {
 		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
 	};
 
-	struct DeltaTime {
-		float deltaTime{};
-
-		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
-	};
-
 	[[nodiscard]] std::vector<VkVertexInputAttributeDescription> getInputAttributes();
 	[[nodiscard]] VkVertexInputBindingDescription getInputBinding();
+
+	namespace DeltaTime {
+		[[nodiscard]] VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+	}
 }

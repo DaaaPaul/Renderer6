@@ -20,12 +20,6 @@ namespace Vertex {
 			VkVertexInputAttributeDescription{
 				.location = 1,
 				.binding = 0,
-				.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-				.offset = offsetof(Vertex, color)
-			}, 
-			VkVertexInputAttributeDescription{
-				.location = 2,
-				.binding = 0,
 				.format = VK_FORMAT_R32G32_SFLOAT,
 				.offset = offsetof(Vertex, texCoord)
 			}

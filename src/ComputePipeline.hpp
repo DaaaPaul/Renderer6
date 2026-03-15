@@ -27,7 +27,7 @@ namespace Engine {
 		explicit ComputePipeline(Backend::Devices* givenDevices, CreateInfo&& givenCreateInfo);
 		~ComputePipeline();
 		[[nodiscard]] Backend::Devices*& getDevices() noexcept { return pDevices; }
-		[[nodiscard]] VkPipeline& getComputePipeline() noexcept { return pComputePipeline; }
+		[[nodiscard]] VkPipeline& getPipeline() noexcept { return pComputePipeline; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const noexcept { return CREATE_INFO; }
 
 		DELETE_COPY_CONSTRUCTORS(ComputePipeline)

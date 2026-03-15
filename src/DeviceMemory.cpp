@@ -64,9 +64,6 @@ namespace DeviceMemory {
 						vertex.texCoord = {0.0f, 0.0f};
 					}
 
-					// Set default color
-					vertex.color = {1.0f, 1.0f, 1.0f, 1.0f};
-
 					// Add vertex if unique
 					if (!uniqueVertices.contains(vertex)) {
 						uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());

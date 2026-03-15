@@ -117,7 +117,7 @@ namespace Engine {
 		"Failed to begin command buffer")
 
 		// sets and bindings
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getModelGraphicsPipeline().getModelGraphicsPipeline());
+		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getModelGraphicsPipeline().getPipeline());
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
@@ -187,7 +187,7 @@ namespace Engine {
 			"Failed to begin compute command buffer"
 		)
 		
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getComputePipeline());
+		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getPipeline());
 
 		std::vector<VkDescriptorSet> computeDescriptorSets{
 			Global::getHostVisibleMemory().getDescriptorSets()[4 + gFrameIndex], // Delta time uniform buffer
@@ -195,7 +195,7 @@ namespace Engine {
 			Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gFrameIndex + 1) % gFramesInFlight)], // particlesOut SSBO
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
-			2, 3, computeDescriptorSets.data(), 0, nullptr);
+			0, 3, computeDescriptorSets.data(), 0, nullptr);
 			
 		assert((Global::getParticlesData().size() % 256) == 0);
 		vkCmdDispatch(pCommandBuffer, Global::getParticlesData().size() / 256, 1, 1);

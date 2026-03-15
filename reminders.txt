@@ -28,6 +28,7 @@
 
 - Load mipmaps from texture itself
 - consider multisampling
+- Look into buffer device address extension and push constants instead of D.sets
 
 PEASY:
 - create structure chain thing for features struct

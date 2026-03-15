@@ -486,7 +486,7 @@ namespace Global {
 					lambdaReturn.emplace_back(gParticleBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
 				}
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(sizeof(Particle::DeltaTime), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(sizeof(float), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 
 				return lambdaReturn;
@@ -708,7 +708,7 @@ namespace Global {
 				graphicsPipelineCreate.pStages = stages.data();
 
 				std::vector<VkVertexInputBindingDescription> binding{ Vertex::Vertex::getInputBinding() };
-				std::vector<VkVertexInputAttributeDescription> attributes{ Vertex::Vertex::getInputAttributes() };
+				std::vector<VkVertexInputAttributeDescription> attributes(Vertex::Vertex::getInputAttributes());
 				VkPipelineVertexInputStateCreateInfo vertexInput{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
 					.vertexBindingDescriptionCount = static_cast<uint32_t>(binding.size()),

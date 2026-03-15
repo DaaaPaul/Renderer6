@@ -99,7 +99,7 @@ namespace Engine {
 		explicit GraphicsPipeline(Backend::Devices* givenDevices, CreateInfo&& salvageCreateInfo);
 		~GraphicsPipeline();
 		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
-		[[nodiscard]] VkPipeline& getModelGraphicsPipeline() { return pGraphicsPipeline; }
+		[[nodiscard]] VkPipeline& getPipeline() { return pGraphicsPipeline; }
 		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
 
 		DELETE_COPY_CONSTRUCTORS(GraphicsPipeline)

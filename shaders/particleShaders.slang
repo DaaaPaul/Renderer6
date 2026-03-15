@@ -1,39 +1,31 @@
-struct DeltaTime {
-    float deltaTime;
-};
-
 struct Particle {
     float2 position;
     float3 color;
     float2 velocity;
 };
 
-struct ParticleSSBO {
-    Particle particle;
-};
-
 // first arguement binding #, second arguement is set #
 [[vk::binding(0, 0)]]
-ConstantBuffer<DeltaTime> DELTA_TIME;
+ConstantBuffer<float> DELTA_TIME;
 [[vk::binding(0, 1)]]
-StructuredBuffer<ParticleSSBO> PARTICLES_IN;
+StructuredBuffer<Particle> PARTICLES_IN;
 [[vk::binding(0, 2)]]
-RWStructuredBuffer<ParticleSSBO> particlesOut;
+RWStructuredBuffer<Particle> particlesOut;
 
 [shader("compute")]
 [numthreads(256, 1, 1)]
 void computeShader(uint3 invocation: SV_DispatchThreadID) {
     uint i = invocation.x;
 
-    particlesOut[i].particle.position = PARTICLES_IN[i].particle.position;
-    particlesOut[i].particle.position.x += PARTICLES_IN[i].particle.velocity.x * DELTA_TIME.deltaTime;
-    particlesOut[i].particle.position.y += PARTICLES_IN[i].particle.velocity.y * DELTA_TIME.deltaTime;
+    particlesOut[i].position = PARTICLES_IN[i].position;
+    particlesOut[i].position.x += PARTICLES_IN[i].velocity.x * DELTA_TIME;
+    particlesOut[i].position.y += PARTICLES_IN[i].velocity.y * DELTA_TIME;
 
-    if ((particlesOut[i].particle.position.x <= -1.0) || (particlesOut[i].particle.position.x >= 1.0)) {
-        particlesOut[i].particle.velocity.x *= -1.0;
+    if ((particlesOut[i].position.x <= -1.0) || (particlesOut[i].position.x >= 1.0)) {
+        particlesOut[i].velocity.x *= -1.0;
     }
-    if ((particlesOut[i].particle.position.y <= -1.0) || (particlesOut[i].particle.position.y >= 1.0)) {
-        particlesOut[i].particle.velocity.y *= -1.0;
+    if ((particlesOut[i].position.y <= -1.0) || (particlesOut[i].position.y >= 1.0)) {
+        particlesOut[i].velocity.y *= -1.0;
     }
 }
 

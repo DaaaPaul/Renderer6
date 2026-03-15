@@ -35,12 +35,14 @@ namespace Particle {
 		};
 	}
 
-	[[nodiscard]] VkDescriptorSetLayoutBinding DeltaTime::getDescriptorSetBinding(uint32_t const& BINDING_NUMBER) {
-		return VkDescriptorSetLayoutBinding{
-			.binding = BINDING_NUMBER,
-			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			.descriptorCount = 1,
-			.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT
-		};
+	namespace DeltaTime {
+		VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER) {
+			return VkDescriptorSetLayoutBinding{
+				.binding = BINDING_NUMBER,
+				.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.descriptorCount = 1,
+				.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT
+			};
+		}
 	}
 }

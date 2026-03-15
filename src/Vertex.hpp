@@ -9,7 +9,6 @@
 namespace Vertex {
 	struct Vertex {
 		glm::vec4 position{};
-		glm::vec4 color{};
 		glm::vec2 texCoord{};
 
 		[[nodiscard]] static VkVertexInputBindingDescription getInputBinding();
@@ -17,7 +16,7 @@ namespace Vertex {
 	};
 
 	inline bool operator==(Vertex const& L, Vertex const& R) {
-		return L.position == R.position && L.color == R.color && L.texCoord == R.texCoord;
+		return L.position == R.position && L.texCoord == R.texCoord;
 	}
 }
 
