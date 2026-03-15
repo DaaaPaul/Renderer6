@@ -46,8 +46,11 @@ namespace Global {
 	[[nodiscard]] std::vector<VkImage>& getSwapchainImages();
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
-	[[nodiscard]] ::Engine::PipelineLayout& getPipelineLayout();
-	[[nodiscard]] ::Engine::ShaderModule& getShaderModule();
-	[[nodiscard]] ::Engine::GraphicsPipeline& getGraphicsPipeline();
+	[[nodiscard]] ::Engine::PipelineLayout& getModelPipelineLayout();
+	[[nodiscard]] ::Engine::PipelineLayout& getParticlePipelineLayout();
+	[[nodiscard]] ::Engine::ShaderModule& getModelShaderModule();
+	[[nodiscard]] ::Engine::ShaderModule& getParticleShaderModule();
+	[[nodiscard]] ::Engine::GraphicsPipeline& getModelGraphicsPipeline();
+	[[nodiscard]] ::Engine::GraphicsPipeline& getParticlesGraphicsPipeline();
 	[[nodiscard]] ::Engine::ComputePipeline& getComputePipeline();
 }

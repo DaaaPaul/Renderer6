@@ -8,8 +8,8 @@
 
 namespace Particle {
 	struct Particle {
-		glm::vec4 position{};
-		glm::vec4 color{};
+		glm::vec2 position{};
+		glm::vec3 color{};
 		glm::vec2 velocity{};
 
 		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
@@ -20,4 +20,7 @@ namespace Particle {
 
 		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
 	};
+
+	[[nodiscard]] std::vector<VkVertexInputAttributeDescription> getInputAttributes();
+	[[nodiscard]] VkVertexInputBindingDescription getInputBinding();
 }

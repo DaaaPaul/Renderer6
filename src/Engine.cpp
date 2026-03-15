@@ -117,7 +117,7 @@ namespace Engine {
 		"Failed to begin command buffer")
 
 		// sets and bindings
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getGraphicsPipeline());
+		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getModelGraphicsPipeline().getModelGraphicsPipeline());
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
@@ -141,7 +141,7 @@ namespace Engine {
 			getHostVisibleMemory().getDescriptorSets()[0 + Global::Engine::gFrameIndex], // Model transform uniform buffer
 			getDeviceLocalMemory().getDescriptorSets()[0] // Combined image sampler
 		};
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
+		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getModelGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
 			0, 2, drawDescriptorSets.data(), 0, nullptr);
 		
 		// layout transitions to optimal
