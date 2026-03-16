@@ -98,9 +98,9 @@ namespace Global {
 					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
 					y = r * sinf(theta);
 
+					p.color = glm::vec4(Common::random(), Common::random(), Common::random(), 1.0f);
 					p.position = glm::vec2(x, y);
-					p.velocity = normalize(p.position) * 0.00025f;
-					p.color = glm::vec3(Common::random(), Common::random(), Common::random());
+					p.velocity = normalize(p.position);
 				}
 
 				return particles;

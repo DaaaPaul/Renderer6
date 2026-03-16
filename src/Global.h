@@ -28,7 +28,7 @@ namespace Global {
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation();
 	}
 
-	inline constexpr uint32_t gPARTICLES_COUNT = 512;
+	inline constexpr uint32_t gPARTICLES_COUNT = 8192;
 	inline constexpr uint32_t gPARTICLES_BUFFER_SIZE = gPARTICLES_COUNT * sizeof(Particle::Particle);
 	inline uint32_t gVertexBufferSize = 0xFFFFFFFF; /* (*) */
 	inline uint32_t gIndexBufferSize = 0xFFFFFFFF; /* (*) */
