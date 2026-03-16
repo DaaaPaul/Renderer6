@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Window.hpp"
-#include "Common.h"
+#include "Util.h"
 
 namespace Backend {
 	void Window::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {

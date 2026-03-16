@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.h"
+#include "Util.h"
 #include "Instance.hpp"
 
 namespace Backend {
@@ -16,16 +16,18 @@ namespace Backend {
 			VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{};
 			VkPhysicalDeviceSynchronization2Features sync2Features{};
 			VkPhysicalDeviceTimelineSemaphoreFeatures timelineFeatures{};
+			VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddressFeatures{};
 			VkPhysicalDeviceFeatures2 features{};
 
 			void reroutePointers() {
 				logicalDeviceInfo.pNext = &features;
-				features.pNext = &timelineFeatures;
+				features.pNext = &bufferAddressFeatures;
+				bufferAddressFeatures.pNext = &timelineFeatures;
 				timelineFeatures.pNext = &sync2Features;
 				sync2Features.pNext = &dynamicRenderingFeatures;
 				dynamicRenderingFeatures.pNext = &extendedDynamicStateFeatures;
 			}
-			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo>&& salvageQfInfos, std::vector<std::vector<float>>&& salvageQfPriorities, std::vector<const char*>&& salvageExtensions, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceTimelineSemaphoreFeatures const& GIVEN_TIMELINE, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
+			CreateInfo(VkPhysicalDevice&& givenPhysicalDevice, VkDeviceCreateInfo const& GIVEN_LOGICAL_DEVICE_INFO, std::vector<VkDeviceQueueCreateInfo>&& salvageQfInfos, std::vector<std::vector<float>>&& salvageQfPriorities, std::vector<const char*>&& salvageExtensions, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT const& GIVEN_EXTENDED_DYNAMIC, VkPhysicalDeviceDynamicRenderingFeatures const& GIVEN_DYNAMIC_RENDERING, VkPhysicalDeviceSynchronization2Features const& GIVEN_SYNC2, VkPhysicalDeviceTimelineSemaphoreFeatures const& GIVEN_TIMELINE, VkPhysicalDeviceBufferDeviceAddressFeatures const& GIVEN_BA, VkPhysicalDeviceFeatures2 const& GIVEN_FEATURES) :
 				pPhysicalDevice{ givenPhysicalDevice },
 				logicalDeviceInfo{ GIVEN_LOGICAL_DEVICE_INFO },
 				queueFamilyInfos{ std::move(salvageQfInfos) },
@@ -35,6 +37,7 @@ namespace Backend {
 				dynamicRenderingFeatures{ GIVEN_DYNAMIC_RENDERING },
 				sync2Features{ GIVEN_SYNC2 },
 				timelineFeatures{ GIVEN_TIMELINE },
+				bufferAddressFeatures{ GIVEN_BA },
 				features{ GIVEN_FEATURES } {
 				reroutePointers();
 			}
@@ -48,6 +51,7 @@ namespace Backend {
 				dynamicRenderingFeatures{ salvageCreateInfo.dynamicRenderingFeatures },
 				sync2Features{ salvageCreateInfo.sync2Features },
 				timelineFeatures{ salvageCreateInfo.timelineFeatures },
+				bufferAddressFeatures{ salvageCreateInfo.bufferAddressFeatures },
 				features{ salvageCreateInfo.features } {
 				reroutePointers();
 			}

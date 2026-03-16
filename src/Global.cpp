@@ -4,7 +4,7 @@
 #include <array>
 #include <random>
 #include <iostream>
-#include "Common.h"
+#include "Util.h"
 #include "Global.h"
 
 namespace Global {
@@ -55,7 +55,7 @@ namespace Global {
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getModelPipelineLayout();
-		(void) getParticlePipelineLayout();
+		(void) getComputePipelineLayout();
 		(void) getModelShaderModule();
 		(void) getParticleShaderModule();
 		(void) getModelGraphicsPipeline();
@@ -91,13 +91,13 @@ namespace Global {
 
 				float r{}, theta{}, x{}, y{};
 				for(Particle::Particle& p : particles) {
-					r = sqrtf(Common::random());
-					theta = 2.0f * PI * Common::random();
+					r = sqrtf(Util::random());
+					theta = 2.0f * PI * Util::random();
 
 					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
 					y = r * sinf(theta);
 
-					p.color = glm::vec4(Common::random(), Common::random(), Common::random(), 1.0f);
+					p.color = glm::vec4(Util::random(), Util::random(), Util::random(), 1.0f);
 					p.position = glm::vec2(x, y);
 					p.velocity = normalize(p.position);
 				}
@@ -186,6 +186,11 @@ namespace Global {
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
 					.pNext = nullptr, // reroute needed
 					.timelineSemaphore = true
+				};
+				VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddress{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+					.pNext = nullptr, // reroute needed
+					.bufferDeviceAddress = true
 				};
 				VkPhysicalDeviceFeatures2 features{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
@@ -278,7 +283,7 @@ namespace Global {
 						logicalDeviceExtensionNames.push_back(extensions[i]);
 					}
 
-					if (!Common::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
+					if (!Util::containsAll(physicalDeviceExtensionNames, logicalDeviceExtensionNames)) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
 						continue;
 					}
@@ -299,15 +304,20 @@ namespace Global {
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
 						.pNext = &sync2Status,
 					};
+					VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddressStatus{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+						.pNext = &timelineStatus,
+					};
 					VkPhysicalDeviceFeatures2 featuresStatus{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-						.pNext = &timelineStatus
+						.pNext = &bufferAddressStatus
 					};
 					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &featuresStatus);
 
 					bool allNeeded = featuresStatus.features.samplerAnisotropy && 
 						featuresStatus.features.textureCompressionBC && 
 						timelineStatus.timelineSemaphore && 
+						bufferAddressStatus.bufferDeviceAddress &&
 						sync2Status.synchronization2 && 
 						dynamicRenderingStatus.dynamicRendering && 
 						extendedDynamicStateStatus.extendedDynamicState2;
@@ -349,7 +359,7 @@ namespace Global {
 				std::cout << "SELECTED PHYSICAL DEVICE: " << selectedPhysicalDeviceProperties.deviceName << "\n";
 				std::cout << "DISCRETE GPU? " << ((niceToHavesBySystemPhysicalDevice[SELECTED_PHYSICAL_DEVICE_INDEX][0]) ? "Yes\n" : "No\n");
 
-				const VkDeviceCreateInfo DEVICE_INFO{
+				VkDeviceCreateInfo deviceInfo{
 					.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 					.pNext = nullptr, // reroute needed
 					.flags = 0,
@@ -359,7 +369,7 @@ namespace Global {
 					.ppEnabledExtensionNames = extensions.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(pFinalSelection), DEVICE_INFO, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), extendedDynamicState, dynamicRendering, sync2, timeline, features);
+				return Backend::Devices::CreateInfo(std::move(pFinalSelection), deviceInfo, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), extendedDynamicState, dynamicRendering, sync2, timeline, bufferAddress, features);
 			}()
 		);
 
@@ -535,7 +545,7 @@ namespace Global {
 				};
 
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 
 				return lambdaReturn;
@@ -629,11 +639,18 @@ namespace Global {
 		return gLayout;
 	}
 
-	::Engine::PipelineLayout& getParticlePipelineLayout() {
-		static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{
-			getHostVisibleMemory().getDescriptorSetLayouts()[4], // delta time uniform buffer (set 2)
-			getDeviceLocalMemory().getDescriptorSetLayouts()[1], // PARTICLES_IN SSBO (set 3),
-			getDeviceLocalMemory().getDescriptorSetLayouts()[1] // particlesOut SSBO (set 4)
+	::Engine::PipelineLayout& getComputePipelineLayout() {
+		//static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{
+		//	getHostVisibleMemory().getDescriptorSetLayouts()[4], // delta time uniform buffer (set 2)
+		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1], // PARTICLES_IN SSBO (set 3),
+		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1] // particlesOut SSBO (set 4)
+		//});
+		static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{}, std::vector<VkPushConstantRange>{
+			VkPushConstantRange{
+				.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+				.offset = 0,
+				.size = Util::pointersSize(3)
+			}
 		});
 
 		return gLayout;
@@ -641,14 +658,14 @@ namespace Global {
 	
 	::Engine::ShaderModule& getModelShaderModule() {
 		static constexpr const char* gPATH = R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)";
-		static ::Engine::ShaderModule gModelShaderModule(&getDevices(), Common::getFileBytes(gPATH));
+		static ::Engine::ShaderModule gModelShaderModule(&getDevices(), Util::getFileBytes(gPATH));
 
 		return gModelShaderModule;
 	}
 
 	::Engine::ShaderModule& getParticleShaderModule() {
 		static constexpr const char* gPATH = R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleShaders.spv)";
-		static ::Engine::ShaderModule gParticleShaderModule(&getDevices(), Common::getFileBytes(gPATH));
+		static ::Engine::ShaderModule gParticleShaderModule(&getDevices(), Util::getFileBytes(gPATH));
 
 		return gParticleShaderModule;
 	}
@@ -722,8 +739,8 @@ namespace Global {
 					.depthClampEnable = VK_FALSE,
 					.rasterizerDiscardEnable = VK_FALSE,
 					.polygonMode = VK_POLYGON_MODE_FILL,
-					.cullMode = VK_CULL_MODE_NONE,
-					.frontFace = VK_FRONT_FACE_CLOCKWISE,
+					.cullMode = VK_CULL_MODE_BACK_BIT,
+					.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
 					.depthBiasEnable = VK_FALSE,
 					.depthBiasConstantFactor = 0.0f,
 					.depthBiasClamp = 0.0f,
@@ -796,7 +813,7 @@ namespace Global {
 		static ::Engine::GraphicsPipeline gParticlesPipeline(
 			&getDevices(),
 			[]() -> ::Engine::GraphicsPipeline::CreateInfo {
-				VkGraphicsPipelineCreateInfo graphicsPipelineCreate{
+				VkGraphicsPipelineCreateInfo particlesPipelineCreate{
 					.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 					// reroute needed for everything
 				};
@@ -822,8 +839,8 @@ namespace Global {
 						.pName = "fragmentShader"
 					}
 				};
-				graphicsPipelineCreate.stageCount = static_cast<uint32_t>(stages.size());
-				graphicsPipelineCreate.pStages = stages.data();
+				particlesPipelineCreate.stageCount = static_cast<uint32_t>(stages.size());
+				particlesPipelineCreate.pStages = stages.data();
 
 				std::vector<VkVertexInputBindingDescription> binding{ Particle::getInputBinding() };
 				std::vector<VkVertexInputAttributeDescription> attributes(Particle::getInputAttributes());
@@ -859,8 +876,6 @@ namespace Global {
 					.depthClampEnable = VK_FALSE,
 					.rasterizerDiscardEnable = VK_FALSE,
 					.polygonMode = VK_POLYGON_MODE_FILL,
-					.cullMode = VK_CULL_MODE_NONE,
-					.frontFace = VK_FRONT_FACE_CLOCKWISE,
 					.depthBiasEnable = VK_FALSE,
 					.depthBiasConstantFactor = 0.0f,
 					.depthBiasClamp = 0.0f,
@@ -911,10 +926,8 @@ namespace Global {
 					.pDynamicStates = dynamicStates.data(),
 				};
 
-				graphicsPipelineCreate.layout = getParticlePipelineLayout().getLayout();
-
 				return ::Engine::GraphicsPipeline::CreateInfo(
-					graphicsPipelineCreate,
+					particlesPipelineCreate,
 					rendering, std::move(colorAttachmentFormats),
 					std::move(stages),
 					vertexInput, std::move(binding), std::move(attributes),
@@ -948,7 +961,7 @@ namespace Global {
 					.pName = "computeShader"
 				};
 
-				computePipelineCreate.layout = getParticlePipelineLayout().getLayout();
+				computePipelineCreate.layout = getComputePipelineLayout().getLayout();
 
 				return ::Engine::ComputePipeline::CreateInfo(computePipelineCreate);
 			}()

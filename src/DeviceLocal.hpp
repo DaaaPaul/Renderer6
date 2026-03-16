@@ -2,7 +2,7 @@
 
 #include <functional>
 #include "Devices.hpp"
-#include "Common.h"
+#include "Util.h"
 #include "DeviceMemory.h"
 
 namespace DeviceMemory {
@@ -36,6 +36,7 @@ namespace DeviceMemory {
 		std::vector<VkBuffer> buffers{};
 		std::vector<VkDeviceSize> bufferOffsets{};
 		std::vector<VkDeviceSize> bufferSizes{};
+		std::vector<VkDeviceAddress> bufferPointers{};
 
 		std::vector<VkImage> images{};
 		std::vector<VkImageView> imageViews{};

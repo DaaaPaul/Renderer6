@@ -20,8 +20,6 @@ set(DEBUG_MODE OFF)
 
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Common.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
@@ -53,6 +51,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Util.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Util.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp

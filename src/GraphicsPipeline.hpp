@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Devices.hpp"
-#include "Common.h"
+#include "Util.h"
 
 namespace Engine {
 	class GraphicsPipeline {

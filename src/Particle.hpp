@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan.h>
-#include "Common.h"
+#include "Util.h"
 
 namespace Particle {
 	struct Particle {

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include "DeviceMemory.h"
-#include "Common.h"
+#include "Util.h"
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION

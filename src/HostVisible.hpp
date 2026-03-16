@@ -2,7 +2,7 @@
 
 #include <functional>
 #include "Devices.hpp"
-#include "Common.h"
+#include "Util.h"
 #include "DeviceMemory.h"
 
 namespace DeviceMemory {

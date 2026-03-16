@@ -25,7 +25,7 @@
 	}
 
 #define CHECK_CONTAINS_ALL(big, small, errMsg) \
-	if(!Common::containsAll(big, small)) { \
+	if(!Util::containsAll(big, small)) { \
 		throw std::runtime_error(errMsg); \
 	}
 
@@ -46,10 +46,11 @@
 
 #define PI 3.14159265358979323846f
 
-namespace Common {
+namespace Util {
 	[[nodiscard]] bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
 	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH);
 	[[nodiscard]] float random() noexcept;
+	[[nodiscard]] constexpr uint16_t pointersSize(uint16_t const& HOW_MANY) noexcept;
 }
 
 using VkLogicalDevice = VkDevice;

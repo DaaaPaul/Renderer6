@@ -10,6 +10,7 @@ namespace DeviceMemory {
 			buffers.resize(BUFFER_COUNT, VK_NULL_HANDLE);
 			bufferSizes.resize(BUFFER_COUNT, 0);
 			bufferOffsets.resize(BUFFER_COUNT, 0);
+			bufferPointers.resize(BUFFER_COUNT, 0);
 
 			for (int i = 0; i < BUFFER_COUNT; i++) {
 				buffers[i] = createBuffer(pDevices->getLogicalDevice(), createInfo.bufferInfos[i]);
@@ -99,28 +100,45 @@ namespace DeviceMemory {
 			imageSizes[i] = imageRequirements[i].size;
 		}
 
-		std::vector<VkMemoryRequirements> concatenation(bufferRequirements);
-		concatenation.insert(concatenation.end(), imageRequirements.begin(), imageRequirements.end());
+		std::vector<VkMemoryRequirements> buffersImagesRequirements(bufferRequirements);
+		buffersImagesRequirements.insert(buffersImagesRequirements.end(), imageRequirements.begin(), imageRequirements.end());
 
 		// create the memory
-		const std::pair<VkDeviceSize, std::vector<VkDeviceSize>> SIZE_AND_OFFSETS(getMemoryAllocationSizeAndOffsets(concatenation));
-		const uint32_t MEMORY_TYPE = getMemoryTypeIndex(pDevices->getPhysicalDevice(), concatenation, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		VkDeviceSize memorySize = getMemoryAllocationSizeAndOffsets(buffersImagesRequirements).first;
+		std::vector<VkDeviceSize> memoryOffsets(getMemoryAllocationSizeAndOffsets(buffersImagesRequirements).second);
+		uint32_t memoryType = getMemoryTypeIndex(pDevices->getPhysicalDevice(), buffersImagesRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+		VkMemoryAllocateFlagsInfo addressFlag{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
+			.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT
+		};
 		VkMemoryAllocateInfo allocateInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-			.allocationSize = SIZE_AND_OFFSETS.first,
-			.memoryTypeIndex = MEMORY_TYPE
+			.pNext = &addressFlag,
+			.allocationSize = memorySize,
+			.memoryTypeIndex = memoryType
 		};
 		vkAllocateMemory(pDevices->getLogicalDevice(), &allocateInfo, nullptr, &pDeviceLocalMemory);
 
 		// bind buffers and images
-		bufferOffsets.assign(SIZE_AND_OFFSETS.second.begin(), SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size());
-		imageOffsets.assign(SIZE_AND_OFFSETS.second.begin() + bufferRequirements.size(), SIZE_AND_OFFSETS.second.end());
+		bufferOffsets.assign(memoryOffsets.begin(), memoryOffsets.begin() + bufferRequirements.size());
+		imageOffsets.assign(memoryOffsets.begin() + bufferRequirements.size(), memoryOffsets.end());
 
 		for(int i = 0; i < BUFFER_COUNT; i++) {
 			vkBindBufferMemory(pDevices->getLogicalDevice(), buffers[i], pDeviceLocalMemory, bufferOffsets[i]);
 		}
 		for(int i = 0; i < IMAGE_COUNT; i++) {
 			vkBindImageMemory(pDevices->getLogicalDevice(), images[i], pDeviceLocalMemory, imageOffsets[i]);
+		}
+
+		// get buffer addresses
+		VkBufferDeviceAddressInfo rollingBuffer{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
+		for(int i = 0; i < BUFFER_COUNT; i++) {
+			if(createInfo.bufferInfos[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+				rollingBuffer.buffer = buffers[i];
+				bufferPointers[i] = vkGetBufferDeviceAddress(pDevices->getLogicalDevice(), &rollingBuffer);
+				std::cout << "Buffer " << i << " address: " << bufferPointers[i] << "\n";
+			}
 		}
 	}
 
@@ -168,6 +186,7 @@ namespace DeviceMemory {
 		buffers{},
 		bufferOffsets{},
 		bufferSizes{},
+		bufferPointers{},
 		samplers{},
 		images{},
 		imageViews{},

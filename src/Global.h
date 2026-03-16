@@ -46,7 +46,7 @@ namespace Global {
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
 	[[nodiscard]] ::Engine::PipelineLayout& getModelPipelineLayout();
-	[[nodiscard]] ::Engine::PipelineLayout& getParticlePipelineLayout();
+	[[nodiscard]] ::Engine::PipelineLayout& getComputePipelineLayout();
 	[[nodiscard]] ::Engine::ShaderModule& getModelShaderModule();
 	[[nodiscard]] ::Engine::ShaderModule& getParticleShaderModule();
 	[[nodiscard]] ::Engine::GraphicsPipeline& getModelGraphicsPipeline();
