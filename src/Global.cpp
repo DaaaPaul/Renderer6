@@ -1,8 +1,9 @@
 #include <cassert>
 #include <ctime>
 #include <cmath>
-#include <random>
 #include <array>
+#include <random>
+#include <iostream>
 #include "Common.h"
 #include "Global.h"
 
@@ -84,6 +85,32 @@ namespace Global {
 		return uniqueVerticesAndVertexIndices;
 	}
 
+	std::vector<Particle::Particle> getParticlesData() {
+		static std::vector<Particle::Particle> gParticles(
+			[]() -> std::vector<Particle::Particle> {
+				std::vector<Particle::Particle> particles(gPARTICLES_COUNT, {});
+
+				float r{}, theta{}, x{}, y{};
+				for(Particle::Particle& p : particles) {
+					r = sqrtf(Common::random());
+					theta = 2.0f * PI * Common::random();
+
+					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
+					y = r * sinf(theta);
+
+					p.position = glm::vec2(x, y);
+					p.velocity = normalize(p.position) * 0.00025f;
+					p.color = glm::vec3(Common::random(), Common::random(), Common::random());
+				}
+
+				return particles;
+			}()
+		);
+
+
+		return gParticles;
+	}
+
 	Backend::Window& getWindow() {
 		static Backend::Window gWindowWrapper({
 			.width = 800,
@@ -92,41 +119,6 @@ namespace Global {
 		});
 
 		return gWindowWrapper;
-	}
-
-	std::vector<Particle::Particle> getParticlesData() {
-		static auto gRandom = []() -> float {
-			static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
-			static std::uniform_real_distribution gNormal(0.0f, 1.0f);
-
-			return gNormal(gEngine);
-		};
-
-		static std::vector<Particle::Particle> particles(
-			[]() -> std::vector<Particle::Particle> {
-				std::vector<Particle::Particle> particles(gPARTICLES_COUNT, {});
-
-				float r{}, theta{}, x{}, y{};
-				for(Particle::Particle& p : particles) {
-					r = sqrtf(gRandom());
-					theta = 2.0f * 3.14159265358979323846f * gRandom();
-
-					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
-					y = r * sinf(theta);
-
-					p.position = glm::vec2(x, y);
-					p.velocity = normalize(p.position) * 0.00025f;
-					p.color = glm::vec3(x, y, r);
-				}
-
-				gParticleBufferSize = particles.size() * sizeof(Particle::Particle);
-
-				return particles;
-			}()
-		);
-
-
-		return particles;
 	}
 
 	Backend::Instance& getInstance() {
@@ -465,7 +457,7 @@ namespace Global {
 				self.writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 			}
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.writeToBuffer(7 + i, getParticlesData().data(), gParticleBufferSize);
+				self.writeToBuffer(7 + i, getParticlesData().data(), gPARTICLES_BUFFER_SIZE);
 			}
 
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
@@ -488,7 +480,7 @@ namespace Global {
 					lambdaReturn.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(gParticleBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
 				}
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(sizeof(float), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
@@ -540,7 +532,7 @@ namespace Global {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, gIndexBufferSize)});
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gParticleBufferSize)});
+				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gPARTICLES_BUFFER_SIZE)});
 			}
 
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
@@ -559,7 +551,7 @@ namespace Global {
 				};
 
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(gParticleBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
 				}
 
 				return lambdaReturn;

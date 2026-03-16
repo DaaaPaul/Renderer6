@@ -17,16 +17,18 @@ RWStructuredBuffer<Particle> particlesOut;
 void computeShader(uint3 invocation: SV_DispatchThreadID) {
     uint i = invocation.x;
 
-    particlesOut[i].position = PARTICLES_IN[i].position;
-    particlesOut[i].position.x += PARTICLES_IN[i].velocity.x * DELTA_TIME;
-    particlesOut[i].position.y += PARTICLES_IN[i].velocity.y * DELTA_TIME;
+    Particle updated = PARTICLES_IN[i];
+    updated.position.x += PARTICLES_IN[i].velocity.x * DELTA_TIME;
+    updated.position.y += PARTICLES_IN[i].velocity.y * DELTA_TIME;
 
-    if ((particlesOut[i].position.x <= -1.0) || (particlesOut[i].position.x >= 1.0)) {
-        particlesOut[i].velocity.x *= -1.0;
+    if ((updated.position.x <= -1.0) || (updated.position.x >= 1.0)) {
+        updated.velocity.x *= -1.0;
     }
-    if ((particlesOut[i].position.y <= -1.0) || (particlesOut[i].position.y >= 1.0)) {
-        particlesOut[i].velocity.y *= -1.0;
+    if ((updated.position.y <= -1.0) || (updated.position.y >= 1.0)) {
+        updated.velocity.y *= -1.0;
     }
+
+    particlesOut[i] = updated;
 }
 
 struct VertexIn {
@@ -59,5 +61,5 @@ VertexOut vertexShader(VertexIn vin) {
 [shader("fragment")]
 float4 fragmentShader(FragmentIn in) {
     float2 adjustedCoord = in.pointCoord - float2(0.5, 0.5);
-    return float4(in.color, 0.5 - length(adjustedCoord));
+    return float4(in.color, 0.7 - length(adjustedCoord));
 }

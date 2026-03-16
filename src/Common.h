@@ -44,9 +44,12 @@
 	(num == 4206592) ? "VK_API_VERSION_1_3" : \
 	(num == 4210688) ? "VK_API_VERSION_1_4" : "Invalid vulkan api version!") \
 
+#define PI 3.14159265358979323846f
+
 namespace Common {
 	[[nodiscard]] bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
 	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH);
+	[[nodiscard]] float random() noexcept;
 }
 
 using VkLogicalDevice = VkDevice;

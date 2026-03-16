@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <fstream>
+#include <random>
 #include "Common.h"
 
 namespace Common {
@@ -13,7 +14,7 @@ namespace Common {
         return std::ranges::includes(bigCopy, smallCopy);
     }
 
-	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH) {
+	std::vector<char> getFileBytes(std::string const& PATH) {
 		std::ifstream fileIn(PATH, std::ios::binary | std::ios::ate);
 		if(!fileIn.good()) {
 			throw std::runtime_error("Failure reading file at " + std::string(PATH));
@@ -26,5 +27,12 @@ namespace Common {
 		fileIn.read(bytes.data(), fileSize);
 
 		return bytes;
+	}
+
+	float random() noexcept {
+		static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
+		static std::uniform_real_distribution gRange(0.0f, 1.0f);
+
+		return gRange(gEngine);
 	}
 }
