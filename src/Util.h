@@ -44,13 +44,15 @@
 	(num == 4206592) ? "VK_API_VERSION_1_3" : \
 	(num == 4210688) ? "VK_API_VERSION_1_4" : "Invalid vulkan api version!") \
 
+#define POINTER_SIZE(num) \
+	(8 * num)
+
 #define PI 3.14159265358979323846f
 
 namespace Util {
 	[[nodiscard]] bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
 	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH);
 	[[nodiscard]] float random() noexcept;
-	[[nodiscard]] constexpr uint16_t pointersSize(uint16_t const& HOW_MANY) noexcept;
 }
 
 using VkLogicalDevice = VkDevice;

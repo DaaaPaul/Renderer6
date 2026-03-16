@@ -51,7 +51,7 @@ namespace DeviceMemory {
 
 		void createBuffers();
 		void createImages();
-		void createMemoryAndBind();
+		void setupMemory();
 		void createImageViews();
 		void createSamplers();
 		void createDescriptorSets();

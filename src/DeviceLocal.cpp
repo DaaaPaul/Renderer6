@@ -85,7 +85,7 @@ namespace DeviceMemory {
 		}
 	}
 
-	void DeviceLocal::createMemoryAndBind() {
+	void DeviceLocal::setupMemory() {
 		const uint16_t BUFFER_COUNT = createInfo.bufferInfos.size();
 		std::vector<VkMemoryRequirements> bufferRequirements(BUFFER_COUNT, {});
 		for (int i = 0; i < BUFFER_COUNT; i++) {
@@ -202,7 +202,7 @@ namespace DeviceMemory {
 
 		createBuffers();
 		createImages();
-		createMemoryAndBind();
+		setupMemory();
 		createImageViews();
 		createSamplers();
 		createDescriptorSets();
@@ -325,7 +325,7 @@ namespace DeviceMemory {
 
 		createBuffers();
 		createImages();
-		createMemoryAndBind();
+		setupMemory();
 	}
 
 	void DeviceLocal::recreateImageViews() {

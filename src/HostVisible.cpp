@@ -19,7 +19,7 @@ namespace DeviceMemory {
 		}
 	}
 
-	void HostVisible::createMemoryAndBind() {
+	void HostVisible::setupMemory() {
 		const uint16_t BUFFER_COUNT = CREATE_INFO.bufferInfos.size();
 
 		std::vector<VkMemoryRequirements> bufferRequirements(BUFFER_COUNT, {});
@@ -90,7 +90,7 @@ namespace DeviceMemory {
 		descriptorSets{} {
 
 		createBuffers();
-		createMemoryAndBind();
+		setupMemory();
 		createDescriptorSets();
 
 		POPULATE_FUNCTION(*this);

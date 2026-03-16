@@ -477,13 +477,13 @@ namespace Global {
 				};
 
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(sizeof(Vertex::Transforms), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, getDevices().getGraphicsQfIndex());
 				}
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
 					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex());
 				}
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(sizeof(float), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, getDevices().getGraphicsQfIndex());
+					lambdaReturn.emplace_back(sizeof(float), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT, getDevices().getGraphicsQfIndex());
 				}
 
 				return lambdaReturn;
@@ -659,7 +659,7 @@ namespace Global {
 			VkPushConstantRange{
 				.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
 				.offset = 0,
-				.size = Util::pointersSize(3)
+				.size = POINTER_SIZE(3)
 			}
 		});
 

@@ -36,13 +36,14 @@ namespace DeviceMemory {
 		std::vector<VkDescriptorSet> descriptorSets{};
 
 		void createBuffers();
-		void createMemoryAndBind();
+		void setupMemory();
 		void createDescriptorSets();
 
 		public:
 		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
 		[[nodiscard]] CreateInfo const& getCreateInfo() const { return CREATE_INFO; }
 		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
+		[[nodiscard]] std::vector<VkDeviceAddress>& getBufferPointers() { return bufferPointers; }
 		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
 		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
 

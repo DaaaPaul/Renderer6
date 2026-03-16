@@ -94,9 +94,11 @@ namespace Engine {
 		//	0, 3, computeDescriptorSets.data(), 0, nullptr);
 			
 		std::vector<VkDeviceAddress> pushConstantPointers{
-		
+			Global::getHostVisibleMemory().getBufferPointers()[11 + gFrameIndex], // Delta time uniform buffer
+			Global::getDeviceLocalMemory().getBufferPointers()[2 + gFrameIndex], // PARTICLES_IN SSBO
+			Global::getDeviceLocalMemory().getBufferPointers()[1 + ((gFrameIndex + 1) % gFramesInFlight)] // particlesOut SSBO
 		};
-		vkCmdPushConstants(pCommandBuffer, Global::getComputePipelineLayout().getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, Util::pointersSize(3), )
+		vkCmdPushConstants(pCommandBuffer, Global::getComputePipelineLayout().getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstantPointers.data());
 		vkCmdDispatch(pCommandBuffer, Global::gPARTICLES_COUNT / 256, 1, 1);
 
 		CHECK_VK_SUCCESS(

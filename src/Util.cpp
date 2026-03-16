@@ -35,8 +35,4 @@ namespace Util {
 
 		return gRange(gEngine);
 	}
-
-	constexpr uint16_t pointersSize(uint16_t const& HOW_MANY) noexcept {
-		return HOW_MANY * 8;
-	}
 }
