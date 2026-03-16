@@ -65,6 +65,7 @@ namespace DeviceMemory {
 		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
 		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
 		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
+		[[nodiscard]] std::vector<VkDeviceAddress>& getBufferPointers() { return bufferPointers; }
 		[[nodiscard]] std::vector<VkImage>& getImages() { return images; }
 		[[nodiscard]] std::vector<VkImageView>& getImageViews() { return imageViews; }
 		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
@@ -72,9 +73,9 @@ namespace DeviceMemory {
 
 		void copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS);
 		void copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS);
-		void createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX);
-		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
-		void updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES);
+		void descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES);
+		void descriptorSetBindingToCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_DESCRIPTOR_INDICES);
+		
 		void recreateDepthResources();
 		[[nodiscard]] int searchForDepthImageIndex() const noexcept;
 

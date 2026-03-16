@@ -4,13 +4,13 @@ struct Particle {
     float2 velocity;
 };
 
-// first arguement binding #, second arguement is set #
-[[vk::binding(0, 0)]]
-ConstantBuffer<float> DELTA_TIME;
-[[vk::binding(0, 1)]]
-StructuredBuffer<Particle> PARTICLES_IN;
-[[vk::binding(0, 2)]]
-RWStructuredBuffer<Particle> particlesOut;
+struct PushConstantPointers {
+    float *pDeltaTime;
+    Particle *pParticlesIn;
+    Particle *pParticlesOut;
+};
+
+[vk::push_constant] PushConstantPointers pointers;
 
 [shader("compute")]
 [numthreads(256, 1, 1)]

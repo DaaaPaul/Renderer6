@@ -121,8 +121,8 @@ namespace DeviceMemory {
 		vkAllocateMemory(pDevices->getLogicalDevice(), &allocateInfo, nullptr, &pDeviceLocalMemory);
 
 		// bind buffers and images
-		bufferOffsets.assign(memoryOffsets.begin(), memoryOffsets.begin() + bufferRequirements.size());
-		imageOffsets.assign(memoryOffsets.begin() + bufferRequirements.size(), memoryOffsets.end());
+		bufferOffsets.assign(memoryOffsets.begin(), memoryOffsets.begin() + BUFFER_COUNT);
+		imageOffsets.assign(memoryOffsets.begin() + BUFFER_COUNT, memoryOffsets.end());
 
 		for(int i = 0; i < BUFFER_COUNT; i++) {
 			vkBindBufferMemory(pDevices->getLogicalDevice(), buffers[i], pDeviceLocalMemory, bufferOffsets[i]);
@@ -137,6 +137,7 @@ namespace DeviceMemory {
 			if(createInfo.bufferInfos[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 				rollingBuffer.buffer = buffers[i];
 				bufferPointers[i] = vkGetBufferDeviceAddress(pDevices->getLogicalDevice(), &rollingBuffer);
+				std::cout << "DEVICE LOCAL MEMORY: ";
 				std::cout << "Buffer " << i << " address: " << bufferPointers[i] << "\n";
 			}
 		}
@@ -167,13 +168,16 @@ namespace DeviceMemory {
 
 	void DeviceLocal::createDescriptorSets() {
 		if(!createInfo.descriptorSetInfos.empty()) {
+			const uint16_t DESCRIPTOR_SET_COUNT = createInfo.descriptorSetInfos.size();
+
 			pDescriptorPool = createDescriptorPool(pDevices->getLogicalDevice(), createInfo.descriptorSetInfos);
 
-			descriptorSetLayouts.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
-			descriptorSets.resize(createInfo.descriptorSetInfos.size(), VK_NULL_HANDLE);
+			descriptorSetLayouts.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
+			descriptorSets.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
 
-			for(size_t i = 0; i < createInfo.descriptorSetInfos.size(); i++) {
-				createDescriptorSetAndLayout(createInfo.descriptorSetInfos[i], i);
+			for(int i = 0; i < DESCRIPTOR_SET_COUNT; i++) {
+				descriptorSetLayouts[i] = createDescriptorSetLayout(pDevices->getLogicalDevice(), createInfo.descriptorSetInfos[i]);
+				descriptorSets[i] = createDescriptorSet(pDevices->getLogicalDevice(), pDescriptorPool, descriptorSetLayouts[i], createInfo.descriptorSetInfos[i]);
 			}
 		}
 	}
@@ -264,39 +268,13 @@ namespace DeviceMemory {
 		endSubmitDestroyOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
 	}
 
-	void DeviceLocal::createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX) {
-		const VkDescriptorSetLayoutCreateInfo DESCRIPTOR_SET_LAYOUT_INFO{
-			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-			.flags = 0,
-			.bindingCount = static_cast<uint32_t>(INFO.layoutBindings.size()),
-			.pBindings = INFO.layoutBindings.data(),
-		};
-
-		CHECK_VK_SUCCESS(
-			vkCreateDescriptorSetLayout(pDevices->getLogicalDevice(), &DESCRIPTOR_SET_LAYOUT_INFO, nullptr, &descriptorSetLayouts[INDEX]),
-			"Failed to create descriptor set layout"
-		)
-
-		const VkDescriptorSetAllocateInfo DESCRIPTOR_SET_ALLOCATE_INFO{
-			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-			.descriptorPool = pDescriptorPool,
-			.descriptorSetCount = 1,
-			.pSetLayouts = &descriptorSetLayouts[INDEX],
-		};
-
-		CHECK_VK_SUCCESS(
-			vkAllocateDescriptorSets(pDevices->getLogicalDevice(), &DESCRIPTOR_SET_ALLOCATE_INFO, &descriptorSets[INDEX]),
-			"Failed to create descriptor set"
-		)
-	}
-
-	void DeviceLocal::updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES) {
-		if(BUFFER_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
+	void DeviceLocal::descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES) {
+		if(BUFFER_DESCRIPTOR_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 	
 		std::vector<VkDescriptorBufferInfo> toWriteBuffers{};
-		for(size_t const& BUFFER_INDEX : BUFFER_INDICES) {
+		for(size_t const& BUFFER_INDEX : BUFFER_DESCRIPTOR_INDICES) {
 			toWriteBuffers.emplace_back(buffers[BUFFER_INDEX], 0, VK_WHOLE_SIZE);
 		}
 	
@@ -313,13 +291,13 @@ namespace DeviceMemory {
 		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
 	}
 
-	void DeviceLocal::updateDescriptorSetCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_INDICES) {
-		if(SAMPLER_IMAGE_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
+	void DeviceLocal::descriptorSetBindingToCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_DESCRIPTOR_INDICES) {
+		if(SAMPLER_IMAGE_DESCRIPTOR_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
 		}
 
 		std::vector<VkDescriptorImageInfo> toWriteImageSamplers{};
-		for(size_t const& SAMPLER_IMAGE_INDEX : SAMPLER_IMAGE_INDICES) {
+		for(size_t const& SAMPLER_IMAGE_INDEX : SAMPLER_IMAGE_DESCRIPTOR_INDICES) {
 			toWriteImageSamplers.emplace_back(samplers[SAMPLER_IMAGE_INDEX], imageViews[SAMPLER_IMAGE_INDEX], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 

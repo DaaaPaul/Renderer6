@@ -120,14 +120,78 @@ namespace DeviceMemory {
 		return pKtxTexture;
 	}
 
-	[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept {
+	uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept {
 		return std::floor(std::log2(std::max(EXTENT.width, EXTENT.width))) + 1;
 	}
 
-	[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
+	VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO) {
+		VkDescriptorSetLayout descriptorSetLayout{};
+		
+		VkDescriptorSetLayoutCreateInfo layoutCreate{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+			.bindingCount = static_cast<uint32_t>(INFO.layoutBindings.size()),
+			.pBindings = INFO.layoutBindings.data(),
+		};
+
+		CHECK_VK_SUCCESS(
+			vkCreateDescriptorSetLayout(pLogicalDevice, &layoutCreate, nullptr, &descriptorSetLayout),
+			"Failed to create descriptor set layout"
+		)
+
+		return descriptorSetLayout;
+	}
+
+	VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
+		VkDescriptorPool pDescriptorPool{};
+		
+		// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
+		std::vector<VkDescriptorPoolSize> poolSizes{};
+		for(DescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
+			const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.layoutBindings };
+
+			for(VkDescriptorSetLayoutBinding const& BINDING : BINDINGS) {
+				poolSizes.emplace_back(BINDING.descriptorType, BINDING.descriptorCount);
+			}
+		}
+
+		// create descriptor pool
+		VkDescriptorPoolCreateInfo poolCreate{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+			.maxSets = static_cast<uint32_t>(INFO.size()),
+			.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
+			.pPoolSizes = poolSizes.data(),
+		};
+		CHECK_VK_SUCCESS(
+			vkCreateDescriptorPool(pLogicalDevice, &poolCreate, nullptr, &pDescriptorPool),
+			"Failed to create descriptor pool"
+		)
+
+		return pDescriptorPool;
+	}
+
+	VkDescriptorSet createDescriptorSet(VkLogicalDevice pLogicalDevice, VkDescriptorPool pPool, VkDescriptorSetLayout pLayout, DescriptorSetInfo const& INFO) {
+		VkDescriptorSet descriptorSet{};
+
+		VkDescriptorSetAllocateInfo setAllocate{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+			.descriptorPool = pPool,
+			.descriptorSetCount = 1,
+			.pSetLayouts = &pLayout,
+		};
+
+		CHECK_VK_SUCCESS(
+			vkAllocateDescriptorSets(pLogicalDevice, &setAllocate, &descriptorSet),
+			"Failed to create descriptor set"
+		)
+
+		return descriptorSet;
+	}
+
+	VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& INFO) {
 		VkBuffer buffer{};
 
-		const VkBufferCreateInfo BUFFER_CREATE{
+		VkBufferCreateInfo bufferCreate{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.size = INFO.size,
 			.usage = INFO.usage,
@@ -138,17 +202,17 @@ namespace DeviceMemory {
 
 			
 		CHECK_VK_SUCCESS(
-		vkCreateBuffer(pLogicalDevice, &BUFFER_CREATE, nullptr, &buffer),
+		vkCreateBuffer(pLogicalDevice, &bufferCreate, nullptr, &buffer),
 		"Failed to create buffer"
 		)
 
 		return buffer;
 	}
 
-	[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO) {
+	VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO) {
 		VkImage image{};
 
-		const VkImageCreateInfo IMAGE_CREATE{
+		VkImageCreateInfo imageCreate{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 			.imageType = IMAGE_INFO.type,
 			.format = IMAGE_INFO.format,
@@ -165,17 +229,17 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-		vkCreateImage(pLogicalDevice, &IMAGE_CREATE, nullptr, &image),
+		vkCreateImage(pLogicalDevice, &imageCreate, nullptr, &image),
 		"Failed to create image"
 		)
 
 		return image;
 	}
 
-	[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage pImage, ImageViewInfo const& IMAGE_VIEW_INFO) {
+	VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage pImage, ImageViewInfo const& IMAGE_VIEW_INFO) {
 		VkImageView imageView{};
 
-		const VkImageViewCreateInfo IMAGE_VIEW_CREATE{
+		VkImageViewCreateInfo imageViewCreate{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 			.image = pImage,
 			.viewType = IMAGE_VIEW_INFO.type,
@@ -184,17 +248,17 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-		vkCreateImageView(pLogicalDevice, &IMAGE_VIEW_CREATE, nullptr, &imageView),
+		vkCreateImageView(pLogicalDevice, &imageViewCreate, nullptr, &imageView),
 		"Failed to create image view"
 		)
 
 		return imageView;
 	}
 
-	[[nodiscard]] VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO) {
+	VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO) {
 		VkSampler sampler{};
 
-		const VkSamplerCreateInfo SAMPLER_CREATE{
+		VkSamplerCreateInfo samplerCreate{
 			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 			.magFilter = SAMPLER_INFO.magFilter,
 			.minFilter = SAMPLER_INFO.minFilter,
@@ -212,14 +276,14 @@ namespace DeviceMemory {
 		};
 
 		CHECK_VK_SUCCESS(
-			vkCreateSampler(pLogicalDevice, &SAMPLER_CREATE, nullptr, &sampler),
+			vkCreateSampler(pLogicalDevice, &samplerCreate, nullptr, &sampler),
 			"Failed to create sampler"
 		)
 
 		return sampler;
 	}
 
-	[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
+	std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS) {
 		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> allocationSizeAndBufferOffsets{};
 		uint32_t buffersCount = static_cast<uint32_t>(BUFFER_MEMORY_REQUIREMENTS.size());
 		allocationSizeAndBufferOffsets.second.resize(buffersCount, UINT64_MAX);
@@ -237,7 +301,7 @@ namespace DeviceMemory {
 		return allocationSizeAndBufferOffsets;
 	}
 
-	[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES) {
+	uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES) {
 		uint32_t finalMemoryRequirementsMask = UINT32_MAX;
 		for (VkMemoryRequirements const& BUFFER_MEMORY_REQUIREMENT : BUFFER_MEMORY_REQUIREMENTS) {
 			finalMemoryRequirementsMask &= BUFFER_MEMORY_REQUIREMENT.memoryTypeBits;
@@ -255,35 +319,6 @@ namespace DeviceMemory {
 		};
 
 		return memoryTypeIndexReturn;
-	}
-
-	[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO) {
-		VkDescriptorPool pReturnDescriptorPool{};
-		
-		// create pool sizes (ASSUMING UNIQUE DESCRIPTOR TYPE PER ITS OWN UNIQUE BINDING)
-		std::vector<VkDescriptorPoolSize> poolSizes{};
-		for(DescriptorSetInfo const& CUSTOM_SET_INFO : INFO) {
-			const std::vector<VkDescriptorSetLayoutBinding> BINDINGS{ CUSTOM_SET_INFO.layoutBindings };
-
-			for(VkDescriptorSetLayoutBinding const& BINDING : BINDINGS) {
-				poolSizes.emplace_back(BINDING.descriptorType, BINDING.descriptorCount);
-			}
-		}
-
-		// create descriptor pool
-		const VkDescriptorPoolCreateInfo DESCRIPTOR_POOL_INFO{
-			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-			.maxSets = static_cast<uint32_t>(INFO.size()),
-			.poolSizeCount = static_cast<uint32_t>(poolSizes.size()),
-			.pPoolSizes = poolSizes.data(),
-		};
-		CHECK_VK_SUCCESS(
-			vkCreateDescriptorPool(pLogicalDevice, &DESCRIPTOR_POOL_INFO, nullptr, &pReturnDescriptorPool),
-			"Failed to create descriptor pool"
-		)
-
-		return pReturnDescriptorPool;
 	}
 
 	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {

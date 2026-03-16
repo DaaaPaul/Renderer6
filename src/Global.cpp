@@ -9,9 +9,13 @@
 
 namespace Global {
 	namespace Engine {
-		void load() {
+		void asserts() noexcept {
 			assert(Global::gLoaded);
+			assert(gFrameIndex == 0);
+			assert(gFramesInFlight != 0xFFFFFFFF);
+		}
 
+		void load() {
 			(void) getFrames();
 			(void) getCurrentTransformation();
 
@@ -19,8 +23,6 @@ namespace Global {
 		}
 
 		::Engine::Frames& getFrames() {
-			assert(Engine::gFramesInFlight != 0xFFFFFFFF);
-
 			static ::Engine::Frames gFrames(gFramesInFlight, Global::getDevices().getGraphicsQfIndex());
 
 			return gFrames;
@@ -42,6 +44,10 @@ namespace Global {
 
 			return gCurrentTransformation;
 		}
+	}
+
+	void asserts() noexcept {
+		assert(gPARTICLES_COUNT % 256 == 0);
 	}
 
 	void load() {
@@ -455,10 +461,10 @@ namespace Global {
 			}
 
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.updateDescriptorSetBuffer(i, 0, {static_cast<unsigned long long>(3 + i)});
+				self.descriptorSetBindingToBuffers(i, 0, {static_cast<unsigned long long>(3 + i)});
 			}
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.updateDescriptorSetBuffer(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
+				self.descriptorSetBindingToBuffers(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
 			}
 		};
 
@@ -531,9 +537,9 @@ namespace Global {
 
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			
-			self.updateDescriptorSetCombinedImageSampler(0, 0, {0});
+			self.descriptorSetBindingToCombinedImageSampler(0, 0, {0});
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.updateDescriptorSetBuffer(1 + i, 0, {static_cast<unsigned long long>(2 + i)});
+				self.descriptorSetBindingToBuffers(1 + i, 0, {static_cast<unsigned long long>(2 + i)});
 			}
 		};
 
@@ -631,10 +637,12 @@ namespace Global {
 	}
 
 	::Engine::PipelineLayout& getModelPipelineLayout() {
-		static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{
+		static ::Engine::PipelineLayout gLayout(&getDevices(), 
+		std::vector<VkDescriptorSetLayout>{
 			getHostVisibleMemory().getDescriptorSetLayouts()[0], // vertex transformations uniform buffer (set 0)
 			getDeviceLocalMemory().getDescriptorSetLayouts()[0], // combined image sampler (set 1)
-		});
+		},
+		std::vector<VkPushConstantRange>{});
 
 		return gLayout;
 	}
@@ -645,7 +653,9 @@ namespace Global {
 		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1], // PARTICLES_IN SSBO (set 3),
 		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1] // particlesOut SSBO (set 4)
 		//});
-		static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{}, std::vector<VkPushConstantRange>{
+		static ::Engine::PipelineLayout gLayout(&getDevices(), 
+		std::vector<VkDescriptorSetLayout>{}, 
+		std::vector<VkPushConstantRange>{
 			VkPushConstantRange{
 				.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
 				.offset = 0,

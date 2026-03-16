@@ -29,10 +29,15 @@ namespace DeviceMemory {
 		std::vector<VkBuffer> buffers{};
 		std::vector<VkDeviceSize> bufferOffsets{};
 		std::vector<VkDeviceSize> bufferSizes{};
+		std::vector<VkDeviceAddress> bufferPointers{};
 
 		VkDescriptorPool pDescriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
 		std::vector<VkDescriptorSet> descriptorSets{};
+
+		void createBuffers();
+		void createMemoryAndBind();
+		void createDescriptorSets();
 
 		public:
 		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
@@ -42,8 +47,7 @@ namespace DeviceMemory {
 		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
 
 		void writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES);
-		void createDescriptorSetAndLayout(DescriptorSetInfo const& INFO, size_t const& INDEX);
-		void updateDescriptorSetBuffer(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_INDICES);
+		void descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES);
 
 		explicit HostVisible(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(HostVisible&)> const& POPULATE_FUNCTION);
 		~HostVisible();

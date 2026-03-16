@@ -21,6 +21,7 @@ namespace Global {
 		inline uint32_t gFrameIndex = 0;
 		inline uint32_t gFramesInFlight = 0xFFFFFFFF; /* (*) */
 
+		void asserts() noexcept;
 		void load();
 		inline bool gLoaded = false;
 
@@ -33,6 +34,7 @@ namespace Global {
 	inline uint32_t gVertexBufferSize = 0xFFFFFFFF; /* (*) */
 	inline uint32_t gIndexBufferSize = 0xFFFFFFFF; /* (*) */
 
+	void asserts() noexcept;
 	void load();
 	inline bool gLoaded = false;
 

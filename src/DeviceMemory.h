@@ -62,9 +62,12 @@ namespace DeviceMemory {
 	};
 
 	void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
-	ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
+	[[nodiscard]] ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
 	[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept;
 
+	[[nodiscard]] VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO);
+	[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
+	[[nodiscard]] VkDescriptorSet createDescriptorSet(VkLogicalDevice pLogicalDevice, VkDescriptorPool pPool, VkDescriptorSetLayout pLayout, DescriptorSetInfo const& INFO);
 	[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
 	[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);
 	[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO);
@@ -72,7 +75,6 @@ namespace DeviceMemory {
 
 	[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
 	[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
-	[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
 
 	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
 	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);

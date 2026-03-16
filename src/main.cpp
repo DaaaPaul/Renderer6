@@ -5,7 +5,9 @@
 
 int main() {
     try {
+		Global::asserts();
 		Global::load();
+		Global::Engine::asserts();
 		Global::Engine::load();
 		Engine::run();
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
