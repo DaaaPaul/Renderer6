@@ -38,6 +38,7 @@ namespace Backend {
 		public:
 		void recreate();
 		[[nodiscard]] VkExtent2D getCurrentExtent() const noexcept;
+		[[nodiscard]] std::vector<VkImage> getImages() const noexcept;
 
 		private:
 		static void checkHaveFormatColorspace(Swapchain const& VULKAN_SWAPCHAIN_WRAPPER, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE);

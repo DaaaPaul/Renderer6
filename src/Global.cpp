@@ -52,7 +52,6 @@ namespace Global {
 		(void) getInstance();
 		(void) getDevices();
 		(void) getSwapchain();
-		(void) getSwapchainImages();
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getModelPipelineLayout();
@@ -419,21 +418,6 @@ namespace Global {
 		);
 
 		return gSwapchainWrapper;
-	}
-
-	std::vector<VkImage>& getSwapchainImages() {
-		static std::vector<VkImage> images(
-			[]() -> std::vector<VkImage> {
-				uint32_t imageCount = 0xFFFFFFFF;
-				vkGetSwapchainImagesKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), &imageCount, nullptr);
-				std::vector<VkImage> images(imageCount);
-				vkGetSwapchainImagesKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), &imageCount, images.data());
-
-				return images;
-			}()
-		);
-
-		return images;
 	}
 
 	DeviceMemory::HostVisible& getHostVisibleMemory() {

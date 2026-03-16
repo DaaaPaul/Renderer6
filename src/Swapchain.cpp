@@ -25,6 +25,15 @@ namespace Backend {
 		return surfaceExtentInPixels;
 	}
 
+	std::vector<VkImage> Swapchain::getImages() const noexcept {
+		uint32_t imageCount = 0xFFFFFFFF;
+		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, nullptr);
+		std::vector<VkImage> images(imageCount, {});
+		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, images.data());
+
+		return images;
+	}
+
 	void Swapchain::recreate() {
 		while(getCurrentExtent().width == 0 && getCurrentExtent().height == 0) {
 			glfwWaitEvents(); // do not process anything when window is minimized

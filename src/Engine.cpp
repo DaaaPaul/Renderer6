@@ -107,7 +107,7 @@ namespace Engine {
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
-		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
+		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
 			DeviceMemory::ImageViewInfo{
 				.type = VK_IMAGE_VIEW_TYPE_2D,
 				.format = VK_FORMAT_R8G8B8A8_SRGB,
@@ -176,7 +176,7 @@ namespace Engine {
 			0, 2, drawDescriptorSets.data(), 0, nullptr);
 		
 		// layout transitions to optimal
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
@@ -204,7 +204,7 @@ namespace Engine {
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
-		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchainImages()[IMAGE_INDEX], 
+		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
 			DeviceMemory::ImageViewInfo{
 				.type = VK_IMAGE_VIEW_TYPE_2D,
 				.format = VK_FORMAT_R8G8B8A8_SRGB,
@@ -257,7 +257,7 @@ namespace Engine {
 		vkCmdEndRendering(pCommandBuffer);
 
 		// layout transition to present optimal
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchainImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, getDevices().getGraphicsQfIndex());

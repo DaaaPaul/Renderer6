@@ -344,8 +344,10 @@ namespace DeviceMemory {
 		if(DEPTH_INDEX != -1) {
 			createInfo.imageInfos[DEPTH_INDEX].extent.width = Global::getSwapchain().getCurrentExtent().width;
 			createInfo.imageInfos[DEPTH_INDEX].extent.height = Global::getSwapchain().getCurrentExtent().height;
+
 			recreateMemory();
 			recreateImageViews();
+
 			POPULATE(*this);
 		} else {
 			throw std::runtime_error("No depth image found!");
