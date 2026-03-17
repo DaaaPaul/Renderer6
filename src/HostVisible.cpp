@@ -99,7 +99,6 @@ namespace DeviceMemory {
 	}
 
 	HostVisible::~HostVisible() {
-		vkUnmapMemory(pDevices->getLogicalDevice(), pHostVisibleMemory);
 		vkFreeMemory(pDevices->getLogicalDevice(), pHostVisibleMemory, nullptr);
 
 		for(VkBuffer& buffer : buffers) {

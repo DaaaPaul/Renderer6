@@ -84,19 +84,11 @@ namespace Engine {
 		)
 		
 		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getPipeline());
-
-		//std::vector<VkDescriptorSet> computeDescriptorSets{
-		//	Global::getHostVisibleMemory().getDescriptorSets()[4 + gFrameIndex], // Delta time uniform buffer
-		//	Global::getDeviceLocalMemory().getDescriptorSets()[1 + gFrameIndex], // PARTICLES_IN SSBO
-		//	Global::getDeviceLocalMemory().getDescriptorSets()[1 + ((gFrameIndex + 1) % gFramesInFlight)], // particlesOut SSBO
-		//};
-		//vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Global::getComputePipeline().getCreateInfo().pipelineInfo.layout, 
-		//	0, 3, computeDescriptorSets.data(), 0, nullptr);
 			
 		std::vector<VkDeviceAddress> pushConstantPointers{
 			Global::getHostVisibleMemory().getBufferPointers()[11 + gFrameIndex], // Delta time uniform buffer
 			Global::getDeviceLocalMemory().getBufferPointers()[2 + gFrameIndex], // PARTICLES_IN SSBO
-			Global::getDeviceLocalMemory().getBufferPointers()[1 + ((gFrameIndex + 1) % gFramesInFlight)] // particlesOut SSBO
+			Global::getDeviceLocalMemory().getBufferPointers()[2 + ((gFrameIndex + 1) % gFramesInFlight)] // particlesOut SSBO
 		};
 		vkCmdPushConstants(pCommandBuffer, Global::getComputePipelineLayout().getLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstantPointers.data());
 		vkCmdDispatch(pCommandBuffer, Global::gPARTICLES_COUNT / 256, 1, 1);
