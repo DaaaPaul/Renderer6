@@ -30,6 +30,7 @@ namespace DeviceMemory {
 		std::vector<VkDeviceSize> bufferOffsets{};
 		std::vector<VkDeviceSize> bufferSizes{};
 		std::vector<VkDeviceAddress> bufferPointers{};
+		std::vector<void*> buffersMapped{};
 
 		VkDescriptorPool pDescriptorPool{};
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};

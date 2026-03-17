@@ -174,11 +174,14 @@ namespace Engine {
 		vkCmdBindIndexBuffer(pCommandBuffer, getDeviceLocalMemory().getBuffers()[1], 0, VK_INDEX_TYPE_UINT32);
 
 		std::vector<VkDescriptorSet> drawDescriptorSets{
-			getHostVisibleMemory().getDescriptorSets()[0 + Global::Engine::gFrameIndex], // Model transform uniform buffer
 			getDeviceLocalMemory().getDescriptorSets()[0] // Combined image sampler
 		};
 		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, getModelGraphicsPipeline().getCreateInfo().pipelineInfo.layout, 
-			0, 2, drawDescriptorSets.data(), 0, nullptr);
+			0, 1, drawDescriptorSets.data(), 0, nullptr);
+		std::vector<VkDeviceAddress> pushConstantPointers{
+			getHostVisibleMemory().getBufferPointers()[3 + Global::Engine::gFrameIndex] // Pointer to transformation matrices
+		};
+		vkCmdPushConstants(pCommandBuffer, getModelPipelineLayout().getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), pushConstantPointers.data()); 
 		
 		// layout transitions to optimal
 		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 

@@ -32,8 +32,8 @@ void computeShader(uint3 invocation: SV_DispatchThreadID) {
 }
 
 struct VertexIn {
-    [[vk::location(0)]] float4 color;
-    [[vk::location(1)]] float2 position;
+    [vk::location(0)] float4 color;
+    [vk::location(1)] float2 position;
 };
 
 struct VertexOut {

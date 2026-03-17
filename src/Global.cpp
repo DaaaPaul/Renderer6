@@ -445,8 +445,8 @@ namespace Global {
 			Buffer 7 to 10 - Particle SSBO
 			Buffer 11 to 14 - Particle delta time
 
-			Descriptor Set 0 to 3 - matches uniform buffers 3 to 6
-			Descriptor Set 4 to 7 - matches uniform buffers 11 to 14
+			//Descriptor Set 0 to 3 - matches uniform buffers 3 to 6
+			//Descriptor Set 4 to 7 - matches uniform buffers 11 to 14
 		*/
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
@@ -460,12 +460,12 @@ namespace Global {
 				self.writeToBuffer(7 + i, getParticlesData().data(), gPARTICLES_BUFFER_SIZE);
 			}
 
-			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.descriptorSetBindingToBuffers(i, 0, {static_cast<unsigned long long>(3 + i)});
-			}
-			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.descriptorSetBindingToBuffers(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
-			}
+			//for(int i = 0; i < Engine::gFramesInFlight; i++) {
+			//	self.descriptorSetBindingToBuffers(i, 0, {static_cast<unsigned long long>(3 + i)});
+			//}
+			//for(int i = 0; i < Engine::gFramesInFlight; i++) {
+			//	self.descriptorSetBindingToBuffers(4 + i, 0, {static_cast<unsigned long long>(11 + i)});
+			//}
 		};
 
 		static std::vector<DeviceMemory::BufferInfo> gBufferInfos(
@@ -490,24 +490,24 @@ namespace Global {
 			}()
 		);
 
-		static std::vector<DeviceMemory::DescriptorSetInfo> gDescriptorSetInfos(
-			[]() -> std::vector<DeviceMemory::DescriptorSetInfo> {
-				std::vector<DeviceMemory::DescriptorSetInfo> lambdaReturn{};
+		//static std::vector<DeviceMemory::DescriptorSetInfo> gDescriptorSetInfos(
+		//	[]() -> std::vector<DeviceMemory::DescriptorSetInfo> {
+		//		std::vector<DeviceMemory::DescriptorSetInfo> lambdaReturn{};
 
-				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Vertex::Transforms::getDescriptorSetBinding(0)});
-				}
-				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::DeltaTime::getDescriptorSetBinding(0)});
-				}
+		//		for(int i = 0; i < Engine::gFramesInFlight; i++) {
+		//			lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Vertex::Transforms::getDescriptorSetBinding(0)});
+		//		}
+		//		for(int i = 0; i < Engine::gFramesInFlight; i++) {
+		//			lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::DeltaTime::getDescriptorSetBinding(0)});
+		//		}
 
-				return lambdaReturn;
-			}()
-		);
+		//		return lambdaReturn;
+		//	}()
+		//);
 
 		static DeviceMemory::HostVisible gHostVisibleMemory(
 			&getDevices(),
-			DeviceMemory::HostVisible::CreateInfo(std::move(gBufferInfos), std::move(gDescriptorSetInfos)),
+			DeviceMemory::HostVisible::CreateInfo(std::move(gBufferInfos), {}),
 			gPopulate
 		);
 
@@ -526,7 +526,7 @@ namespace Global {
 			Sampler 0 - Model texture sampler
 
 			Descriptor Set 0 - Matches sampler 0
-			Descriptor Set 1 to 4 - Matches SSBOs 2 to 5
+			//Descriptor Set 1 to 4 - Matches SSBOs 2 to 5
 		*/
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
@@ -538,9 +538,9 @@ namespace Global {
 			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
 			
 			self.descriptorSetBindingToCombinedImageSampler(0, 0, {0});
-			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.descriptorSetBindingToBuffers(1 + i, 0, {static_cast<unsigned long long>(2 + i)});
-			}
+			//for(int i = 0; i < Engine::gFramesInFlight; i++) {
+			//	self.descriptorSetBindingToBuffers(1 + i, 0, {static_cast<unsigned long long>(2 + i)});
+			//}
 		};
 
 		static std::vector<DeviceMemory::BufferInfo> gBufferInfos(
@@ -619,9 +619,9 @@ namespace Global {
 					})
 				};
 
-				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::Particle::getDescriptorSetBinding(0)});
-				}
+				//for(int i = 0; i < Engine::gFramesInFlight; i++) {
+				//	lambdaReturn.emplace_back(std::vector<VkDescriptorSetLayoutBinding>{Particle::Particle::getDescriptorSetBinding(0)});
+				//}
 
 				return lambdaReturn;
 			}()
@@ -639,20 +639,20 @@ namespace Global {
 	::Engine::PipelineLayout& getModelPipelineLayout() {
 		static ::Engine::PipelineLayout gLayout(&getDevices(), 
 		std::vector<VkDescriptorSetLayout>{
-			getHostVisibleMemory().getDescriptorSetLayouts()[0], // vertex transformations uniform buffer (set 0)
-			getDeviceLocalMemory().getDescriptorSetLayouts()[0], // combined image sampler (set 1)
+			getDeviceLocalMemory().getDescriptorSetLayouts()[0], // combined image sampler (set 0)
 		},
-		std::vector<VkPushConstantRange>{});
+		std::vector<VkPushConstantRange>{
+			VkPushConstantRange{
+				.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+				.offset = 0,
+				.size = POINTER_SIZE(1)
+			}
+		});
 
 		return gLayout;
 	}
 
 	::Engine::PipelineLayout& getComputePipelineLayout() {
-		//static ::Engine::PipelineLayout gLayout(&getDevices(), std::vector<VkDescriptorSetLayout>{
-		//	getHostVisibleMemory().getDescriptorSetLayouts()[4], // delta time uniform buffer (set 2)
-		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1], // PARTICLES_IN SSBO (set 3),
-		//	getDeviceLocalMemory().getDescriptorSetLayouts()[1] // particlesOut SSBO (set 4)
-		//});
 		static ::Engine::PipelineLayout gLayout(&getDevices(), 
 		std::vector<VkDescriptorSetLayout>{}, 
 		std::vector<VkPushConstantRange>{
@@ -935,6 +935,9 @@ namespace Global {
 					.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size()),
 					.pDynamicStates = dynamicStates.data(),
 				};
+
+				::Engine::PipelineLayout emptyLayout(&getDevices(), {}, {});
+				particlesPipelineCreate.layout = emptyLayout.getLayout();
 
 				return ::Engine::GraphicsPipeline::CreateInfo(
 					particlesPipelineCreate,

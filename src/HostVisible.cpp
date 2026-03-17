@@ -12,6 +12,7 @@ namespace DeviceMemory {
 			bufferSizes.resize(BUFFER_COUNT, 0);
 			bufferOffsets.resize(BUFFER_COUNT, 0);
 			bufferPointers.resize(BUFFER_COUNT, 0);
+			buffersMapped.resize(BUFFER_COUNT, nullptr);
 
 			for (int i = 0; i < BUFFER_COUNT; i++) {
 				buffers[i] = createBuffer(pDevices->getLogicalDevice(), CREATE_INFO.bufferInfos[i]);
@@ -85,6 +86,7 @@ namespace DeviceMemory {
 		bufferOffsets{},
 		bufferSizes{},
 		bufferPointers{},
+		buffersMapped{},
 		pDescriptorPool{}, 
 		descriptorSetLayouts{},
 		descriptorSets{} {
@@ -97,11 +99,12 @@ namespace DeviceMemory {
 	}
 
 	HostVisible::~HostVisible() {
+		vkUnmapMemory(pDevices->getLogicalDevice(), pHostVisibleMemory);
 		vkFreeMemory(pDevices->getLogicalDevice(), pHostVisibleMemory, nullptr);
+
 		for(VkBuffer& buffer : buffers) {
 			vkDestroyBuffer(pDevices->getLogicalDevice(), buffer, nullptr);
 		}
-	
 		for(size_t i = 0; i < descriptorSets.size(); i++) {
 			vkFreeDescriptorSets(pDevices->getLogicalDevice(), pDescriptorPool, 1, &descriptorSets[i]);
 			vkDestroyDescriptorSetLayout(pDevices->getLogicalDevice(), descriptorSetLayouts[i], nullptr);
@@ -112,8 +115,13 @@ namespace DeviceMemory {
 	}
 
 	void HostVisible::writeToBuffer(size_t const& INDEX, void const*const pDATA, uint32_t const& NUM_BYTES) {
-		void* pBuffer = reinterpret_cast<void*>(bufferPointers[INDEX]);
+		void* pBuffer{};
+		CHECK_VK_SUCCESS(
+		vkMapMemory(pDevices->getLogicalDevice(), pHostVisibleMemory, bufferOffsets[INDEX], bufferSizes[INDEX], 0, &pBuffer),
+		"Failed to map memory"
+		)
 		std::memcpy(pBuffer, pDATA, NUM_BYTES);
+		vkUnmapMemory(pDevices->getLogicalDevice(), pHostVisibleMemory);
 	}
 
 	void HostVisible::descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES) {

@@ -6,6 +6,7 @@ namespace Engine {
 		pLayout{}, 
 		descriptorSetLayouts(std::move(salvageDescriptorSetLayouts)),
 		pushConstantRanges(std::move(salvagePushConstantRanges)) {
+
 		VkPipelineLayoutCreateInfo pipelineLayoutCreate{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 			.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
