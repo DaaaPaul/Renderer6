@@ -31,10 +31,11 @@
 - persistantly map host visible buffers properly !DONE!
 - clean up host visible memory !DONE!
 
+- create structure chain thing for features struct !DONE!
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 - Load mipmaps from texture itself
 - consider multisampling
 
 PEASY:
-- create structure chain thing for features struct

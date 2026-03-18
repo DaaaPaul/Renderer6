@@ -6,6 +6,7 @@
 #include <iostream>
 #include "Util.h"
 #include "Global.h"
+#include "VChain.hpp"
 
 namespace Global {
 	namespace Engine {
@@ -174,38 +175,35 @@ namespace Global {
 		static Backend::Devices gDevices(
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
-				VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
-					.extendedDynamicState2 = true
-				};
-				VkPhysicalDeviceDynamicRenderingFeatures dynamicRendering{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-					.pNext = nullptr, // reroute needed
-					.dynamicRendering = true
-				};
-				VkPhysicalDeviceSynchronization2Features sync2{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-					.pNext = nullptr, // reroute needed
-					.synchronization2 = true
-				};
-				VkPhysicalDeviceTimelineSemaphoreFeatures timeline{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-					.pNext = nullptr, // reroute needed
-					.timelineSemaphore = true
-				};
-				VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddress{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-					.pNext = nullptr, // reroute needed
-					.bufferDeviceAddress = true
-				};
-				VkPhysicalDeviceFeatures2 features{
+				VChain<VkPhysicalDeviceFeatures2, VkPhysicalDeviceBufferDeviceAddressFeatures, VkPhysicalDeviceTimelineSemaphoreFeatures, VkPhysicalDeviceSynchronization2Features, VkPhysicalDeviceDynamicRenderingFeatures, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT>
+				features
+				(VkPhysicalDeviceFeatures2{
 					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-					.pNext = nullptr, // reroute needed
 					.features = {
 						.samplerAnisotropy = true,
 						.textureCompressionBC = true
 					}
-				};
+				},
+				VkPhysicalDeviceBufferDeviceAddressFeatures{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+					.bufferDeviceAddress = true
+				},
+				VkPhysicalDeviceTimelineSemaphoreFeatures{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+					.timelineSemaphore = true
+				},
+				VkPhysicalDeviceSynchronization2Features{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+					.synchronization2 = true
+				},
+				VkPhysicalDeviceDynamicRenderingFeatures{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+					.dynamicRendering = true
+				},
+				VkPhysicalDeviceExtendedDynamicState2FeaturesEXT{
+					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+					.extendedDynamicState2 = true
+				});
 
 				std::vector<const char*> extensions{
 					"VK_KHR_swapchain",
@@ -229,15 +227,9 @@ namespace Global {
 				};
 
 				uint32_t physicalDeviceCount{};
-				CHECK_VK_SUCCESS(
-					vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, nullptr),
-					"Failed to enumerate physical devices on your instance"
-				);
+				CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
 				std::vector<VkPhysicalDevice> systemPhysicalDevices(physicalDeviceCount);
-				CHECK_VK_SUCCESS(
-					vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, systemPhysicalDevices.data()),
-					"Failed to enumerate physical devices on your instance"
-				);
+				CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, systemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
 
 				auto getQfIndex = [](VkPhysicalDevice& pPhysicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
 					uint32_t physicalDeviceQueueFamilyCount{};
@@ -295,38 +287,40 @@ namespace Global {
 					}
 
 					// features check
-					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicStateStatus{
-						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT
-					};
-					VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingStatus{
-						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-						.pNext = &extendedDynamicStateStatus
-					};
-					VkPhysicalDeviceSynchronization2Features sync2Status{
-						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-						.pNext = &dynamicRenderingStatus
-					};
-					VkPhysicalDeviceTimelineSemaphoreFeatures timelineStatus{
-						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-						.pNext = &sync2Status,
-					};
-					VkPhysicalDeviceBufferDeviceAddressFeatures bufferAddressStatus{
-						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-						.pNext = &timelineStatus,
-					};
-					VkPhysicalDeviceFeatures2 featuresStatus{
+					VChain<VkPhysicalDeviceFeatures2, VkPhysicalDeviceBufferDeviceAddressFeatures, VkPhysicalDeviceTimelineSemaphoreFeatures, VkPhysicalDeviceSynchronization2Features, VkPhysicalDeviceDynamicRenderingFeatures, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT>
+					featuresStatus
+					(VkPhysicalDeviceFeatures2{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-						.pNext = &bufferAddressStatus
-					};
-					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &featuresStatus);
+					},
+					VkPhysicalDeviceBufferDeviceAddressFeatures{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+					},
+					VkPhysicalDeviceTimelineSemaphoreFeatures{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
+					},
+					VkPhysicalDeviceSynchronization2Features{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
+					},
+					VkPhysicalDeviceDynamicRenderingFeatures{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
+					},
+					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT{
+						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+					});
+					vkGetPhysicalDeviceFeatures2(systemPhysicalDevices[i], &featuresStatus.val);
 
-					bool allNeeded = featuresStatus.features.samplerAnisotropy && 
-						featuresStatus.features.textureCompressionBC && 
-						timelineStatus.timelineSemaphore && 
-						bufferAddressStatus.bufferDeviceAddress &&
-						sync2Status.synchronization2 && 
-						dynamicRenderingStatus.dynamicRendering && 
-						extendedDynamicStateStatus.extendedDynamicState2;
+					VkPhysicalDeviceBufferDeviceAddressFeatures* pBDAStatus = reinterpret_cast<VkPhysicalDeviceBufferDeviceAddressFeatures*>(features.val.pNext);
+					VkPhysicalDeviceTimelineSemaphoreFeatures* pTimelineStatus = reinterpret_cast<VkPhysicalDeviceTimelineSemaphoreFeatures*>(pBDAStatus->pNext);
+					VkPhysicalDeviceSynchronization2Features* pSync2Status = reinterpret_cast<VkPhysicalDeviceSynchronization2Features*>(pTimelineStatus->pNext);
+					VkPhysicalDeviceDynamicRenderingFeatures* pDynStatus = reinterpret_cast<VkPhysicalDeviceDynamicRenderingFeatures*>(pSync2Status->pNext);
+					VkPhysicalDeviceExtendedDynamicState2FeaturesEXT* pExtDynStatus = reinterpret_cast<VkPhysicalDeviceExtendedDynamicState2FeaturesEXT*>(pDynStatus->pNext);
+					bool allNeeded = 
+					featuresStatus.val.features.samplerAnisotropy && featuresStatus.val.features.textureCompressionBC &&
+					pBDAStatus->bufferDeviceAddress &&
+					pTimelineStatus->timelineSemaphore &&
+					pSync2Status->synchronization2 &&
+					pDynStatus->dynamicRendering &&
+					pExtDynStatus->extendedDynamicState2;
 					
 					if (!allNeeded) {
 						systemPhysicalDevices.erase(systemPhysicalDevices.begin() + i);
@@ -360,22 +354,23 @@ namespace Global {
 
 				const size_t SELECTED_PHYSICAL_DEVICE_INDEX = std::distance(niceToHaveSumsBySystemPhysicalDevice.begin(), std::max_element(niceToHaveSumsBySystemPhysicalDevice.begin(), niceToHaveSumsBySystemPhysicalDevice.end()));
 				VkPhysicalDevice pFinalSelection = systemPhysicalDevices[SELECTED_PHYSICAL_DEVICE_INDEX];
+
 				VkPhysicalDeviceProperties selectedPhysicalDeviceProperties{};
 				vkGetPhysicalDeviceProperties(pFinalSelection, &selectedPhysicalDeviceProperties);
 				std::cout << "SELECTED PHYSICAL DEVICE: " << selectedPhysicalDeviceProperties.deviceName << "\n";
 				std::cout << "DISCRETE GPU? " << ((niceToHavesBySystemPhysicalDevice[SELECTED_PHYSICAL_DEVICE_INDEX][0]) ? "Yes\n" : "No\n");
+				std::cout << "PUSH CONSTANT SIZE: " << selectedPhysicalDeviceProperties.limits.maxPushConstantsSize << "\n";
 
 				VkDeviceCreateInfo deviceInfo{
 					.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
 					.pNext = nullptr, // reroute needed
-					.flags = 0,
 					.queueCreateInfoCount = static_cast<uint32_t>(queueFamilyInfos.size()),
 					.pQueueCreateInfos = queueFamilyInfos.data(),
 					.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
 					.ppEnabledExtensionNames = extensions.data(),
 				};
 
-				return Backend::Devices::CreateInfo(std::move(pFinalSelection), deviceInfo, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), extendedDynamicState, dynamicRendering, sync2, timeline, bufferAddress, features);
+				return Backend::Devices::CreateInfo(std::move(pFinalSelection), deviceInfo, std::move(queueFamilyInfos), std::move(queuePriorities), std::move(extensions), features);
 			}()
 		);
 
@@ -437,14 +432,12 @@ namespace Global {
 	}
 
 	DeviceMemory::HostVisible& getHostVisibleMemory() {
-		/*
-			Buffer 0 - Model vertices
-			Buffer 1 - Model vertex indices
-			Buffer 2 - Model texture data
-			Buffer 3 to 6 - Model transform
-			Buffer 7 to 10 - Particle SSBO
-			Buffer 11 to 14 - Particle delta time
-		*/
+		// Buffer 0 - Model vertices
+		// Buffer 1 - Model vertex indices
+		// Buffer 2 - Model texture data
+		// Buffer 3 to 6 - Model transform
+		// Buffer 7 to 10 - Particle SSBO
+		// Buffer 11 to 14 - Particle delta time
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
 			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
 			self.writeToBuffer(1, getGltfModel().second.data(), gIndexBufferSize);
@@ -490,18 +483,16 @@ namespace Global {
 	}
 
 	DeviceMemory::DeviceLocal& getDeviceLocalMemory() {
-		/*
-			Buffer 0 - Model vertices
-			Buffer 1 - Model vertex indices
-			Buffer 2 to 5 - Particle SSBO
+		// Buffer 0 - Model vertices
+		// Buffer 1 - Model vertex indices
+		// Buffer 2 to 5 - Particle SSBO
 
-			Image 0 - Model texture
-			Image 1 - Depth image
+		// Image 0 - Model texture
+		// Image 1 - Depth image
 
-			Sampler 0 - Model texture sampler
+		// Sampler 0 - Model texture sampler
 
-			Descriptor Set 0 - Matches sampler 0
-		*/
+		// Descriptor Set 0 - Matches sampler 0
 		static auto gPopulate = [](DeviceMemory::DeviceLocal& self) -> void {
 			self.copyBufferToBuffer(0, getHostVisibleMemory().getBuffers()[0], {VkBufferCopy(0, 0, gVertexBufferSize)});
 			self.copyBufferToBuffer(1, getHostVisibleMemory().getBuffers()[1], {VkBufferCopy(0, 0, gIndexBufferSize)});
