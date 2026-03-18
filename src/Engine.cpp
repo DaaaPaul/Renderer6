@@ -187,7 +187,7 @@ namespace Engine {
 
 		// draw!
 		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
-		vkCmdDrawIndexed(pCommandBuffer, getGltfModel().second.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(pCommandBuffer, loadModelVertices().second.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(pCommandBuffer);
 
 		// end recording

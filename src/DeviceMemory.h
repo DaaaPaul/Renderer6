@@ -61,8 +61,6 @@ namespace DeviceMemory {
 		VkBorderColor borderColor{};
 	};
 
-	void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
-	[[nodiscard]] ktxTexture2* loadKtxImage(const char* const& FILE_PATH);
 	[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept;
 
 	[[nodiscard]] VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO);

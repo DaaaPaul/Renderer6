@@ -1,54 +1,57 @@
 #include <iostream>
-#include "Window.hpp"
+#include "Window.h"
 #include "Util.h"
 
 namespace Backend {
-	void Window::framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
-		Window* pSelf = reinterpret_cast<Window*>(glfwGetWindowUserPointer(pGlfwWindow));
-		pSelf->framebufferResized = true;
-	}
-
-	Window::Window(CreateInfo const& CREATE_INFO) :
-		pGlfwWindow{},
-		CREATE_INFO{ CREATE_INFO },
-		framebufferResized{ false } {
-		glfwInit();
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
-		pGlfwWindow = glfwCreateWindow(CREATE_INFO.width, CREATE_INFO.height, CREATE_INFO.NAME, nullptr, nullptr);
-		glfwSetWindowUserPointer(pGlfwWindow, this);
-		glfwSetFramebufferSizeCallback(pGlfwWindow, framebufferResizeCallback);
-
-		CHECK_NULLPTR(pGlfwWindow, "glfwCreateWindow failed");
-	}
-
-	Window::~Window() {
-		glfwDestroyWindow(pGlfwWindow);
-		glfwTerminate();
-	}
-
-	[[nodiscard]] std::vector<const char*> Window::getInstanceRequiredWindowExtensions() {
-		glfwInit();
-
-		uint32_t requiredGlfwExtensionsCount{};
-		const char** requiredGlfwExtensionsNames = glfwGetRequiredInstanceExtensions(&requiredGlfwExtensionsCount);
-		std::vector<const char*> requiredGlfwExtensionsNamesVector{};
-
-		if (!requiredGlfwExtensionsNames) {
-			#ifdef __APPLE__
-			requiredGlfwExtensionsNamesVector.push_back("VK_KHR_surface");
-			requiredGlfwExtensionsNamesVector.push_back("VK_EXT_metal_surface");
-			#endif
-
-			#ifdef _WIN32
-			CHECK_NULLPTR(requiredGlfwExtensionsNames, "glfwGetRequiredInstanceExtensions failed")
-			#endif
+	namespace Window {
+		void init() {
+			createGlfwWindow();
+		}
+		void deInit() {
+			destroyGlfwWindow();
 		}
 
-		for (int i = 0; i < requiredGlfwExtensionsCount; i++) {
-			requiredGlfwExtensionsNamesVector.push_back(requiredGlfwExtensionsNames[i]);
+		void createGlfwWindow() {
+			glfwInit();
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+			gpGlfwWindow = glfwCreateWindow(gWINDOW_WIDTH, gWINDOW_HEIGHT, gWINDOW_TITLE, nullptr, nullptr);
+
+			CHECK_NULLPTR(gpGlfwWindow, "glfwCreateWindow failed")
+
+			glfwSetWindowUserPointer(gpGlfwWindow, gpFrameBufferResized);
+			glfwSetFramebufferSizeCallback(gpGlfwWindow, framebufferResizeCallback);
 		}
 
-		return requiredGlfwExtensionsNamesVector;
+		void destroyGlfwWindow() noexcept {
+			glfwDestroyWindow(gpGlfwWindow);
+			glfwTerminate();
+		}
+
+		void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
+			bool* pResized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(pGlfwWindow));
+			*pResized = true;
+		}
+
+		namespace Util {
+			std::vector<const char*> getRequiredWindowExtensionsForInstance() {
+				glfwInit();
+
+				uint32_t requiredCount{};
+				const char** required = glfwGetRequiredInstanceExtensions(&requiredCount);
+				std::vector<const char*> requiredVector{};
+
+				#ifdef __APPLE__
+				if (!required) {
+					requiredVector.push_back("VK_KHR_surface");
+					requiredVector.push_back("VK_EXT_metal_surface");
+				}
+				#endif
+				for (int i = 0; i < requiredCount; i++) {
+					requiredVector.push_back(required[i]);
+				}
+
+				return requiredVector;
+			}
+		}
 	}
 }

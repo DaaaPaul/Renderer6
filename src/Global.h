@@ -29,21 +29,10 @@ namespace Global {
 		[[nodiscard]] Vertex::Transforms& getCurrentTransformation();
 	}
 
-	inline constexpr uint32_t gPARTICLES_COUNT = 2560;
-	inline constexpr uint32_t gPARTICLES_BUFFER_SIZE = gPARTICLES_COUNT * sizeof(Particle::Particle);
-	inline uint32_t gVertexBufferSize = 0xFFFFFFFF; /* (*) */
-	inline uint32_t gIndexBufferSize = 0xFFFFFFFF; /* (*) */
-
 	void asserts() noexcept;
 	void load();
 	inline bool gLoaded = false;
 
-	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel();
-	[[nodiscard]] ktxTexture2 const* getKtxTexture2();
-	[[nodiscard]] std::vector<Particle::Particle> getParticlesData();
-	[[nodiscard]] Backend::Window& getWindow();
-	[[nodiscard]] Backend::Instance& getInstance();
-	[[nodiscard]] Backend::Devices& getDevices();
 	[[nodiscard]] Backend::Swapchain& getSwapchain();
 	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
 	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();

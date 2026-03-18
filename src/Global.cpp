@@ -52,12 +52,6 @@ namespace Global {
 	}
 
 	void load() {
-		(void) getKtxTexture2();
-		(void) getGltfModel();
-		(void) getParticlesData();
-		(void) getWindow();
-		(void) getInstance();
-		(void) getDevices();
 		(void) getSwapchain();
 		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
@@ -72,159 +66,10 @@ namespace Global {
 		gLoaded = true;
 	}
 
-	ktxTexture2 const* getKtxTexture2() {
-		static ktxTexture2 const*const gpKTX_TEXTURE2 = DeviceMemory::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
-		
-		return gpKTX_TEXTURE2;
-	}
-
-	std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>>& getGltfModel() {
-		static std::pair<std::vector<Vertex::Vertex>, std::vector<uint32_t>> uniqueVerticesAndVertexIndices{};
-
-		if(uniqueVerticesAndVertexIndices.first.empty() && uniqueVerticesAndVertexIndices.second.empty()) {
-			DeviceMemory::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", uniqueVerticesAndVertexIndices.first, uniqueVerticesAndVertexIndices.second);
-		
-			gVertexBufferSize = uniqueVerticesAndVertexIndices.first.size() * sizeof(Vertex::Vertex); /* (*) */
-			gIndexBufferSize = uniqueVerticesAndVertexIndices.second.size() * sizeof(uint32_t); /* (*) */
-		}
-
-		return uniqueVerticesAndVertexIndices;
-	}
-
-	std::vector<Particle::Particle> getParticlesData() {
-		static std::vector<Particle::Particle> gParticles(
-			[]() -> std::vector<Particle::Particle> {
-				std::vector<Particle::Particle> particles(gPARTICLES_COUNT, {});
-
-				float r{}, theta{}, x{}, y{};
-				for(Particle::Particle& p : particles) {
-					r = sqrtf(Util::random());
-					theta = 2.0f * PI * Util::random();
-
-					x = r * cosf(theta) * (static_cast<float>(getWindow().getCreateInfo().height) / getWindow().getCreateInfo().width);
-					y = r * sinf(theta);
-
-					p.color = glm::vec4(Util::random(), Util::random(), Util::random(), 1.0f);
-					p.position = glm::vec2(x, y);
-					p.velocity = normalize(p.position);
-				}
-
-				return particles;
-			}()
-		);
-
-
-		return gParticles;
-	}
-
-	Backend::Window& getWindow() {
-		static Backend::Window gWindowWrapper({
-			.width = 800,
-			.height = 600,
-			.NAME = "Renderer6"
-		});
-
-		return gWindowWrapper;
-	}
-
-	Backend::Instance& getInstance() {
-		static Backend::Instance gBackend(&getWindow(), 
-			[]() -> Backend::Instance::CreateInfo {
-				std::vector<const char*> enabledLayers{ "VK_LAYER_KHRONOS_validation" };
-				#ifdef _WIN32
-				std::vector<const char*> enabledExtensions(Backend::Window::getInstanceRequiredWindowExtensions());
-				#endif
-				#ifdef __APPLE__
-				std::vector<const char*> enabledExtensions(
-				[]() -> const std::vector<const char*> {
-					std::vector<const char*> init(Backend::Window::getInstanceRequiredWindowExtensions());
-					init.push_back("VK_KHR_portability_enumeration");
-					return init;
-				}()
-				);
-				#endif
-
-				const VkApplicationInfo APP_INFO{
-					.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-					.apiVersion = VK_API_VERSION_1_3,
-				};
-				const VkInstanceCreateInfo INSTANCE_CREATE_INFO{
-					.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-					.flags =
-					#ifdef _WIN32 
-					0,
-					#endif
-					#ifdef __APPLE__
-					VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
-					#endif
-					.pApplicationInfo = nullptr, // reroute needed
-					.enabledLayerCount = static_cast<uint32_t>(enabledLayers.size()),
-					.ppEnabledLayerNames = enabledLayers.data(),
-					.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size()),
-					.ppEnabledExtensionNames = enabledExtensions.data(),
-				};
-
-				return Backend::Instance::CreateInfo(std::move(enabledLayers), std::move(enabledExtensions), APP_INFO, INSTANCE_CREATE_INFO);
-			}()
-		);
-
-		return gBackend;
-	}
-
 	Backend::Devices& getDevices() {
 		static Backend::Devices gDevices(
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
-				VChain<VkPhysicalDeviceFeatures2, VkPhysicalDeviceBufferDeviceAddressFeatures, VkPhysicalDeviceTimelineSemaphoreFeatures, VkPhysicalDeviceSynchronization2Features, VkPhysicalDeviceDynamicRenderingFeatures, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT>
-				features
-				(VkPhysicalDeviceFeatures2{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-					.features = {
-						.samplerAnisotropy = true,
-						.textureCompressionBC = true
-					}
-				},
-				VkPhysicalDeviceBufferDeviceAddressFeatures{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
-					.bufferDeviceAddress = true
-				},
-				VkPhysicalDeviceTimelineSemaphoreFeatures{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES,
-					.timelineSemaphore = true
-				},
-				VkPhysicalDeviceSynchronization2Features{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES,
-					.synchronization2 = true
-				},
-				VkPhysicalDeviceDynamicRenderingFeatures{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES,
-					.dynamicRendering = true
-				},
-				VkPhysicalDeviceExtendedDynamicState2FeaturesEXT{
-					.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
-					.extendedDynamicState2 = true
-				});
-
-				std::vector<const char*> extensions{
-					"VK_KHR_swapchain",
-					"VK_KHR_synchronization2",
-					"VK_KHR_spirv_1_4",
-					#ifdef __APPLE__
-					"VK_KHR_portability_subset"
-					#endif
-				};
-
-				std::vector<std::vector<float>> queuePriorities{
-					{0.5f}
-				};
-				std::vector<VkDeviceQueueCreateInfo> queueFamilyInfos{
-					VkDeviceQueueCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-						.queueFamilyIndex = UINT32_MAX, // this will be set properly later (*)
-						.queueCount = 1,
-						.pQueuePriorities = queuePriorities[0].data()
-					}
-				};
 
 				uint32_t physicalDeviceCount{};
 				CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
@@ -439,15 +284,15 @@ namespace Global {
 		// Buffer 7 to 10 - Particle SSBO
 		// Buffer 11 to 14 - Particle delta time
 		static auto gPopulate = [](DeviceMemory::HostVisible& self) -> void {
-			self.writeToBuffer(0, getGltfModel().first.data(), gVertexBufferSize);
-			self.writeToBuffer(1, getGltfModel().second.data(), gIndexBufferSize);
-			self.writeToBuffer(2, getKtxTexture2()->pData, getKtxTexture2()->dataSize);
+			self.writeToBuffer(0, loadModelVertices().first.data(), gVertexBufferSize);
+			self.writeToBuffer(1, loadModelVertices().second.data(), gIndexBufferSize);
+			self.writeToBuffer(2, loadKtxTexture2()->pData, loadKtxTexture2()->dataSize);
 
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
 				self.writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 			}
 			for(int i = 0; i < Engine::gFramesInFlight; i++) {
-				self.writeToBuffer(7 + i, getParticlesData().data(), gPARTICLES_BUFFER_SIZE);
+				self.writeToBuffer(7 + i, loadParticlesData().data(), gPARTICLES_BUFFER_SIZE);
 			}
 		};
 
@@ -456,7 +301,7 @@ namespace Global {
 				std::vector<DeviceMemory::BufferInfo> lambdaReturn{
 					DeviceMemory::BufferInfo(gVertexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
 					DeviceMemory::BufferInfo(gIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex()),
-					DeviceMemory::BufferInfo(getKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
+					DeviceMemory::BufferInfo(loadKtxTexture2()->dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, getDevices().getGraphicsQfIndex())
 				};
 
 				for(int i = 0; i < Engine::gFramesInFlight; i++) {
@@ -500,7 +345,7 @@ namespace Global {
 				self.copyBufferToBuffer(2 + i, getHostVisibleMemory().getBuffers()[7 + i], {VkBufferCopy(0, 0, gPARTICLES_BUFFER_SIZE)});
 			}
 
-			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1))});
+			self.copyBufferToImage(0, getHostVisibleMemory().getBuffers()[2], {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(loadKtxTexture2()->baseWidth, loadKtxTexture2()->baseHeight, 1))});
 			
 			self.descriptorSetBindingToCombinedImageSampler(0, 0, {0});
 		};
@@ -523,14 +368,14 @@ namespace Global {
 		static std::vector<DeviceMemory::ImageInfo> gImageInfos{
 			DeviceMemory::ImageInfo(
 				VK_IMAGE_TYPE_2D,
-				static_cast<VkFormat>(getKtxTexture2()->vkFormat),
-				VkExtent3D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight, 1),
-				DeviceMemory::calculateMipLevels(VkExtent2D(getKtxTexture2()->baseWidth, getKtxTexture2()->baseHeight)),
+				static_cast<VkFormat>(loadKtxTexture2()->vkFormat),
+				VkExtent3D(loadKtxTexture2()->baseWidth, loadKtxTexture2()->baseHeight, 1),
+				DeviceMemory::calculateMipLevels(VkExtent2D(loadKtxTexture2()->baseWidth, loadKtxTexture2()->baseHeight)),
 				VK_SAMPLE_COUNT_1_BIT,
 				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				getDevices().getGraphicsQfIndex(),
 				VK_IMAGE_LAYOUT_UNDEFINED,
-				DeviceMemory::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(getKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
+				DeviceMemory::ImageViewInfo(VK_IMAGE_VIEW_TYPE_2D, static_cast<VkFormat>(loadKtxTexture2()->vkFormat), VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1))
 			),
 			DeviceMemory::ImageInfo(
 				VK_IMAGE_TYPE_2D,

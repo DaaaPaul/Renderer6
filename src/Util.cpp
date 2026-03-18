@@ -5,13 +5,17 @@
 
 namespace Util {
     bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL) {
-        std::vector<std::string> bigCopy(BIG);
-        std::vector<std::string> smallCopy(SMALL);
+		if(SMALL.empty()) {
+			return true;
+		} else {
+			std::vector<std::string> bigCopy(BIG);
+			std::vector<std::string> smallCopy(SMALL);
 
-        std::sort(bigCopy.begin(), bigCopy.end());
-        std::sort(smallCopy.begin(), smallCopy.end());
+			std::sort(bigCopy.begin(), bigCopy.end());
+			std::sort(smallCopy.begin(), smallCopy.end());
 
-        return std::ranges::includes(bigCopy, smallCopy);
+			return std::ranges::includes(bigCopy, smallCopy);
+		}
     }
 
 	std::vector<char> getFileBytes(std::string const& PATH) {

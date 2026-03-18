@@ -1,66 +1,84 @@
 #include <iostream>
-#include "Instance.hpp"
+#include "Instance.h"
+#include "Util.h"
+#include "Window.h"
 
 namespace Backend {
-	void Instance::checkHaveExtensions(std::vector<const char*> const& NECESSARY_EXTENSIONS) {
-		if(NECESSARY_EXTENSIONS.empty()) {
-			return;
+	namespace Instance {
+		void init() {
+			checkHaveLayers(gLayers);
+			checkHaveExtensions(gExtensions);
+			createInstance();
 		}
 
-		uint32_t instanceExtensionsCount{};
-		vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, nullptr);
-		std::vector<VkExtensionProperties> instanceExtensionProperties(instanceExtensionsCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionsCount, instanceExtensionProperties.data());
-
-		std::vector<std::string> instanceExtensionNames{};
-		for(VkExtensionProperties const& SINGLE_EXTENSION_PROPERTIES : instanceExtensionProperties) {
-			instanceExtensionNames.push_back(SINGLE_EXTENSION_PROPERTIES.extensionName);
-		}
-		std::vector<std::string> checkHaveMeNames{};
-		for(const char* const& CHECK_ME_NAME : NECESSARY_EXTENSIONS) {
-			checkHaveMeNames.push_back(CHECK_ME_NAME);
+		void deInit() {
+			destroyInstance();
 		}
 
-		CHECK_CONTAINS_ALL(instanceExtensionNames, checkHaveMeNames, "Your vulkan installation does not have the required instance extensions")
-	}
+		void checkHaveExtensions(std::vector<const char*> const& EXTENSIONS) {
+			uint32_t haveExtensionsCount{};
+			vkEnumerateInstanceExtensionProperties(nullptr, &haveExtensionsCount, nullptr);
+			std::vector<VkExtensionProperties> haveExtensions(haveExtensionsCount);
+			vkEnumerateInstanceExtensionProperties(nullptr, &haveExtensionsCount, haveExtensions.data());
 
-	void Instance::checkHaveLayers(std::vector<const char*> const& NECESSARY_LAYERS) {
-		if(NECESSARY_LAYERS.empty()) {
-			return;
+			std::vector<std::string> haveExtensionsNames{};
+			for(VkExtensionProperties const& HAVE : haveExtensions) {
+				haveExtensionsNames.push_back(HAVE.extensionName);
+			}
+			std::vector<std::string> checkNames{};
+			for(const char* const& CHECK : EXTENSIONS) {
+				checkNames.push_back(CHECK);
+			}
+
+			if(!Util::containsAll(haveExtensionsNames, checkNames)) {
+				throw std::runtime_error("Your GPU does not have the required VkInstance extensions");
+			}
 		}
 
-		uint32_t loaderLayerCount{};
-		vkEnumerateInstanceLayerProperties(&loaderLayerCount, nullptr);
-		std::vector<VkLayerProperties> loaderLayerProperties(loaderLayerCount);
-		vkEnumerateInstanceLayerProperties(&loaderLayerCount, loaderLayerProperties.data());
+		void checkHaveLayers(std::vector<const char*> const& LAYERS) {
+			uint32_t haveLayersCount{};
+			vkEnumerateInstanceLayerProperties(&haveLayersCount, nullptr);
+			std::vector<VkLayerProperties> haveLayers(haveLayersCount);
+			vkEnumerateInstanceLayerProperties(&haveLayersCount, haveLayers.data());
 
-		std::vector<std::string> loaderLayerNames{};
-		for(VkLayerProperties const& singleLayerProperties : loaderLayerProperties) {
-			loaderLayerNames.push_back(std::string(singleLayerProperties.layerName));
+			std::vector<std::string> haveLayersNames{};
+			for(VkLayerProperties const& HAVE : haveLayers) {
+				haveLayersNames.push_back(HAVE.layerName);
+			}
+			std::vector<std::string> checkNames{};
+			for (const char* const& CHECK : LAYERS) {
+				checkNames.push_back(CHECK);
+			}
+
+			if(!Util::containsAll(haveLayersNames, checkNames)) {
+				throw std::runtime_error("Your GPU does not have the required Vulkan layers");
+			}
 		}
-		std::vector<std::string> checkHaveMeNames{};
-		for (const char* const& CHECK_ME_NAME : NECESSARY_LAYERS) {
-			checkHaveMeNames.push_back(CHECK_ME_NAME);
+
+		void createInstance() {
+			VkInstanceCreateFlags instanceCreateFlags = 0;
+			#ifdef __APPLE__
+			instanceCreateFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+			#endif
+			VkApplicationInfo appInfo{
+				.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+				.apiVersion = VK_API_VERSION_1_3,
+			};
+			VkInstanceCreateInfo instanceCreate{
+				.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+				.flags = instanceCreateFlags,
+				.pApplicationInfo = &appInfo,
+				.enabledLayerCount = UINT32(gLayers.size()),
+				.ppEnabledLayerNames = gLayers.data(),
+				.enabledExtensionCount = UINT32(gExtensions.size()),
+				.ppEnabledExtensionNames = gExtensions.data(),
+			};
+
+			CHECK_VK_SUCCESS(vkCreateInstance(&instanceCreate, nullptr, &gpInstance), "Failed to create instance")
 		}
-
-		CHECK_CONTAINS_ALL(loaderLayerNames, checkHaveMeNames, "Your vulkan installation does not have the required loader layers")
-	}
-
-	Instance::Instance(Window* pGivenWindow, CreateInfo&& givenCreateInfo) :
-		pInstance{},
-		pWindow{ pGivenWindow },
-		CREATE_INFO{ std::move(givenCreateInfo) } {
-
-		Instance::checkHaveExtensions(CREATE_INFO.extensions);
-		Instance::checkHaveLayers(CREATE_INFO.layers);
-
-		CHECK_VK_SUCCESS(
-			vkCreateInstance(&CREATE_INFO.createInfo, nullptr, &pInstance),
-			"Failed to create instance"
-		)
-	}
-
-	Instance::~Instance() {
-		vkDestroyInstance(pInstance, nullptr);
+		
+		void destroyInstance() noexcept {
+			vkDestroyInstance(gpInstance, nullptr);
+		}
 	}
 }
