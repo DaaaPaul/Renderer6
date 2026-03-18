@@ -1,0 +1,76 @@
+  ______   ______   ______   ______   ______  
+ /_____/  /_____/  /_____/  /_____/  /_____/  
+ ._.                                      ._. 
+ | |                                      | | 
+ |_|                                      |_| 
+ |-|                                      |-| 
+ | |                                      | | 
+ |_|                                      |_| 
+ ._.                                      ._. 
+ | |                                      | | 
+ |_|                                      |_| 
+ |-|                                      |-| 
+ | |                                      | | 
+ |_|                                      |_| 
+ ._.                                      ._. 
+ | |                                      | | 
+ |_|                                      |_| 
+ |-|                                      |-| 
+ | |                                      | | 
+ |_|                                      |_| 
+  ______   ______   ______   ______   ______  
+ /_____/  /_____/  /_____/  /_____/  /_____/  
+
+- bro u gotta make them create infos global
+- add them prefixes for things (g) (p) (f)
+
+- bro rename everything better now that ur better
+- fellow, add (m) prefix for class members
+- just be safer and add those default construct things to classes
+
+- bro add that cool pointer feature thing to print the features
+
+
+- remove vulkan name put in namespace
+- put graphics queue family index in variable
+- put static functions prefix s
+
+- remove the shizz names in the memory structs
+- clean up the code debt!!
+
+- finish refactor
+- make window resizable
+- Remove DeviceMemory::Common ns, just put into DeviceMemory
+- put prefix p for pointers
+- vkGetPhysicalDeviceSurfaceSupportKHR??? !IGNORED!
+
+- add noexcepts to warnings
+- make different uniform buffer for each frame
+
+- wrap VkShaderModule
+- make cull mode back
+
+- Look into buffer device address extension and push constants instead of D.sets
+- persistantly map host visible buffers properly
+- clean up host visible memory
+
+- create structure chain thing for features struct
+
+                    $$$$$$$\   $$$$$$\   $$$$$$\  $$$$$$$\                           $$\       $$\       $$$$$$$$\ $$\   $$\       $$\  $$$$$$\  $$$$$$$\  
+                    $$  __$$\ $$  __$$\ $$ ___$$\ $$  __$$\                          $$ |      $$ |      $$  _____|$$$\  $$ |      $$ |$$ ___$$\ $$  __$$\ 
+ $$$$$$$\ $$\   $$\ $$ |  $$ |$$ /  \__|\_/   $$ |$$ |  $$ |       $$$$$$$\ $$$$$$\  $$ |      $$ |      $$ |      $$$$\ $$ | $$$$$$$ |\_/   $$ |$$ |  $$ |
+$$  _____|$$ |  $$ |$$$$$$$  |\$$$$$$\    $$$$$ / $$ |  $$ |      $$  _____|\____$$\ $$ |      $$ |      $$$$$\    $$ $$\$$ |$$  __$$ |  $$$$$ / $$$$$$$  |
+$$ /      $$ |  $$ |$$  __$$<  \____$$\   \___$$\ $$ |  $$ |      $$ /      $$$$$$$ |$$ |      $$ |      $$  __|   $$ \$$$$ |$$ /  $$ |  \___$$\ $$  __$$< 
+$$ |      $$ |  $$ |$$ |  $$ |$$\   $$ |$$\   $$ |$$ |  $$ |      $$ |     $$  __$$ |$$ |      $$ |      $$ |      $$ |\$$$ |$$ |  $$ |$$\   $$ |$$ |  $$ |
+\$$$$$$$\ \$$$$$$  |$$ |  $$ |\$$$$$$  |\$$$$$$  |$$$$$$$  |      \$$$$$$$\\$$$$$$$ |$$$$$$$$\ $$$$$$$$\ $$$$$$$$\ $$ | \$$ |\$$$$$$$ |\$$$$$$  |$$ |  $$ |
+ \_______| \______/ \__|  \__| \______/  \______/ \_______/        \_______|\_______|\________|\________|\________|\__|  \__| \_______| \______/ \__|  \__|
+
+A WEEK'S LOAD:
+
+A DAY'S WORK:
+- Load mipmaps from texture itself (and implement mipmaps)
+
+BY THE HOUR:
+- Consider multisampling
+
+5-MINUTE:
