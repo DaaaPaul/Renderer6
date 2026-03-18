@@ -33,9 +33,10 @@
 #define DA_PI 3.14159265358979323846f
 
 namespace Util {
-	[[nodiscard]] bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
-	[[nodiscard]] std::vector<char> getFileBytes(std::string const& PATH);
-	[[nodiscard]] float random() noexcept;
+	std::vector<std::string> constCharToString(std::vector<const char*> const&);
+	bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL);
+	std::vector<char> getFileBytes(std::string const& PATH);
+	float random() noexcept;
 }
 
 using VkLogicalDevice = VkDevice;

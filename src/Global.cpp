@@ -71,11 +71,6 @@ namespace Global {
 			&getInstance(),
 			[]() -> Backend::Devices::CreateInfo {
 
-				uint32_t physicalDeviceCount{};
-				CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
-				std::vector<VkPhysicalDevice> systemPhysicalDevices(physicalDeviceCount);
-				CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(getInstance().getInstance(), &physicalDeviceCount, systemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
-
 				auto getQfIndex = [](VkPhysicalDevice& pPhysicalDevice, uint16_t const& MINIMUM_QUEUES) -> uint32_t {
 					uint32_t physicalDeviceQueueFamilyCount{};
 					vkGetPhysicalDeviceQueueFamilyProperties(pPhysicalDevice, &physicalDeviceQueueFamilyCount, nullptr);

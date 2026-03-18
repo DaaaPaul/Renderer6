@@ -23,14 +23,10 @@ namespace Backend {
 
 			std::vector<std::string> haveExtensionsNames{};
 			for(VkExtensionProperties const& HAVE : haveExtensions) {
-				haveExtensionsNames.push_back(HAVE.extensionName);
-			}
-			std::vector<std::string> checkNames{};
-			for(const char* const& CHECK : EXTENSIONS) {
-				checkNames.push_back(CHECK);
+				haveExtensionsNames.emplace_back(HAVE.extensionName);
 			}
 
-			if(!Util::containsAll(haveExtensionsNames, checkNames)) {
+			if(!Util::containsAll(haveExtensionsNames, Util::constCharToString(EXTENSIONS))) {
 				throw std::runtime_error("Your GPU does not have the required VkInstance extensions");
 			}
 		}
@@ -43,14 +39,10 @@ namespace Backend {
 
 			std::vector<std::string> haveLayersNames{};
 			for(VkLayerProperties const& HAVE : haveLayers) {
-				haveLayersNames.push_back(HAVE.layerName);
-			}
-			std::vector<std::string> checkNames{};
-			for (const char* const& CHECK : LAYERS) {
-				checkNames.push_back(CHECK);
+				haveLayersNames.emplace_back(HAVE.layerName);
 			}
 
-			if(!Util::containsAll(haveLayersNames, checkNames)) {
+			if(!Util::containsAll(haveLayersNames, Util::constCharToString(LAYERS))) {
 				throw std::runtime_error("Your GPU does not have the required Vulkan layers");
 			}
 		}

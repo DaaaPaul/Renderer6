@@ -4,6 +4,16 @@
 #include "Util.h"
 
 namespace Util {
+	std::vector<std::string> constCharToString(std::vector<const char*> const& C_STRINGS) {
+		std::vector<std::string> strings{};
+
+		for(const char* const& C_STRING : C_STRINGS) {
+			strings.emplace_back(C_STRING);
+		}
+
+		return strings;
+	}
+
     bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL) {
 		if(SMALL.empty()) {
 			return true;

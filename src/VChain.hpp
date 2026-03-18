@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 // variadic class template declaration
 // goal is just to give leeway for the existance of below 2 specializations
 template<class... Ts>
@@ -16,6 +18,8 @@ template<class First, class... Rest>
 struct VChain<First, Rest...> : VChain<Rest...> {
 	First val{};
 
+	VChain() : val{} {}
+
 	VChain(First first, Rest... rest) :
 		VChain<Rest...>(rest...),
 		val{ first } {
@@ -31,5 +35,12 @@ struct VChain<First, Rest...> : VChain<Rest...> {
 			val.pNext = &(VChain<Rest...>::val);
 			VChain<Rest...>::reroutePointers();
 		}
+	}
+
+	// WARNING: must call reroutePointers() after initializing with getShell()
+	VChain<First, Rest...> getShell(bool const& PLEDGE_TO_REROUTE) noexcept {
+		assert(PLEDGE_TO_REROUTE && "You must reroute after initializing with getShell()! Try again...");
+		VChain<First, Rest...> shell{};
+		return shell;
 	}
 };
