@@ -13,7 +13,7 @@ namespace Global {
 		void asserts() noexcept {
 			assert(Global::gLoaded);
 			assert(gFrameIndex == 0);
-			assert(gFramesInFlight != 0xFFFFFFFF);
+			assert(gFramesInFlight != UINT32_MAX);
 		}
 
 		void load() {

@@ -19,7 +19,7 @@
 namespace Global {
 	namespace Engine {
 		inline uint32_t gFrameIndex = 0;
-		inline uint32_t gFramesInFlight = 0xFFFFFFFF; /* (*) */
+		inline uint32_t gFramesInFlight = UINT32_MAX; /* (*) */
 
 		void asserts() noexcept;
 		void load();

@@ -7,6 +7,8 @@ namespace Backend {
 		inline std::vector<VkPhysicalDevice> gSystemPhysicalDevices{};
 		inline std::vector<VkPhysicalDeviceProperties> gSystemPhysicalDeviceProperties{};
 
+		inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{};
+
 		void init();
 	
 		void enumerateSystemPhysicalDevices(std::vector<VkPhysicalDeviceProperties>&, std::vector<VkPhysicalDevice>&);
@@ -16,6 +18,6 @@ namespace Backend {
 		bool apiVersionCheck(VkPhysicalDeviceProperties const&);
 		bool extensionsCheck(VkPhysicalDevice&);
 		bool featuresCheck(VkPhysicalDevice&);
-		bool queueCheck(VkPhysicalDeviceProperties const&, VkPhysicalDevice&);
+		bool queuesCheck(VkPhysicalDevice&);
 	}
 }

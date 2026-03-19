@@ -280,7 +280,7 @@ namespace Engine {
 		uint64_t modelSignalVal = ++frame.timelineVal;
 		uint64_t particlesWaitVal = modelSignalVal;
 		uint64_t particlesSignalVal = ++frame.timelineVal;
-		uint32_t nextImageIndex = 0xFFFFFFFF;
+		uint32_t nextImageIndex = UINT32_MAX;
 
 		if(vkAcquireNextImageKHR(Global::getDevices().getLogicalDevice(), Global::getSwapchain().getSwapchain(), UINT64_MAX, VK_NULL_HANDLE, frame.pOneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Global::getWindow().framebufferResized) {
 			windowResizeRecreate();

@@ -26,7 +26,7 @@ namespace Backend {
 	}
 
 	std::vector<VkImage> Swapchain::getImages() const noexcept {
-		uint32_t imageCount = 0xFFFFFFFF;
+		uint32_t imageCount = UINT32_MAX;
 		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, nullptr);
 		std::vector<VkImage> images(imageCount, {});
 		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, images.data());

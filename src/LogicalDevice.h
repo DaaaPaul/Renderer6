@@ -51,8 +51,8 @@ namespace Backend {
 			}
 		);
 		inline constexpr uint32_t gQUEUE_FAMILY_COUNT = 1;
-		inline std::array<uint32_t, gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{
-			UINT32_MAX /* (ac) */
+		inline constexpr std::array<VkQueueFlags, gQUEUE_FAMILY_COUNT> gQUEUE_FAMILY_CAPABILITIES{
+			VK_QUEUE_GRAPHICS_BIT
 		};
 		inline constexpr std::array<uint32_t, gQUEUE_FAMILY_COUNT> gQUEUES_PER_QUEUE_FAMILY{
 			1
