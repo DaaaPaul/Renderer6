@@ -6,7 +6,7 @@
 #include <iostream>
 #include "Util.h"
 #include "Global.h"
-#include "VChain.hpp"
+#include "FeatureChain.hpp"
 
 namespace Global {
 	namespace Engine {
@@ -127,7 +127,7 @@ namespace Global {
 					}
 
 					// features check
-					VChain<VkPhysicalDeviceFeatures2, VkPhysicalDeviceBufferDeviceAddressFeatures, VkPhysicalDeviceTimelineSemaphoreFeatures, VkPhysicalDeviceSynchronization2Features, VkPhysicalDeviceDynamicRenderingFeatures, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT>
+					FeatureChain<VkPhysicalDeviceFeatures2, VkPhysicalDeviceBufferDeviceAddressFeatures, VkPhysicalDeviceTimelineSemaphoreFeatures, VkPhysicalDeviceSynchronization2Features, VkPhysicalDeviceDynamicRenderingFeatures, VkPhysicalDeviceExtendedDynamicState2FeaturesEXT>
 					featuresStatus
 					(VkPhysicalDeviceFeatures2{
 						.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,

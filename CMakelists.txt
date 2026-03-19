@@ -57,7 +57,7 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Util.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Util.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/VChain.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp

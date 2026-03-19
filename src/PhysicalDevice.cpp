@@ -52,7 +52,7 @@ namespace Backend {
 		bool featuresCheck(VkPhysicalDevice& pd) {
 			auto requestedFeaturesShell = LogicalDevice::gFeatures.getShell(true);
 			requestedFeaturesShell.reroutePointers();
-			vkGetPhysicalDeviceFeatures2(pd, &requestedFeaturesShell.val);
+			vkGetPhysicalDeviceFeatures2(pd, &requestedFeaturesShell.feature);
 
 
 		}

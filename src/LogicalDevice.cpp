@@ -23,7 +23,7 @@ namespace Backend {
 
 			VkDeviceCreateInfo logicalDeviceCreate{
 				.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-				.pNext = &gFeatures.val,
+				.pNext = &gFeatures.feature,
 				.queueCreateInfoCount = gQUEUE_FAMILY_COUNT,
 				.pQueueCreateInfos = queuesCreate.data(),
 				.enabledExtensionCount = UINT32(gExtensions.size()),

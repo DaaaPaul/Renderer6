@@ -1,6 +1,6 @@
 #include <array>
 #include <vector>
-#include "VChain.hpp"
+#include "FeatureChain.hpp"
 #include "Util.h"
 
 namespace Backend {
@@ -16,7 +16,7 @@ namespace Backend {
 			"VK_KHR_portability_subset"
 			#endif
 		};
-		inline VChain<VkPhysicalDeviceFeatures2, 
+		inline FeatureChain<VkPhysicalDeviceFeatures2, 
 		VkPhysicalDeviceBufferDeviceAddressFeatures, 
 		VkPhysicalDeviceTimelineSemaphoreFeatures, 
 		VkPhysicalDeviceSynchronization2Features, 

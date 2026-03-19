@@ -14,12 +14,12 @@ namespace Util {
 		return strings;
 	}
 
-    bool containsAll(std::vector<std::string> const& BIG, std::vector<std::string> const& SMALL) {
-		if(SMALL.empty()) {
+    bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK) {
+		if(CHECK.empty()) {
 			return true;
 		} else {
-			std::vector<std::string> bigCopy(BIG);
-			std::vector<std::string> smallCopy(SMALL);
+			std::vector<std::string> bigCopy(HAVE);
+			std::vector<std::string> smallCopy(CHECK);
 
 			std::sort(bigCopy.begin(), bigCopy.end());
 			std::sort(smallCopy.begin(), smallCopy.end());
