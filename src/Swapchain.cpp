@@ -1,123 +1,134 @@
-#include <iostream>
-#include "Global.h"
-#include "Swapchain.hpp"
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include "Swapchain.h"
+#include "LogicalDevice.h"
+#include "PhysicalDevice.h"
+#include "Instance.h"
+#include "Window.h"
 
 namespace Backend {
-	[[nodiscard]] VkExtent2D Swapchain::getCurrentExtent() const noexcept {
-		const VkSurfaceCapabilitiesKHR SURFACE_CAPABILITIES(
-			[this]() -> VkSurfaceCapabilitiesKHR {
-				VkSurfaceCapabilitiesKHR capabilities{};
-				CHECK_VK_SUCCESS(
-					vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Global::getDevices().getPhysicalDevice(), pSurface, &capabilities),
-					"Failed to get physical device surface capabilities"
-				)
-				return capabilities;
-			}()
-		);
+	namespace Swapchain {
+		void init() {
+			createSurface();
 
-		VkExtent2D surfaceExtentInPixels{};
-		if (SURFACE_CAPABILITIES.currentExtent.width == UINT32_MAX && SURFACE_CAPABILITIES.currentExtent.height == UINT32_MAX) {
-			glfwGetFramebufferSize(Global::getWindow().getGlfwWindow(), reinterpret_cast<int*>(&surfaceExtentInPixels.width), reinterpret_cast<int*>(&surfaceExtentInPixels.height));
-		} else {
-			surfaceExtentInPixels = VkExtent2D(SURFACE_CAPABILITIES.currentExtent.width, SURFACE_CAPABILITIES.currentExtent.height);
+			populateImageSize();
+			checkImageFormatAndColorspaceSupported();
+			checkPresentModeSupported();
+
+			populateCurrentSwapchainStatus();
+			createSwapchain();
+			populateImages();
 		}
 
-		return surfaceExtentInPixels;
-	}
-
-	std::vector<VkImage> Swapchain::getImages() const noexcept {
-		uint32_t imageCount = UINT32_MAX;
-		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, nullptr);
-		std::vector<VkImage> images(imageCount, {});
-		vkGetSwapchainImagesKHR(pDevices->getLogicalDevice(), pSwapchain, &imageCount, images.data());
-
-		return images;
-	}
-
-	void Swapchain::recreate() {
-		while(getCurrentExtent().width == 0 && getCurrentExtent().height == 0) {
-			glfwWaitEvents(); // do not process anything when window is minimized
+		void deInit() {
+			destroySurface();
+			destroySwapchain();
 		}
 
-		vkDestroySwapchainKHR(pDevices->getLogicalDevice(), pSwapchain, nullptr);
-		const VkExtent2D SURFACE_EXTENT(getCurrentExtent());
-		const std::vector<uint32_t> ACCESSOR_GFXQF{ Global::getDevices().getGraphicsQfIndex() };
-    
-		const VkSwapchainCreateInfoKHR SWAPCHAIN_INFO{
-			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-			.surface = pSurface,
-			.minImageCount = 4,
-			.imageFormat = VK_FORMAT_R8G8B8A8_SRGB,
-			.imageColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR,
-			.imageExtent = SURFACE_EXTENT,
-			.imageArrayLayers = 1,
-			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-			.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-			.queueFamilyIndexCount = static_cast<uint32_t>(ACCESSOR_GFXQF.size()),
-			.pQueueFamilyIndices = ACCESSOR_GFXQF.data(),
-			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-			.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR,
-			.clipped = VK_TRUE,
-		};
+		void recreate() {
+			populateImageSize();
+			while(gImageSize.width == 0 && gImageSize.height == 0) {
+				glfwWaitEvents(); // wait for the next glfw event, and process it when it comes
+				populateImageSize(); // query window size after glfw event is processed
+			}
 
-		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(pDevices->getLogicalDevice(), &SWAPCHAIN_INFO, nullptr, &pSwapchain),
-			"Failed to create the swapchain"
-		)
-	}
+			destroySwapchain();
+			populateCurrentSwapchainStatus();
+			createSwapchain();
+			populateImages();
+		}
 
-	void Swapchain::checkHaveFormatColorspace(Swapchain const& SWAPCHAIN, VkSurfaceFormatKHR const& CHECK_ME_FORMAT_COLORSPACE) {
-		uint32_t supportedVkFormatColorspacesCount{};
-		vkGetPhysicalDeviceSurfaceFormatsKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedVkFormatColorspacesCount, nullptr);
-		std::vector<VkSurfaceFormatKHR> supportedVkFormatColorspaces(supportedVkFormatColorspacesCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedVkFormatColorspacesCount, supportedVkFormatColorspaces.data());
+		void createSurface() {
+			CHECK_VK_SUCCESS(glfwCreateWindowSurface(Instance::gpInstance, Window::gpGlfwWindow, nullptr, &gpSurface), "Failed to create surface")
+		}
 
-		bool checkSuccess{ false };
+		void populateCurrentSwapchainStatus() noexcept {
+			gCurrentSwapchainStatus = VkSwapchainCreateInfoKHR{
+				.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+				.surface = gpSurface,
+				.minImageCount = gIMAGE_COUNT,
+				.imageFormat = gIMAGE_FORMAT,
+				.imageColorSpace = gIMAGE_COLOR_SPACE,
+				.imageExtent = gImageSize,
+				.imageArrayLayers = 1,
+				.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+				.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+				.queueFamilyIndexCount = LogicalDevice::gQUEUE_FAMILY_COUNT,
+				.pQueueFamilyIndices = PhysicalDevice::gQueueFamilyIndices.data(),
+				.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+				.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+				.presentMode = gPRESENT_MODE,
+				.clipped = VK_TRUE,
+			};
+		}
 
-		for (VkSurfaceFormatKHR const& SUPPORTED : supportedVkFormatColorspaces) {
-			if (SUPPORTED.format == CHECK_ME_FORMAT_COLORSPACE.format && SUPPORTED.colorSpace == CHECK_ME_FORMAT_COLORSPACE.colorSpace) {
-				checkSuccess = true;
+		void createSwapchain() {
+			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(LogicalDevice::gpDevice, &gCurrentSwapchainStatus, nullptr, &gpSwapchain), "Failed to create swapchain")
+		}
+
+		void populateImages() noexcept {
+			uint32_t imageCount = UINT32_MAX;
+			vkGetSwapchainImagesKHR(LogicalDevice::gpDevice, gpSwapchain, &imageCount, nullptr);
+			gImages.clear();
+			gImages.resize(imageCount, {});
+			vkGetSwapchainImagesKHR(LogicalDevice::gpDevice, gpSwapchain, &imageCount, gImages.data());
+		}
+
+		void populateImageSize() noexcept {
+			VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+			CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &surfaceCapabilities), "Failed to get surface capabilities")
+		
+			gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+
+			if(gImageSize.width == UINT32_MAX) {
+				glfwGetFramebufferSize(Window::gpGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
 			}
 		}
 
-		CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired format")
-	}
+		void checkImageFormatAndColorspaceSupported() {
+			uint32_t supportedFormatColorspacePairCount{};
+			vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, nullptr);
+			std::vector<VkSurfaceFormatKHR> supportedFormatColorspacePairs(supportedFormatColorspacePairCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
 
-	void Swapchain::checkHavePresentModeKHR(Swapchain const& SWAPCHAIN, VkPresentModeKHR const& CHECK_ME_PRESENT_MODE) {
-		uint32_t supportedPresentModeCount{};
-		vkGetPhysicalDeviceSurfacePresentModesKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedPresentModeCount, nullptr);
-		std::vector<VkPresentModeKHR> supportedVkFormatColorspaces(supportedPresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(SWAPCHAIN.pDevices->getPhysicalDevice(), SWAPCHAIN.pSurface, &supportedPresentModeCount, supportedVkFormatColorspaces.data());
+			bool supported = false;
 
-		bool checkSuccess{ false };
+			for(int i = 0; i < supportedFormatColorspacePairCount && !supported; i++) {
+				if (supportedFormatColorspacePairs[i].format == gIMAGE_FORMAT && supportedFormatColorspacePairs[i].colorSpace == gIMAGE_COLOR_SPACE) {
+					supported = true;
+				}
+			}
 
-		for(VkPresentModeKHR const& SUPPORTED : supportedVkFormatColorspaces) {
-			if(SUPPORTED == CHECK_ME_PRESENT_MODE) {
-				checkSuccess = true;
+			if(!supported) {
+				throw std::runtime_error("Swapchain format and colorspace pair not supported");
 			}
 		}
 
-		CHECK_BOOL(checkSuccess, "Surface and physical device do not support desired present mode")
-	}
+		void checkPresentModeSupported() {
+			uint32_t supportedPresentModeCount{};
+			vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, nullptr);
+			std::vector<VkPresentModeKHR> supportedPresentModes(supportedPresentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, supportedPresentModes.data());
 
-	Swapchain::Swapchain(Devices* pGivenDevices, CreateInfo&& salvageCreateInfo) :
-		pDevices{ pGivenDevices },
-		pSwapchain{},
-		pSurface{ salvageCreateInfo.pSurface },
-		CREATE_INFO{ std::move(salvageCreateInfo) } {
+			bool supported = false;
 
-		checkHaveFormatColorspace(*this, VkSurfaceFormatKHR(CREATE_INFO.createInfo.imageFormat, CREATE_INFO.createInfo.imageColorSpace));
-		checkHavePresentModeKHR(*this, CREATE_INFO.createInfo.presentMode);
+			for(int i = 0; i < supportedPresentModeCount && !supported; i++) {
+				if(supportedPresentModes[i] == gPRESENT_MODE) {
+					supported = true;
+				}
+			}
 
-		CHECK_VK_SUCCESS(
-			vkCreateSwapchainKHR(pDevices->getLogicalDevice(), &CREATE_INFO.createInfo, nullptr, &pSwapchain),
-			"Failed to create the swapchain"
-		)
-	}
+			if(!supported) {
+				throw std::runtime_error("Swapchain present mode not supported");
+			}
+		}
 
-	Swapchain::~Swapchain() {
-		vkDestroySwapchainKHR(pDevices->getLogicalDevice(), pSwapchain, nullptr);
-		vkDestroySurfaceKHR(pDevices->getInstance()->getInstance(), pSurface, nullptr);
+		void destroySurface() noexcept {
+			vkDestroySurfaceKHR(Instance::gpInstance, gpSurface, nullptr);
+		}		
+
+		void destroySwapchain() noexcept {
+			vkDestroySwapchainKHR(LogicalDevice::gpDevice, gpSwapchain, nullptr);
+		}
 	}
 }

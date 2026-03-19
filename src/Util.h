@@ -8,16 +8,6 @@
 #define UINT32(vecSize) \
 	static_cast<uint32_t>(vecSize)
 
-#define CHECK_NULLPTR(ptr, errMsg) \
-    if(!ptr) { \
-        throw std::runtime_error(errMsg); \
-    }
-
-#define CHECK_BOOL(b, errMsg) \
-	if(!b) { \
-        throw std::runtime_error(errMsg); \
-	}
-
 #define CHECK_VK_SUCCESS(vkCreateCmd, errMsg) \
 	if(vkCreateCmd != VK_SUCCESS) { \
 		std::string errCode = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)) + ". "; \
