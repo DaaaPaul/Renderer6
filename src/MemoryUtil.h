@@ -4,14 +4,18 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <utility>
-#include "Devices.hpp"
 #include "Vertex.hpp"
 
-namespace DeviceMemory {
-	struct BufferInfo {
-		VkDeviceSize size{};
-		VkBufferUsageFlags usage{};
-		uint32_t graphicsQfIndex{};
+namespace Memory {
+	struct BufferBundle {
+		VkBuffer buffer{};
+		VkDeviceSize offset{};
+		VkDeviceAddress address{};
+	};
+
+	struct DescriptorSetBundle {
+		VkDescriptorSet set{};
+		VkDescriptorSetLayout layout{};
 	};
 
 	struct DescriptorSetInfo {
@@ -61,18 +65,18 @@ namespace DeviceMemory {
 		VkBorderColor borderColor{};
 	};
 
-	[[nodiscard]] uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept;
 
-	[[nodiscard]] VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO);
-	[[nodiscard]] VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
-	[[nodiscard]] VkDescriptorSet createDescriptorSet(VkLogicalDevice pLogicalDevice, VkDescriptorPool pPool, VkDescriptorSetLayout pLayout, DescriptorSetInfo const& INFO);
-	[[nodiscard]] VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
-	[[nodiscard]] VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);
-	[[nodiscard]] VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO);
-	[[nodiscard]] VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO);
 
-	[[nodiscard]] std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
-	[[nodiscard]] uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES);
+	VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO);
+	VkDescriptorPool createDescriptorPool(VkLogicalDevice pLogicalDevice, std::vector<DescriptorSetInfo> const& INFO);
+	VkDescriptorSet createDescriptorSet(VkLogicalDevice pLogicalDevice, VkDescriptorPool pPool, VkDescriptorSetLayout pLayout, DescriptorSetInfo const& INFO);
+	VkBuffer createBuffer(VkLogicalDevice pLogicalDevice, BufferInfo const& BUFFER_INFO);
+	VkImage createImage(VkLogicalDevice pLogicalDevice, ImageInfo const& IMAGE_INFO);
+	VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImage image, ImageViewInfo const& IMAGE_VIEW_INFO);
+	VkSampler createSampler(VkLogicalDevice pLogicalDevice, SamplerInfo const& SAMPLER_INFO);
+
+	std::pair<VkDeviceSize, std::vector<VkDeviceSize>> getMemoryAllocationSizeAndOffsets(std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS);
+	uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkDeviceMemoryPropertyFlags const& MEMORY_PROPERTIES);
 
 	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
 	void endSubmitDestroyOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);

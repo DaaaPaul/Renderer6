@@ -3,7 +3,7 @@
 #include "Global.h"
 #include "Engine.h"
 #include "Frames.hpp"
-#include "DeviceMemory.h"
+#include "Memory.h"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Global::getWindow().getGlfwWindow(), glfwKey) == GLFW_PRESS
@@ -104,8 +104,8 @@ namespace Engine {
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
-		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
-			DeviceMemory::ImageViewInfo{
+		VkImageView pSwapchainImageView = Memory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
+			Memory::ImageViewInfo{
 				.type = VK_IMAGE_VIEW_TYPE_2D,
 				.format = VK_FORMAT_R8G8B8A8_SRGB,
 				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
@@ -176,11 +176,11 @@ namespace Engine {
 		vkCmdPushConstants(pCommandBuffer, getModelPipelineLayout().getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), pushConstantPointers.data()); 
 		
 		// layout transitions to optimal
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Memory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getDeviceLocalMemory().getImages()[getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Memory::transitionImageLayout(pCommandBuffer, getDeviceLocalMemory().getImages()[getDeviceLocalMemory().searchForDepthImageIndex()], VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, getDevices().getGraphicsQfIndex());
@@ -204,8 +204,8 @@ namespace Engine {
 		vkResetCommandBuffer(pCommandBuffer, 0);
 
 		// rendering info/attachment info
-		VkImageView pSwapchainImageView = DeviceMemory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
-			DeviceMemory::ImageViewInfo{
+		VkImageView pSwapchainImageView = Memory::createImageView(getDevices().getLogicalDevice(), getSwapchain().getImages()[IMAGE_INDEX], 
+			Memory::ImageViewInfo{
 				.type = VK_IMAGE_VIEW_TYPE_2D,
 				.format = VK_FORMAT_R8G8B8A8_SRGB,
 				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
@@ -257,7 +257,7 @@ namespace Engine {
 		vkCmdEndRendering(pCommandBuffer);
 
 		// layout transition to present optimal
-		DeviceMemory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Memory::transitionImageLayout(pCommandBuffer, getSwapchain().getImages()[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, getDevices().getGraphicsQfIndex());

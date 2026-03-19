@@ -2,7 +2,7 @@
 #include "DeviceLocal.hpp"
 #include "Global.h"
 
-namespace DeviceMemory {
+namespace Memory {
 	void DeviceLocal::createBuffers() {
 		if(!createInfo.bufferInfos.empty()) {
 			const uint16_t BUFFER_COUNT = createInfo.bufferInfos.size();
@@ -108,11 +108,11 @@ namespace DeviceMemory {
 		std::vector<VkDeviceSize> memoryOffsets(getMemoryAllocationSizeAndOffsets(buffersImagesRequirements).second);
 		uint32_t memoryType = getMemoryTypeIndex(pDevices->getPhysicalDevice(), buffersImagesRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-		VkMemoryAllocateFlagsInfo addressFlag{
+		VkDeviceMemoryAllocateFlagsInfo addressFlag{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
 			.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT
 		};
-		VkMemoryAllocateInfo allocateInfo{
+		VkDeviceMemoryAllocateInfo allocateInfo{
 			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
 			.pNext = &addressFlag,
 			.allocationSize = memorySize,

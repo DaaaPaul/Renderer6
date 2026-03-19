@@ -1,11 +1,11 @@
 #pragma once
 
 #include <functional>
-#include "Devices.hpp"
+#include "Devices.h"
 #include "Util.h"
-#include "DeviceMemory.h"
+#include "Memory.h"
 
-namespace DeviceMemory {
+namespace Memory {
 	class DeviceLocal {
 		public:
 		struct CreateInfo {

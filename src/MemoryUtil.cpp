@@ -1,13 +1,9 @@
 #include <iostream>
 #include <algorithm>
-#include "DeviceMemory.h"
+#include "Memory.h"
 #include "Util.h"
 
-namespace DeviceMemory {
-	uint32_t calculateMipLevels(VkExtent2D const& EXTENT) noexcept {
-		return std::floor(std::log2(std::max(EXTENT.width, EXTENT.width))) + 1;
-	}
-
+namespace Memory {
 	VkDescriptorSetLayout createDescriptorSetLayout(VkLogicalDevice pLogicalDevice, DescriptorSetInfo const& INFO) {
 		VkDescriptorSetLayout descriptorSetLayout{};
 		
@@ -186,23 +182,23 @@ namespace DeviceMemory {
 	}
 
 	uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& BUFFER_MEMORY_REQUIREMENTS, VkMemoryPropertyFlags const& MEMORY_PROPERTIES) {
-		uint32_t finalMemoryRequirementsMask = UINT32_MAX;
-		for (VkMemoryRequirements const& BUFFER_MEMORY_REQUIREMENT : BUFFER_MEMORY_REQUIREMENTS) {
-			finalMemoryRequirementsMask &= BUFFER_MEMORY_REQUIREMENT.memoryTypeBits;
+		uint32_t bufferMemoryRequirementsMask = UINT32_MAX;
+		for (VkMemoryRequirements const& REQ : BUFFER_MEMORY_REQUIREMENTS) {
+			bufferMemoryRequirementsMask &= REQ.memoryTypeBits;
 		}
 
 		VkPhysicalDeviceMemoryProperties memoryProperties{};
 		vkGetPhysicalDeviceMemoryProperties(pPhysicalDevice, &memoryProperties);
 
-		uint32_t memoryTypeIndexReturn{ UINT32_MAX };
-		for (int i = 0; i < memoryProperties.memoryTypeCount; i++) {
-			if ((finalMemoryRequirementsMask & (1 << i)) &&
+		uint32_t suitableMemoryType = UINT32_MAX;
+		for (int i = 0; i < memoryProperties.memoryTypeCount && suitableMemoryType == UINT32_MAX; i++) {
+			if ((bufferMemoryRequirementsMask & (1 << i)) &&
 				((memoryProperties.memoryTypes[i].propertyFlags & MEMORY_PROPERTIES) == MEMORY_PROPERTIES)) {
-				memoryTypeIndexReturn = i;
+				suitableMemoryType = i;
 			}
 		};
 
-		return memoryTypeIndexReturn;
+		return suitableMemoryType;
 	}
 
 	void createBeginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX) {

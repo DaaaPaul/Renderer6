@@ -5,9 +5,9 @@
 #include "Particle.hpp"
 #include "Window.hpp"
 #include "Instance.hpp"
-#include "Devices.hpp"
+#include "Devices.h"
 #include "Swapchain.hpp"
-#include "DeviceMemory.h"
+#include "Memory.h"
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
 #include "PipelineLayout.hpp"
@@ -33,9 +33,8 @@ namespace Global {
 	void load();
 	inline bool gLoaded = false;
 
-	[[nodiscard]] Backend::Swapchain& getSwapchain();
-	[[nodiscard]] DeviceMemory::HostVisible& getHostVisibleMemory();
-	[[nodiscard]] DeviceMemory::DeviceLocal& getDeviceLocalMemory();
+	[[nodiscard]] Memory::HostVisible& getHostVisibleMemory();
+	[[nodiscard]] Memory::DeviceLocal& getDeviceLocalMemory();
 	[[nodiscard]] ::Engine::PipelineLayout& getModelPipelineLayout();
 	[[nodiscard]] ::Engine::PipelineLayout& getEmptyPipelineLayout();
 	[[nodiscard]] ::Engine::PipelineLayout& getComputePipelineLayout();

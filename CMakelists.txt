@@ -22,10 +22,12 @@ add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceLocal.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemory.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/DeviceMemory.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryUtil.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.cpp
@@ -35,8 +37,6 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/HostVisible.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.cpp

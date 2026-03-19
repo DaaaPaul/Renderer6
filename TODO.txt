@@ -59,7 +59,7 @@ BY THE HOUR:
 
 - finish refactor
 - make window resizable
-- Remove DeviceMemory::Common ns, just put into DeviceMemory
+- Remove Memory::Common ns, just put into Memory
 - put prefix p for pointers
 - vkGetPhysicalDeviceSurfaceSupportKHR??? !IGNORED!
 
