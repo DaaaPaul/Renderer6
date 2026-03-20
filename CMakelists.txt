@@ -26,8 +26,6 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryUtil.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryUtil.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.cpp

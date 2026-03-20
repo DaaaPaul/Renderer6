@@ -21,7 +21,7 @@ namespace Memory {
 		void deInit() {
 			vkFreeMemory(Backend::LogicalDevice::gpDevice, gpMemory, nullptr);
 
-			for(BufferBundle& bundle : gBuffers) {
+			for(Util::Memory::BufferBundle& bundle : gBuffers) {
 				vkDestroyBuffer(Backend::LogicalDevice::gpDevice, bundle.buffer, nullptr);
 			}
 		}
@@ -113,8 +113,8 @@ namespace Memory {
 		}
 
 		void createMemory() {
-			VkDeviceSize memorySize = getMemoryAllocationSizeAndOffsets(gBufferMemoryRequirements).first;
-			uint32_t memoryType = getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VkDeviceSize memorySize = Util::Memory::calculateMemorySize(gBufferMemoryRequirements);
+			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -130,9 +130,11 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(getMemoryAllocationSizeAndOffsets(gBufferMemoryRequirements).second);
-			for(int i = 0; i < gBuffers.size(); i++) {
-				vkBindBufferMemory(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, gpMemory, bufferOffsets[i]);
+			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::calculateMemoryOffsets(gBufferMemoryRequirements));
+
+			for(int i = 0; i < bufferOffsets.size(); i++) {
+				gBuffers[i].offset = bufferOffsets[i];
+				vkBindBufferMemory(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -147,19 +149,19 @@ namespace Memory {
 		}
 
 		void initializeBufferData() noexcept {
-			Util::writeToBuffer(0, Resources::gModelVertices.data(), Resources::gModelVertexBufferSize);
-			Util::writeToBuffer(1, Resources::gModelVertexIndices.data(), Resources::gModelIndexBufferSize);
-			Util::writeToBuffer(2, Resources::gpTexture->pData, Resources::gpTexture->dataSize);
+			Mutate::writeToBuffer(0, Resources::gModelVertices.data(), Resources::gModelVertexBufferSize);
+			Mutate::writeToBuffer(1, Resources::gModelVertexIndices.data(), Resources::gModelIndexBufferSize);
+			Mutate::writeToBuffer(2, Resources::gpTexture->pData, Resources::gpTexture->dataSize);
 
 			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
-				Util::writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
+				Mutate::writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 			}
 			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
-				Util::writeToBuffer(7 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
+				Mutate::writeToBuffer(7 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}
 		}
 
-		namespace Util {
+		namespace Mutate {
 			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* pDATA, uint32_t const& SIZE_TO_WRITE) {
 				void* addressOfFirstByte{};
 				CHECK_VK_SUCCESS(vkMapMemory(Backend::LogicalDevice::gpDevice, gpMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &addressOfFirstByte), "Failed to map memory")

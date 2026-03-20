@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <ktx.h>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include "Vertex.hpp"
 
 #define UINT32(vecSize) \
 	static_cast<uint32_t>(vecSize)
@@ -22,38 +24,83 @@
 
 #define DA_PI 3.14159265358979323846f
 
+using VkLogicalDevice = VkDevice;
+
 namespace Util {
-	std::vector<std::string> constCharToString(std::vector<const char*> const&);
-	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
-	std::vector<char> getFileBytes(std::string const& PATH);
-	float random() noexcept;
-	
-	template<class F>
-	bool checkFeatureHasAll(F const& HAVE, F const& CHECK) {
-		bool hasAll = true;
+	namespace General {
+		std::vector<std::string> constCharToString(std::vector<const char*> const&);
+		bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
+		std::vector<char> getFileBytes(std::string const& PATH);
+		float random() noexcept;
+	}
 
-		uint32_t firstVkBool32Offset = offsetof(F, pNext) + sizeof(void*);
-		uint32_t howManyVkBool32 = (sizeof(F) - firstVkBool32Offset) / sizeof(VkBool32) - 1;
+	namespace Vulkan {
+		void beginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
+		void endOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);
+		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
+	}
 
-		char const* SNIPER_HAVE = reinterpret_cast<char const*>(&HAVE);
-		SNIPER_HAVE += firstVkBool32Offset;
-		VkBool32 const* BOOL_SNIPER_HAVE = reinterpret_cast<VkBool32 const*>(SNIPER_HAVE);
+	namespace Resources {
+		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
+		ktxTexture2* loadKtxImage(const char* const& PATH);
+	}
 
-		const char* SNIPER_CHECK = reinterpret_cast<char const*>(&CHECK);
-		SNIPER_CHECK += firstVkBool32Offset;
-		VkBool32 const* BOOL_SNIPER_CHECK = reinterpret_cast<VkBool32 const*>(SNIPER_CHECK);
+	namespace Window {
+		std::vector<const char*> getRequiredWindowExtensionsForInstance();
+	}
+
+	namespace Memory {
+		struct BufferBundle {
+			VkBuffer buffer{};
+			VkDeviceSize offset{};
+			VkDeviceAddress address{};
+		};
+
+		struct ImageBundle {
+			VkImage image{};
+			VkImageView view{};
+			VkDeviceSize offset{};
+		};
+
+		struct DescriptorSetBundle {
+			VkDescriptorSet set{};
+			VkDescriptorSetLayout layout{};
+		};
+
+		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT);
+		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT);
+		VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImageViewCreateInfo const& IMAGE_VIEW_INFO);
+		VkDeviceSize calculateMemorySize(std::vector<VkMemoryRequirements> const& REQUIREMENTS);
+		std::vector<VkDeviceSize> calculateMemoryOffsets(std::vector<VkMemoryRequirements> const& REQUIREMENTS);
+		uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& REQUIREMENTS, VkMemoryPropertyFlags const& WANTED_PROPERTIES);
+	}
+
+	namespace FeatureChain {
+		template<class F>
+		bool checkFeatureHasAll(F const& HAVE, F const& CHECK) {
+			bool hasAll = true;
+
+			uint32_t firstVkBool32Offset = offsetof(F, pNext) + sizeof(void*);
+			uint32_t howManyVkBool32 = (sizeof(F) - firstVkBool32Offset) / sizeof(VkBool32) - 1;
+
+			char const* SNIPER_HAVE = reinterpret_cast<char const*>(&HAVE);
+			SNIPER_HAVE += firstVkBool32Offset;
+			VkBool32 const* BOOL_SNIPER_HAVE = reinterpret_cast<VkBool32 const*>(SNIPER_HAVE);
+
+			const char* SNIPER_CHECK = reinterpret_cast<char const*>(&CHECK);
+			SNIPER_CHECK += firstVkBool32Offset;
+			VkBool32 const* BOOL_SNIPER_CHECK = reinterpret_cast<VkBool32 const*>(SNIPER_CHECK);
 		
-		for(int i = 0; i < howManyVkBool32 && hasAll; i++) {
-			if(*BOOL_SNIPER_HAVE == VK_FALSE && *BOOL_SNIPER_CHECK == VK_TRUE) {
-				hasAll = false;
-			} else {
-				BOOL_SNIPER_HAVE++;
-				BOOL_SNIPER_CHECK++;
+			for(int i = 0; i < howManyVkBool32 && hasAll; i++) {
+				if(*BOOL_SNIPER_HAVE == VK_FALSE && *BOOL_SNIPER_CHECK == VK_TRUE) {
+					hasAll = false;
+				} else {
+					BOOL_SNIPER_HAVE++;
+					BOOL_SNIPER_CHECK++;
+				}
 			}
-		}
 
-		return hasAll;
+			return hasAll;
+		}
 	}
 }
-
-using VkLogicalDevice = VkDevice;

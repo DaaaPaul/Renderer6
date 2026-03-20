@@ -1,9 +1,6 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-#include <vector>
-#include <cstdint>
-#include "Util.h"
 
 namespace Backend {
 	namespace Window {
@@ -22,9 +19,5 @@ namespace Backend {
 		void destroyGlfwWindow() noexcept;
 
 		void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
-
-		namespace Util {
-			std::vector<const char*> getRequiredWindowExtensionsForInstance();
-		}
 	}
 }

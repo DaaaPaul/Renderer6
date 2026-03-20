@@ -1,88 +1,60 @@
 #pragma once
 
-#include <functional>
-#include "Devices.h"
 #include "Util.h"
-#include "Memory.h"
 
 namespace Memory {
-	class DeviceLocal {
-		public:
-		struct CreateInfo {
-			std::vector<BufferInfo> bufferInfos{};
-			std::vector<ImageInfo> imageInfos{};
-			std::vector<SamplerInfo> samplerInfos{};
-			std::vector<DescriptorSetInfo> descriptorSetInfos{};
+	namespace Device {
+		inline VkDeviceMemory gpMemory{};
+		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
+		inline std::vector<Util::Memory::ImageBundle> gImages{};
+		inline std::vector<VkSampler> gSamplers{};
+		inline VkDescriptorPool gDescriptorPool{};
+		inline std::vector<Util::Memory::DescriptorSetBundle> gDescriptorSets{};
 
-			CreateInfo(std::vector<BufferInfo>&& salvageBufferInfos, std::vector<ImageInfo>&& salvageImageInfos, std::vector<SamplerInfo>&& salvageSamplerInfos, std::vector<DescriptorSetInfo>&& salvageDescriptorSetInfos) :
-				bufferInfos{ std::move(salvageBufferInfos) },
-				imageInfos{ std::move(salvageImageInfos) },
-				samplerInfos{ std::move(salvageSamplerInfos) },
-				descriptorSetInfos{ std::move(salvageDescriptorSetInfos) } {}
-			CreateInfo(CreateInfo&& salvageCreateInfo) noexcept : 
-				bufferInfos{ std::move(salvageCreateInfo.bufferInfos) },
-				imageInfos{ std::move(salvageCreateInfo.imageInfos) },
-				samplerInfos{ std::move(salvageCreateInfo.samplerInfos) },
-				descriptorSetInfos{ std::move(salvageCreateInfo.descriptorSetInfos) } {}
-		};
+		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
+		inline std::vector<VkMemoryRequirements> gBufferMemoryRequirements{};
 
-		private:
-		Backend::Devices* pDevices{};
-		VkDeviceMemory pDeviceLocalMemory{};
+		inline std::vector<VkImageCreateInfo> gImageCreates{};
+		inline std::vector<VkMemoryRequirements> gImageMemoryRequirements{};
 
-		CreateInfo createInfo;
-		const std::function<void(DeviceLocal&)> POPULATE;
+		inline std::vector<VkSamplerCreateInfo> gSamplerCreates{};
 
-		std::vector<VkBuffer> buffers{};
-		std::vector<VkDeviceSize> bufferOffsets{};
-		std::vector<VkDeviceSize> bufferSizes{};
-		std::vector<VkDeviceAddress> bufferPointers{};
+		inline VkDescriptorPoolCreateInfo gDescriptorPoolCreate{};
+		inline std::vector<VkDescriptorSetLayoutCreateInfo> gDescriptorSetLayoutCreates{};
+		inline std::vector<VkDescriptorSetAllocateInfo> gDescriptorSetAllocates{};
 
-		std::vector<VkImage> images{};
-		std::vector<VkImageView> imageViews{};
-		std::vector<VkDeviceSize> imageOffsets{};
-		std::vector<VkDeviceSize> imageSizes{};
+		void init();
+		void deInit();
 
-		std::vector<VkSampler> samplers{};
+		void initMemoryResources();
+		void initDescriptorResources();
 
-		VkDescriptorPool pDescriptorPool{};
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{};
-		std::vector<VkDescriptorSet> descriptorSets{};
-
+		void populateBufferCreates() noexcept;
 		void createBuffers();
+		void populateBufferMemoryRequirements() noexcept;
+		void populateImageCreates() noexcept;
 		void createImages();
-		void setupMemory();
-		void createImageViews();
+		void populateImageMemoryRequirements() noexcept;
+		void createMemory();
+		void bindBuffers();
+		void populateBufferAddresses() noexcept;
+		void bindImages();
+		void initializeBufferData() noexcept;
+		void initializeImageData() noexcept;
+
+		void populateSamplerCreates() noexcept;
 		void createSamplers();
+
+		void populateDescriptorPoolCreate() noexcept;
+		void populateDescriptorSetLayoutCreates() noexcept;
+		void populateDescriptorSetAllocates() noexcept;
 		void createDescriptorSets();
 
-		//void generateImageMipmaps(size_t const& IMAGE_INDEX);
+		void deInitMemoryResources() noexcept;
+		void deInitDescriptorResources() noexcept;
 
-		void recreateMemory();
-		void recreateImageViews();
+		namespace Mutate {
 
-		public:
-		[[nodiscard]] Backend::Devices*& getDevices() { return pDevices; }
-		[[nodiscard]] CreateInfo& getCreateInfo() { return createInfo; }
-		[[nodiscard]] std::vector<VkBuffer>& getBuffers() { return buffers; }
-		[[nodiscard]] std::vector<VkDeviceAddress>& getBufferPointers() { return bufferPointers; }
-		[[nodiscard]] std::vector<VkImage>& getImages() { return images; }
-		[[nodiscard]] std::vector<VkImageView>& getImageViews() { return imageViews; }
-		[[nodiscard]] std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() { return descriptorSetLayouts; }
-		[[nodiscard]] std::vector<VkDescriptorSet>& getDescriptorSets() { return descriptorSets; }
-
-		void copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS);
-		void copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS);
-		void descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES);
-		void descriptorSetBindingToCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_DESCRIPTOR_INDICES);
-		
-		void recreateDepthResources();
-		[[nodiscard]] int searchForDepthImageIndex() const noexcept;
-
-		explicit DeviceLocal(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION);
-		~DeviceLocal();
-
-		DELETE_COPY_CONSTRUCTORS(DeviceLocal)
-		DELETE_MOVE_CONSTRUCTORS(DeviceLocal)
-	};
+		}
+	}
 }

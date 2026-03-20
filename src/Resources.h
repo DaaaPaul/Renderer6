@@ -21,9 +21,4 @@ namespace Resources {
 	void loadModelVertices(std::vector<Vertex::Vertex>&, std::vector<uint32_t>&);
 	void loadKtxTexture2();
 	void loadParticlesData();
-
-	namespace Util {
-		void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
-		ktxTexture2* loadKtxImage(const char* const& PATH);
-	}
 }

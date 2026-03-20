@@ -52,7 +52,6 @@ namespace Global {
 	}
 
 	void load() {
-		(void) getHostVisibleMemory();
 		(void) getDeviceLocalMemory();
 		(void) getModelPipelineLayout();
 		(void) getComputePipelineLayout();
@@ -87,21 +86,6 @@ namespace Global {
 			
 			self.descriptorSetBindingToCombinedImageSampler(0, 0, {0});
 		};
-
-		static std::vector<Memory::BufferInfo> gBufferInfos(
-			[]() -> std::vector<Memory::BufferInfo> {
-				std::vector<Memory::BufferInfo> lambdaReturn{
-					Memory::BufferInfo(gVertexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-					Memory::BufferInfo(gIndexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, getDevices().getGraphicsQfIndex()),
-				};
-
-				for(int i = 0; i < Engine::gFramesInFlight; i++) {
-					lambdaReturn.emplace_back(gPARTICLES_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, getDevices().getGraphicsQfIndex());
-				}
-
-				return lambdaReturn;
-			}()
-		);
 
 		static std::vector<Memory::ImageInfo> gImageInfos{
 			Memory::ImageInfo(

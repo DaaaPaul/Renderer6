@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Util.h"
-#include "MemoryUtil.h"
 
 namespace Memory  {
 	namespace Host {
 		inline VkDeviceMemory gpMemory{};
-		inline std::vector<BufferBundle> gBuffers{};
+		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
 		inline std::vector<VkMemoryRequirements> gBufferMemoryRequirements{};
@@ -22,7 +21,7 @@ namespace Memory  {
 		void populateBufferAddresses() noexcept;
 		void initializeBufferData() noexcept;
 
-		namespace Util {
+		namespace Mutate {
 			void writeToBuffer(uint32_t const&, void const*, uint32_t const&);
 		}
 	}
