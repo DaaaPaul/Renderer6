@@ -10,6 +10,8 @@ namespace Memory  {
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
 		inline std::vector<VkMemoryRequirements> gBufferMemoryRequirements{};
 
+		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
+
 		void init();
 		void deInit();
 

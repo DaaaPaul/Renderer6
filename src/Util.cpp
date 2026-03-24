@@ -12,52 +12,50 @@
 #include "Vertex.hpp"
 
 namespace Util {
-	namespace General {
-		std::vector<std::string> constCharToString(std::vector<const char*> const& C_STRINGS) {
-			std::vector<std::string> strings{};
+	std::vector<std::string> constCharToString(std::vector<const char*> const& C_STRINGS) {
+		std::vector<std::string> strings{};
 
-			for(const char* const& C_STRING : C_STRINGS) {
-				strings.emplace_back(C_STRING);
-			}
-
-			return strings;
+		for(const char* const& C_STRING : C_STRINGS) {
+			strings.emplace_back(C_STRING);
 		}
 
-		bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK) {
-			if(CHECK.empty()) {
-				return true;
-			} else {
-				std::vector<std::string> bigCopy(HAVE);
-				std::vector<std::string> smallCopy(CHECK);
+		return strings;
+	}
 
-				std::sort(bigCopy.begin(), bigCopy.end());
-				std::sort(smallCopy.begin(), smallCopy.end());
+	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK) {
+		if(CHECK.empty()) {
+			return true;
+		} else {
+			std::vector<std::string> bigCopy(HAVE);
+			std::vector<std::string> smallCopy(CHECK);
 
-				return std::ranges::includes(bigCopy, smallCopy);
-			}
+			std::sort(bigCopy.begin(), bigCopy.end());
+			std::sort(smallCopy.begin(), smallCopy.end());
+
+			return std::ranges::includes(bigCopy, smallCopy);
+		}
+	}
+
+	std::vector<char> getFileBytes(std::string const& PATH) {
+		std::ifstream fileIn(PATH, std::ios::binary | std::ios::ate);
+		if(!fileIn.good()) {
+			throw std::runtime_error("Failure reading file at " + std::string(PATH));
 		}
 
-		std::vector<char> getFileBytes(std::string const& PATH) {
-			std::ifstream fileIn(PATH, std::ios::binary | std::ios::ate);
-			if(!fileIn.good()) {
-				throw std::runtime_error("Failure reading file at " + std::string(PATH));
-			}
+		uint32_t fileSize = fileIn.tellg();
+		std::vector<char> bytes(fileSize);
 
-			uint32_t fileSize = fileIn.tellg();
-			std::vector<char> bytes(fileSize);
+		fileIn.seekg(0);
+		fileIn.read(bytes.data(), fileSize);
 
-			fileIn.seekg(0);
-			fileIn.read(bytes.data(), fileSize);
+		return bytes;
+	}
 
-			return bytes;
-		}
+	float random() noexcept {
+		static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
+		static std::uniform_real_distribution gRange(0.0f, 1.0f);
 
-		float random() noexcept {
-			static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
-			static std::uniform_real_distribution gRange(0.0f, 1.0f);
-
-			return gRange(gEngine);
-		}
+		return gRange(gEngine);
 	}
 
 	namespace Vulkan {
@@ -144,34 +142,36 @@ namespace Util {
 			return N & ~(ALIGNMENT - 1);
 		}
 
-		VkDeviceSize calculateMemorySize(std::vector<VkMemoryRequirements> const& REQUIREMENTS) {
-			VkDeviceSize incrementingSize = 0;
-		
-			for(VkMemoryRequirements const& REQUIREMENT : REQUIREMENTS) {
-				while (incrementingSize % REQUIREMENT.alignment != 0) {
-					incrementingSize++;
+		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const& ITEM_REQUIREMENTS, std::vector<ItemType> const& TYPES, VkDeviceSize const& BI_GRANULARITY) {
+			assert(ITEM_REQUIREMENTS.size() == TYPES.size());
+			std::vector<VkDeviceSize> beginnings{};
+
+			VkDeviceSize beginningByte = 0;
+			VkDeviceSize endingByte = 0;
+			VkDeviceSize nextOpenSpace = 0;
+
+			for(int i = 0; i < ITEM_REQUIREMENTS.size(); i++) {
+				beginningByte = alignNextHighest(beginningByte, ITEM_REQUIREMENTS[i].alignment);
+
+				if(i > 0) {
+					bool linearFollowedByNonLinear = TYPES[i] == ItemType::LINEAR && TYPES[i - 1] == ItemType::NON_LINEAR;
+					bool nonLinearFollowedByLinear = TYPES[i] == ItemType::NON_LINEAR && TYPES[i - 1] == ItemType::LINEAR;
+
+					if(linearFollowedByNonLinear || nonLinearFollowedByLinear) {
+						nextOpenSpace = alignNextHighest(endingByte, BI_GRANULARITY);
+
+						if(beginningByte < nextOpenSpace) {
+							beginningByte = nextOpenSpace;
+						}
+					}
 				}
 
-				incrementingSize += REQUIREMENT.size;
+				beginnings.push_back(beginningByte);
+				beginningByte += ITEM_REQUIREMENTS[i].size;
+				endingByte = beginningByte - 1;
 			}
 
-			return incrementingSize;
-		}
-
-		std::vector<VkDeviceSize> calculateMemoryOffsets(std::vector<VkMemoryRequirements> const& REQUIREMENTS) {
-			VkDeviceSize sizeMarker = 0;
-			std::vector<VkDeviceSize> offsets(REQUIREMENTS.size(), {});
-
-			for(int i = 0; i < REQUIREMENTS.size(); i++) {
-				while (sizeMarker % REQUIREMENTS[i].alignment != 0) {
-					sizeMarker++;
-				}
-
-				offsets[i] = sizeMarker;
-				sizeMarker += REQUIREMENTS[i].size;
-			}
-
-			return offsets;
+			return { beginningByte, beginnings };
 		}
 
 		uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& REQUIREMENTS, VkMemoryPropertyFlags const& WANTED_PROPERTIES) {

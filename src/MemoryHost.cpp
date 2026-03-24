@@ -58,7 +58,7 @@ namespace Memory {
 				}
 			);
 
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -70,7 +70,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -82,7 +82,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -109,11 +109,12 @@ namespace Memory {
 
 			for(int i = 0; i < gBuffers.size(); i++) {
 				vkGetBufferMemoryRequirements(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
 
 		void createMemory() {
-			VkDeviceSize memorySize = Util::Memory::calculateMemorySize(gBufferMemoryRequirements);
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -130,7 +131,7 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::calculateMemoryOffsets(gBufferMemoryRequirements));
+			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).second);
 
 			for(int i = 0; i < bufferOffsets.size(); i++) {
 				gBuffers[i].offset = bufferOffsets[i];
@@ -153,10 +154,10 @@ namespace Memory {
 			Mutate::writeToBuffer(1, Resources::gModelVertexIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gpTexture->pData, Resources::gpTexture->dataSize);
 
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				Mutate::writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
 			}
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				Mutate::writeToBuffer(7 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}
 		}

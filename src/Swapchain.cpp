@@ -6,7 +6,7 @@
 #include "Instance.h"
 #include "Window.h"
 
-namespace Backend {
+namespace Engine {
 	namespace Swapchain {
 		void init() {
 			createSurface();
@@ -39,7 +39,7 @@ namespace Backend {
 		}
 
 		void createSurface() {
-			CHECK_VK_SUCCESS(glfwCreateWindowSurface(Instance::gpInstance, Window::gpGlfwWindow, nullptr, &gpSurface), "Failed to create surface")
+			CHECK_VK_SUCCESS(glfwCreateWindowSurface(Backend::Instance::gpInstance, Backend::Window::gpGlfwWindow, nullptr, &gpSurface), "Failed to create surface")
 		}
 
 		void populateCurrentSwapchainStatus() noexcept {
@@ -53,8 +53,8 @@ namespace Backend {
 				.imageArrayLayers = 1,
 				.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 				.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-				.queueFamilyIndexCount = LogicalDevice::gQUEUE_FAMILY_COUNT,
-				.pQueueFamilyIndices = PhysicalDevice::gQueueFamilyIndices.data(),
+				.queueFamilyIndexCount = Backend::LogicalDevice::gQUEUE_FAMILY_COUNT,
+				.pQueueFamilyIndices = Backend::PhysicalDevice::gQueueFamilyIndices.data(),
 				.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
 				.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 				.presentMode = gPRESENT_MODE,
@@ -63,33 +63,33 @@ namespace Backend {
 		}
 
 		void createSwapchain() {
-			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(LogicalDevice::gpDevice, &gCurrentSwapchainStatus, nullptr, &gpSwapchain), "Failed to create swapchain")
+			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(Backend::LogicalDevice::gpDevice, &gCurrentSwapchainStatus, nullptr, &gpSwapchain), "Failed to create swapchain")
 		}
 
 		void populateImages() noexcept {
 			uint32_t imageCount = UINT32_MAX;
-			vkGetSwapchainImagesKHR(LogicalDevice::gpDevice, gpSwapchain, &imageCount, nullptr);
+			vkGetSwapchainImagesKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, &imageCount, nullptr);
 			gImages.clear();
 			gImages.resize(imageCount, {});
-			vkGetSwapchainImagesKHR(LogicalDevice::gpDevice, gpSwapchain, &imageCount, gImages.data());
+			vkGetSwapchainImagesKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, &imageCount, gImages.data());
 		}
 
 		void populateImageSize() noexcept {
 			VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-			CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &surfaceCapabilities), "Failed to get surface capabilities")
+			CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Backend::PhysicalDevice::gpPhysicalDevice, gpSurface, &surfaceCapabilities), "Failed to get surface capabilities")
 		
 			gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 
 			if(gImageSize.width == UINT32_MAX) {
-				glfwGetFramebufferSize(Window::gpGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
+				glfwGetFramebufferSize(Backend::Window::gpGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
 			}
 		}
 
 		void checkImageFormatAndColorspaceSupported() {
 			uint32_t supportedFormatColorspacePairCount{};
-			vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, nullptr);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(Backend::PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, nullptr);
 			std::vector<VkSurfaceFormatKHR> supportedFormatColorspacePairs(supportedFormatColorspacePairCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
+			vkGetPhysicalDeviceSurfaceFormatsKHR(Backend::PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
 
 			bool supported = false;
 
@@ -106,9 +106,9 @@ namespace Backend {
 
 		void checkPresentModeSupported() {
 			uint32_t supportedPresentModeCount{};
-			vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, nullptr);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(Backend::PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, nullptr);
 			std::vector<VkPresentModeKHR> supportedPresentModes(supportedPresentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, supportedPresentModes.data());
+			vkGetPhysicalDeviceSurfacePresentModesKHR(Backend::PhysicalDevice::gpPhysicalDevice, gpSurface, &supportedPresentModeCount, supportedPresentModes.data());
 
 			bool supported = false;
 
@@ -124,11 +124,11 @@ namespace Backend {
 		}
 
 		void destroySurface() noexcept {
-			vkDestroySurfaceKHR(Instance::gpInstance, gpSurface, nullptr);
+			vkDestroySurfaceKHR(Backend::Instance::gpInstance, gpSurface, nullptr);
 		}		
 
 		void destroySwapchain() noexcept {
-			vkDestroySwapchainKHR(LogicalDevice::gpDevice, gpSwapchain, nullptr);
+			vkDestroySwapchainKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, nullptr);
 		}
 	}
 }

@@ -12,6 +12,11 @@ namespace Backend {
 			for(int i = 0; i < gSystemPhysicalDevices.size() && !gpPhysicalDevice; i++) {
 				if(physicalDeviceGood(gSystemPhysicalDeviceProperties[i], gSystemPhysicalDevices[i])) {
 					gpPhysicalDevice = gSystemPhysicalDevices[i];
+
+					VkPhysicalDeviceProperties pdProperties{};
+					vkGetPhysicalDeviceProperties(gpPhysicalDevice, &pdProperties);
+
+					gBufferImageGranularity = pdProperties.limits.bufferImageGranularity;
 				}
 			}
 

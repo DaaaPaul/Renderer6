@@ -27,12 +27,10 @@
 using VkLogicalDevice = VkDevice;
 
 namespace Util {
-	namespace General {
-		std::vector<std::string> constCharToString(std::vector<const char*> const&);
-		bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
-		std::vector<char> getFileBytes(std::string const& PATH);
-		float random() noexcept;
-	}
+	std::vector<std::string> constCharToString(std::vector<const char*> const&);
+	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
+	std::vector<char> getFileBytes(std::string const& PATH);
+	float random() noexcept;
 
 	namespace Vulkan {
 		void beginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
@@ -67,12 +65,16 @@ namespace Util {
 			VkDescriptorSetLayout layout{};
 		};
 
-		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT);
-		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT);
-		VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImageViewCreateInfo const& IMAGE_VIEW_INFO);
-		VkDeviceSize calculateMemorySize(std::vector<VkMemoryRequirements> const& REQUIREMENTS);
-		std::vector<VkDeviceSize> calculateMemoryOffsets(std::vector<VkMemoryRequirements> const& REQUIREMENTS);
-		uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& REQUIREMENTS, VkMemoryPropertyFlags const& WANTED_PROPERTIES);
+		enum class ItemType : uint32_t {
+			LINEAR = 0,
+			NON_LINEAR = 1
+		};
+
+		VkImageView createImageView(VkLogicalDevice, VkImageViewCreateInfo const&);
+		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
+		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const&, VkDeviceSize const&);
+		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
+		uint32_t getMemoryTypeIndex(VkPhysicalDevice, std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
 	}
 
 	namespace FeatureChain {

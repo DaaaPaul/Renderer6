@@ -65,7 +65,7 @@ namespace Memory {
 					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
-			for(int i = 0; i < Backend::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -92,6 +92,7 @@ namespace Memory {
 
 			for(int i = 0; i < gBuffers.size(); i++) {
 				vkGetBufferMemoryRequirements(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
 
@@ -118,7 +119,7 @@ namespace Memory {
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 					.imageType = VK_IMAGE_TYPE_2D,
 					.format = VK_FORMAT_D32_SFLOAT,
-					.extent = VkExtent3D(Backend::Swapchain::gCurrentSwapchainStatus.imageExtent.width, Backend::Swapchain::gCurrentSwapchainStatus.imageExtent.height, 1),
+					.extent = VkExtent3D(Engine::Swapchain::gCurrentSwapchainStatus.imageExtent.width, Engine::Swapchain::gCurrentSwapchainStatus.imageExtent.height, 1),
 					.mipLevels = 1,
 					.arrayLayers = 1,
 					.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -145,15 +146,16 @@ namespace Memory {
 
 			for(int i = 0; i < gImages.size(); i++) {
 				vkGetImageMemoryRequirements(Backend::LogicalDevice::gpDevice, gImages[i].image, &gImageMemoryRequirements[i]);
+				gMemoryItemTypes.push_back((gImageCreates[i].tiling == VK_IMAGE_TILING_OPTIMAL) ? Util::Memory::ItemType::NON_LINEAR : Util::Memory::ItemType::LINEAR);
 			}
 		}
 
 		void createMemory() {
-			std::vector<VkMemoryRequirements> allMemoryRequirements(gBufferMemoryRequirements);
-			allMemoryRequirements.insert(allMemoryRequirements.end(), gImageMemoryRequirements.begin(), gImageMemoryRequirements.end());
+			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gBufferMemoryRequirements.begin(), gBufferMemoryRequirements.end());
+			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gImageMemoryRequirements.begin(), gImageMemoryRequirements.end());
 
-			VkDeviceSize memorySize = Util::Memory::calculateMemorySize(allMemoryRequirements);
-			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, allMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).first;
+			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -169,7 +171,7 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::calculateMemoryOffsets(gBufferMemoryRequirements));
+			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).second);
 
 			for(int i = 0; i < bufferOffsets.size(); i++) {
 				gBuffers[i].offset = bufferOffsets[i];

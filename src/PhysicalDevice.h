@@ -9,6 +9,8 @@ namespace Backend {
 
 		inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{};
 
+		inline VkDeviceSize gBufferImageGranularity = 0;
+
 		void init();
 	
 		void enumerateSystemPhysicalDevices(std::vector<VkPhysicalDeviceProperties>&, std::vector<VkPhysicalDevice>&);

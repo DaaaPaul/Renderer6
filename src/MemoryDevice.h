@@ -17,6 +17,9 @@ namespace Memory {
 		inline std::vector<VkImageCreateInfo> gImageCreates{};
 		inline std::vector<VkMemoryRequirements> gImageMemoryRequirements{};
 
+		inline std::vector<VkMemoryRequirements> gAllMemoryRequirements{};
+		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
+
 		inline std::vector<VkSamplerCreateInfo> gSamplerCreates{};
 
 		inline VkDescriptorPoolCreateInfo gDescriptorPoolCreate{};
