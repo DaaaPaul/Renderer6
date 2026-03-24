@@ -24,13 +24,13 @@ namespace Resources {
 		float r{}, theta{}, x{}, y{};
 
 		for(Particle::Particle& p : gParticles) {
-			r = sqrtf(Util::General::random());
-			theta = 2.0f * DA_PI * Util::General::random();
+			r = sqrtf(Util::random());
+			theta = 2.0f * DA_PI * Util::random();
 
 			x = r * cosf(theta) * ratio;
 			y = r * sinf(theta);
 
-			p.color = glm::vec4(Util::General::random(), Util::General::random(), Util::General::random(), 1.0f);
+			p.color = glm::vec4(Util::random(), Util::random(), Util::random(), 1.0f);
 			p.position = glm::vec2(x, y);
 			p.velocity = normalize(p.position);
 		}

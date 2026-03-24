@@ -16,7 +16,7 @@ namespace Backend {
 					VkPhysicalDeviceProperties pdProperties{};
 					vkGetPhysicalDeviceProperties(gpPhysicalDevice, &pdProperties);
 
-					gBufferImageGranularity = pdProperties.limits.bufferImageGranularity;
+					gLimits = pdProperties.limits;
 				}
 			}
 

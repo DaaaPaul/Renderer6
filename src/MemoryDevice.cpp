@@ -2,6 +2,7 @@
 #include "Resources.h"
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
+#include "MemoryHost.h"
 
 namespace Memory {
 	namespace Device {
@@ -16,7 +17,7 @@ namespace Memory {
 
 		void deInit() {
 			deInitMemoryResources();
-			// DE INIT SAMPLERS GO HERE!
+			destroySamplers();
 			deInitDescriptorResources();
 		}
 
@@ -37,12 +38,14 @@ namespace Memory {
 		}
 
 		void initDescriptorResources() {
-			populateDescriptorPoolCreate();
 			populateDescriptorSetLayoutCreates();
+			populateDescriptorPoolCreate();
+			createDescriptorSetLayouts();
+			createDescriptorPool();
 			populateDescriptorSetAllocates();
 			createDescriptorSets();
+			writeToDescriptorSets();
 		}
-
 
 		void populateBufferCreates() noexcept {
 			gBufferCreates.push_back(
@@ -153,8 +156,9 @@ namespace Memory {
 		void createMemory() {
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gBufferMemoryRequirements.begin(), gBufferMemoryRequirements.end());
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gImageMemoryRequirements.begin(), gImageMemoryRequirements.end());
+			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).second;
 
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).first;
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -171,10 +175,8 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gBufferImageGranularity).second);
-
-			for(int i = 0; i < bufferOffsets.size(); i++) {
-				gBuffers[i].offset = bufferOffsets[i];
+			for(int i = 0; i < gBuffers.size(); i++) {
+				gBuffers[i].offset = gMemoryOffsets[i];
 				vkBindBufferMemory(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
 			}
 		}
@@ -190,49 +192,185 @@ namespace Memory {
 		}
 
 		void bindImages() {
-
+			for(int i = gBuffers.size(); i < gMemoryOffsets.size(); i++) {
+				gImages[i - gBuffers.size()].offset = gMemoryOffsets[i];
+				vkBindImageMemory(Backend::LogicalDevice::gpDevice, gImages[i].image, gpMemory, gImages[i].offset);
+			}
 		}
 
 		void initializeBufferData() noexcept {
+			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::gModelVertexBufferSize)});
+			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::gModelIndexBufferSize)});
 
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Engine::Swapchain::gIMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
+			}
 		}
 
 		void initializeImageData() noexcept {
-
+			Mutate::copyToImage(2, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1))});
 		}
 
 
 		void populateSamplerCreates() noexcept {
-
+			gSamplerCreates.push_back(
+				VkSamplerCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+					.magFilter = VK_FILTER_LINEAR,
+					.minFilter = VK_FILTER_LINEAR,
+					.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+					.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+					.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+					.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+					.anisotropyEnable = VK_TRUE,
+					.maxAnisotropy = Backend::PhysicalDevice::gLimits.maxSamplerAnisotropy,
+					.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+					.unnormalizedCoordinates = VK_FALSE
+				}
+			);
 		}
 
 		void createSamplers() {
+			gSamplers.resize(gSamplerCreates.size(), {});
 
-		}
-
-
-		void populateDescriptorPoolCreate() noexcept {
-
+			for(int i = 0; i < gSamplers.size(); i++) {
+				CHECK_VK_SUCCESS(vkCreateSampler(Backend::LogicalDevice::gpDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
+			}
 		}
 
 		void populateDescriptorSetLayoutCreates() noexcept {
+			std::vector<VkDescriptorSetLayoutBinding> combinedImageSamplerBinding{
+				VkDescriptorSetLayoutBinding{
+					.binding = 0,
+					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+				}
+			};
+			gDescriptorSetLayoutCreates.push_back(
+				VkDescriptorSetLayoutCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+					.bindingCount = UINT32(combinedImageSamplerBinding.size()),
+					.pBindings = combinedImageSamplerBinding.data()
+				}
+			);
+		}
 
+		void createDescriptorSetLayouts() noexcept {
+			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
+			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); i++) {
+				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(Backend::LogicalDevice::gpDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
+			}
+		}
+
+		void populateDescriptorPoolCreate() noexcept {
+			std::vector<VkDescriptorPoolSize> poolSizes{};
+			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT_CREATE : gDescriptorSetLayoutCreates) {
+				// Warning: assumes each descriptor set only has 1 binding
+				poolSizes.push_back(
+					VkDescriptorPoolSize{
+						.type = LAYOUT_CREATE.pBindings[0].descriptorType,
+						.descriptorCount = LAYOUT_CREATE.pBindings[0].descriptorCount
+					}
+				);
+			}
+
+			gDescriptorPoolCreate = VkDescriptorPoolCreateInfo{
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+				.maxSets = UINT32(gDescriptorSetLayoutCreates.size()),
+				.poolSizeCount = UINT32(poolSizes.size()),
+				.pPoolSizes = poolSizes.data()
+			};
+		}
+
+		void createDescriptorPool() {
+			CHECK_VK_SUCCESS(vkCreateDescriptorPool(Backend::LogicalDevice::gpDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() noexcept {
+			gDescriptorSetAllocates.resize(gDescriptorSets.size(), {});
 
+			for(int i = 0; i < gDescriptorSets.size(); i++) {
+				gDescriptorSetAllocates[i] = VkDescriptorSetAllocateInfo{
+					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+					.descriptorPool = gDescriptorPool,
+					.descriptorSetCount = 1,
+					.pSetLayouts = &gDescriptorSets[i].layout
+				};
+			}
 		}
 
 		void createDescriptorSets() {
-		
+			for(int i = 0; i < gDescriptorSets.size(); i++) {
+				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(Backend::LogicalDevice::gpDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
+			}
+		}
+
+		void writeToDescriptorSets() {
+			Mutate::bindSampler(0, 0, 0, 0);
 		}
 
 		void deInitMemoryResources() noexcept {
 
 		}
 
+		void destroySamplers() noexcept {
+		
+		}
+
 		void deInitDescriptorResources() noexcept {
 
+		}
+
+		namespace Mutate {
+			void copyToBuffer(uint32_t const& INDEX_OF_BUFFER, VkBuffer src, std::vector<VkBufferCopy> const& REGIONS) {
+				VkCommandPool tempPool{};
+				VkCommandBuffer tempCommandBuffer{};
+
+				Util::Vulkan::beginOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				vkCmdCopyBuffer(tempCommandBuffer, src, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+			}
+
+			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer src, std::vector<VkBufferImageCopy> const& REGIONS) {
+				VkCommandPool tempPool{};
+				VkCommandBuffer tempCommandBuffer{};
+
+				Util::Vulkan::beginOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		
+				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
+				VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
+				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+
+				vkCmdCopyBufferToImage(tempCommandBuffer, src, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
+		
+				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
+				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
+				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+			}
+
+			void bindSampler(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& SAMPLER_INDEX, uint32_t const& IMAGE_INDEX) {
+				VkDescriptorImageInfo write{
+					.sampler = gSamplers[SAMPLER_INDEX],
+					.imageView = gImages[IMAGE_INDEX].view,
+					.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				};
+				VkWriteDescriptorSet overallWrite{
+					.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+					.dstSet = gDescriptorSets[SET_INDEX].set,
+					.dstBinding = BINDING,
+					.dstArrayElement = 0,
+					.descriptorCount = 1,
+					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+					.pImageInfo = &write
+				};
+				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &overallWrite, 0, nullptr);
+			}
 		}
 	}
 
@@ -336,34 +474,6 @@ namespace Memory {
 		}
 	}
 
-	DeviceLocal::DeviceLocal(Backend::Devices* pGivenDevices, CreateInfo&& givenCreateInfo, std::function<void(DeviceLocal&)> const& POPULATE_FUNCTION) : 
-		pDevices{ pGivenDevices },
-		pDeviceLocalMemory{},
-		createInfo(std::move(givenCreateInfo)),
-		POPULATE(POPULATE_FUNCTION),
-		buffers{},
-		bufferOffsets{},
-		bufferSizes{},
-		bufferPointers{},
-		samplers{},
-		images{},
-		imageViews{},
-		imageOffsets{},
-		imageSizes{},
-		pDescriptorPool{}, 
-		descriptorSetLayouts{},
-		descriptorSets{} {
-
-		createBuffers();
-		createImages();
-		setupMemory();
-		createImageViews();
-		createSamplers();
-		createDescriptorSets();
-
-		POPULATE(*this);
-	}
-
 	DeviceLocal::~DeviceLocal() {
 		vkFreeMemory(pDevices->getLogicalDevice(), pDeviceLocalMemory, nullptr);
 		for(VkBuffer& buffer : buffers) {
@@ -388,40 +498,6 @@ namespace Memory {
 		}
 	}
 
-	void DeviceLocal::copyBufferToBuffer(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferCopy> const& COPY_REGIONS) {
-		VkCommandPool tempCommandPool{};
-		VkCommandBuffer tempCommandBuffer{};
-
-		beginOneTimeCommandBuffer(pDevices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, pDevices->getGraphicsQfIndex());
-		vkCmdCopyBuffer(tempCommandBuffer, SRC_BUFFER, buffers[INDEX], static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-		endOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
-	}
-
-	void DeviceLocal::copyBufferToImage(size_t const& INDEX, VkBuffer const& SRC_BUFFER, std::vector<VkBufferImageCopy> const& COPY_REGIONS) {
-		VkCommandPool tempCommandPool{};
-		VkCommandBuffer tempCommandBuffer{};
-
-		beginOneTimeCommandBuffer(pDevices->getLogicalDevice(), tempCommandPool, tempCommandBuffer, pDevices->getGraphicsQfIndex());
-		
-		// recorded commands
-		transitionImageLayout(tempCommandBuffer, images[INDEX],
-		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
-		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pDevices->getGraphicsQfIndex());
-
-		vkCmdCopyBufferToImage(tempCommandBuffer, SRC_BUFFER, images[INDEX], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, static_cast<uint32_t>(COPY_REGIONS.size()), COPY_REGIONS.data());
-		
-		transitionImageLayout(tempCommandBuffer, images[INDEX],
-		VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
-		VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,	
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, pDevices->getGraphicsQfIndex());
-		// end of recorded commands
-
-		endOneTimeCommandBuffer(pDevices->getLogicalDevice(), pDevices->getGraphicsQueues()[0], tempCommandPool, tempCommandBuffer);
-	}
-
 	void DeviceLocal::descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES) {
 		if(BUFFER_DESCRIPTOR_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
 			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
@@ -440,29 +516,6 @@ namespace Memory {
 			.descriptorCount = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
 			.descriptorType = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
 			.pBufferInfo = toWriteBuffers.data()
-		};
-
-		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
-	}
-
-	void DeviceLocal::descriptorSetBindingToCombinedImageSampler(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& SAMPLER_IMAGE_DESCRIPTOR_INDICES) {
-		if(SAMPLER_IMAGE_DESCRIPTOR_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
-			throw std::runtime_error("Number of images/samplers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
-		}
-
-		std::vector<VkDescriptorImageInfo> toWriteImageSamplers{};
-		for(size_t const& SAMPLER_IMAGE_INDEX : SAMPLER_IMAGE_DESCRIPTOR_INDICES) {
-			toWriteImageSamplers.emplace_back(samplers[SAMPLER_IMAGE_INDEX], imageViews[SAMPLER_IMAGE_INDEX], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		}
-
-		const VkWriteDescriptorSet WRITE_INFO{
-			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.dstSet = descriptorSets[SET_INDEX],
-			.dstBinding = SET_BINDING_NUM,
-			.dstArrayElement = 0,
-			.descriptorCount = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
-			.pImageInfo = toWriteImageSamplers.data()
 		};
 
 		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);

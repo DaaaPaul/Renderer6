@@ -18,6 +18,7 @@ namespace Memory {
 		inline std::vector<VkMemoryRequirements> gImageMemoryRequirements{};
 
 		inline std::vector<VkMemoryRequirements> gAllMemoryRequirements{};
+		inline std::vector<VkDeviceSize> gMemoryOffsets{};
 		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
 
 		inline std::vector<VkSamplerCreateInfo> gSamplerCreates{};
@@ -30,6 +31,8 @@ namespace Memory {
 		void deInit();
 
 		void initMemoryResources();
+		void populateSamplerCreates() noexcept;
+		void createSamplers();
 		void initDescriptorResources();
 
 		void populateBufferCreates() noexcept;
@@ -45,19 +48,22 @@ namespace Memory {
 		void initializeBufferData() noexcept;
 		void initializeImageData() noexcept;
 
-		void populateSamplerCreates() noexcept;
-		void createSamplers();
-
-		void populateDescriptorPoolCreate() noexcept;
 		void populateDescriptorSetLayoutCreates() noexcept;
+		void populateDescriptorPoolCreate() noexcept;
+		void createDescriptorSetLayouts() noexcept;
+		void createDescriptorPool();
 		void populateDescriptorSetAllocates() noexcept;
 		void createDescriptorSets();
+		void writeToDescriptorSets();
 
 		void deInitMemoryResources() noexcept;
+		void destroySamplers() noexcept;
 		void deInitDescriptorResources() noexcept;
 
 		namespace Mutate {
-
+			void copyToBuffer(uint32_t const&, VkBuffer, std::vector<VkBufferCopy> const&);
+			void copyToImage(uint32_t const&, VkBuffer, std::vector<VkBufferImageCopy> const&);
+			void bindSampler(uint32_t const&, uint32_t const&, uint32_t const&, uint32_t const&);
 		}
 	}
 }
