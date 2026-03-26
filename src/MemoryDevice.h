@@ -8,7 +8,7 @@ namespace Memory {
 		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
 		inline std::vector<Util::Memory::ImageBundle> gImages{};
 		inline std::vector<VkSampler> gSamplers{};
-		inline VkDescriptorPool gDescriptorPool{};
+		inline VkDescriptorPool gpDescriptorPool{};
 		inline std::vector<Util::Memory::DescriptorSetBundle> gDescriptorSets{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
@@ -63,7 +63,8 @@ namespace Memory {
 		namespace Mutate {
 			void copyToBuffer(uint32_t const&, VkBuffer, std::vector<VkBufferCopy> const&);
 			void copyToImage(uint32_t const&, VkBuffer, std::vector<VkBufferImageCopy> const&);
-			void bindSampler(uint32_t const&, uint32_t const&, uint32_t const&, uint32_t const&);
+			void bindSampledImage(uint32_t const&, uint32_t const&, uint32_t const&);
+			void bindSampler(uint32_t const&, uint32_t const&, uint32_t const&);
 		}
 	}
 }

@@ -3,6 +3,7 @@
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
 #include "MemoryHost.h"
+#include "ImageViewHotspot.h"
 
 namespace Memory {
 	namespace Device {
@@ -211,7 +212,6 @@ namespace Memory {
 			Mutate::copyToImage(2, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1))});
 		}
 
-
 		void populateSamplerCreates() noexcept {
 			gSamplerCreates.push_back(
 				VkSamplerCreateInfo{
@@ -239,18 +239,23 @@ namespace Memory {
 		}
 
 		void populateDescriptorSetLayoutCreates() noexcept {
-			std::vector<VkDescriptorSetLayoutBinding> combinedImageSamplerBinding{
+			std::vector<VkDescriptorSetLayoutBinding> textureBindings{
 				VkDescriptorSetLayoutBinding{
 					.binding = 0,
-					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 1,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
 				}
 			};
 			gDescriptorSetLayoutCreates.push_back(
 				VkDescriptorSetLayoutCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-					.bindingCount = UINT32(combinedImageSamplerBinding.size()),
-					.pBindings = combinedImageSamplerBinding.data()
+					.bindingCount = UINT32(textureBindings.size()),
+					.pBindings = textureBindings.data()
 				}
 			);
 		}
@@ -265,13 +270,14 @@ namespace Memory {
 		void populateDescriptorPoolCreate() noexcept {
 			std::vector<VkDescriptorPoolSize> poolSizes{};
 			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT_CREATE : gDescriptorSetLayoutCreates) {
-				// Warning: assumes each descriptor set only has 1 binding
-				poolSizes.push_back(
-					VkDescriptorPoolSize{
-						.type = LAYOUT_CREATE.pBindings[0].descriptorType,
-						.descriptorCount = LAYOUT_CREATE.pBindings[0].descriptorCount
-					}
-				);
+				for(int i = 0; i < LAYOUT_CREATE.bindingCount; i++) {
+					poolSizes.push_back(
+						VkDescriptorPoolSize{
+							.type = LAYOUT_CREATE.pBindings[i].descriptorType,
+							.descriptorCount = LAYOUT_CREATE.pBindings[i].descriptorCount
+						}
+					);
+				}
 			}
 
 			gDescriptorPoolCreate = VkDescriptorPoolCreateInfo{
@@ -283,7 +289,7 @@ namespace Memory {
 		}
 
 		void createDescriptorPool() {
-			CHECK_VK_SUCCESS(vkCreateDescriptorPool(Backend::LogicalDevice::gpDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
+			CHECK_VK_SUCCESS(vkCreateDescriptorPool(Backend::LogicalDevice::gpDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() noexcept {
@@ -292,7 +298,7 @@ namespace Memory {
 			for(int i = 0; i < gDescriptorSets.size(); i++) {
 				gDescriptorSetAllocates[i] = VkDescriptorSetAllocateInfo{
 					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-					.descriptorPool = gDescriptorPool,
+					.descriptorPool = gpDescriptorPool,
 					.descriptorSetCount = 1,
 					.pSetLayouts = &gDescriptorSets[i].layout
 				};
@@ -306,19 +312,33 @@ namespace Memory {
 		}
 
 		void writeToDescriptorSets() {
-			Mutate::bindSampler(0, 0, 0, 0);
+			Mutate::bindSampledImage(0, 0, 0);
+			Mutate::bindSampler(0, 1, 0);
 		}
 
 		void deInitMemoryResources() noexcept {
+			vkFreeMemory(Backend::LogicalDevice::gpDevice, gpMemory, nullptr);
 
+			for(Util::Memory::BufferBundle& bufferBundle : gBuffers) {
+				vkDestroyBuffer(Backend::LogicalDevice::gpDevice, bufferBundle.buffer, nullptr);
+			}
+			for(Util::Memory::ImageBundle& imageBundle : gImages) {
+				vkDestroyImage(Backend::LogicalDevice::gpDevice, imageBundle.image, nullptr);
+			}
 		}
 
 		void destroySamplers() noexcept {
-		
+			for(VkSampler& sampler : gSamplers) {
+				vkDestroySampler(Backend::LogicalDevice::gpDevice, sampler, nullptr);
+			}
 		}
 
 		void deInitDescriptorResources() noexcept {
-
+			for(Util::Memory::DescriptorSetBundle& dsetBundle : gDescriptorSets) {
+				vkFreeDescriptorSets(Backend::LogicalDevice::gpDevice, gpDescriptorPool, 1, &dsetBundle.set);
+				vkDestroyDescriptorSetLayout(Backend::LogicalDevice::gpDevice, dsetBundle.layout, nullptr);
+			}
+			vkDestroyDescriptorPool(Backend::LogicalDevice::gpDevice, gpDescriptorPool, nullptr);
 		}
 
 		namespace Mutate {
@@ -354,218 +374,48 @@ namespace Memory {
 				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
 			}
 
-			void bindSampler(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& SAMPLER_INDEX, uint32_t const& IMAGE_INDEX) {
-				VkDescriptorImageInfo write{
-					.sampler = gSamplers[SAMPLER_INDEX],
-					.imageView = gImages[IMAGE_INDEX].view,
+			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {
+				VkDescriptorImageInfo imageInfo{
+					.imageView = ImageViewHotspot::newView(VkImageViewCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+						.image = gImages[IMAGE_INDEX].image,
+						.viewType = IMAGE_VIEW_TYPE(gImageCreates[IMAGE_INDEX].imageType),
+						.format = gImageCreates[IMAGE_INDEX].format,
+						.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
+					}),
 					.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 				};
-				VkWriteDescriptorSet overallWrite{
+
+				VkWriteDescriptorSet write{
 					.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 					.dstSet = gDescriptorSets[SET_INDEX].set,
 					.dstBinding = BINDING,
 					.dstArrayElement = 0,
 					.descriptorCount = 1,
-					.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-					.pImageInfo = &write
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.pImageInfo = &imageInfo
 				};
-				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &overallWrite, 0, nullptr);
+
+				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &write, 0, nullptr);
+			}
+
+			void bindSampler(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& SAMPLER_INDEX) {
+				VkDescriptorImageInfo samplerInfo{
+					.sampler = gSamplers[SAMPLER_INDEX]
+				};
+
+				VkWriteDescriptorSet write{
+					.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+					.dstSet = gDescriptorSets[SET_INDEX].set,
+					.dstBinding = BINDING,
+					.dstArrayElement = 0,
+					.descriptorCount = 1,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+					.pImageInfo = &samplerInfo
+				};
+
+				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &write, 0, nullptr);
 			}
 		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	void DeviceLocal::setupMemory() {
-
-		// bind buffers and images
-		bufferOffsets.assign(memoryOffsets.begin(), memoryOffsets.begin() + BUFFER_COUNT);
-		imageOffsets.assign(memoryOffsets.begin() + BUFFER_COUNT, memoryOffsets.end());
-
-		for(int i = 0; i < BUFFER_COUNT; i++) {
-			vkBindBufferMemory(pDevices->getLogicalDevice(), buffers[i], pDeviceLocalMemory, bufferOffsets[i]);
-		}
-		for(int i = 0; i < IMAGE_COUNT; i++) {
-			vkBindImageMemory(pDevices->getLogicalDevice(), images[i], pDeviceLocalMemory, imageOffsets[i]);
-		}
-
-		// get buffer addresses
-		VkBufferDeviceAddressInfo rollingBuffer{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
-		for(int i = 0; i < BUFFER_COUNT; i++) {
-			if(createInfo.bufferInfos[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-				rollingBuffer.buffer = buffers[i];
-				bufferPointers[i] = vkGetBufferDeviceAddress(pDevices->getLogicalDevice(), &rollingBuffer);
-				std::cout << "DEVICE LOCAL MEMORY: ";
-				std::cout << "Buffer " << i << " address: " << bufferPointers[i] << "\n";
-			}
-		}
-	}
-
-	void DeviceLocal::createImageViews() {
-		const uint16_t IMAGE_COUNT = createInfo.imageInfos.size();
-
-		imageViews.resize(IMAGE_COUNT, VK_NULL_HANDLE);
-		for(int i = 0; i < IMAGE_COUNT; i++) {
-			if(createInfo.imageInfos[i].viewInfo != ImageViewInfo{}) {
-				imageViews[i] = createImageView(pDevices->getLogicalDevice(), images[i], createInfo.imageInfos[i].viewInfo);
-			}
-		}
-	}
-
-	void DeviceLocal::createSamplers() {
-		if(!createInfo.samplerInfos.empty()) {
-			const uint16_t SAMPLER_COUNT = createInfo.samplerInfos.size();
-
-			samplers.resize(SAMPLER_COUNT, VK_NULL_HANDLE);
-
-			for(int i = 0; i < SAMPLER_COUNT; i++) {
-				samplers[i] = createSampler(pDevices->getLogicalDevice(), createInfo.samplerInfos[i]);
-			}
-		}
-	}
-
-	void DeviceLocal::createDescriptorSets() {
-		if(!createInfo.descriptorSetInfos.empty()) {
-			const uint16_t DESCRIPTOR_SET_COUNT = createInfo.descriptorSetInfos.size();
-
-			pDescriptorPool = createDescriptorPool(pDevices->getLogicalDevice(), createInfo.descriptorSetInfos);
-
-			descriptorSetLayouts.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
-			descriptorSets.resize(DESCRIPTOR_SET_COUNT, VK_NULL_HANDLE);
-
-			for(int i = 0; i < DESCRIPTOR_SET_COUNT; i++) {
-				descriptorSetLayouts[i] = createDescriptorSetLayout(pDevices->getLogicalDevice(), createInfo.descriptorSetInfos[i]);
-				descriptorSets[i] = createDescriptorSet(pDevices->getLogicalDevice(), pDescriptorPool, descriptorSetLayouts[i], createInfo.descriptorSetInfos[i]);
-			}
-		}
-	}
-
-	DeviceLocal::~DeviceLocal() {
-		vkFreeMemory(pDevices->getLogicalDevice(), pDeviceLocalMemory, nullptr);
-		for(VkBuffer& buffer : buffers) {
-			vkDestroyBuffer(pDevices->getLogicalDevice(), buffer, nullptr);
-		}
-		for(VkImage& image : images) {
-			vkDestroyImage(pDevices->getLogicalDevice(), image, nullptr);
-		}
-		for(VkImageView& imageView : imageViews) {
-			vkDestroyImageView(pDevices->getLogicalDevice(), imageView, nullptr);
-		}
-		for(VkSampler& sampler : samplers) {
-			vkDestroySampler(pDevices->getLogicalDevice(), sampler, nullptr);
-		}
-
-		for(size_t i = 0; i < descriptorSets.size(); i++) {
-			vkFreeDescriptorSets(pDevices->getLogicalDevice(), pDescriptorPool, 1, &descriptorSets[i]);
-			vkDestroyDescriptorSetLayout(pDevices->getLogicalDevice(), descriptorSetLayouts[i], nullptr);
-		}
-		if(pDescriptorPool) {
-			vkDestroyDescriptorPool(pDevices->getLogicalDevice(), pDescriptorPool, nullptr);
-		}
-	}
-
-	void DeviceLocal::descriptorSetBindingToBuffers(size_t const& SET_INDEX, uint32_t const& SET_BINDING_NUM, std::vector<size_t> const& BUFFER_DESCRIPTOR_INDICES) {
-		if(BUFFER_DESCRIPTOR_INDICES.size() != createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount) {
-			throw std::runtime_error("Number of buffers must match number of descriptors in set " + std::to_string(SET_INDEX) + " binding " + std::to_string(SET_BINDING_NUM));
-		}
-	
-		std::vector<VkDescriptorBufferInfo> toWriteBuffers{};
-		for(size_t const& BUFFER_INDEX : BUFFER_DESCRIPTOR_INDICES) {
-			toWriteBuffers.emplace_back(buffers[BUFFER_INDEX], 0, VK_WHOLE_SIZE);
-		}
-	
-		const VkWriteDescriptorSet WRITE_INFO{
-			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-			.dstSet = descriptorSets[SET_INDEX],
-			.dstBinding = SET_BINDING_NUM,
-			.dstArrayElement = 0,
-			.descriptorCount = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorCount,
-			.descriptorType = createInfo.descriptorSetInfos[SET_INDEX].layoutBindings[SET_BINDING_NUM].descriptorType,
-			.pBufferInfo = toWriteBuffers.data()
-		};
-
-		vkUpdateDescriptorSets(pDevices->getLogicalDevice(), 1, &WRITE_INFO, 0, nullptr);
-	}
-
-	void DeviceLocal::recreateMemory() {
-		vkFreeMemory(pDevices->getLogicalDevice(), pDeviceLocalMemory, nullptr);
-		for(VkBuffer& buffer : buffers) {
-			vkDestroyBuffer(pDevices->getLogicalDevice(), buffer, nullptr);
-		}
-		for(VkImage& image : images) {
-			vkDestroyImage(pDevices->getLogicalDevice(), image, nullptr);
-		}
-
-		createBuffers();
-		createImages();
-		setupMemory();
-	}
-
-	void DeviceLocal::recreateImageViews() {
-		for(VkImageView& imageView : imageViews) {
-			vkDestroyImageView(pDevices->getLogicalDevice(), imageView, nullptr);
-		}
-		createImageViews();
-	}
-
-	void DeviceLocal::recreateDepthResources() {
-		const int DEPTH_INDEX = searchForDepthImageIndex();
-
-		if(DEPTH_INDEX != -1) {
-			createInfo.imageInfos[DEPTH_INDEX].extent.width = Global::getSwapchain().getCurrentExtent().width;
-			createInfo.imageInfos[DEPTH_INDEX].extent.height = Global::getSwapchain().getCurrentExtent().height;
-
-			recreateMemory();
-			recreateImageViews();
-
-			POPULATE(*this);
-		} else {
-			throw std::runtime_error("No depth image found!");
-		}
-	}
-
-	[[nodiscard]] int DeviceLocal::searchForDepthImageIndex() const noexcept {
-		int depthImageIndex = -1;
-		for(int i = 0; i < createInfo.imageInfos.size() && depthImageIndex == -1; i++) {
-			if(createInfo.imageInfos[i].usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-				depthImageIndex = i;
-			}
-		}
-
-		return depthImageIndex;
 	}
 }

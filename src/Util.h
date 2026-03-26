@@ -24,6 +24,11 @@
 
 #define DA_PI 3.14159265358979323846f
 
+#define IMAGE_VIEW_TYPE(imageType) \
+((imageType == VK_IMAGE_TYPE_1D) ? VK_IMAGE_VIEW_TYPE_1D : \
+((imageType == VK_IMAGE_TYPE_2D) ? VK_IMAGE_VIEW_TYPE_2D : \
+((imageType == VK_IMAGE_TYPE_3D) ? VK_IMAGE_VIEW_TYPE_3D : static_cast<VkImageViewType>(9999))))
+
 using VkLogicalDevice = VkDevice;
 
 namespace Util {

@@ -35,6 +35,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.cpp
