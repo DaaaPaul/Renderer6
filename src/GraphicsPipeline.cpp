@@ -1,18 +1,22 @@
-#include <iostream>
-#include "GraphicsPipeline.hpp"
+#include "GraphicsPipeline.h"
+#include "Util.h"
+#include "LogicalDevice.h"
 
 namespace Engine {
-	GraphicsPipeline::GraphicsPipeline(Backend::Devices* pGivenDevices, CreateInfo&& salvageCreateInfo) :
-		pDevices{ pGivenDevices },
-		pGraphicsPipeline{},
-		createInfo(std::move(salvageCreateInfo)) {
-		CHECK_VK_SUCCESS(
-		vkCreateGraphicsPipelines(pDevices->getLogicalDevice(), nullptr, 1, &createInfo.pipelineInfo, nullptr, &pGraphicsPipeline),
-		"Failed to create graphics pipeline"
-		)
-	}
+	namespace GraphicsPipeline {
+		VkPipeline newLayout(VkGraphicsPipelineCreateInfo const& CREATE) {
+			VkPipeline graphics{};
 
-	GraphicsPipeline::~GraphicsPipeline() {
-		vkDestroyPipeline(pDevices->getLogicalDevice(), pGraphicsPipeline, nullptr);
+			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gpDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &graphics), "Failed to create graphics pipeline")
+			pipelines.push_back(graphics);
+
+			return graphics;
+		}
+
+		void clear() noexcept {
+			for(VkPipeline& graphics : pipelines) {
+				vkDestroyPipeline(gpDevice, graphics, nullptr);
+			}
+		}
 	}
 }

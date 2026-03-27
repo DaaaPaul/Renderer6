@@ -1,7 +1,16 @@
 #pragma once
 
-#include "Devices.h"
-#include "Util.h"
+#include <vulkan/vulkan.h>
+#include <vector>
+
+namespace Engine {
+	namespace GraphicsPipeline {
+		std::vector<VkPipeline> pipelines{};
+
+		VkPipeline newLayout(VkGraphicsPipelineCreateInfo const&);
+		void clear() noexcept;
+	}
+}
 
 namespace Engine {
 	class GraphicsPipeline {

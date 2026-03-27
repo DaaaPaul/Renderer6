@@ -19,10 +19,10 @@ namespace Memory {
 		}
 
 		void deInit() {
-			vkFreeMemory(Backend::LogicalDevice::gpDevice, gpMemory, nullptr);
+			vkFreeMemory(gpDevice, gpMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bundle : gBuffers) {
-				vkDestroyBuffer(Backend::LogicalDevice::gpDevice, bundle.buffer, nullptr);
+				vkDestroyBuffer(gpDevice, bundle.buffer, nullptr);
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateBuffer(Backend::LogicalDevice::gpDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				CHECK_VK_SUCCESS(vkCreateBuffer(gpDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace Memory {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); i++) {
-				vkGetBufferMemoryRequirements(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				vkGetBufferMemoryRequirements(gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -127,7 +127,7 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(Backend::LogicalDevice::gpDevice, &memoryAllocate, nullptr, &gpMemory);
+			vkAllocateMemory(gpDevice, &memoryAllocate, nullptr, &gpMemory);
 		}
 
 		void bindBuffers() {
@@ -135,7 +135,7 @@ namespace Memory {
 
 			for(int i = 0; i < bufferOffsets.size(); i++) {
 				gBuffers[i].offset = bufferOffsets[i];
-				vkBindBufferMemory(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
+				vkBindBufferMemory(gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -144,7 +144,7 @@ namespace Memory {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
-					gBuffers[i].address = vkGetBufferDeviceAddress(Backend::LogicalDevice::gpDevice, &rollingBufferAddressInfo);
+					gBuffers[i].address = vkGetBufferDeviceAddress(gpDevice, &rollingBufferAddressInfo);
 				}
 			}
 		}
@@ -165,9 +165,9 @@ namespace Memory {
 		namespace Mutate {
 			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* pDATA, uint32_t const& SIZE_TO_WRITE) {
 				void* addressOfFirstByte{};
-				CHECK_VK_SUCCESS(vkMapMemory(Backend::LogicalDevice::gpDevice, gpMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &addressOfFirstByte), "Failed to map memory")
+				CHECK_VK_SUCCESS(vkMapMemory(gpDevice, gpMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &addressOfFirstByte), "Failed to map memory")
 				std::memcpy(addressOfFirstByte, pDATA, SIZE_TO_WRITE);
-				vkUnmapMemory(Backend::LogicalDevice::gpDevice, gpMemory);
+				vkUnmapMemory(gpDevice, gpMemory);
 			}
 		}
 	}

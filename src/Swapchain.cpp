@@ -63,15 +63,15 @@ namespace Engine {
 		}
 
 		void createSwapchain() {
-			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(Backend::LogicalDevice::gpDevice, &gCurrentSwapchainStatus, nullptr, &gpSwapchain), "Failed to create swapchain")
+			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(gpDevice, &gCurrentSwapchainStatus, nullptr, &gpSwapchain), "Failed to create swapchain")
 		}
 
 		void populateImages() noexcept {
 			uint32_t imageCount = UINT32_MAX;
-			vkGetSwapchainImagesKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, &imageCount, nullptr);
+			vkGetSwapchainImagesKHR(gpDevice, gpSwapchain, &imageCount, nullptr);
 			gImages.clear();
 			gImages.resize(imageCount, {});
-			vkGetSwapchainImagesKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, &imageCount, gImages.data());
+			vkGetSwapchainImagesKHR(gpDevice, gpSwapchain, &imageCount, gImages.data());
 		}
 
 		void populateImageSize() noexcept {
@@ -128,7 +128,7 @@ namespace Engine {
 		}		
 
 		void destroySwapchain() noexcept {
-			vkDestroySwapchainKHR(Backend::LogicalDevice::gpDevice, gpSwapchain, nullptr);
+			vkDestroySwapchainKHR(gpDevice, gpSwapchain, nullptr);
 		}
 	}
 }

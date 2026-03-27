@@ -87,7 +87,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateBuffer(Backend::LogicalDevice::gpDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				CHECK_VK_SUCCESS(vkCreateBuffer(gpDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace Memory {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); i++) {
-				vkGetBufferMemoryRequirements(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				vkGetBufferMemoryRequirements(gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -141,7 +141,7 @@ namespace Memory {
 			gImages.resize(gImageCreates.size(), {});
 
 			for(int i = 0; i < gImages.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateImage(Backend::LogicalDevice::gpDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
+				CHECK_VK_SUCCESS(vkCreateImage(gpDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
 			}
 		}
 
@@ -149,7 +149,7 @@ namespace Memory {
 			gImageMemoryRequirements.resize(gImages.size(), {});
 
 			for(int i = 0; i < gImages.size(); i++) {
-				vkGetImageMemoryRequirements(Backend::LogicalDevice::gpDevice, gImages[i].image, &gImageMemoryRequirements[i]);
+				vkGetImageMemoryRequirements(gpDevice, gImages[i].image, &gImageMemoryRequirements[i]);
 				gMemoryItemTypes.push_back((gImageCreates[i].tiling == VK_IMAGE_TILING_OPTIMAL) ? Util::Memory::ItemType::NON_LINEAR : Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -172,13 +172,13 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(Backend::LogicalDevice::gpDevice, &memoryAllocate, nullptr, &gpMemory);
+			vkAllocateMemory(gpDevice, &memoryAllocate, nullptr, &gpMemory);
 		}
 
 		void bindBuffers() {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				gBuffers[i].offset = gMemoryOffsets[i];
-				vkBindBufferMemory(Backend::LogicalDevice::gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
+				vkBindBufferMemory(gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -187,7 +187,7 @@ namespace Memory {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
-					gBuffers[i].address = vkGetBufferDeviceAddress(Backend::LogicalDevice::gpDevice, &rollingBufferAddressInfo);
+					gBuffers[i].address = vkGetBufferDeviceAddress(gpDevice, &rollingBufferAddressInfo);
 				}
 			}
 		}
@@ -195,7 +195,7 @@ namespace Memory {
 		void bindImages() {
 			for(int i = gBuffers.size(); i < gMemoryOffsets.size(); i++) {
 				gImages[i - gBuffers.size()].offset = gMemoryOffsets[i];
-				vkBindImageMemory(Backend::LogicalDevice::gpDevice, gImages[i].image, gpMemory, gImages[i].offset);
+				vkBindImageMemory(gpDevice, gImages[i].image, gpMemory, gImages[i].offset);
 			}
 		}
 
@@ -234,7 +234,7 @@ namespace Memory {
 			gSamplers.resize(gSamplerCreates.size(), {});
 
 			for(int i = 0; i < gSamplers.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateSampler(Backend::LogicalDevice::gpDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
+				CHECK_VK_SUCCESS(vkCreateSampler(gpDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
 			}
 		}
 
@@ -263,7 +263,7 @@ namespace Memory {
 		void createDescriptorSetLayouts() noexcept {
 			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
 			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(Backend::LogicalDevice::gpDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
+				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gpDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
 			}
 		}
 
@@ -289,7 +289,7 @@ namespace Memory {
 		}
 
 		void createDescriptorPool() {
-			CHECK_VK_SUCCESS(vkCreateDescriptorPool(Backend::LogicalDevice::gpDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
+			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gpDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() noexcept {
@@ -307,7 +307,7 @@ namespace Memory {
 
 		void createDescriptorSets() {
 			for(int i = 0; i < gDescriptorSets.size(); i++) {
-				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(Backend::LogicalDevice::gpDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
+				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gpDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
 			}
 		}
 
@@ -317,28 +317,28 @@ namespace Memory {
 		}
 
 		void deInitMemoryResources() noexcept {
-			vkFreeMemory(Backend::LogicalDevice::gpDevice, gpMemory, nullptr);
+			vkFreeMemory(gpDevice, gpMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bufferBundle : gBuffers) {
-				vkDestroyBuffer(Backend::LogicalDevice::gpDevice, bufferBundle.buffer, nullptr);
+				vkDestroyBuffer(gpDevice, bufferBundle.buffer, nullptr);
 			}
 			for(Util::Memory::ImageBundle& imageBundle : gImages) {
-				vkDestroyImage(Backend::LogicalDevice::gpDevice, imageBundle.image, nullptr);
+				vkDestroyImage(gpDevice, imageBundle.image, nullptr);
 			}
 		}
 
 		void destroySamplers() noexcept {
 			for(VkSampler& sampler : gSamplers) {
-				vkDestroySampler(Backend::LogicalDevice::gpDevice, sampler, nullptr);
+				vkDestroySampler(gpDevice, sampler, nullptr);
 			}
 		}
 
 		void deInitDescriptorResources() noexcept {
 			for(Util::Memory::DescriptorSetBundle& dsetBundle : gDescriptorSets) {
-				vkFreeDescriptorSets(Backend::LogicalDevice::gpDevice, gpDescriptorPool, 1, &dsetBundle.set);
-				vkDestroyDescriptorSetLayout(Backend::LogicalDevice::gpDevice, dsetBundle.layout, nullptr);
+				vkFreeDescriptorSets(gpDevice, gpDescriptorPool, 1, &dsetBundle.set);
+				vkDestroyDescriptorSetLayout(gpDevice, dsetBundle.layout, nullptr);
 			}
-			vkDestroyDescriptorPool(Backend::LogicalDevice::gpDevice, gpDescriptorPool, nullptr);
+			vkDestroyDescriptorPool(gpDevice, gpDescriptorPool, nullptr);
 		}
 
 		namespace Mutate {
@@ -346,16 +346,16 @@ namespace Memory {
 				VkCommandPool tempPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::Vulkan::beginOneTimeCommandBuffer(gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 				vkCmdCopyBuffer(tempCommandBuffer, src, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::endOneTimeCommandBuffer(gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
 			}
 
 			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer src, std::vector<VkBufferImageCopy> const& REGIONS) {
 				VkCommandPool tempPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::Vulkan::beginOneTimeCommandBuffer(gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 		
 				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
@@ -371,7 +371,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::endOneTimeCommandBuffer(gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {
@@ -396,7 +396,7 @@ namespace Memory {
 					.pImageInfo = &imageInfo
 				};
 
-				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &write, 0, nullptr);
+				vkUpdateDescriptorSets(gpDevice, 1, &write, 0, nullptr);
 			}
 
 			void bindSampler(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& SAMPLER_INDEX) {
@@ -414,7 +414,7 @@ namespace Memory {
 					.pImageInfo = &samplerInfo
 				};
 
-				vkUpdateDescriptorSets(Backend::LogicalDevice::gpDevice, 1, &write, 0, nullptr);
+				vkUpdateDescriptorSets(gpDevice, 1, &write, 0, nullptr);
 			}
 		}
 	}

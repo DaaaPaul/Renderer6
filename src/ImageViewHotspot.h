@@ -6,5 +6,5 @@ namespace ImageViewHotspot {
 	std::vector<VkImageView> views{};
 
 	VkImageView newView(VkImageViewCreateInfo const&);
-	void emptyViews() noexcept;
+	void clear() noexcept;
 }

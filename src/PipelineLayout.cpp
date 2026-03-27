@@ -1,26 +1,21 @@
-#include "PipelineLayout.hpp"
+#include "PipelineLayout.h"
+#include "LogicalDevice.h"
 
 namespace Engine {
-	PipelineLayout::PipelineLayout(Backend::Devices* givenDevices, std::vector<VkDescriptorSetLayout>&& salvageDescriptorSetLayouts, std::vector<VkPushConstantRange>&& salvagePushConstantRanges) :
-		pDevices{ givenDevices },
-		pLayout{}, 
-		descriptorSetLayouts(std::move(salvageDescriptorSetLayouts)),
-		pushConstantRanges(std::move(salvagePushConstantRanges)) {
+	namespace PipelineLayout {
+		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const& CREATE) {
+			VkPipelineLayout layout{};
 
-		VkPipelineLayoutCreateInfo pipelineLayoutCreate{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-			.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
-			.pSetLayouts = descriptorSetLayouts.data(),
-			.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size()),
-			.pPushConstantRanges = pushConstantRanges.data()
-		};
-		CHECK_VK_SUCCESS(
-			vkCreatePipelineLayout(pDevices->getLogicalDevice(), &pipelineLayoutCreate, nullptr, &pLayout),
-			"Failed to create pipeline layout"
-		)
-	}
-	
-	PipelineLayout::~PipelineLayout() {
-		vkDestroyPipelineLayout(pDevices->getLogicalDevice(), pLayout, nullptr);
+			CHECK_VK_SUCCESS(vkCreatePipelineLayout(gpDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
+			layouts.push_back(layout);
+
+			return layout;
+		}
+
+		void clear() noexcept {
+			for(VkPipelineLayout& layout : layouts) {
+				vkDestroyPipelineLayout(gpDevice, layout, nullptr);
+			}
+		}
 	}
 }

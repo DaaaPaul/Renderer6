@@ -69,3 +69,5 @@ namespace Backend {
 		void destroyLogicalDevice() noexcept;
 	}
 }
+
+using Backend::LogicalDevice::gpDevice;
