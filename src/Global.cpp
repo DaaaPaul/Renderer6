@@ -64,56 +64,6 @@ namespace Global {
 		gLoaded = true;
 	}
 
-	::Engine::PipelineLayout& getModelPipelineLayout() {
-		static ::Engine::PipelineLayout gLayout(&getDevices(), 
-		std::vector<VkDescriptorSetLayout>{
-			getDeviceLocalMemory().getDescriptorSetLayouts()[0], // combined image sampler (set 0)
-		},
-		std::vector<VkPushConstantRange>{
-			VkPushConstantRange{
-				.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-				.offset = 0,
-				.size = POINTER_SIZE(1)
-			}
-		});
-
-		return gLayout;
-	}
-
-	::Engine::PipelineLayout& getEmptyPipelineLayout() {
-		static ::Engine::PipelineLayout gEmptyLayout(&getDevices(), {}, {});
-		
-		return gEmptyLayout;
-	}
-
-	::Engine::PipelineLayout& getComputePipelineLayout() {
-		static ::Engine::PipelineLayout gLayout(&getDevices(), 
-		std::vector<VkDescriptorSetLayout>{}, 
-		std::vector<VkPushConstantRange>{
-			VkPushConstantRange{
-				.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
-				.offset = 0,
-				.size = POINTER_SIZE(3)
-			}
-		});
-
-		return gLayout;
-	}
-
-	::Engine::ShaderModule& getModelShaderModule() {
-		static constexpr const char* gPATH = R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)";
-		static ::Engine::ShaderModule gModelShaderModule(&getDevices(), Util::getFileBytes(gPATH));
-
-		return gModelShaderModule;
-	}
-
-	::Engine::ShaderModule& getParticleShaderModule() {
-		static constexpr const char* gPATH = R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleShaders.spv)";
-		static ::Engine::ShaderModule gParticleShaderModule(&getDevices(), Util::getFileBytes(gPATH));
-
-		return gParticleShaderModule;
-	}
-
 	::Engine::GraphicsPipeline& getModelGraphicsPipeline() {
 		static ::Engine::GraphicsPipeline gModelPipeline(
 			&getDevices(),

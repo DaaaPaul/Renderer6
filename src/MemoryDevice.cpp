@@ -22,7 +22,6 @@ namespace Memory {
 			deInitDescriptorResources();
 		}
 
-
 		void initMemoryResources() {
 			populateBufferCreates();
 			createBuffers();

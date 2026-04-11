@@ -4,7 +4,25 @@
 
 namespace Engine {
 	namespace GraphicsPipeline {
-		VkPipeline newLayout(VkGraphicsPipelineCreateInfo const& CREATE) {
+		void populate() {
+			populateGraphicsCreates();
+			populateComputeCreates();
+			createPipelines();
+		}
+
+		void populateGraphicsCreates() {
+
+		}
+
+		void populateComputeCreates() {
+
+		}
+
+		void createPipelines() {
+
+		}
+
+		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const& CREATE) {
 			VkPipeline graphics{};
 
 			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gpDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &graphics), "Failed to create graphics pipeline")
@@ -13,9 +31,18 @@ namespace Engine {
 			return graphics;
 		}
 
+		VkPipeline newComputePipeline(VkComputePipelineCreateInfo const& CREATE) {
+			VkPipeline compute{};
+
+			CHECK_VK_SUCCESS(vkCreateComputePipelines(gpDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
+			pipelines.push_back(compute);
+
+			return compute;
+		}
+
 		void clear() noexcept {
-			for(VkPipeline& graphics : pipelines) {
-				vkDestroyPipeline(gpDevice, graphics, nullptr);
+			for(VkPipeline& pipeline : pipelines) {
+				vkDestroyPipeline(gpDevice, pipeline, nullptr);
 			}
 		}
 	}

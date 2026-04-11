@@ -20,8 +20,6 @@ set(DEBUG_MODE OFF)
 
 add_executable(Renderer6)
 target_sources(Renderer6 PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ComputePipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp
@@ -51,7 +49,7 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resources.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resources.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Transforms.cpp
