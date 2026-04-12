@@ -4,18 +4,19 @@
 #include "LogicalDevice.h"
 #include "ShaderModule.h"
 #include "Vertex.hpp"
+#include "Particle.hpp"
 
 namespace Engine {
 	namespace Pipelines {
 		void add() {
 			addGraphicsAggregates();
-			addComputeAggregates();
+			addComputeCreates();
 			createPipelines();
 		}
 
 		void addGraphicsAggregates() {
 			gGraphicsAggregates.emplace_back(
-				{
+				std::vector<VkPipelineShaderStageCreateInfo>{
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 						.stage = VK_SHADER_STAGE_VERTEX_BIT,
@@ -32,7 +33,7 @@ namespace Engine {
 				VkPipelineVertexInputStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
 				},
-				{ Vertex::Vertex::getInputBinding(0) },
+				std::vector<VkVertexInputBindingDescription>{ Vertex::Vertex::getInputBinding(0) },	
 				Vertex::Vertex::getInputAttributes(0),
 				VkPipelineInputAssemblyStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
@@ -45,8 +46,8 @@ namespace Engine {
 				VkPipelineViewportStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
 				},
-				{ VkViewport{} },
-				{ VkRect2D{} },
+				std::vector<VkViewport>{ VkViewport{} },
+				std::vector<VkRect2D>{ VkRect2D{} },
 				VkPipelineRasterizationStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
 					.depthClampEnable = VK_FALSE,
@@ -80,7 +81,7 @@ namespace Engine {
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 					.logicOpEnable = VK_FALSE,	
 				},
-				{
+				std::vector<VkPipelineColorBlendAttachmentState>{
 					VkPipelineColorBlendAttachmentState{
 						.blendEnable = VK_FALSE,
 						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
@@ -97,14 +98,114 @@ namespace Engine {
 				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
 				PipelineLayouts::gLayouts[0]
 			);
+
+			gGraphicsAggregates.emplace_back(
+				std::vector<VkPipelineShaderStageCreateInfo>{
+					VkPipelineShaderStageCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+						.stage = VK_SHADER_STAGE_VERTEX_BIT,
+						.module = ShaderModule::gShaderModules[1],
+						.pName = "vertexShader"
+					},
+					VkPipelineShaderStageCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+						.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+						.module = ShaderModule::gShaderModules[1],
+						.pName = "fragmentShader"
+					}
+				},
+				VkPipelineVertexInputStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+				},
+				std::vector<VkVertexInputBindingDescription>{ Particle::Particle::getInputBinding(0) },	
+				Particle::Particle::getInputAttributes(0),
+				VkPipelineInputAssemblyStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+					.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
+					.primitiveRestartEnable = VK_FALSE
+				},
+				VkPipelineTessellationStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO
+				},
+				VkPipelineViewportStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+				},
+				std::vector<VkViewport>{ VkViewport{} },
+				std::vector<VkRect2D>{ VkRect2D{} },
+				VkPipelineRasterizationStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+					.depthClampEnable = VK_FALSE,
+					.rasterizerDiscardEnable = VK_FALSE,
+					.polygonMode = VK_POLYGON_MODE_FILL,
+					.depthBiasEnable = VK_FALSE,
+					.depthBiasConstantFactor = 0.0f,
+					.depthBiasClamp = 0.0f,
+					.depthBiasSlopeFactor = 1.0f,
+					.lineWidth = 1.0f
+				},
+				VkPipelineMultisampleStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+					.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+					.sampleShadingEnable = VK_FALSE,
+					.alphaToCoverageEnable = VK_FALSE,
+					.alphaToOneEnable = VK_FALSE,
+				},
+				VkSampleMask{},
+				VkPipelineDepthStencilStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+					.depthTestEnable = VK_FALSE,
+					.depthWriteEnable = VK_FALSE,
+				},
+				VkPipelineColorBlendStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+					.logicOpEnable = VK_FALSE,	
+				},
+				std::vector<VkPipelineColorBlendAttachmentState>{
+					VkPipelineColorBlendAttachmentState{
+						.blendEnable = VK_TRUE,
+						.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+						.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						.colorBlendOp = VK_BLEND_OP_ADD,
+						.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+						.alphaBlendOp = VK_BLEND_OP_ADD,
+						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
+					}
+				},
+				VkPipelineDynamicStateCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+				},
+				std::vector<VkDynamicState>{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR },
+				VkPipelineRenderingCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
+				},
+				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
+				PipelineLayouts::gLayouts[1]
+			);
 		}
 
-		void addComputeAggregates() {
-
+		void addComputeCreates() {
+			gComputeCreates.push_back(
+				VkComputePipelineCreateInfo{
+					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+					.stage = VkPipelineShaderStageCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+						.stage = VK_SHADER_STAGE_COMPUTE_BIT,
+						.module = ShaderModule::gShaderModules[2],
+						.pName = "computeShader"
+					},
+					.layout = PipelineLayouts::gLayouts[2]
+				}
+			);
 		}
 
 		void createPipelines() {
-
+			for(GraphicsAggregate const& GRAPHICS_AGGREGATE : gGraphicsAggregates) {
+				newGraphicsPipeline(GRAPHICS_AGGREGATE.create);
+			}
+			for(VkComputePipelineCreateInfo const& COMPUTE_CREATE : gComputeCreates) {
+				newComputePipeline(COMPUTE_CREATE);
+			}
 		}
 
 		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const& CREATE) {

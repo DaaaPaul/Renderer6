@@ -9,14 +9,14 @@ $$ |      $$ |  $$ |$$ |  $$ |$$\   $$ |$$\   $$ |$$ |  $$ |      $$ |     $$  _
 
 A WEEK'S LOAD:
 
-A DAY'S WORK:
+ALL IN AN HONEST DAY:
 - Load mipmaps from texture itself (and implement mipmaps)
 
 BY THE HOUR:
 - Consider multisampling
 
-5-MINUTE:
-
+5-MINUTE CRAFTS:
+- Remove prefix "p" from vulkan handles
 
 
 

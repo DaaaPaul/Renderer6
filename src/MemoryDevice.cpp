@@ -159,7 +159,7 @@ namespace Memory {
 			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).second;
 
 			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).first;
-			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -345,16 +345,16 @@ namespace Memory {
 				VkCommandPool tempPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::Vulkan::beginOneTimeCommandBuffer(tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 				vkCmdCopyBuffer(tempCommandBuffer, src, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Util::Vulkan::endOneTimeCommandBuffer(gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
 			}
 
 			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer src, std::vector<VkBufferImageCopy> const& REGIONS) {
 				VkCommandPool tempPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(gpDevice, tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::Vulkan::beginOneTimeCommandBuffer(tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 		
 				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
@@ -370,7 +370,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-				Util::Vulkan::endOneTimeCommandBuffer(gpDevice, Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {

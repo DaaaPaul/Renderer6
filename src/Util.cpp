@@ -10,6 +10,8 @@
 #include "tiny_gltf.h"
 #include "Util.h"
 #include "Vertex.hpp"
+#include "LogicalDevice.h"
+#include "PhysicalDevice.h"
 
 namespace Util {
 	std::vector<std::string> constCharToString(std::vector<const char*> const& C_STRINGS) {
@@ -59,13 +61,13 @@ namespace Util {
 	}
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& QUEUE_FAMILY_INDEX) {
+		void beginOneTimeCommandBuffer(VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& QUEUE_FAMILY_INDEX) {
 			VkCommandPoolCreateInfo poolCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
 				.queueFamilyIndex = QUEUE_FAMILY_INDEX
 			};
-			CHECK_VK_SUCCESS(vkCreateCommandPool(pDevice, &poolCreate, nullptr, &pCmdPool), "Failed to create temporary command pool")
+			CHECK_VK_SUCCESS(vkCreateCommandPool(gpDevice, &poolCreate, nullptr, &pCmdPool), "Failed to create temporary command pool")
 
 			VkCommandBufferAllocateInfo commandBufferCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -73,18 +75,18 @@ namespace Util {
 				.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				.commandBufferCount = 1,
 			};
-			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(pDevice, &commandBufferCreate, &pCmdBuf), "Failed to create temporary command buffer")
+			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gpDevice, &commandBufferCreate, &pCmdBuf), "Failed to create temporary command buffer")
 
 			constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
 			CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCmdBuf, &BEGIN), "Failed to begin temporary command buffer recording")
 		}
 
-		void endOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf) {
+		void endOneTimeCommandBuffer(VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf) {
 			CHECK_VK_SUCCESS(vkEndCommandBuffer(pCmdBuf), "Failed to end temporary command buffer recording")
 
 			VkFence pCopyCommandDone{};
 			constexpr VkFenceCreateInfo FENCE_EMPTY_CREATE{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-			CHECK_VK_SUCCESS(vkCreateFence(pDevice, &FENCE_EMPTY_CREATE, nullptr, &pCopyCommandDone), "Failed to create copy command done fence")
+			CHECK_VK_SUCCESS(vkCreateFence(gpDevice, &FENCE_EMPTY_CREATE, nullptr, &pCopyCommandDone), "Failed to create copy command done fence")
 
 			VkSubmitInfo commandBufferSubmit{
 				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -93,11 +95,11 @@ namespace Util {
 			};
 			CHECK_VK_SUCCESS(vkQueueSubmit(pQueue, 1, &commandBufferSubmit, pCopyCommandDone), "Failed to submit temporary command buffer")
 
-			CHECK_VK_SUCCESS(vkWaitForFences(pDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
+			CHECK_VK_SUCCESS(vkWaitForFences(gpDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
 
-			vkDestroyFence(pDevice, pCopyCommandDone, nullptr);
-			vkFreeCommandBuffers(pDevice, pCmdPool, 1, &pCmdBuf);
-			vkDestroyCommandPool(pDevice, pCmdPool, nullptr);
+			vkDestroyFence(gpDevice, pCopyCommandDone, nullptr);
+			vkFreeCommandBuffers(gpDevice, pCmdPool, 1, &pCmdBuf);
+			vkDestroyCommandPool(gpDevice, pCmdPool, nullptr);
 		}
 
 		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
@@ -122,78 +124,6 @@ namespace Util {
 			};
 
 			vkCmdPipelineBarrier2(pCmdBuf, &dependencyInfo);
-		}
-	}
-
-	namespace Memory {
-		VkImageView createImageView(VkLogicalDevice pLogicalDevice, VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
-			VkImageView view{};
-		
-			CHECK_VK_SUCCESS(vkCreateImageView(pLogicalDevice, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
-	
-			return view;
-		}
-
-		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
-			return (N + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
-		}
-
-		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
-			return N & ~(ALIGNMENT - 1);
-		}
-
-		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const& ITEM_REQUIREMENTS, std::vector<ItemType> const& TYPES, VkDeviceSize const& BI_GRANULARITY) {
-			assert(ITEM_REQUIREMENTS.size() == TYPES.size());
-			std::vector<VkDeviceSize> beginnings{};
-
-			VkDeviceSize beginningByte = 0;
-			VkDeviceSize endingByte = 0;
-			VkDeviceSize nextOpenSpace = 0;
-
-			for(int i = 0; i < ITEM_REQUIREMENTS.size(); i++) {
-				beginningByte = alignNextHighest(beginningByte, ITEM_REQUIREMENTS[i].alignment);
-
-				if(i > 0) {
-					bool linearFollowedByNonLinear = TYPES[i] == ItemType::LINEAR && TYPES[i - 1] == ItemType::NON_LINEAR;
-					bool nonLinearFollowedByLinear = TYPES[i] == ItemType::NON_LINEAR && TYPES[i - 1] == ItemType::LINEAR;
-
-					if(linearFollowedByNonLinear || nonLinearFollowedByLinear) {
-						nextOpenSpace = alignNextHighest(endingByte, BI_GRANULARITY);
-
-						if(beginningByte < nextOpenSpace) {
-							beginningByte = nextOpenSpace;
-						}
-					}
-				}
-
-				beginnings.push_back(beginningByte);
-				beginningByte += ITEM_REQUIREMENTS[i].size;
-				endingByte = beginningByte - 1;
-			}
-
-			return { beginningByte, beginnings };
-		}
-
-		uint32_t getMemoryTypeIndex(VkPhysicalDevice pPhysicalDevice, std::vector<VkMemoryRequirements> const& REQUIREMENTS, VkMemoryPropertyFlags const& WANTED_PROPERTIES) {
-			uint32_t suitableMemoryMask = UINT32_MAX;
-			for (VkMemoryRequirements const& REQ : REQUIREMENTS) {
-				suitableMemoryMask &= REQ.memoryTypeBits;
-			}
-
-			VkPhysicalDeviceMemoryProperties memoryProperties{};
-			vkGetPhysicalDeviceMemoryProperties(pPhysicalDevice, &memoryProperties);
-
-			uint32_t suitableMemoryTypeIndex = UINT32_MAX;
-			bool suitableMemoryCondition = false;
-			for (int i = 0; i < memoryProperties.memoryTypeCount && suitableMemoryTypeIndex == UINT32_MAX; i++) {
-				suitableMemoryCondition = (suitableMemoryMask & suitableMemoryMask << i) && (memoryProperties.memoryTypes[i].propertyFlags & WANTED_PROPERTIES);
-
-				if(suitableMemoryCondition) {
-					suitableMemoryTypeIndex = i;
-				}
-			};
-
-			return suitableMemoryTypeIndex;
 		}
 	}
 
@@ -330,6 +260,135 @@ namespace Util {
 			}
 
 			return requiredVector;
+		}
+	}
+
+	namespace Memory {
+		VkImageView createImageView(VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
+			VkImageView view{};
+		
+			CHECK_VK_SUCCESS(vkCreateImageView(gpDevice, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
+	
+			return view;
+		}
+
+		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
+			return (N + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
+		}
+
+		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
+			return N & ~(ALIGNMENT - 1);
+		}
+
+		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const& ITEM_REQUIREMENTS, std::vector<ItemType> const& TYPES, VkDeviceSize const& BI_GRANULARITY) {
+			assert(ITEM_REQUIREMENTS.size() == TYPES.size());
+			std::vector<VkDeviceSize> beginnings{};
+
+			VkDeviceSize beginningByte = 0;
+			VkDeviceSize endingByte = 0;
+			VkDeviceSize nextOpenSpace = 0;
+
+			for(int i = 0; i < ITEM_REQUIREMENTS.size(); i++) {
+				beginningByte = alignNextHighest(beginningByte, ITEM_REQUIREMENTS[i].alignment);
+
+				if(i > 0) {
+					bool linearFollowedByNonLinear = TYPES[i] == ItemType::LINEAR && TYPES[i - 1] == ItemType::NON_LINEAR;
+					bool nonLinearFollowedByLinear = TYPES[i] == ItemType::NON_LINEAR && TYPES[i - 1] == ItemType::LINEAR;
+
+					if(linearFollowedByNonLinear || nonLinearFollowedByLinear) {
+						nextOpenSpace = alignNextHighest(endingByte, BI_GRANULARITY);
+
+						if(beginningByte < nextOpenSpace) {
+							beginningByte = nextOpenSpace;
+						}
+					}
+				}
+
+				beginnings.push_back(beginningByte);
+				beginningByte += ITEM_REQUIREMENTS[i].size;
+				endingByte = beginningByte - 1;
+			}
+
+			return { beginningByte, beginnings };
+		}
+
+		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const& REQUIREMENTS, VkMemoryPropertyFlags const& WANTED_PROPERTIES) {
+			uint32_t suitableMemoryMask = UINT32_MAX;
+			for (VkMemoryRequirements const& REQ : REQUIREMENTS) {
+				suitableMemoryMask &= REQ.memoryTypeBits;
+			}
+
+			VkPhysicalDeviceMemoryProperties memoryProperties{};
+			vkGetPhysicalDeviceMemoryProperties(Backend::PhysicalDevice::gpPhysicalDevice, &memoryProperties);
+
+			uint32_t suitableMemoryTypeIndex = UINT32_MAX;
+			bool suitableMemoryCondition = false;
+			for (int i = 0; i < memoryProperties.memoryTypeCount && suitableMemoryTypeIndex == UINT32_MAX; i++) {
+				suitableMemoryCondition = (suitableMemoryMask & suitableMemoryMask << i) && (memoryProperties.memoryTypes[i].propertyFlags & WANTED_PROPERTIES);
+
+				if(suitableMemoryCondition) {
+					suitableMemoryTypeIndex = i;
+				}
+			};
+
+			return suitableMemoryTypeIndex;
+		}
+	}
+
+	namespace FrameData {
+		VkCommandPool createCmdPool(VkCommandPoolCreateFlags const& FLAGS, uint32_t const& QF_INDEX) {
+			VkCommandPool cmdPool{};
+
+			VkCommandPoolCreateInfo cmdPoolCreate{
+				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+				.flags = FLAGS,
+				.queueFamilyIndex = QF_INDEX
+			};
+
+			CHECK_VK_SUCCESS(vkCreateCommandPool(gpDevice, &cmdPoolCreate, nullptr, &cmdPool), "Failed to create command pool")
+
+			return cmdPool;
+		}
+
+		VkCommandBuffer createCmdBuffer(VkCommandPool cmdPool, VkCommandBufferLevel const& LEVEL) {
+			VkCommandBuffer cmdBuffer{};
+
+			VkCommandBufferAllocateInfo cmdBufferCreate{
+				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+				.commandPool = cmdPool,
+				.level = LEVEL,
+				.commandBufferCount = 1
+			};
+
+			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gpDevice, &cmdBufferCreate, &cmdBuffer), "Failed to create command buffer")
+
+			return cmdBuffer;
+		}
+
+		VkFence createFence(VkFenceCreateFlags const& FLAGS) {
+			VkFence fence{};
+
+			VkFenceCreateInfo fenceCreate{
+				.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+				.flags = FLAGS
+			};
+
+			CHECK_VK_SUCCESS(vkCreateFence(gpDevice, &fenceCreate, nullptr, &fence), "Failed to create fence")
+
+			return fence;
+		}
+
+		VkSemaphore createSemaphore(VkSemaphoreTypeCreateInfo const& TYPE) {
+			VkSemaphore semaphore{};
+
+			VkSemaphoreCreateInfo semaphoreCreate{
+				.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+				.pNext = &TYPE
+			};
+
+			CHECK_VK_SUCCESS(vkCreateSemaphore(gpDevice, &semaphoreCreate, nullptr, &semaphore), "Failed to create semaphore")
+
+			return semaphore;
 		}
 	}
 }

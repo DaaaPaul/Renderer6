@@ -5,21 +5,29 @@
 namespace Engine {
 	namespace ShaderModule {
 		void add() {
-			std::vector<char> modelShadersBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\shaders.spv)"));
-			VkShaderModuleCreateInfo modelShadersCreate{
+			std::vector<char> modelVertFragBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\modelVertFrag.spv)"));
+			VkShaderModuleCreateInfo modelVertFragCreate{
 				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-				.codeSize = UINT32(modelShadersBytes.size()),
-				.pCode = reinterpret_cast<uint32_t const*>(modelShadersBytes.data())
+				.codeSize = UINT32(modelVertFragBytes.size()),
+				.pCode = reinterpret_cast<uint32_t const*>(modelVertFragBytes.data())
 			};
-			newShaderModule(modelShadersCreate);
+			newShaderModule(modelVertFragCreate);
 
-			std::vector<char> particlesShadersBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleShaders.spv)"));
-			VkShaderModuleCreateInfo particleShadersCreate{
+			std::vector<char> particleComputeBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleCompute.spv)"));
+			VkShaderModuleCreateInfo particleComputeCreate{
 				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-				.codeSize = UINT32(particlesShadersBytes.size()),
-				.pCode = reinterpret_cast<uint32_t const*>(particlesShadersBytes.data())
+				.codeSize = UINT32(particleComputeBytes.size()),
+				.pCode = reinterpret_cast<uint32_t const*>(particleComputeBytes.data())
 			};
-			newShaderModule(particleShadersCreate);
+			newShaderModule(particleComputeCreate);
+
+			std::vector<char> particleVertFragBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleVertFrag.spv)"));
+			VkShaderModuleCreateInfo particleVertFragCreate{
+				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+				.codeSize = UINT32(particleVertFragBytes.size()),
+				.pCode = reinterpret_cast<uint32_t const*>(particleVertFragBytes.data())
+			};
+			newShaderModule(particleVertFragCreate);
 		}
 
 		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const& CREATE) {

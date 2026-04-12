@@ -12,13 +12,12 @@ namespace Particle {
 		glm::vec2 position{};
 		glm::vec2 velocity{};
 
-		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+		static std::vector<VkVertexInputAttributeDescription> getInputAttributes(uint32_t const&);
+		static VkVertexInputBindingDescription getInputBinding(uint32_t const&);
+		static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const&);
 	};
 
-	[[nodiscard]] std::vector<VkVertexInputAttributeDescription> getInputAttributes();
-	[[nodiscard]] VkVertexInputBindingDescription getInputBinding();
-
 	namespace DeltaTime {
-		[[nodiscard]] VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+		VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const&);
 	}
 }

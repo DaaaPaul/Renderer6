@@ -26,11 +26,9 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Global.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
@@ -61,8 +59,9 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
-	${CMAKE_CURRENT_SOURCE_DIR}/shaders/particleShaders.slang
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/modelVertFrag.slang
+	${CMAKE_CURRENT_SOURCE_DIR}/shaders/particleVertFrag.slang
+	${CMAKE_CURRENT_SOURCE_DIR}/shaders/particleCompute.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
 )
 if(DEBUG_MODE)

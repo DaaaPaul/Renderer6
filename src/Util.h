@@ -38,8 +38,8 @@ namespace Util {
 	float random() noexcept;
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
-		void endOneTimeCommandBuffer(VkLogicalDevice& pDevice, VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);
+		void beginOneTimeCommandBuffer(VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
+		void endOneTimeCommandBuffer(VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);
 		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 	}
 
@@ -75,11 +75,18 @@ namespace Util {
 			NON_LINEAR = 1
 		};
 
-		VkImageView createImageView(VkLogicalDevice, VkImageViewCreateInfo const&);
+		VkImageView createImageView(VkImageViewCreateInfo const&);
 		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
 		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const&, VkDeviceSize const&);
 		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
-		uint32_t getMemoryTypeIndex(VkPhysicalDevice, std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
+		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
+	}
+
+	namespace FrameData {
+		VkCommandPool createCmdPool(VkCommandPoolCreateFlags const&, uint32_t const&);
+		VkCommandBuffer createCmdBuffer(VkCommandPool, VkCommandBufferLevel const&);
+		VkFence createFence(VkFenceCreateFlags const&);
+		VkSemaphore createSemaphore(VkSemaphoreTypeCreateInfo const&);
 	}
 
 	namespace FeatureChain {

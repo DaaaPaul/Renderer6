@@ -1,9 +1,17 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include "Transforms.hpp"
+#include "Swapchain.h"
 
 namespace Engine {
-	[[nodiscard]] float getDeltaTime() noexcept;
+	inline Vertex::Transforms gCurrentTransformation(
+		glm::mat4(1.0f),
+		glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+		glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
+	);
+
+	float getDeltaTime() noexcept;
 	void windowResizeRecreate();
 	void freshenTransformation();
 	void freshenDeltaTime();

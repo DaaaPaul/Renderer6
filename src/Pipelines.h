@@ -58,12 +58,12 @@ namespace Engine {
 
 		inline std::vector<VkPipeline> gPipelines{};
 		inline std::vector<GraphicsAggregate> gGraphicsAggregates{};
-		inline std::vector<VkComputePipelineCreateInfo> gComputeAggregates{};
+		inline std::vector<VkComputePipelineCreateInfo> gComputeCreates{};
 
 		void add();
 
 		void addGraphicsAggregates() noexcept;
-		void addComputeAggregates() noexcept;
+		void addComputeCreates() noexcept;
 		void createPipelines();
 
 		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const&);

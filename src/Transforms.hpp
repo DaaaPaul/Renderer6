@@ -2,9 +2,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <vulkan/vulkan.h>
-#include "Util.h"
+#include <glm/gtc/matrix_transform.hpp> // do not remove; used in included translation units
 
 namespace Vertex {
 	struct Transforms {
@@ -12,6 +10,11 @@ namespace Vertex {
 		glm::mat4 view{};
 		glm::mat4 projection{};
 
-		[[nodiscard]] static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+		Transforms(glm::mat4 const& MODEL, glm::mat4 const& VIEW, glm::mat4 const& PROJECTION) :
+			model{ MODEL }, view{ VIEW }, projection{ PROJECTION } {
+			projection[1][1] *= -1.0f;	
+		}
+
+		static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
 	};
 }

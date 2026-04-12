@@ -1,7 +1,6 @@
 #include <array>
 #include <vector>
 #include "FeatureChain.hpp"
-#include "Util.h"
 
 namespace Backend {
 	namespace LogicalDevice {

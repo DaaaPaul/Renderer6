@@ -2,14 +2,14 @@
 #include <chrono>
 #include "Global.h"
 #include "Engine.h"
-#include "Frames.hpp"
+#include "FrameData.h"
 #include "Memory.h"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Global::getWindow().getGlfwWindow(), glfwKey) == GLFW_PRESS
 
 namespace Engine {
-	[[nodiscard]] float getDeltaTime() noexcept {
+	float getDeltaTime() noexcept {
 		static std::chrono::steady_clock::time_point previousCallTime = std::chrono::high_resolution_clock::now();
 		std::chrono::steady_clock::time_point nowTime = std::chrono::high_resolution_clock::now();
 		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nowTime - previousCallTime).count();
