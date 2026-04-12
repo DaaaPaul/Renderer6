@@ -31,8 +31,6 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Frames.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/GraphicsPipeline.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
@@ -44,8 +42,10 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicalDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/PhysicalDevice.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayout.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayout.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayouts.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/PipelineLayouts.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipelines.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipelines.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resources.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resources.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.cpp

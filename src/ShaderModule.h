@@ -5,9 +5,9 @@
 
 namespace Engine {
 	namespace ShaderModule {
-		std::vector<VkShaderModule> shaderModules{};
+		inline std::vector<VkShaderModule> gShaderModules{};
 
-		void populate();
+		void add();
 		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const&);
 		void clear() noexcept;
 	}

@@ -10,9 +10,9 @@
 #include "Memory.h"
 #include "HostVisible.hpp"
 #include "DeviceLocal.hpp"
-#include "PipelineLayout.h"
+#include "PipelineLayouts.h"
 #include "ShaderModule.hpp"
-#include "GraphicsPipeline.h"
+#include "Pipelines.h"
 #include "ComputePipeline.hpp"
 #include "Frames.hpp"
 

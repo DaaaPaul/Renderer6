@@ -4,10 +4,10 @@
 #include <vector>
 
 namespace Engine {
-	namespace PipelineLayout {
-		std::vector<VkPipelineLayout> layouts{};
+	namespace PipelineLayouts {
+		inline std::vector<VkPipelineLayout> gLayouts{};
 
-		void populate();
+		void add();
 		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const&);
 		void clear() noexcept;
 	}

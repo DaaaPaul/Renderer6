@@ -1,10 +1,10 @@
-#include "PipelineLayout.h"
+#include "PipelineLayouts.h"
 #include "LogicalDevice.h"
 #include "MemoryDevice.h"
 
 namespace Engine {
-	namespace PipelineLayout {
-		void populate() {
+	namespace PipelineLayouts {
+		void add() {
 			VkPushConstantRange vertexDataPointer{
 				.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
 				.offset = 0,
@@ -39,13 +39,13 @@ namespace Engine {
 			VkPipelineLayout layout{};
 
 			CHECK_VK_SUCCESS(vkCreatePipelineLayout(gpDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
-			layouts.push_back(layout);
+			gLayouts.push_back(layout);
 
 			return layout;
 		}
 
 		void clear() noexcept {
-			for(VkPipelineLayout& layout : layouts) {
+			for(VkPipelineLayout& layout : gLayouts) {
 				vkDestroyPipelineLayout(gpDevice, layout, nullptr);
 			}
 		}

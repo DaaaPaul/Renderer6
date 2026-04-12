@@ -10,8 +10,8 @@ namespace Vertex {
 		glm::vec4 position{};
 		glm::vec2 texCoord{};
 
-		[[nodiscard]] static VkVertexInputBindingDescription getInputBinding();
-		[[nodiscard]] static std::vector<VkVertexInputAttributeDescription> getInputAttributes();
+		[[nodiscard]] static VkVertexInputBindingDescription getInputBinding(const uint32_t);
+		[[nodiscard]] static std::vector<VkVertexInputAttributeDescription> getInputAttributes(const uint32_t);
 	};
 
 	inline bool operator==(Vertex const& L, Vertex const& R) {
@@ -19,7 +19,8 @@ namespace Vertex {
 	}
 }
 
-template<> struct std::hash<Vertex::Vertex> {
+template<> 
+struct std::hash<Vertex::Vertex> {
     std::size_t operator()(Vertex::Vertex const& VERTEX) const noexcept {
         std::size_t h1 = std::hash<float>{}(VERTEX.position[2]);
         std::size_t h2 = std::hash<float>{}(VERTEX.texCoord[1]);
