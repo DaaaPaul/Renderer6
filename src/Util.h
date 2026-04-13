@@ -61,7 +61,6 @@ namespace Util {
 
 		struct ImageBundle {
 			VkImage image{};
-			VkImageView view{};
 			VkDeviceSize offset{};
 		};
 

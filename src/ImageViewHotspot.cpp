@@ -11,6 +11,11 @@ namespace ImageViewHotspot {
 		return newView;
 	}
 
+	void pop() noexcept {
+		vkDestroyImageView(gpDevice, views[views.size() - 1], nullptr);
+		views.pop_back();
+	}
+
 	void clear() noexcept {
 		for(VkImageView& view : views) {
 			vkDestroyImageView(gpDevice, view, nullptr);

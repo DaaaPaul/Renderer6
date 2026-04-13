@@ -13,6 +13,7 @@ ALL IN AN HONEST DAY:
 - Load mipmaps from texture itself (and implement mipmaps)
 
 BY THE HOUR:
+- Use unified image layout and ask about it
 - Consider multisampling
 
 5-MINUTE CRAFTS:

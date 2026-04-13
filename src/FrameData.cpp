@@ -15,6 +15,7 @@ namespace Engine {
 		}
 
 		void recreate() {
+			gFrameIndex = 0;
 			clearFrameData();
 			createFrameData();
 		}

@@ -1,5 +1,5 @@
 #include <utility>
-#include <iostream>
+#include "Engine.h"
 #include "MemoryHost.h"
 #include "Resources.h"
 #include "PhysicalDevice.h"
@@ -115,7 +115,7 @@ namespace Memory {
 
 		void createMemory() {
 			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).first;
-			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(Backend::PhysicalDevice::gpPhysicalDevice, gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -155,7 +155,7 @@ namespace Memory {
 			Mutate::writeToBuffer(2, Resources::gpTexture->pData, Resources::gpTexture->dataSize);
 
 			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
-				Mutate::writeToBuffer(3 + i, &Engine::getCurrentTransformation(), sizeof(Vertex::Transforms));
+				Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
 			}
 			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				Mutate::writeToBuffer(7 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
