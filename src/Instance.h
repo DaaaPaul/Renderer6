@@ -12,7 +12,7 @@ namespace Backend {
 		};
 		inline std::vector<const char*> gExtensions(
 			[]() -> std::vector<const char*> {
-				std::vector<const char*> extensions(Window::Util::getRequiredWindowExtensionsForInstance());
+				std::vector<const char*> extensions(Util::Window::getRequiredWindowExtensionsForInstance());
 				#ifdef __APPLE__
 				extensions.push_back("VK_KHR_portability_enumeration");
 				#endif

@@ -14,7 +14,7 @@ namespace Engine {
 			createPipelines();
 		}
 
-		void addGraphicsAggregates() {
+		void addGraphicsAggregates() noexcept {
 			gGraphicsAggregates.emplace_back(
 				std::vector<VkPipelineShaderStageCreateInfo>{
 					VkPipelineShaderStageCreateInfo{
@@ -184,7 +184,7 @@ namespace Engine {
 			);
 		}
 
-		void addComputeCreates() {
+		void addComputeCreates() noexcept {
 			gComputeCreates.push_back(
 				VkComputePipelineCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,

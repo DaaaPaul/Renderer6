@@ -3,7 +3,7 @@
 #include "Window.h"
 
 namespace Resources {
-	void init() {
+	void load() {
 		loadModelVertices();
 		loadKtxTexture2();
 		loadParticlesData();

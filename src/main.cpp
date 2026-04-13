@@ -1,20 +1,53 @@
 #include <iostream>
 #include <stdexcept>
-#include "Engine.h"
-#include "FrameData.h"
+#include "Resources.h"
+#include "Window.h"
+#include "Instance.h"
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
 #include "MemoryDevice.h"
 #include "MemoryHost.h"
-#include "Window.h"
-#include "Pipelines.h"
 #include "PipelineLayouts.h"
-#include "Resources.h"
+#include "ShaderModule.h"
+#include "Pipelines.h"
+#include "Engine.h"
+#include "FrameData.h"
 
 int main() {
     try {
+		Resources::load();
 
+		Backend::Window::init();
+		Backend::Instance::init();
+		Backend::PhysicalDevice::init();
+		Backend::LogicalDevice::init();
+
+		Memory::Host::init();
+		Memory::Device::init();
+
+		Engine::Swapchain::init();
+		Engine::PipelineLayouts::add();
+		Engine::ShaderModule::add();
+		Engine::Pipelines::add();
+
+		Engine::FrameData::init();
+		
+		Engine::run();
+
+		Engine::FrameData::deInit();
+
+		Engine::Pipelines::clear();
+		Engine::ShaderModule::clear();
+		Engine::PipelineLayouts::clear();
+		Engine::Swapchain::deInit();
+
+		Memory::Device::deInit();
+		Memory::Host::deInit();
+
+		Backend::LogicalDevice::deInit();
+		Backend::Instance::deInit();
+		Backend::Window::deInit();
 	} catch(std::runtime_error const& RUNTIME_ERROR) {
         std::cerr << "ERROR: " << RUNTIME_ERROR.what() << "\n";
     }

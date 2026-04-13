@@ -47,9 +47,9 @@ struct FeatureChain<First, Rest...> : FeatureChain<Rest...> {
 
 	bool hasAllOf(FeatureChain<First, Rest...> const& REQUIREMENTS) {
 		if constexpr (sizeof...(Rest) != 0) {
-			return Util::checkFeatureHasAll(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::hasAllOf(REQUIREMENTS);
+			return Util::FeatureChain::checkFeatureHasAll(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::hasAllOf(REQUIREMENTS);
 		} else {
-			return Util::checkFeatureHasAll(feature, REQUIREMENTS.feature);
+			return Util::FeatureChain::checkFeatureHasAll(feature, REQUIREMENTS.feature);
 		}
 	}
 };
