@@ -1,15 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <cstdint>
 #include "Transforms.hpp"
-#include "Swapchain.h"
 
 namespace Engine {
-	inline Vertex::Transforms gTransformation(
-		glm::mat4(1.0f),
-		glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-		glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
-	);
+	inline Vertex::Transforms gTransformation{};
 
 	void recordComputeCommands(VkCommandBuffer& pCommandBuffer);
 	void recordDrawModelCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX);
@@ -17,6 +13,7 @@ namespace Engine {
 	void renderNext();
 	void run();
 
+	void initTransformation() noexcept;
 	void setViewportAndScissor(VkCommandBuffer& cmdBuffer);
 	void resize();
 	float getDeltaTime() noexcept;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ktx.h>
-#include <utility>
+#include <cstdint>
 #include <vector>
 #include "Particle.hpp"
 #include "Vertex.hpp"
@@ -20,7 +20,7 @@ namespace Resources {
 
 	void load();
 
-	void loadModelVertices(std::vector<Vertex::Vertex>&, std::vector<uint32_t>&);
+	void loadModelVertices();
 	void loadKtxTexture2();
 	void loadParticlesData();
 }

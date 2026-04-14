@@ -1,6 +1,10 @@
-#include <iostream>
+#include <cstdint>
+#include <cmath>
+#include "Vertex.hpp"
 #include "Resources.h"
+#include "Util.h"
 #include "Window.h"
+#include "Particle.hpp"
 
 namespace Resources {
 	void load() {

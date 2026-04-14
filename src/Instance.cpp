@@ -1,11 +1,15 @@
-#include <iostream>
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <string>
+#include <stdexcept>
+#include <cstdint>
 #include "Instance.h"
 #include "Util.h"
-#include "Window.h"
 
 namespace Backend {
 	namespace Instance {
 		void init() {
+			initExtensions();
 			checkHaveLayers(gLayers);
 			checkHaveExtensions(gExtensions);
 			createInstance();
@@ -13,6 +17,13 @@ namespace Backend {
 
 		void deInit() {
 			destroyInstance();
+		}
+
+		void initExtensions() noexcept {
+			gExtensions = Util::Window::getRequiredWindowExtensionsForInstance();
+			#ifdef __APPLE__
+			gExtensions.push_back("VK_KHR_portability_enumeration");
+			#endif
 		}
 
 		void checkHaveExtensions(std::vector<const char*> const& EXTENSIONS) {

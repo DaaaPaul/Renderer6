@@ -1,6 +1,9 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <array>
+#include <cstdint>
 #include "LogicalDevice.h"
 
 namespace Backend {
@@ -15,7 +18,7 @@ namespace Backend {
 
 		void init();
 	
-		void enumerateSystemPhysicalDevices(std::vector<VkPhysicalDeviceProperties>&, std::vector<VkPhysicalDevice>&);
+		void enumerateSystemPhysicalDevices();
 		void selectPhysicalDevice();
 
 		bool physicalDeviceGood(VkPhysicalDeviceProperties const&, VkPhysicalDevice&);

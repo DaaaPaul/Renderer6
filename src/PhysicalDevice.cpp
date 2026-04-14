@@ -1,5 +1,12 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <stdexcept>
+#include <cstdint>
+#include <string>
 #include "PhysicalDevice.h"
+#include "LogicalDevice.h"
 #include "Instance.h"
+#include "Util.h"
 
 namespace Backend {
 	namespace PhysicalDevice {

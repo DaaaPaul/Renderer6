@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <cstdint>
 #include "Swapchain.h"
 
 namespace Engine {

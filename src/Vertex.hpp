@@ -3,7 +3,10 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <type_traits>
+#include <cstdint>
 
 namespace Vertex {
 	struct Vertex {

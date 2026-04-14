@@ -1,5 +1,8 @@
+#include <GLFW/glfw3.h>
+#include <vulkan/vulkan_core.h>
 #include <iostream>
 #include <chrono>
+#include <vector>
 #include "Engine.h"
 #include "FrameData.h"
 #include "LogicalDevice.h"
@@ -12,6 +15,8 @@
 #include "PipelineLayouts.h"
 #include "Resources.h"
 #include "ImageViewHotspot.h"
+#include "Util.h"
+#include "Transforms.hpp"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Backend::Window::gpGlfwWindow, glfwKey) == GLFW_PRESS
@@ -303,6 +308,8 @@ namespace Engine {
 	}
 
 	void run() {
+		initTransformation();
+
 		uint16_t nextSecondMark = 1;
 		uint16_t accumulatedFramesCount = 0;
 
@@ -323,6 +330,14 @@ namespace Engine {
 		}
 
 		vkDeviceWaitIdle(Backend::LogicalDevice::gpDevice);
+	}
+
+	void initTransformation() noexcept {
+		gTransformation = Vertex::Transforms(
+			glm::mat4(1.0f),
+			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
+		);
 	}
 
 	void setViewportAndScissor(VkCommandBuffer& cmdBuffer) {
