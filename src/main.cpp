@@ -22,11 +22,11 @@ int main() {
 		Backend::Instance::init();
 		Backend::PhysicalDevice::init();
 		Backend::LogicalDevice::init();
+		Engine::Swapchain::init();
 
 		Memory::Host::init();
 		Memory::Device::init();
 
-		Engine::Swapchain::init();
 		Engine::PipelineLayouts::add();
 		Engine::ShaderModule::add();
 		Engine::Pipelines::add();

@@ -50,7 +50,7 @@ namespace Memory {
 
 		void populateDescriptorSetLayoutCreates() noexcept;
 		void populateDescriptorPoolCreate() noexcept;
-		void createDescriptorSetLayouts() noexcept;
+		void createDescriptorSetLayouts();
 		void createDescriptorPool();
 		void populateDescriptorSetAllocates() noexcept;
 		void createDescriptorSets();

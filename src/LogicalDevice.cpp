@@ -34,13 +34,7 @@ namespace Backend {
 		}
 
 		void createQueues() {
-			auto getQueueIndex = [](uint32_t const& QF, uint32_t const& Q_IN_QF) -> uint32_t {
-				uint32_t queueConsumer = 0;
-				for(int i = 0; i < QF; i++) {
-					queueConsumer += gQUEUES_PER_QUEUE_FAMILY[i];
-				}
-				return queueConsumer + Q_IN_QF;
-			};
+			gQueues.resize(getQueueIndex(gQUEUE_FAMILY_COUNT - 1, gQUEUES_PER_QUEUE_FAMILY[gQUEUE_FAMILY_COUNT - 1]) + 1, VK_NULL_HANDLE);
 
 			for(int i = 0; i < gQUEUE_FAMILY_COUNT; i++) {
 				for(int j = 0; j < gQUEUES_PER_QUEUE_FAMILY[i]; j++) {
@@ -51,6 +45,16 @@ namespace Backend {
 
 		void destroyLogicalDevice() noexcept {
 			vkDestroyDevice(gpDevice, nullptr);
+		}
+
+		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) noexcept {
+			uint32_t queueConsumer = 0;
+
+			for(int i = 0; i < QUEUE_FAMILY; i++) {
+				queueConsumer += gQUEUES_PER_QUEUE_FAMILY[i];
+			}
+
+			return queueConsumer + QUEUE_IN_QUEUE_FAMILY;
 		}
 	}
 }

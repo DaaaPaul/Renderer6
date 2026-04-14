@@ -12,6 +12,7 @@ struct FeatureChain;
 template<>
 struct FeatureChain<> {
 	FeatureChain() = default;
+	FeatureChain(FeatureChain<> const&) = default;
 };
 
 // partial specialization of FeatureChain with 1 or more template type parameters
@@ -31,18 +32,17 @@ struct FeatureChain<First, Rest...> : FeatureChain<Rest...> {
 		}
 	}
 
+	FeatureChain(FeatureChain<First, Rest...> const& OTHER) :
+		FeatureChain<Rest...>(OTHER),
+		feature{ OTHER.feature } {
+		reroutePointers();
+	}
+
 	void reroutePointers() noexcept {
 		if constexpr (sizeof...(Rest) != 0) {
 			feature.pNext = &(FeatureChain<Rest...>::feature);
 			FeatureChain<Rest...>::reroutePointers();
 		}
-	}
-
-	// WARNING: must call reroutePointers() after initializing with getShell()
-	FeatureChain<First, Rest...> getShell(bool const& PLEDGE_TO_REROUTE) noexcept {
-		assert(PLEDGE_TO_REROUTE && "You must reroute after initializing with getShell()! Try again...");
-		FeatureChain<First, Rest...> shell{};
-		return shell;
 	}
 
 	bool hasAllOf(FeatureChain<First, Rest...> const& REQUIREMENTS) {

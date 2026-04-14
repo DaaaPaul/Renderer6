@@ -193,8 +193,10 @@ namespace Memory {
 
 		void bindImages() {
 			for(int i = gBuffers.size(); i < gMemoryOffsets.size(); i++) {
-				gImages[i - gBuffers.size()].offset = gMemoryOffsets[i];
-				vkBindImageMemory(gpDevice, gImages[i].image, gpMemory, gImages[i].offset);
+				int imageIndex = i - gBuffers.size();
+
+				gImages[imageIndex].offset = gMemoryOffsets[i];
+				vkBindImageMemory(gpDevice, gImages[imageIndex].image, gpMemory, gImages[imageIndex].offset);
 			}
 		}
 
@@ -208,7 +210,7 @@ namespace Memory {
 		}
 
 		void initializeImageData() noexcept {
-			Mutate::copyToImage(2, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1))});
+			Mutate::copyToImage(0, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1))});
 		}
 
 		void populateSamplerCreates() noexcept {
@@ -259,7 +261,7 @@ namespace Memory {
 			);
 		}
 
-		void createDescriptorSetLayouts() noexcept {
+		void createDescriptorSetLayouts() {
 			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
 			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); i++) {
 				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gpDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");

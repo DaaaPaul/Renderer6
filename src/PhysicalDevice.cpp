@@ -1,5 +1,6 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
+#include <iostream>
 #include <stdexcept>
 #include <cstdint>
 #include <string>
@@ -67,11 +68,10 @@ namespace Backend {
 		}
 
 		bool featuresCheck(VkPhysicalDevice& pd) {
-			auto availableFeatures = LogicalDevice::gFeatures.getShell(true);
-			availableFeatures.reroutePointers();
+			auto availableFeatures(LogicalDevice::gFeatures);
 			vkGetPhysicalDeviceFeatures2(pd, &availableFeatures.feature);
 
-			return LogicalDevice::gFeatures.hasAllOf(availableFeatures);
+			return availableFeatures.hasAllOf(LogicalDevice::gFeatures);
 		}
 
 		bool queuesCheck(VkPhysicalDevice& pd) {
