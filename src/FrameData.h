@@ -3,17 +3,57 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
+#include <vector>
 #include "Swapchain.h"
 
 namespace Engine {
 	namespace FrameData {
-		struct FrameData {
-			VkFence oneAtATime{};
+		struct WaitSignal {
+			uint64_t waitVal{};
+			uint64_t signalVal{};
+		};
+
+		struct SyncData {
+			VkFence guard{};
 			VkSemaphore timeline{};
 			uint64_t timelineVal{};
-			VkCommandBuffer modelCmds{};
-			VkCommandBuffer particleCmds{};
-			VkCommandBuffer computeCmds{};
+			std::vector<WaitSignal> waitSignals{};
+
+			void updateWaitSignals() noexcept {
+				for(WaitSignal& waitSignal : waitSignals) {
+					waitSignal.waitVal = timelineVal;
+					waitSignal.signalVal = ++timelineVal;
+				}
+			}
+		};
+
+		struct SubmitData {
+			VkSemaphoreSubmitInfo wait{};
+			VkCommandBufferSubmitInfo cmds{};
+			VkSemaphoreSubmitInfo signal{};
+			VkSubmitInfo2 info{};
+		};
+
+		struct FrameData {
+			SyncData sync{};
+			std::vector<SubmitData> submits{};
+
+			explicit FrameData(VkFence guard, VkSemaphore timeline, uint64_t const& TIMELINE_VAL, std::vector<WaitSignal> const& WAIT_SIGNALS, std::vector<SubmitData> const& SUBMITS) :
+				sync{guard, timeline, TIMELINE_VAL, WAIT_SIGNALS}, submits(SUBMITS) {
+				selfRefer();
+			}
+
+			private:
+			void selfRefer() noexcept {
+				for(SubmitData& submit : submits) {
+					submit.wait.semaphore = sync.timeline;
+					submit.signal.semaphore = sync.timeline;
+
+					submit.info.pWaitSemaphoreInfos = &submit.wait;
+					submit.info.pCommandBufferInfos = &submit.cmds;
+					submit.info.pSignalSemaphoreInfos = &submit.signal;
+				}
+			}
 		};
 
 		inline VkCommandPool gCmdPool{};

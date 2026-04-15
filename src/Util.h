@@ -29,6 +29,8 @@
 ((imageType == VK_IMAGE_TYPE_2D) ? VK_IMAGE_VIEW_TYPE_2D : \
 ((imageType == VK_IMAGE_TYPE_3D) ? VK_IMAGE_VIEW_TYPE_3D : static_cast<VkImageViewType>(9999))))
 
+#define VK_NO_FLAGS 0U
+
 using VkLogicalDevice = VkDevice;
 
 namespace Util {

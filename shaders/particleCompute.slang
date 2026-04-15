@@ -4,13 +4,13 @@ struct Particle {
     float2 velocity;
 };
 
-struct PushConstantPointers {
+struct Information {
     float *pDeltaTime;
     Particle *pParticlesIn;
     Particle *pParticlesOut;
 };
 
-[vk::push_constant] PushConstantPointers pointers;
+[vk::push_constant] Information pointers;
 
 [shader("compute")]
 [numthreads(256, 1, 1)]

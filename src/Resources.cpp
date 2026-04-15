@@ -14,9 +14,9 @@ namespace Resources {
 	}
 	
 	void loadModelVertices() {
-		Util::Resources::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", gModelVertices, gModelVertexIndices);
+		Util::Resources::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", gModelVertices, gModelIndices);
 		gModelVertexBufferSize = gModelVertices.size() * sizeof(Vertex::Vertex); /* (aa) */
-		gModelIndexBufferSize = gModelVertexIndices.size() * sizeof(uint32_t); /* (ab) */
+		gModelIndexBufferSize = gModelIndices.size() * sizeof(uint32_t); /* (ab) */
 	}
 
 	void loadKtxTexture2() {

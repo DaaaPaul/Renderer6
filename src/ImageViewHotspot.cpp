@@ -5,20 +5,20 @@ namespace ImageViewHotspot {
 	VkImageView newView(VkImageViewCreateInfo const& CREATE) {
 		VkImageView newView{};
 
-		CHECK_VK_SUCCESS(vkCreateImageView(gpDevice, &CREATE, nullptr, &newView), "Failed to create image view")
+		CHECK_VK_SUCCESS(vkCreateImageView(gDevice, &CREATE, nullptr, &newView), "Failed to create image view")
 		views.push_back(newView);
 
 		return newView;
 	}
 
 	void pop() noexcept {
-		vkDestroyImageView(gpDevice, views[views.size() - 1], nullptr);
+		vkDestroyImageView(gDevice, views[views.size() - 1], nullptr);
 		views.pop_back();
 	}
 
 	void clear() noexcept {
 		for(VkImageView& view : views) {
-			vkDestroyImageView(gpDevice, view, nullptr);
+			vkDestroyImageView(gDevice, view, nullptr);
 		}
 	}
 }

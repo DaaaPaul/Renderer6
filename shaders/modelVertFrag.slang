@@ -14,8 +14,8 @@ struct TransformationMatrices {
     float4x4 projection;
 };
 
-[vk::binding(1, 0)] Texture2D texture;
-[vk::binding(0, 0)] SamplerState sampler;
+[vk::binding(0, 0)] Texture2D texture;
+[vk::binding(1, 0)] SamplerState sampler;
 [vk::push_constant] TransformationMatrices *pMatrices;
 
 [shader("vertex")]

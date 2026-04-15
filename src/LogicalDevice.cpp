@@ -30,7 +30,7 @@ namespace Backend {
 				.ppEnabledExtensionNames = gExtensions.data(),
 			};
 
-			CHECK_VK_SUCCESS(vkCreateDevice(PhysicalDevice::gpPhysicalDevice, &logicalDeviceCreate, nullptr, &gpDevice), "Failed to create logical device")
+			CHECK_VK_SUCCESS(vkCreateDevice(PhysicalDevice::gpPhysicalDevice, &logicalDeviceCreate, nullptr, &gDevice), "Failed to create logical device")
 		}
 
 		void createQueues() {
@@ -38,13 +38,13 @@ namespace Backend {
 
 			for(int i = 0; i < gQUEUE_FAMILY_COUNT; i++) {
 				for(int j = 0; j < gQUEUES_PER_QUEUE_FAMILY[i]; j++) {
-					vkGetDeviceQueue(gpDevice, PhysicalDevice::gQueueFamilyIndices[i], j, &gQueues[getQueueIndex(i, j)]);
+					vkGetDeviceQueue(gDevice, PhysicalDevice::gQueueFamilyIndices[i], j, &gQueues[getQueueIndex(i, j)]);
 				}
 			}
 		}
 
 		void destroyLogicalDevice() noexcept {
-			vkDestroyDevice(gpDevice, nullptr);
+			vkDestroyDevice(gDevice, nullptr);
 		}
 
 		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) noexcept {

@@ -22,23 +22,28 @@
 	glfwGetKey(Backend::Window::gpGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
-	void recordComputeCommands(VkCommandBuffer& pCommandBuffer) {
-		vkResetCommandBuffer(pCommandBuffer, 0);
+	void initTransformation() noexcept {
+		gTransformation = Vertex::Transforms(
+			glm::mat4(1.0f),
+			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
+		);
+	}
 
-		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCommandBuffer, &BEGIN), "Failed to begin compute command buffer")
+	void recordComputeCommands(VkCommandBuffer& cmdBuffer) {
+		resetAndBeginCmdBuffer(cmdBuffer);
 		
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
-			
-		std::vector<VkDeviceAddress> pushConstantPointers{
-			Memory::Host::gBuffers[11 + FrameData::gFrameIndex].address, // Delta time uniform buffer
-			Memory::Host::gBuffers[2 + FrameData::gFrameIndex].address, // PARTICLES_IN SSBO
-			Memory::Host::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].address // particlesOut SSBO
-		};
-		vkCmdPushConstants(pCommandBuffer, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstantPointers.data());
-		vkCmdDispatch(pCommandBuffer, Resources::gPARTICLES_COUNT / 256, 1, 1);
+		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(pCommandBuffer), "Failed to end compute command buffer")
+		std::vector<VkDeviceAddress> pushConstantPointers{
+			Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex].address, // Delta time uniform buffer
+			Memory::Device::gBuffers[2 + FrameData::gFrameIndex].address, // PARTICLES_IN SSBO
+			Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].address // particlesOut SSBO
+		};
+		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstantPointers.data());
+		vkCmdDispatch(cmdBuffer, Resources::gPARTICLES_COUNT / 256, 1, 1);
+
+		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Failed to end compute command buffer")
 	}
 
 	void recordDrawModelCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
@@ -120,13 +125,10 @@ namespace Engine {
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
 		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
-		vkCmdDrawIndexed(pCommandBuffer, Resources::gModelVertices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(pCommandBuffer, Resources::gModelIndices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(pCommandBuffer);
 
 		CHECK_VK_SUCCESS(vkEndCommandBuffer(pCommandBuffer), "Command buffer end recording failure")
-
-		ImageViewHotspot::pop();
-		ImageViewHotspot::pop();
 	};
 
 	void recordDrawParticlesCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
@@ -163,7 +165,7 @@ namespace Engine {
 		setViewportAndScissor(pCommandBuffer);
 
 		constexpr VkDeviceSize ZERO = 0;
-		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &Memory::Device::gBuffers[1 + 1 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].buffer, &ZERO);
+		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].buffer, &ZERO);
 
 		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
 		vkCmdDraw(pCommandBuffer, Resources::gPARTICLES_COUNT, 1, 0, 0);
@@ -175,131 +177,42 @@ namespace Engine {
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
 		CHECK_VK_SUCCESS(vkEndCommandBuffer(pCommandBuffer), "Command buffer end recording failure")
-
-		ImageViewHotspot::pop();
 	}
 
 	void renderNext() {
-		FrameData::FrameData& currentFrame = FrameData::gFrameData[FrameData::gFrameIndex];
-		uint64_t computeWaitVal = currentFrame.timelineVal;
-		uint64_t computeSignalVal = ++currentFrame.timelineVal;
-		uint64_t modelWaitVal = computeSignalVal;
-		uint64_t modelSignalVal = ++currentFrame.timelineVal;
-		uint64_t particlesWaitVal = modelSignalVal;
-		uint64_t particlesSignalVal = ++currentFrame.timelineVal;
+		FrameData::FrameData& frameData = FrameData::gFrameData[FrameData::gFrameIndex];
+		frameData.sync.updateWaitSignals();
 
-		uint32_t nextImageIndex = UINT32_MAX;
-		if(vkAcquireNextImageKHR(gpDevice, Swapchain::gpSwapchain, UINT64_MAX, VK_NULL_HANDLE, currentFrame.oneAtATime, &nextImageIndex) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized) {
+		uint32_t swapchainImageIndex = UINT32_MAX;
+		if(acquireSwapchainImage(swapchainImageIndex, frameData.sync.guard)) {
 			resize();
 			return;
 		}
-		vkWaitForFences(gpDevice, 1, &currentFrame.oneAtATime, VK_TRUE, UINT64_MAX);
-		vkResetFences(gpDevice, 1, &currentFrame.oneAtATime);
+		waitForFence(frameData.sync.guard);
 
-		// compute
-		recordComputeCommands(currentFrame.computeCmds);
+		recordComputeCommands(frameData.submits[0].cmds.commandBuffer);
 		updateDeltaTime();
-		VkSemaphoreSubmitInfo computeWait{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = computeWaitVal,
-			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
-		};
-		VkCommandBufferSubmitInfo computeCommands{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = currentFrame.computeCmds,
-		};
-		VkSemaphoreSubmitInfo computeSignal{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = computeSignalVal,
-			.stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
-		};
-		VkSubmitInfo2 computeSubmit{
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-			.waitSemaphoreInfoCount = 1,
-			.pWaitSemaphoreInfos = &computeWait,
-			.commandBufferInfoCount = 1,
-			.pCommandBufferInfos = &computeCommands,
-			.signalSemaphoreInfoCount = 1,
-			.pSignalSemaphoreInfos = &computeSignal
-		};
+		frameData.submits[0].wait.value = frameData.sync.waitSignals[0].waitVal;
+		frameData.submits[0].signal.value = frameData.sync.waitSignals[0].signalVal;
 
-		// model
-		recordDrawModelCommands(currentFrame.modelCmds, nextImageIndex);
+		recordDrawModelCommands(frameData.submits[1].cmds.commandBuffer, swapchainImageIndex);
 		updateTransformation();
-		VkSemaphoreSubmitInfo modelWait{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = modelWaitVal,
-			.stageMask = VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT,
-		};
-		VkCommandBufferSubmitInfo modelCommands{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = currentFrame.modelCmds,
-		};
-		VkSemaphoreSubmitInfo modelSignal{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = modelSignalVal,
-			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-		};
-		VkSubmitInfo2 modelSubmit{
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-			.waitSemaphoreInfoCount = 1,
-			.pWaitSemaphoreInfos = &modelWait,
-			.commandBufferInfoCount = 1,
-			.pCommandBufferInfos = &modelCommands,
-			.signalSemaphoreInfoCount = 1,
-			.pSignalSemaphoreInfos = &modelSignal
-		};
+		frameData.submits[1].wait.value = frameData.sync.waitSignals[1].waitVal;
+		frameData.submits[1].signal.value = frameData.sync.waitSignals[1].signalVal;
 
-		// particles
-		recordDrawParticlesCommands(currentFrame.particleCmds, nextImageIndex);
-		VkSemaphoreSubmitInfo particlesWait{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = particlesWaitVal,
-			.stageMask = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT,
-		};
-		VkCommandBufferSubmitInfo particlesCommands{
-			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
-			.commandBuffer = currentFrame.particleCmds,
-		};
-		VkSemaphoreSubmitInfo particlesSignal{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
-			.semaphore = currentFrame.timeline,
-			.value = particlesSignalVal,
-			.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-		};
-		VkSubmitInfo2 particlesSubmit{
-			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
-			.waitSemaphoreInfoCount = 1,
-			.pWaitSemaphoreInfos = &particlesWait,
-			.commandBufferInfoCount = 1,
-			.pCommandBufferInfos = &particlesCommands,
-			.signalSemaphoreInfoCount = 1,
-			.pSignalSemaphoreInfos = &particlesSignal
-		};
+		recordDrawParticlesCommands(frameData.submits[2].cmds.commandBuffer, swapchainImageIndex);
+		frameData.submits[2].wait.value = frameData.sync.waitSignals[2].waitVal;
+		frameData.submits[2].signal.value = frameData.sync.waitSignals[2].signalVal;
 
-		std::vector<VkSubmitInfo2> submits{ computeSubmit, modelSubmit, particlesSubmit };
+		std::vector<VkSubmitInfo2> submits{ frameData.submits[0].info, frameData.submits[1].info, frameData.submits[2].info };
 		vkQueueSubmit2(Backend::LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
 
-		VkPresentInfoKHR presentInfo{
-			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-			.swapchainCount = 1,
-			.pSwapchains = &Swapchain::gpSwapchain,
-			.pImageIndices = &nextImageIndex
-		};
-		VkSemaphoreWaitInfo presentWait{
-			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
-			.semaphoreCount = 1,
-			.pSemaphores = &currentFrame.timeline,
-			.pValues = &particlesSignalVal
-		};
-		vkWaitSemaphores(gpDevice, &presentWait, UINT64_MAX);
-
-		if(vkQueuePresentKHR(Backend::LogicalDevice::gQueues[0], &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized) {
+		waitForTimelineSemaphore(frameData.sync.timeline, frameData.sync.waitSignals[2].signalVal);
+		ImageViewHotspot::pop();
+		ImageViewHotspot::pop();
+		ImageViewHotspot::pop();
+		
+		if(presentSwapchainImage(swapchainImageIndex, Backend::LogicalDevice::gQueues[0])) {
 			resize();
 			return;
 		}
@@ -329,15 +242,44 @@ namespace Engine {
 			}
 		}
 
-		vkDeviceWaitIdle(Backend::LogicalDevice::gpDevice);
+		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
 	}
 
-	void initTransformation() noexcept {
-		gTransformation = Vertex::Transforms(
-			glm::mat4(1.0f),
-			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
-		);
+	bool acquireSwapchainImage(uint32_t& INDEX, VkFence& fenceToSignal) {
+		return vkAcquireNextImageKHR(gDevice, Swapchain::gpSwapchain, UINT64_MAX, VK_NULL_HANDLE, fenceToSignal, &INDEX) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
+	}
+
+	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue& queue) {
+		VkPresentInfoKHR presentInfo{
+			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+			.swapchainCount = 1,
+			.pSwapchains = &Swapchain::gpSwapchain,
+			.pImageIndices = &INDEX
+		};
+
+		return vkQueuePresentKHR(queue, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
+	}
+
+	void waitForTimelineSemaphore(VkSemaphore& timeline, uint64_t const& WAIT_VAL) noexcept {
+		VkSemaphoreWaitInfo wait{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+			.semaphoreCount = 1,
+			.pSemaphores = &timeline,
+			.pValues = &WAIT_VAL
+		};
+		CHECK_VK_SUCCESS(vkWaitSemaphores(gDevice, &wait, UINT64_MAX), "Failed to wait for semaphore");
+	}
+
+	void waitForFence(VkFence& fence) noexcept {
+		CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
+		CHECK_VK_SUCCESS(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
+	}
+
+	void resetAndBeginCmdBuffer(VkCommandBuffer& cmdBuffer) noexcept {
+		vkResetCommandBuffer(cmdBuffer, 0);
+
+		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
 	}
 
 	void setViewportAndScissor(VkCommandBuffer& cmdBuffer) {
@@ -358,7 +300,7 @@ namespace Engine {
 	}
 
 	void resize() {
-		vkDeviceWaitIdle(gpDevice);
+		vkDeviceWaitIdle(gDevice);
 
 		Swapchain::recreate();
 		// TODO: add functionality to recreate depth resources
@@ -411,6 +353,6 @@ namespace Engine {
 
 	void updateDeltaTime() {
 		float deltaTime = getDeltaTime();
-		Memory::Host::Mutate::writeToBuffer(11 + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
+		Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
 	}
 }

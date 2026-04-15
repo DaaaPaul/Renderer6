@@ -67,7 +67,7 @@ namespace Util {
 				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
 				.queueFamilyIndex = QUEUE_FAMILY_INDEX
 			};
-			CHECK_VK_SUCCESS(vkCreateCommandPool(gpDevice, &poolCreate, nullptr, &pCmdPool), "Failed to create temporary command pool")
+			CHECK_VK_SUCCESS(vkCreateCommandPool(gDevice, &poolCreate, nullptr, &pCmdPool), "Failed to create temporary command pool")
 
 			VkCommandBufferAllocateInfo commandBufferCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -75,7 +75,7 @@ namespace Util {
 				.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				.commandBufferCount = 1,
 			};
-			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gpDevice, &commandBufferCreate, &pCmdBuf), "Failed to create temporary command buffer")
+			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gDevice, &commandBufferCreate, &pCmdBuf), "Failed to create temporary command buffer")
 
 			constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
 			CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCmdBuf, &BEGIN), "Failed to begin temporary command buffer recording")
@@ -86,7 +86,7 @@ namespace Util {
 
 			VkFence pCopyCommandDone{};
 			constexpr VkFenceCreateInfo FENCE_EMPTY_CREATE{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-			CHECK_VK_SUCCESS(vkCreateFence(gpDevice, &FENCE_EMPTY_CREATE, nullptr, &pCopyCommandDone), "Failed to create copy command done fence")
+			CHECK_VK_SUCCESS(vkCreateFence(gDevice, &FENCE_EMPTY_CREATE, nullptr, &pCopyCommandDone), "Failed to create copy command done fence")
 
 			VkSubmitInfo commandBufferSubmit{
 				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -95,11 +95,11 @@ namespace Util {
 			};
 			CHECK_VK_SUCCESS(vkQueueSubmit(pQueue, 1, &commandBufferSubmit, pCopyCommandDone), "Failed to submit temporary command buffer")
 
-			CHECK_VK_SUCCESS(vkWaitForFences(gpDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
+			CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
 
-			vkDestroyFence(gpDevice, pCopyCommandDone, nullptr);
-			vkFreeCommandBuffers(gpDevice, pCmdPool, 1, &pCmdBuf);
-			vkDestroyCommandPool(gpDevice, pCmdPool, nullptr);
+			vkDestroyFence(gDevice, pCopyCommandDone, nullptr);
+			vkFreeCommandBuffers(gDevice, pCmdPool, 1, &pCmdBuf);
+			vkDestroyCommandPool(gDevice, pCmdPool, nullptr);
 		}
 
 		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
@@ -267,7 +267,7 @@ namespace Util {
 		VkImageView createImageView(VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
 			VkImageView view{};
 		
-			CHECK_VK_SUCCESS(vkCreateImageView(gpDevice, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
+			CHECK_VK_SUCCESS(vkCreateImageView(gDevice, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
 	
 			return view;
 		}
@@ -345,7 +345,7 @@ namespace Util {
 				.queueFamilyIndex = QF_INDEX
 			};
 
-			CHECK_VK_SUCCESS(vkCreateCommandPool(gpDevice, &cmdPoolCreate, nullptr, &cmdPool), "Failed to create command pool")
+			CHECK_VK_SUCCESS(vkCreateCommandPool(gDevice, &cmdPoolCreate, nullptr, &cmdPool), "Failed to create command pool")
 
 			return cmdPool;
 		}
@@ -360,7 +360,7 @@ namespace Util {
 				.commandBufferCount = 1
 			};
 
-			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gpDevice, &cmdBufferCreate, &cmdBuffer), "Failed to create command buffer")
+			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gDevice, &cmdBufferCreate, &cmdBuffer), "Failed to create command buffer")
 
 			return cmdBuffer;
 		}
@@ -373,7 +373,7 @@ namespace Util {
 				.flags = FLAGS
 			};
 
-			CHECK_VK_SUCCESS(vkCreateFence(gpDevice, &fenceCreate, nullptr, &fence), "Failed to create fence")
+			CHECK_VK_SUCCESS(vkCreateFence(gDevice, &fenceCreate, nullptr, &fence), "Failed to create fence")
 
 			return fence;
 		}
@@ -386,7 +386,7 @@ namespace Util {
 				.pNext = &TYPE
 			};
 
-			CHECK_VK_SUCCESS(vkCreateSemaphore(gpDevice, &semaphoreCreate, nullptr, &semaphore), "Failed to create semaphore")
+			CHECK_VK_SUCCESS(vkCreateSemaphore(gDevice, &semaphoreCreate, nullptr, &semaphore), "Failed to create semaphore")
 
 			return semaphore;
 		}

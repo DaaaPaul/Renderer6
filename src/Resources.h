@@ -9,7 +9,7 @@
 namespace Resources {
 	inline std::vector<Vertex::Vertex> gModelVertices{};
 	inline uint32_t gModelVertexBufferSize = UINT32_MAX; /* (aa) */
-	inline std::vector<uint32_t> gModelVertexIndices{};
+	inline std::vector<uint32_t> gModelIndices{};
 	inline uint32_t gModelIndexBufferSize = UINT32_MAX; /* (ab) */
 
 	inline ktxTexture2* gpTexture{};

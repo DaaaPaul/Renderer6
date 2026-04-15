@@ -6,7 +6,7 @@
 
 namespace Backend {
 	namespace LogicalDevice {
-		inline VkLogicalDevice gpDevice{};
+		inline VkLogicalDevice gDevice{};
 		inline std::vector<VkQueue> gQueues{};
 
 		inline std::vector<const char*> gExtensions{
@@ -73,4 +73,4 @@ namespace Backend {
 	}
 }
 
-using Backend::LogicalDevice::gpDevice;
+using Backend::LogicalDevice::gDevice;

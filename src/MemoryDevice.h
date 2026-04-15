@@ -24,7 +24,9 @@ namespace Memory {
 		inline std::vector<VkSamplerCreateInfo> gSamplerCreates{};
 
 		inline VkDescriptorPoolCreateInfo gDescriptorPoolCreate{};
+		inline std::vector<VkDescriptorPoolSize> gDescriptorPoolSizes{};
 		inline std::vector<VkDescriptorSetLayoutCreateInfo> gDescriptorSetLayoutCreates{};
+		inline std::vector<std::vector<VkDescriptorSetLayoutBinding>> gDescriptorSetLayoutCreateBindings{};
 		inline std::vector<VkDescriptorSetAllocateInfo> gDescriptorSetAllocates{};
 
 		void init();

@@ -53,7 +53,7 @@ namespace Engine {
 					.depthClampEnable = VK_FALSE,
 					.rasterizerDiscardEnable = VK_FALSE,
 					.polygonMode = VK_POLYGON_MODE_FILL,
-					.cullMode = VK_CULL_MODE_BACK_BIT,
+					.cullMode = VK_CULL_MODE_NONE,
 					.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE,
 					.depthBiasEnable = VK_FALSE,
 					.depthBiasConstantFactor = 0.0f,
@@ -211,7 +211,7 @@ namespace Engine {
 		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const& CREATE) {
 			VkPipeline graphics{};
 
-			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gpDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &graphics), "Failed to create graphics pipeline")
+			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &graphics), "Failed to create graphics pipeline")
 			gPipelines.push_back(graphics);
 
 			return graphics;
@@ -220,7 +220,7 @@ namespace Engine {
 		VkPipeline newComputePipeline(VkComputePipelineCreateInfo const& CREATE) {
 			VkPipeline compute{};
 
-			CHECK_VK_SUCCESS(vkCreateComputePipelines(gpDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
+			CHECK_VK_SUCCESS(vkCreateComputePipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
 			gPipelines.push_back(compute);
 
 			return compute;
@@ -228,7 +228,7 @@ namespace Engine {
 
 		void clear() noexcept {
 			for(VkPipeline& pipeline : gPipelines) {
-				vkDestroyPipeline(gpDevice, pipeline, nullptr);
+				vkDestroyPipeline(gDevice, pipeline, nullptr);
 			}
 		}
 	}

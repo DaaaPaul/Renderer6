@@ -86,7 +86,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateBuffer(gpDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -94,7 +94,7 @@ namespace Memory {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); i++) {
-				vkGetBufferMemoryRequirements(gpDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				vkGetBufferMemoryRequirements(gDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -140,7 +140,7 @@ namespace Memory {
 			gImages.resize(gImageCreates.size(), {});
 
 			for(int i = 0; i < gImages.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateImage(gpDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
+				CHECK_VK_SUCCESS(vkCreateImage(gDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
 			}
 		}
 
@@ -148,7 +148,7 @@ namespace Memory {
 			gImageMemoryRequirements.resize(gImages.size(), {});
 
 			for(int i = 0; i < gImages.size(); i++) {
-				vkGetImageMemoryRequirements(gpDevice, gImages[i].image, &gImageMemoryRequirements[i]);
+				vkGetImageMemoryRequirements(gDevice, gImages[i].image, &gImageMemoryRequirements[i]);
 				gMemoryItemTypes.push_back((gImageCreates[i].tiling == VK_IMAGE_TILING_OPTIMAL) ? Util::Memory::ItemType::NON_LINEAR : Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -171,13 +171,13 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(gpDevice, &memoryAllocate, nullptr, &gpMemory);
+			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gpMemory);
 		}
 
 		void bindBuffers() {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				gBuffers[i].offset = gMemoryOffsets[i];
-				vkBindBufferMemory(gpDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
+				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -186,7 +186,7 @@ namespace Memory {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
-					gBuffers[i].address = vkGetBufferDeviceAddress(gpDevice, &rollingBufferAddressInfo);
+					gBuffers[i].address = vkGetBufferDeviceAddress(gDevice, &rollingBufferAddressInfo);
 				}
 			}
 		}
@@ -196,7 +196,7 @@ namespace Memory {
 				int imageIndex = i - gBuffers.size();
 
 				gImages[imageIndex].offset = gMemoryOffsets[i];
-				vkBindImageMemory(gpDevice, gImages[imageIndex].image, gpMemory, gImages[imageIndex].offset);
+				vkBindImageMemory(gDevice, gImages[imageIndex].image, gpMemory, gImages[imageIndex].offset);
 			}
 		}
 
@@ -235,47 +235,53 @@ namespace Memory {
 			gSamplers.resize(gSamplerCreates.size(), {});
 
 			for(int i = 0; i < gSamplers.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateSampler(gpDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
+				CHECK_VK_SUCCESS(vkCreateSampler(gDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
 			}
 		}
 
 		void populateDescriptorSetLayoutCreates() noexcept {
-			std::vector<VkDescriptorSetLayoutBinding> textureBindings{
-				VkDescriptorSetLayoutBinding{
-					.binding = 0,
-					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-				},
-				VkDescriptorSetLayoutBinding{
-					.binding = 1,
-					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
-					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-				}
-			};
-			gDescriptorSetLayoutCreates.push_back(
-				VkDescriptorSetLayoutCreateInfo{
-					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-					.bindingCount = UINT32(textureBindings.size()),
-					.pBindings = textureBindings.data()
+			gDescriptorSetLayoutCreateBindings.push_back(
+				std::vector<VkDescriptorSetLayoutBinding>{
+					VkDescriptorSetLayoutBinding{
+						.binding = 0,
+						.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+						.descriptorCount = 1,
+						.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+					},
+					VkDescriptorSetLayoutBinding{
+						.binding = 1,
+						.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+						.descriptorCount = 1,
+						.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+					}
 				}
 			);
+
+			for(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS : gDescriptorSetLayoutCreateBindings) {
+				gDescriptorSetLayoutCreates.push_back(
+					VkDescriptorSetLayoutCreateInfo{
+						.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+						.bindingCount = UINT32(BINDINGS.size()),
+						.pBindings = BINDINGS.data()
+					}
+				);
+			}
 		}
 
 		void createDescriptorSetLayouts() {
 			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
 			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); i++) {
-				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gpDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
+				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
 			}
 		}
 
 		void populateDescriptorPoolCreate() noexcept {
-			std::vector<VkDescriptorPoolSize> poolSizes{};
-			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT_CREATE : gDescriptorSetLayoutCreates) {
-				for(int i = 0; i < LAYOUT_CREATE.bindingCount; i++) {
-					poolSizes.push_back(
+			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT : gDescriptorSetLayoutCreates) {
+				for(int i = 0; i < LAYOUT.bindingCount; i++) {
+					gDescriptorPoolSizes.push_back(
 						VkDescriptorPoolSize{
-							.type = LAYOUT_CREATE.pBindings[i].descriptorType,
-							.descriptorCount = LAYOUT_CREATE.pBindings[i].descriptorCount
+							.type = LAYOUT.pBindings[i].descriptorType,
+							.descriptorCount = LAYOUT.pBindings[i].descriptorCount
 						}
 					);
 				}
@@ -284,13 +290,13 @@ namespace Memory {
 			gDescriptorPoolCreate = VkDescriptorPoolCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 				.maxSets = UINT32(gDescriptorSetLayoutCreates.size()),
-				.poolSizeCount = UINT32(poolSizes.size()),
-				.pPoolSizes = poolSizes.data()
+				.poolSizeCount = UINT32(gDescriptorPoolSizes.size()),
+				.pPoolSizes = gDescriptorPoolSizes.data()
 			};
 		}
 
 		void createDescriptorPool() {
-			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gpDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
+			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() noexcept {
@@ -308,7 +314,7 @@ namespace Memory {
 
 		void createDescriptorSets() {
 			for(int i = 0; i < gDescriptorSets.size(); i++) {
-				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gpDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
+				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
 			}
 		}
 
@@ -318,28 +324,28 @@ namespace Memory {
 		}
 
 		void deInitMemoryResources() noexcept {
-			vkFreeMemory(gpDevice, gpMemory, nullptr);
+			vkFreeMemory(gDevice, gpMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bufferBundle : gBuffers) {
-				vkDestroyBuffer(gpDevice, bufferBundle.buffer, nullptr);
+				vkDestroyBuffer(gDevice, bufferBundle.buffer, nullptr);
 			}
 			for(Util::Memory::ImageBundle& imageBundle : gImages) {
-				vkDestroyImage(gpDevice, imageBundle.image, nullptr);
+				vkDestroyImage(gDevice, imageBundle.image, nullptr);
 			}
 		}
 
 		void destroySamplers() noexcept {
 			for(VkSampler& sampler : gSamplers) {
-				vkDestroySampler(gpDevice, sampler, nullptr);
+				vkDestroySampler(gDevice, sampler, nullptr);
 			}
 		}
 
 		void deInitDescriptorResources() noexcept {
 			for(Util::Memory::DescriptorSetBundle& dsetBundle : gDescriptorSets) {
-				vkFreeDescriptorSets(gpDevice, gpDescriptorPool, 1, &dsetBundle.set);
-				vkDestroyDescriptorSetLayout(gpDevice, dsetBundle.layout, nullptr);
+				vkFreeDescriptorSets(gDevice, gpDescriptorPool, 1, &dsetBundle.set);
+				vkDestroyDescriptorSetLayout(gDevice, dsetBundle.layout, nullptr);
 			}
-			vkDestroyDescriptorPool(gpDevice, gpDescriptorPool, nullptr);
+			vkDestroyDescriptorPool(gDevice, gpDescriptorPool, nullptr);
 		}
 
 		namespace Mutate {
@@ -397,7 +403,7 @@ namespace Memory {
 					.pImageInfo = &imageInfo
 				};
 
-				vkUpdateDescriptorSets(gpDevice, 1, &write, 0, nullptr);
+				vkUpdateDescriptorSets(gDevice, 1, &write, 0, nullptr);
 			}
 
 			void bindSampler(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& SAMPLER_INDEX) {
@@ -415,7 +421,7 @@ namespace Memory {
 					.pImageInfo = &samplerInfo
 				};
 
-				vkUpdateDescriptorSets(gpDevice, 1, &write, 0, nullptr);
+				vkUpdateDescriptorSets(gDevice, 1, &write, 0, nullptr);
 			}
 		}
 	}

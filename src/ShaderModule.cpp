@@ -13,14 +13,6 @@ namespace Engine {
 			};
 			newShaderModule(modelVertFragCreate);
 
-			std::vector<char> particleComputeBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleCompute.spv)"));
-			VkShaderModuleCreateInfo particleComputeCreate{
-				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-				.codeSize = UINT32(particleComputeBytes.size()),
-				.pCode = reinterpret_cast<uint32_t const*>(particleComputeBytes.data())
-			};
-			newShaderModule(particleComputeCreate);
-
 			std::vector<char> particleVertFragBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleVertFrag.spv)"));
 			VkShaderModuleCreateInfo particleVertFragCreate{
 				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -28,12 +20,20 @@ namespace Engine {
 				.pCode = reinterpret_cast<uint32_t const*>(particleVertFragBytes.data())
 			};
 			newShaderModule(particleVertFragCreate);
+
+			std::vector<char> particleComputeBytes(Util::getFileBytes(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\particleCompute.spv)"));
+			VkShaderModuleCreateInfo particleComputeCreate{
+				.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+				.codeSize = UINT32(particleComputeBytes.size()),
+				.pCode = reinterpret_cast<uint32_t const*>(particleComputeBytes.data())
+			};
+			newShaderModule(particleComputeCreate);
 		}
 
 		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const& CREATE) {
 			VkShaderModule shaderModule{};
 
-			CHECK_VK_SUCCESS(vkCreateShaderModule(gpDevice, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
+			CHECK_VK_SUCCESS(vkCreateShaderModule(gDevice, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
 			gShaderModules.push_back(shaderModule);
 
 			return shaderModule;
@@ -41,7 +41,7 @@ namespace Engine {
 
 		void clear() noexcept {
 			for(VkShaderModule& shaderModule : gShaderModules) {
-				vkDestroyShaderModule(gpDevice, shaderModule, nullptr);
+				vkDestroyShaderModule(gDevice, shaderModule, nullptr);
 			}
 		}
 	}

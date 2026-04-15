@@ -38,7 +38,7 @@ namespace Engine {
 		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const& CREATE) {
 			VkPipelineLayout layout{};
 
-			CHECK_VK_SUCCESS(vkCreatePipelineLayout(gpDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
+			CHECK_VK_SUCCESS(vkCreatePipelineLayout(gDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
 			gLayouts.push_back(layout);
 
 			return layout;
@@ -46,7 +46,7 @@ namespace Engine {
 
 		void clear() noexcept {
 			for(VkPipelineLayout& layout : gLayouts) {
-				vkDestroyPipelineLayout(gpDevice, layout, nullptr);
+				vkDestroyPipelineLayout(gDevice, layout, nullptr);
 			}
 		}
 	}

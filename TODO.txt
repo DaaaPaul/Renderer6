@@ -18,6 +18,7 @@ BY THE HOUR:
 
 5-MINUTE CRAFTS:
 - Remove prefix "p" from vulkan handles
+- Remove vulkan handle references
 
 
 
