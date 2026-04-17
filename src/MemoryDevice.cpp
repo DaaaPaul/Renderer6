@@ -289,6 +289,7 @@ namespace Memory {
 
 			gDescriptorPoolCreate = VkDescriptorPoolCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+				.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
 				.maxSets = UINT32(gDescriptorSetLayoutCreates.size()),
 				.poolSizeCount = UINT32(gDescriptorPoolSizes.size()),
 				.pPoolSizes = gDescriptorPoolSizes.data()

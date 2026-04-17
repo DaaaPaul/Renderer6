@@ -16,6 +16,19 @@ namespace Engine {
 
 		void addGraphicsAggregates() noexcept {
 			gGraphicsAggregates.emplace_back(
+				std::vector<VkVertexInputBindingDescription>{ Vertex::Vertex::getInputBinding(0) },	
+				Vertex::Vertex::getInputAttributes(0),
+				std::vector<VkViewport>{ VkViewport{} },
+				std::vector<VkRect2D>{ VkRect2D{} },
+				VkSampleMask{},
+				std::vector<VkPipelineColorBlendAttachmentState>{
+					VkPipelineColorBlendAttachmentState{
+						.blendEnable = VK_FALSE,
+						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
+					}
+				},
+				std::vector<VkDynamicState>{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR },
+				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
 				std::vector<VkPipelineShaderStageCreateInfo>{
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -33,8 +46,6 @@ namespace Engine {
 				VkPipelineVertexInputStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
 				},
-				std::vector<VkVertexInputBindingDescription>{ Vertex::Vertex::getInputBinding(0) },	
-				Vertex::Vertex::getInputAttributes(0),
 				VkPipelineInputAssemblyStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 					.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -46,8 +57,6 @@ namespace Engine {
 				VkPipelineViewportStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
 				},
-				std::vector<VkViewport>{ VkViewport{} },
-				std::vector<VkRect2D>{ VkRect2D{} },
 				VkPipelineRasterizationStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
 					.depthClampEnable = VK_FALSE,
@@ -68,7 +77,6 @@ namespace Engine {
 					.alphaToCoverageEnable = VK_FALSE,
 					.alphaToOneEnable = VK_FALSE,
 				},
-				VkSampleMask{},
 				VkPipelineDepthStencilStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
 					.depthTestEnable = VK_TRUE,
@@ -81,21 +89,13 @@ namespace Engine {
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 					.logicOpEnable = VK_FALSE,	
 				},
-				std::vector<VkPipelineColorBlendAttachmentState>{
-					VkPipelineColorBlendAttachmentState{
-						.blendEnable = VK_FALSE,
-						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
-					}
-				},
 				VkPipelineDynamicStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
 				},
-				std::vector<VkDynamicState>{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR },
 				VkPipelineRenderingCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
 					.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT,
 				},
-				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
 				PipelineLayouts::gLayouts[0]
 			);
 

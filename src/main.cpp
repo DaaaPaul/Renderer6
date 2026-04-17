@@ -12,6 +12,7 @@
 #include "ShaderModule.h"
 #include "Pipelines.h"
 #include "Engine.h"
+#include "ImageViewHotspot.h"
 #include "FrameData.h"
 
 int main() {
@@ -36,6 +37,7 @@ int main() {
 		Engine::run();
 
 		Engine::FrameData::deInit();
+		ImageViewHotspot::clear();
 
 		Engine::Pipelines::clear();
 		Engine::ShaderModule::clear();

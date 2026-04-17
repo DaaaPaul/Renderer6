@@ -16,7 +16,7 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-set(DEBUG_MODE ON)
+set(DEBUG_MODE OFF)
 
 add_executable(Renderer6)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Renderer6)

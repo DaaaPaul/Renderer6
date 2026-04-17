@@ -208,9 +208,6 @@ namespace Engine {
 		vkQueueSubmit2(Backend::LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
 
 		waitForTimelineSemaphore(frameData.sync.timeline, frameData.sync.waitSignals[2].signalVal);
-		ImageViewHotspot::pop();
-		ImageViewHotspot::pop();
-		ImageViewHotspot::pop();
 		
 		if(presentSwapchainImage(swapchainImageIndex, Backend::LogicalDevice::gQueues[0])) {
 			resize();

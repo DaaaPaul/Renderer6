@@ -21,8 +21,8 @@ namespace Engine {
 		}
 
 		void deInit() {
-			destroySurface();
 			destroySwapchain();
+			destroySurface();
 		}
 
 		void recreate() {
