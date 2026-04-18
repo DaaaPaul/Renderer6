@@ -4,7 +4,7 @@
 
 namespace Memory  {
 	namespace Host {
-		inline VkDeviceMemory gpMemory{};
+		inline VkDeviceMemory gMemory{};
 		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};

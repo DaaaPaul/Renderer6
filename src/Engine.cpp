@@ -19,7 +19,7 @@
 #include "Transforms.hpp"
 
 #define CHECK_PRESSED(glfwKey) \
-	glfwGetKey(Backend::Window::gpGlfwWindow, glfwKey) == GLFW_PRESS
+	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
 	void initTransformation() noexcept {
@@ -30,26 +30,26 @@ namespace Engine {
 		);
 	}
 
-	void recordComputeCommands(VkCommandBuffer& cmdBuffer) {
+	void recordComputeCommands(VkCommandBuffer cmdBuffer) {
 		resetAndBeginCmdBuffer(cmdBuffer);
 		
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 
-		std::vector<VkDeviceAddress> pushConstantPointers{
-			Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex].address, // Delta time uniform buffer
-			Memory::Device::gBuffers[2 + FrameData::gFrameIndex].address, // PARTICLES_IN SSBO
-			Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].address // particlesOut SSBO
+		std::vector<VkDeviceAddress> pushConstant{
+			Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex].address, // deltaTime
+			Memory::Device::gBuffers[2 + FrameData::gFrameIndex].address, // particlesIn
+			Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].address // particlesOut
 		};
-		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstantPointers.data());
+		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstant.data());
 		vkCmdDispatch(cmdBuffer, Resources::gPARTICLES_COUNT / 256, 1, 1);
 
 		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Failed to end compute command buffer")
 	}
 
-	void recordDrawModelCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
-		vkResetCommandBuffer(pCommandBuffer, 0);
+	void recordDrawModelCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX) {
+		vkResetCommandBuffer(cmdBuffer, 0);
 
-		VkImageView pSwapchainImageView = ImageViewHotspot::newView(
+		VkImageView imageView = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 				.image = Swapchain::gImages[IMAGE_INDEX],
@@ -58,7 +58,7 @@ namespace Engine {
 				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
 			}
 		);
-		VkImageView pDepthImageView = ImageViewHotspot::newView(
+		VkImageView depthImageView = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 				.image = Memory::Device::gImages[1].image,
@@ -70,7 +70,7 @@ namespace Engine {
 		
 		VkRenderingAttachmentInfo colorAttachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = pSwapchainImageView,
+			.imageView = imageView,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -79,7 +79,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depthAttachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = pDepthImageView,
+			.imageView = depthImageView,
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -96,45 +96,45 @@ namespace Engine {
 		};
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCommandBuffer, &BEGIN), "Failed to begin command buffer")
+		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
-		setViewportAndScissor(pCommandBuffer);
+		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
+		setViewportAndScissor(cmdBuffer);
 
 		constexpr VkDeviceSize ZERO = 0;
-		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &Memory::Device::gBuffers[0].buffer, &ZERO);
-		vkCmdBindIndexBuffer(pCommandBuffer, Memory::Device::gBuffers[1].buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &Memory::Device::gBuffers[0].buffer, &ZERO);
+		vkCmdBindIndexBuffer(cmdBuffer, Memory::Device::gBuffers[1].buffer, 0, VK_INDEX_TYPE_UINT32);
 
 		std::vector<VkDescriptorSet> drawDescriptorSets{
 			Memory::Device::gDescriptorSets[0].set // texture image and sampler
 		};
-		vkCmdBindDescriptorSets(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::gLayouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
-		std::vector<VkDeviceAddress> pushConstantPointers{
+		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::gLayouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
+		std::vector<VkDeviceAddress> pushConstant{
 			Memory::Host::gBuffers[3 + FrameData::gFrameIndex].address // address of transformation matrices
 		};
-		vkCmdPushConstants(pCommandBuffer, PipelineLayouts::gLayouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), pushConstantPointers.data()); 
+		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), pushConstant.data()); 
 		
-		Util::Vulkan::transitionImageLayout(pCommandBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Util::Vulkan::transitionImageLayout(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-		Util::Vulkan::transitionImageLayout(pCommandBuffer, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Util::Vulkan::transitionImageLayout(cmdBuffer, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
-		vkCmdDrawIndexed(pCommandBuffer, Resources::gModelIndices.size(), 1, 0, 0, 0);
-		vkCmdEndRendering(pCommandBuffer);
+		vkCmdBeginRendering(cmdBuffer, &renderingInfo);
+		vkCmdDrawIndexed(cmdBuffer, Resources::gModelIndices.size(), 1, 0, 0, 0);
+		vkCmdEndRendering(cmdBuffer);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(pCommandBuffer), "Command buffer end recording failure")
+		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
 	};
 
-	void recordDrawParticlesCommands(VkCommandBuffer& pCommandBuffer, uint32_t const& IMAGE_INDEX) {
-		vkResetCommandBuffer(pCommandBuffer, 0);
+	void recordDrawParticlesCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX) {
+		vkResetCommandBuffer(cmdBuffer, 0);
 
-		VkImageView pSwapchainImageView = ImageViewHotspot::newView(
+		VkImageView imageView = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 				.image = Swapchain::gImages[IMAGE_INDEX],
@@ -145,7 +145,7 @@ namespace Engine {
 		);
 		VkRenderingAttachmentInfo colorAttachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = pSwapchainImageView,
+			.imageView = imageView,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -159,24 +159,24 @@ namespace Engine {
 		};
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCommandBuffer, &BEGIN), "Failed to begin command buffer")
+		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
-		vkCmdBindPipeline(pCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
-		setViewportAndScissor(pCommandBuffer);
+		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
+		setViewportAndScissor(cmdBuffer);
 
 		constexpr VkDeviceSize ZERO = 0;
-		vkCmdBindVertexBuffers(pCommandBuffer, 0, 1, &Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].buffer, &ZERO);
+		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].buffer, &ZERO);
 
-		vkCmdBeginRendering(pCommandBuffer, &renderingInfo);
-		vkCmdDraw(pCommandBuffer, Resources::gPARTICLES_COUNT, 1, 0, 0);
-		vkCmdEndRendering(pCommandBuffer);
+		vkCmdBeginRendering(cmdBuffer, &renderingInfo);
+		vkCmdDraw(cmdBuffer, Resources::gPARTICLES_COUNT, 1, 0, 0);
+		vkCmdEndRendering(cmdBuffer);
 
-		Util::Vulkan::transitionImageLayout(pCommandBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Util::Vulkan::transitionImageLayout(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(pCommandBuffer), "Command buffer end recording failure")
+		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
 	}
 
 	void renderNext() {
@@ -223,10 +223,10 @@ namespace Engine {
 		uint16_t nextSecondMark = 1;
 		uint16_t accumulatedFramesCount = 0;
 
-		while(!glfwWindowShouldClose(Backend::Window::gpGlfwWindow)) {
+		while(!glfwWindowShouldClose(Backend::Window::gGlfwWindow)) {
 			glfwPollEvents();
-			if(glfwGetKey(Backend::Window::gpGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(Backend::Window::gpGlfwWindow, GLFW_TRUE);
+			if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
 			}
 
 			renderNext();
@@ -242,22 +242,22 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
 	}
 
-	bool acquireSwapchainImage(uint32_t& INDEX, VkFence& fenceToSignal) {
-		return vkAcquireNextImageKHR(gDevice, Swapchain::gpSwapchain, UINT64_MAX, VK_NULL_HANDLE, fenceToSignal, &INDEX) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
+	bool acquireSwapchainImage(uint32_t& index, VkFence fenceToSignal) {
+		return vkAcquireNextImageKHR(gDevice, Swapchain::gSwapchain, UINT64_MAX, VK_NULL_HANDLE, fenceToSignal, &index) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
 	}
 
-	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue& queue) {
+	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue queue) {
 		VkPresentInfoKHR presentInfo{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.swapchainCount = 1,
-			.pSwapchains = &Swapchain::gpSwapchain,
+			.pSwapchains = &Swapchain::gSwapchain,
 			.pImageIndices = &INDEX
 		};
 
 		return vkQueuePresentKHR(queue, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
 	}
 
-	void waitForTimelineSemaphore(VkSemaphore& timeline, uint64_t const& WAIT_VAL) noexcept {
+	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL) noexcept {
 		VkSemaphoreWaitInfo wait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
 			.semaphoreCount = 1,
@@ -267,19 +267,19 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkWaitSemaphores(gDevice, &wait, UINT64_MAX), "Failed to wait for semaphore");
 	}
 
-	void waitForFence(VkFence& fence) noexcept {
+	void waitForFence(VkFence fence) noexcept {
 		CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
 		CHECK_VK_SUCCESS(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
 	}
 
-	void resetAndBeginCmdBuffer(VkCommandBuffer& cmdBuffer) noexcept {
+	void resetAndBeginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept {
 		vkResetCommandBuffer(cmdBuffer, 0);
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
 	}
 
-	void setViewportAndScissor(VkCommandBuffer& cmdBuffer) {
+	void setViewportAndScissor(VkCommandBuffer cmdBuffer) {
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,

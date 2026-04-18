@@ -4,13 +4,13 @@
 
 namespace Backend {
 	namespace Window {
-		inline GLFWwindow* gpGlfwWindow{};
+		inline GLFWwindow* gGlfwWindow{};
 
 		inline constexpr int gWINDOW_WIDTH = 800;
 		inline constexpr int gWINDOW_HEIGHT = 600;
 		inline constexpr const char* gWINDOW_TITLE = "Renderer6";
 		inline bool gFramebufferResized = false;
-		inline bool* gpFrameBufferResized = &gFramebufferResized;
+		inline bool* gFrameBufferResizedPointer = &gFramebufferResized;
 
 		void init();
 		void deInit();
@@ -18,6 +18,6 @@ namespace Backend {
 		void createGlfwWindow();
 		void destroyGlfwWindow() noexcept;
 
-		void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height);
+		void framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height);
 	}
 }

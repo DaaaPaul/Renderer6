@@ -4,22 +4,22 @@ struct Particle {
     float2 velocity;
 };
 
-struct Information {
-    float *pDeltaTime;
-    Particle *pParticlesIn;
-    Particle *pParticlesOut;
+struct PushConstant {
+    float *deltaTime;
+    Particle *particlesIn;
+    Particle *particlesOut;
 };
 
-[vk::push_constant] Information pointers;
+[vk::push_constant] PushConstant pointers;
 
 [shader("compute")]
 [numthreads(256, 1, 1)]
 void computeShader(uint3 invocation: SV_DispatchThreadID) {
     uint i = invocation.x;
 
-    Particle updated = pointers.pParticlesIn[i];
-    updated.position.x += pointers.pParticlesIn[i].velocity.x * pointers.pDeltaTime[0];
-    updated.position.y += pointers.pParticlesIn[i].velocity.y * pointers.pDeltaTime[0];
+    Particle updated = pointers.particlesIn[i];
+    updated.position.x += pointers.particlesIn[i].velocity.x * pointers.deltaTime[0];
+    updated.position.y += pointers.particlesIn[i].velocity.y * pointers.deltaTime[0];
 
     if ((updated.position.x <= -1.0) || (updated.position.x >= 1.0)) {
         updated.velocity.x *= -1.0;
@@ -28,5 +28,5 @@ void computeShader(uint3 invocation: SV_DispatchThreadID) {
         updated.velocity.y *= -1.0;
     }
 
-    pointers.pParticlesOut[i] = updated;
+    pointers.particlesOut[i] = updated;
 }

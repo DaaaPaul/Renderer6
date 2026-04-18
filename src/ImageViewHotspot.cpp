@@ -17,7 +17,7 @@ namespace ImageViewHotspot {
 	}
 
 	void clear() noexcept {
-		for(VkImageView& view : views) {
+		for(VkImageView view : views) {
 			vkDestroyImageView(gDevice, view, nullptr);
 		}
 	}

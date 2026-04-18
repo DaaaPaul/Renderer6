@@ -2,7 +2,7 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // do not remove; used in included translation units
+#include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
 
@@ -19,6 +19,6 @@ namespace Vertex {
 			projection[1][1] *= -1.0f;	
 		}
 
-		static VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
+		static constexpr VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUMBER);
 	};
 }

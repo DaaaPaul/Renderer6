@@ -17,8 +17,6 @@ BY THE HOUR:
 - Consider multisampling
 
 5-MINUTE CRAFTS:
-- Remove prefix "p" from vulkan handles
-- Remove vulkan handle references
 
 
 
@@ -83,3 +81,6 @@ BY THE HOUR:
 - clean up host visible memory
 
 - create structure chain thing for features struct
+
+- Remove prefix "p" from vulkan handles
+- Remove vulkan handle references

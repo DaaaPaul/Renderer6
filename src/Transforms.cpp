@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 
 namespace Vertex {
-	VkDescriptorSetLayoutBinding Transforms::getDescriptorSetBinding(uint32_t const& BINDING_NUMBER) {
+	constexpr VkDescriptorSetLayoutBinding Transforms::getDescriptorSetBinding(uint32_t const& BINDING_NUMBER) {
 		return VkDescriptorSetLayoutBinding{
 			.binding = BINDING_NUMBER,
 			.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

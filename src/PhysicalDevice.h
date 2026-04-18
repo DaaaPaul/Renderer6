@@ -8,7 +8,7 @@
 
 namespace Backend {
 	namespace PhysicalDevice {
-		inline VkPhysicalDevice gpPhysicalDevice{};
+		inline VkPhysicalDevice gPhysicalDevice{};
 		inline std::vector<VkPhysicalDevice> gSystemPhysicalDevices{};
 		inline std::vector<VkPhysicalDeviceProperties> gSystemPhysicalDeviceProperties{};
 
@@ -21,10 +21,10 @@ namespace Backend {
 		void enumerateSystemPhysicalDevices();
 		void selectPhysicalDevice();
 
-		bool physicalDeviceGood(VkPhysicalDeviceProperties const&, VkPhysicalDevice&);
+		bool physicalDeviceGood(VkPhysicalDeviceProperties const&, VkPhysicalDevice);
 		bool apiVersionCheck(VkPhysicalDeviceProperties const&);
-		bool extensionsCheck(VkPhysicalDevice&);
-		bool featuresCheck(VkPhysicalDevice&);
-		bool queuesCheck(VkPhysicalDevice&);
+		bool extensionsCheck(VkPhysicalDevice);
+		bool featuresCheck(VkPhysicalDevice);
+		bool queuesCheck(VkPhysicalDevice);
 	}
 }

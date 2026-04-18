@@ -19,7 +19,7 @@ namespace Memory {
 		}
 
 		void deInit() {
-			vkFreeMemory(gDevice, gpMemory, nullptr);
+			vkFreeMemory(gDevice, gMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bundle : gBuffers) {
 				vkDestroyBuffer(gDevice, bundle.buffer, nullptr);
@@ -50,7 +50,7 @@ namespace Memory {
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-					.size = Resources::gpTexture->dataSize,
+					.size = Resources::gTexture->dataSize,
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
@@ -127,7 +127,7 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gpMemory);
+			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gMemory);
 		}
 
 		void bindBuffers() {
@@ -135,7 +135,7 @@ namespace Memory {
 
 			for(int i = 0; i < bufferOffsets.size(); i++) {
 				gBuffers[i].offset = bufferOffsets[i];
-				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
+				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -152,7 +152,7 @@ namespace Memory {
 		void initializeBufferData() noexcept {
 			Mutate::writeToBuffer(0, Resources::gModelVertices.data(), Resources::gModelVertexBufferSize);
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
-			Mutate::writeToBuffer(2, Resources::gpTexture->pData, Resources::gpTexture->dataSize);
+			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
 
 			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
@@ -163,11 +163,11 @@ namespace Memory {
 		}
 
 		namespace Mutate {
-			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* pDATA, uint32_t const& SIZE_TO_WRITE) {
-				void* addressOfFirstByte{};
-				CHECK_VK_SUCCESS(vkMapMemory(gDevice, gpMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &addressOfFirstByte), "Failed to map memory")
-				std::memcpy(addressOfFirstByte, pDATA, SIZE_TO_WRITE);
-				vkUnmapMemory(gDevice, gpMemory);
+			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* DATA, uint32_t const& SIZE_TO_WRITE) {
+				void* bufferPointer{};
+				CHECK_VK_SUCCESS(vkMapMemory(gDevice, gMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &bufferPointer), "Failed to map memory")
+				std::memcpy(bufferPointer, DATA, SIZE_TO_WRITE);
+				vkUnmapMemory(gDevice, gMemory);
 			}
 		}
 	}

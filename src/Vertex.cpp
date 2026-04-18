@@ -2,7 +2,7 @@
 #include "Vertex.hpp"
 
 namespace Vertex {
-	VkVertexInputBindingDescription Vertex::getInputBinding(const uint32_t BINDING_NUM) {
+	VkVertexInputBindingDescription Vertex::getInputBinding(uint32_t const& BINDING_NUM) {
 		return VkVertexInputBindingDescription{
 			.binding = BINDING_NUM,
 			.stride = sizeof(Vertex),
@@ -10,7 +10,7 @@ namespace Vertex {
 		};
 	}
 
-	std::vector<VkVertexInputAttributeDescription> Vertex::getInputAttributes(const uint32_t BINDING_NUM) {
+	std::vector<VkVertexInputAttributeDescription> Vertex::getInputAttributes(uint32_t const& BINDING_NUM) {
 		return { 
 			VkVertexInputAttributeDescription{
 				.location = 0,

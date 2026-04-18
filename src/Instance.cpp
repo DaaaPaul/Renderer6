@@ -59,7 +59,7 @@ namespace Backend {
 		}
 
 		void createInstance() {
-			VkInstanceCreateFlags instanceCreateFlags = 0;
+			VkInstanceCreateFlags instanceCreateFlags = VK_NO_FLAGS;
 			#ifdef __APPLE__
 			instanceCreateFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 			#endif
@@ -77,11 +77,11 @@ namespace Backend {
 				.ppEnabledExtensionNames = gExtensions.data(),
 			};
 
-			CHECK_VK_SUCCESS(vkCreateInstance(&instanceCreate, nullptr, &gpInstance), "Failed to create instance")
+			CHECK_VK_SUCCESS(vkCreateInstance(&instanceCreate, nullptr, &gInstance), "Failed to create instance")
 		}
 		
 		void destroyInstance() noexcept {
-			vkDestroyInstance(gpInstance, nullptr);
+			vkDestroyInstance(gInstance, nullptr);
 		}
 	}
 }

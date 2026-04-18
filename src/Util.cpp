@@ -61,48 +61,47 @@ namespace Util {
 	}
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& QUEUE_FAMILY_INDEX) {
+		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& QUEUE_FAMILY_INDEX) {
 			VkCommandPoolCreateInfo poolCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
 				.queueFamilyIndex = QUEUE_FAMILY_INDEX
 			};
-			CHECK_VK_SUCCESS(vkCreateCommandPool(gDevice, &poolCreate, nullptr, &pCmdPool), "Failed to create temporary command pool")
+			CHECK_VK_SUCCESS(vkCreateCommandPool(gDevice, &poolCreate, nullptr, &cmdPool), "Failed to create temporary command pool")
 
 			VkCommandBufferAllocateInfo commandBufferCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-				.commandPool = pCmdPool,
+				.commandPool = cmdPool,
 				.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 				.commandBufferCount = 1,
 			};
-			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gDevice, &commandBufferCreate, &pCmdBuf), "Failed to create temporary command buffer")
+			CHECK_VK_SUCCESS(vkAllocateCommandBuffers(gDevice, &commandBufferCreate, &cmdBuffer), "Failed to create temporary command buffer")
 
 			constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
-			CHECK_VK_SUCCESS(vkBeginCommandBuffer(pCmdBuf, &BEGIN), "Failed to begin temporary command buffer recording")
+			CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin temporary command buffer recording")
 		}
 
-		void endOneTimeCommandBuffer(VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf) {
-			CHECK_VK_SUCCESS(vkEndCommandBuffer(pCmdBuf), "Failed to end temporary command buffer recording")
+		void endOneTimeCommandBuffer(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer) {
+			CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Failed to end temporary command buffer recording")
 
-			VkFence pCopyCommandDone{};
-			constexpr VkFenceCreateInfo FENCE_EMPTY_CREATE{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-			CHECK_VK_SUCCESS(vkCreateFence(gDevice, &FENCE_EMPTY_CREATE, nullptr, &pCopyCommandDone), "Failed to create copy command done fence")
+			VkFence cmdBufferDone{};
+			constexpr VkFenceCreateInfo CREATE{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+			CHECK_VK_SUCCESS(vkCreateFence(gDevice, &CREATE, nullptr, &cmdBufferDone), "Failed to create copy command done fence")
 
 			VkSubmitInfo commandBufferSubmit{
 				.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 				.commandBufferCount = 1,
-				.pCommandBuffers = &pCmdBuf,
+				.pCommandBuffers = &cmdBuffer,
 			};
-			CHECK_VK_SUCCESS(vkQueueSubmit(pQueue, 1, &commandBufferSubmit, pCopyCommandDone), "Failed to submit temporary command buffer")
+			CHECK_VK_SUCCESS(vkQueueSubmit(queue, 1, &commandBufferSubmit, cmdBufferDone), "Failed to submit temporary command buffer")
+			CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &cmdBufferDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
 
-			CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &pCopyCommandDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
-
-			vkDestroyFence(gDevice, pCopyCommandDone, nullptr);
-			vkFreeCommandBuffers(gDevice, pCmdPool, 1, &pCmdBuf);
-			vkDestroyCommandPool(gDevice, pCmdPool, nullptr);
+			vkDestroyFence(gDevice, cmdBufferDone, nullptr);
+			vkFreeCommandBuffers(gDevice, cmdPool, 1, &cmdBuffer);
+			vkDestroyCommandPool(gDevice, cmdPool, nullptr);
 		}
 
-		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
+		void transitionImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
 			VkImageMemoryBarrier2 imageBarrier{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
 				.srcStageMask = SRC_STAGE,
@@ -113,7 +112,7 @@ namespace Util {
 				.newLayout = NEW_LAYOUT,
 				.srcQueueFamilyIndex = GRAPHICS_QF_INDEX,
 				.dstQueueFamilyIndex = GRAPHICS_QF_INDEX,
-				.image = pImage,
+				.image = image,
 				.subresourceRange = SUBRESOURCE_RANGE,
 			};
 
@@ -123,7 +122,7 @@ namespace Util {
 				.pImageMemoryBarriers = &imageBarrier,
 			};
 
-			vkCmdPipelineBarrier2(pCmdBuf, &dependencyInfo);
+			vkCmdPipelineBarrier2(cmdBuffer, &dependencyInfo);
 		}
 	}
 
@@ -319,7 +318,7 @@ namespace Util {
 			}
 
 			VkPhysicalDeviceMemoryProperties memoryProperties{};
-			vkGetPhysicalDeviceMemoryProperties(Backend::PhysicalDevice::gpPhysicalDevice, &memoryProperties);
+			vkGetPhysicalDeviceMemoryProperties(Backend::PhysicalDevice::gPhysicalDevice, &memoryProperties);
 
 			uint32_t suitableMemoryTypeIndex = UINT32_MAX;
 			bool suitableMemoryCondition = false;

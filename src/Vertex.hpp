@@ -13,8 +13,8 @@ namespace Vertex {
 		glm::vec4 position{};
 		glm::vec2 texCoord{};
 
-		static VkVertexInputBindingDescription getInputBinding(const uint32_t);
-		static std::vector<VkVertexInputAttributeDescription> getInputAttributes(const uint32_t);
+		static VkVertexInputBindingDescription getInputBinding(uint32_t const&);
+		static std::vector<VkVertexInputAttributeDescription> getInputAttributes(uint32_t const&);
 	};
 
 	inline bool operator==(Vertex const& L, Vertex const& R) {

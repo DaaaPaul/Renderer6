@@ -4,11 +4,11 @@
 
 namespace Memory {
 	namespace Device {
-		inline VkDeviceMemory gpMemory{};
+		inline VkDeviceMemory gMemory{};
 		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
 		inline std::vector<Util::Memory::ImageBundle> gImages{};
 		inline std::vector<VkSampler> gSamplers{};
-		inline VkDescriptorPool gpDescriptorPool{};
+		inline VkDescriptorPool gDescriptorPool{};
 		inline std::vector<Util::Memory::DescriptorSetBundle> gDescriptorSets{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};

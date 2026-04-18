@@ -5,7 +5,7 @@
 
 namespace Backend {
 	namespace Instance {
-		inline VkInstance gpInstance{};
+		inline VkInstance gInstance{};
 
 		inline std::vector<const char*> gLayers{
 			"VK_LAYER_KHRONOS_validation"

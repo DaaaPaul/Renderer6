@@ -229,7 +229,7 @@ namespace Engine {
 		}
 
 		void clear() noexcept {
-			for(VkPipeline& pipeline : gPipelines) {
+			for(VkPipeline pipeline : gPipelines) {
 				vkDestroyPipeline(gDevice, pipeline, nullptr);
 			}
 		}

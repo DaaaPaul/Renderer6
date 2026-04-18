@@ -16,20 +16,20 @@ struct TransformationMatrices {
 
 [vk::binding(0, 0)] Texture2D texture;
 [vk::binding(1, 0)] SamplerState sampler;
-[vk::push_constant] TransformationMatrices *pMatrices;
+[vk::push_constant] TransformationMatrices *transforms;
 
 [shader("vertex")]
 VertexOut vertexShader(VertexIn vin) {
     VertexOut vout;
-    vout.position = mul(pMatrices->model, vin.position);
-    vout.position = mul(pMatrices->view, vout.position);
-    vout.position = mul(pMatrices->projection, vout.position);
+    vout.position = mul(transforms->model, vin.position);
+    vout.position = mul(transforms->view, vout.position);
+    vout.position = mul(transforms->projection, vout.position);
     vout.texCoord = vin.texCoord;
 
     return vout;
 }
 
 [shader("fragment")]
-float4 fragmentShader(VertexOut fin) : SV_Target {
+float4 fragmentShader(VertexOut fin) {
     return texture.Sample(sampler, fin.texCoord);
 }

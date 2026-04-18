@@ -40,9 +40,9 @@ namespace Util {
 	float random() noexcept;
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf, uint32_t const& GRAPHICS_QF_INDEX);
-		void endOneTimeCommandBuffer(VkQueue& pQueue, VkCommandPool& pCmdPool, VkCommandBuffer& pCmdBuf);
-		void transitionImageLayout(VkCommandBuffer pCmdBuf, VkImage& pImage, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
+		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& GRAPHICS_QF_INDEX);
+		void endOneTimeCommandBuffer(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer);
+		void transitionImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 	}
 
 	namespace Resources {

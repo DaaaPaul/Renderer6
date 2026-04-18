@@ -45,7 +45,7 @@ namespace Engine {
 		}
 
 		void clear() noexcept {
-			for(VkPipelineLayout& layout : gLayouts) {
+			for(VkPipelineLayout layout : gLayouts) {
 				vkDestroyPipelineLayout(gDevice, layout, nullptr);
 			}
 		}

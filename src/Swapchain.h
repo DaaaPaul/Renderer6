@@ -5,9 +5,9 @@
 
 namespace Engine {
 	namespace Swapchain {
-		inline VkSwapchainKHR gpSwapchain{};
+		inline VkSwapchainKHR gSwapchain{};
 		inline std::vector<VkImage> gImages{};
-		inline VkSurfaceKHR gpSurface{};
+		inline VkSurfaceKHR gSurface{};
 		inline VkSwapchainCreateInfoKHR gCurrentSwapchainStatus{};
 
 		inline VkExtent2D gImageSize{};

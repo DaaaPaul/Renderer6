@@ -13,24 +13,24 @@ namespace Backend {
 		void createGlfwWindow() {
 			glfwInit();
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			gpGlfwWindow = glfwCreateWindow(gWINDOW_WIDTH, gWINDOW_HEIGHT, gWINDOW_TITLE, nullptr, nullptr);
+			gGlfwWindow = glfwCreateWindow(gWINDOW_WIDTH, gWINDOW_HEIGHT, gWINDOW_TITLE, nullptr, nullptr);
 
-			if(!gpGlfwWindow) {
+			if(!gGlfwWindow) {
 				throw std::runtime_error("glfwCreateWindow failed");
 			}
 
-			glfwSetWindowUserPointer(gpGlfwWindow, gpFrameBufferResized);
-			glfwSetFramebufferSizeCallback(gpGlfwWindow, framebufferResizeCallback);
+			glfwSetWindowUserPointer(gGlfwWindow, gFrameBufferResizedPointer);
+			glfwSetFramebufferSizeCallback(gGlfwWindow, framebufferResizeCallback);
 		}
 
 		void destroyGlfwWindow() noexcept {
-			glfwDestroyWindow(gpGlfwWindow);
+			glfwDestroyWindow(gGlfwWindow);
 			glfwTerminate();
 		}
 
 		void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
-			bool* pResized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(pGlfwWindow));
-			*pResized = true;
+			bool* resized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(pGlfwWindow));
+			*resized = true;
 		}
 	}
 }

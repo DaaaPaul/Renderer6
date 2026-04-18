@@ -20,7 +20,7 @@ namespace Resources {
 	}
 
 	void loadKtxTexture2() {
-		gpTexture = Util::Resources::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
+		gTexture = Util::Resources::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 	}
 
 	void loadParticlesData() {

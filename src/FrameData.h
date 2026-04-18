@@ -3,7 +3,6 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include <vector>
 #include "Swapchain.h"
 
 namespace Engine {

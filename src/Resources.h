@@ -12,7 +12,7 @@ namespace Resources {
 	inline std::vector<uint32_t> gModelIndices{};
 	inline uint32_t gModelIndexBufferSize = UINT32_MAX; /* (ab) */
 
-	inline ktxTexture2* gpTexture{};
+	inline ktxTexture2* gTexture{};
 
 	inline constexpr uint32_t gPARTICLES_COUNT = 8192;
 	inline constexpr uint32_t gPARTICLES_BUFFER_SIZE = gPARTICLES_COUNT * sizeof(Particle::Particle);

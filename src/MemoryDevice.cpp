@@ -104,8 +104,8 @@ namespace Memory {
 				VkImageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 					.imageType = VK_IMAGE_TYPE_2D,
-					.format = static_cast<VkFormat>(Resources::gpTexture->vkFormat),
-					.extent = VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1),
+					.format = static_cast<VkFormat>(Resources::gTexture->vkFormat),
+					.extent = VkExtent3D(Resources::gTexture->baseWidth, Resources::gTexture->baseHeight, 1),
 					.mipLevels = 1,
 					.arrayLayers = 1,
 					.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -171,13 +171,13 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gpMemory);
+			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gMemory);
 		}
 
 		void bindBuffers() {
 			for(int i = 0; i < gBuffers.size(); i++) {
 				gBuffers[i].offset = gMemoryOffsets[i];
-				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gpMemory, gBuffers[i].offset);
+				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -196,7 +196,7 @@ namespace Memory {
 				int imageIndex = i - gBuffers.size();
 
 				gImages[imageIndex].offset = gMemoryOffsets[i];
-				vkBindImageMemory(gDevice, gImages[imageIndex].image, gpMemory, gImages[imageIndex].offset);
+				vkBindImageMemory(gDevice, gImages[imageIndex].image, gMemory, gImages[imageIndex].offset);
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace Memory {
 		}
 
 		void initializeImageData() noexcept {
-			Mutate::copyToImage(0, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gpTexture->baseWidth, Resources::gpTexture->baseHeight, 1))});
+			Mutate::copyToImage(0, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gTexture->baseWidth, Resources::gTexture->baseHeight, 1))});
 		}
 
 		void populateSamplerCreates() noexcept {
@@ -297,7 +297,7 @@ namespace Memory {
 		}
 
 		void createDescriptorPool() {
-			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gpDescriptorPool), "Failed to create descriptor pool");
+			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() noexcept {
@@ -306,7 +306,7 @@ namespace Memory {
 			for(int i = 0; i < gDescriptorSets.size(); i++) {
 				gDescriptorSetAllocates[i] = VkDescriptorSetAllocateInfo{
 					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-					.descriptorPool = gpDescriptorPool,
+					.descriptorPool = gDescriptorPool,
 					.descriptorSetCount = 1,
 					.pSetLayouts = &gDescriptorSets[i].layout
 				};
@@ -325,7 +325,7 @@ namespace Memory {
 		}
 
 		void deInitMemoryResources() noexcept {
-			vkFreeMemory(gDevice, gpMemory, nullptr);
+			vkFreeMemory(gDevice, gMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bufferBundle : gBuffers) {
 				vkDestroyBuffer(gDevice, bufferBundle.buffer, nullptr);
@@ -336,34 +336,34 @@ namespace Memory {
 		}
 
 		void destroySamplers() noexcept {
-			for(VkSampler& sampler : gSamplers) {
+			for(VkSampler sampler : gSamplers) {
 				vkDestroySampler(gDevice, sampler, nullptr);
 			}
 		}
 
 		void deInitDescriptorResources() noexcept {
-			for(Util::Memory::DescriptorSetBundle& dsetBundle : gDescriptorSets) {
-				vkFreeDescriptorSets(gDevice, gpDescriptorPool, 1, &dsetBundle.set);
-				vkDestroyDescriptorSetLayout(gDevice, dsetBundle.layout, nullptr);
+			for(Util::Memory::DescriptorSetBundle& descriptorSetBundle : gDescriptorSets) {
+				vkFreeDescriptorSets(gDevice, gDescriptorPool, 1, &descriptorSetBundle.set);
+				vkDestroyDescriptorSetLayout(gDevice, descriptorSetBundle.layout, nullptr);
 			}
-			vkDestroyDescriptorPool(gDevice, gpDescriptorPool, nullptr);
+			vkDestroyDescriptorPool(gDevice, gDescriptorPool, nullptr);
 		}
 
 		namespace Mutate {
-			void copyToBuffer(uint32_t const& INDEX_OF_BUFFER, VkBuffer src, std::vector<VkBufferCopy> const& REGIONS) {
-				VkCommandPool tempPool{};
-				VkCommandBuffer tempCommandBuffer{};
+			void copyToBuffer(uint32_t const& INDEX_OF_BUFFER, VkBuffer source, std::vector<VkBufferCopy> const& REGIONS) {
+				VkCommandPool tempCmdPool{};
+				VkCommandBuffer tempCmdBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
-				vkCmdCopyBuffer(tempCommandBuffer, src, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::beginOneTimeCommandBuffer(tempCmdPool, tempCmdBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				vkCmdCopyBuffer(tempCmdBuffer, source, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
 			}
 
-			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer src, std::vector<VkBufferImageCopy> const& REGIONS) {
-				VkCommandPool tempPool{};
+			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer source, std::vector<VkBufferImageCopy> const& REGIONS) {
+				VkCommandPool tempCmdPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::beginOneTimeCommandBuffer(tempPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::Vulkan::beginOneTimeCommandBuffer(tempCmdPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 		
 				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
@@ -371,7 +371,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
 				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-				vkCmdCopyBufferToImage(tempCommandBuffer, src, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
+				vkCmdCopyBufferToImage(tempCommandBuffer, source, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
 		
 				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
@@ -379,7 +379,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempPool, tempCommandBuffer);
+				Util::Vulkan::endOneTimeCommandBuffer(Backend::LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {
