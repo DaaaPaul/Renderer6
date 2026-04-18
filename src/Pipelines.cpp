@@ -106,7 +106,7 @@ namespace Engine {
 				Particle::Particle::getInputAttributes(0),
 				std::vector<VkViewport>{ VkViewport{} },
 				std::vector<VkRect2D>{ VkRect2D{} },
-				VkSampleMask{0U},
+				VkSampleMask{~0U},
 				std::vector<VkPipelineColorBlendAttachmentState>{
 					VkPipelineColorBlendAttachmentState{
 						.blendEnable = VK_TRUE,
