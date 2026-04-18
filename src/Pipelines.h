@@ -74,7 +74,7 @@ namespace Engine {
 		void addComputeCreates() noexcept;
 		void createPipelines();
 
-		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const&);
+		VkPipeline newGraphicsPipeline(GraphicsAggregate const&);
 		VkPipeline newComputePipeline(VkComputePipelineCreateInfo const&);
 		void clear() noexcept;
 	}

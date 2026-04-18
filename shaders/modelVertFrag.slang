@@ -30,6 +30,6 @@ VertexOut vertexShader(VertexIn vin) {
 }
 
 [shader("fragment")]
-float4 fragmentShader(VertexOut fin) {
+float4 fragmentShader(VertexOut fin) : SV_Target {
     return texture.Sample(sampler, fin.texCoord);
 }

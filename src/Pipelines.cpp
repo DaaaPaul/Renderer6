@@ -15,12 +15,14 @@ namespace Engine {
 		}
 
 		void addGraphicsAggregates() noexcept {
+			gGraphicsAggregates.reserve(2);
+
 			gGraphicsAggregates.emplace_back(
 				std::vector<VkVertexInputBindingDescription>{ Vertex::Vertex::getInputBinding(0) },	
 				Vertex::Vertex::getInputAttributes(0),
 				std::vector<VkViewport>{ VkViewport{} },
 				std::vector<VkRect2D>{ VkRect2D{} },
-				VkSampleMask{},
+				VkSampleMask{~0U},
 				std::vector<VkPipelineColorBlendAttachmentState>{
 					VkPipelineColorBlendAttachmentState{
 						.blendEnable = VK_FALSE,
@@ -100,6 +102,25 @@ namespace Engine {
 			);
 
 			gGraphicsAggregates.emplace_back(
+				std::vector<VkVertexInputBindingDescription>{ Particle::Particle::getInputBinding(0) },	
+				Particle::Particle::getInputAttributes(0),
+				std::vector<VkViewport>{ VkViewport{} },
+				std::vector<VkRect2D>{ VkRect2D{} },
+				VkSampleMask{0U},
+				std::vector<VkPipelineColorBlendAttachmentState>{
+					VkPipelineColorBlendAttachmentState{
+						.blendEnable = VK_TRUE,
+						.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+						.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						.colorBlendOp = VK_BLEND_OP_ADD,
+						.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+						.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+						.alphaBlendOp = VK_BLEND_OP_ADD,
+						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
+					}
+				},
+				std::vector<VkDynamicState>{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR },
+				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
 				std::vector<VkPipelineShaderStageCreateInfo>{
 					VkPipelineShaderStageCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
@@ -117,8 +138,6 @@ namespace Engine {
 				VkPipelineVertexInputStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
 				},
-				std::vector<VkVertexInputBindingDescription>{ Particle::Particle::getInputBinding(0) },	
-				Particle::Particle::getInputAttributes(0),
 				VkPipelineInputAssemblyStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 					.topology = VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
@@ -130,8 +149,6 @@ namespace Engine {
 				VkPipelineViewportStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
 				},
-				std::vector<VkViewport>{ VkViewport{} },
-				std::vector<VkRect2D>{ VkRect2D{} },
 				VkPipelineRasterizationStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
 					.depthClampEnable = VK_FALSE,
@@ -150,7 +167,6 @@ namespace Engine {
 					.alphaToCoverageEnable = VK_FALSE,
 					.alphaToOneEnable = VK_FALSE,
 				},
-				VkSampleMask{},
 				VkPipelineDepthStencilStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
 					.depthTestEnable = VK_FALSE,
@@ -160,32 +176,18 @@ namespace Engine {
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 					.logicOpEnable = VK_FALSE,	
 				},
-				std::vector<VkPipelineColorBlendAttachmentState>{
-					VkPipelineColorBlendAttachmentState{
-						.blendEnable = VK_TRUE,
-						.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
-						.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-						.colorBlendOp = VK_BLEND_OP_ADD,
-						.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-						.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
-						.alphaBlendOp = VK_BLEND_OP_ADD,
-						.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT 
-					}
-				},
 				VkPipelineDynamicStateCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
 				},
-				std::vector<VkDynamicState>{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR },
 				VkPipelineRenderingCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
 				},
-				std::vector<VkFormat>{ VK_FORMAT_R8G8B8A8_SRGB },
 				PipelineLayouts::gLayouts[1]
 			);
 		}
 
 		void addComputeCreates() noexcept {
-			gComputeCreates.push_back(
+			gComputeCreates.emplace_back(
 				VkComputePipelineCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
 					.stage = VkPipelineShaderStageCreateInfo{
@@ -201,17 +203,17 @@ namespace Engine {
 
 		void createPipelines() {
 			for(GraphicsAggregate const& GRAPHICS_AGGREGATE : gGraphicsAggregates) {
-				newGraphicsPipeline(GRAPHICS_AGGREGATE.create);
+				newGraphicsPipeline(GRAPHICS_AGGREGATE);
 			}
 			for(VkComputePipelineCreateInfo const& COMPUTE_CREATE : gComputeCreates) {
 				newComputePipeline(COMPUTE_CREATE);
 			}
 		}
 
-		VkPipeline newGraphicsPipeline(VkGraphicsPipelineCreateInfo const& CREATE) {
+		VkPipeline newGraphicsPipeline(GraphicsAggregate const& AGGREGATE) {
 			VkPipeline graphics{};
 
-			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &graphics), "Failed to create graphics pipeline")
+			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &AGGREGATE.create, nullptr, &graphics), "Failed to create graphics pipeline")
 			gPipelines.push_back(graphics);
 
 			return graphics;
