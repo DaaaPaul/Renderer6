@@ -77,8 +77,8 @@ namespace Util {
 		};
 
 		VkImageView createImageView(VkImageViewCreateInfo const&);
-		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
-		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const&, VkDeviceSize const&);
+		VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
+		VkDeviceSize alignNextLowest(VkDeviceSize const&, VkDeviceSize const&);
 		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
 		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
 	}

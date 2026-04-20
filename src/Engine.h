@@ -2,6 +2,8 @@
 
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
+#include <corecrt_math_defines.h>
+#include <chrono>
 #include "Transforms.hpp"
 
 namespace Engine {
@@ -18,10 +20,8 @@ namespace Engine {
 	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue queue);
 	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL) noexcept;
 	void waitForFence(VkFence fence) noexcept;
-	void resetAndBeginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept;
-	void setViewportAndScissor(VkCommandBuffer cmdBuffer);
+	void beginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept;
+	void setViewportScissor(VkCommandBuffer cmdBuffer);
 	void resize();
-	float getDeltaTime() noexcept;
 	void updateTransformation();
-	void updateDeltaTime();
 }

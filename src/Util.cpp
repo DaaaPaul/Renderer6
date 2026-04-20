@@ -271,11 +271,11 @@ namespace Util {
 			return view;
 		}
 
-		constexpr VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
+		VkDeviceSize alignNextHighest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
 			return (N + ALIGNMENT - 1) & ~(ALIGNMENT - 1);
 		}
 
-		constexpr VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
+		VkDeviceSize alignNextLowest(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) {
 			return N & ~(ALIGNMENT - 1);
 		}
 

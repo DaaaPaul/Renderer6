@@ -6,8 +6,8 @@ namespace Backend {
 	namespace Window {
 		inline GLFWwindow* gGlfwWindow{};
 
-		inline constexpr int gWINDOW_WIDTH = 800;
-		inline constexpr int gWINDOW_HEIGHT = 600;
+		inline constexpr int gWINDOW_WIDTH = 1200;
+		inline constexpr int gWINDOW_HEIGHT = 900;
 		inline constexpr const char* gWINDOW_TITLE = "Renderer6";
 		inline bool gFramebufferResized = false;
 		inline bool* gFrameBufferResizedPointer = &gFramebufferResized;

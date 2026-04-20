@@ -21,6 +21,8 @@ set(DEBUG_MODE OFF)
 add_executable(Renderer6)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Renderer6)
 target_sources(Renderer6 PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
@@ -33,8 +35,6 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/MathHead.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/MathHead.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp

@@ -1,7 +1,6 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
 #include <iostream>
-#include <chrono>
 #include <vector>
 #include "Engine.h"
 #include "FrameData.h"
@@ -17,7 +16,6 @@
 #include "ImageViewHotspot.h"
 #include "Util.h"
 #include "Transforms.hpp"
-#include "MathHead.h"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
@@ -26,13 +24,13 @@ namespace Engine {
 	void initTransformation() noexcept {
 		gTransformation = Vertex::Transforms(
 			glm::mat4(1.0f),
-			MathHead::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
 			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
 		);
 	}
 
 	void recordComputeCommands(VkCommandBuffer cmdBuffer) {
-		resetAndBeginCmdBuffer(cmdBuffer);
+		beginCmdBuffer(cmdBuffer);
 		
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 
@@ -100,7 +98,7 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
-		setViewportAndScissor(cmdBuffer);
+		setViewportScissor(cmdBuffer);
 
 		constexpr VkDeviceSize ZERO = 0;
 		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &Memory::Device::gBuffers[0].buffer, &ZERO);
@@ -163,7 +161,7 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
-		setViewportAndScissor(cmdBuffer);
+		setViewportScissor(cmdBuffer);
 
 		constexpr VkDeviceSize ZERO = 0;
 		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].buffer, &ZERO);
@@ -192,7 +190,6 @@ namespace Engine {
 		waitForFence(frameData.sync.guard);
 
 		recordComputeCommands(frameData.submits[0].cmds.commandBuffer);
-		updateDeltaTime();
 		frameData.submits[0].wait.value = frameData.sync.waitSignals[0].waitVal;
 		frameData.submits[0].signal.value = frameData.sync.waitSignals[0].signalVal;
 
@@ -221,8 +218,9 @@ namespace Engine {
 	void run() {
 		initTransformation();
 
-		uint16_t nextSecondMark = 1;
-		uint16_t accumulatedFramesCount = 0;
+		std::chrono::steady_clock::time_point before{};
+		std::chrono::steady_clock::time_point after{};
+		float deltaTime = 0.0f;
 
 		while(!glfwWindowShouldClose(Backend::Window::gGlfwWindow)) {
 			glfwPollEvents();
@@ -230,14 +228,13 @@ namespace Engine {
 				glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
 			}
 
+			before = std::chrono::high_resolution_clock::now();
 			renderNext();
-			
-			accumulatedFramesCount++;
-			if(glfwGetTime() > nextSecondMark) {
-				nextSecondMark++;
-				std::cout << "Frames last second: " << accumulatedFramesCount << '\n';
-				accumulatedFramesCount = 0;
-			}
+			after = std::chrono::high_resolution_clock::now();
+			deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
+			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
+
+			std::cout << deltaTime << "s\n";
 		}
 
 		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
@@ -273,14 +270,14 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
 	}
 
-	void resetAndBeginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept {
+	void beginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept {
 		vkResetCommandBuffer(cmdBuffer, 0);
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
 	}
 
-	void setViewportAndScissor(VkCommandBuffer cmdBuffer) {
+	void setViewportScissor(VkCommandBuffer cmdBuffer) {
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
@@ -304,15 +301,6 @@ namespace Engine {
 		// TODO: add functionality to recreate depth resources
 		Backend::Window::gFramebufferResized = false;
 		FrameData::recreate();
-	}
-
-	float getDeltaTime() noexcept {
-		static std::chrono::steady_clock::time_point previousCallTime = std::chrono::high_resolution_clock::now();
-		std::chrono::steady_clock::time_point nowTime = std::chrono::high_resolution_clock::now();
-		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nowTime - previousCallTime).count();
-		previousCallTime = nowTime;
-
-		return deltaTime;
 	}
 
 	void updateTransformation() {
@@ -347,10 +335,5 @@ namespace Engine {
 		}
 
 		Memory::Host::Mutate::writeToBuffer(3 + FrameData::gFrameIndex, &gTransformation, sizeof(gTransformation));
-	}
-
-	void updateDeltaTime() {
-		float deltaTime = getDeltaTime();
-		Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
 	}
 }
