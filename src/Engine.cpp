@@ -16,15 +16,18 @@
 #include "ImageViewHotspot.h"
 #include "Util.h"
 #include "Transforms.hpp"
+#include "Camera.hpp"
 
 #define CHECK_PRESSED(glfwKey) \
 	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
 	void initTransformation() noexcept {
+		Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), EulerAngles{});
+
 		gTransformation = Vertex::Transforms(
 			glm::mat4(1.0f),
-			glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f)),
+			camera.convertViewMatrix(),
 			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
 		);
 	}
