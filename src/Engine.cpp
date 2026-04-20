@@ -22,16 +22,6 @@
 	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
 
 namespace Engine {
-	void initTransformation() noexcept {
-		Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), EulerAngles{});
-
-		gTransformation = Vertex::Transforms(
-			glm::mat4(1.0f),
-			camera.convertViewMatrix(),
-			glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f)
-		);
-	}
-
 	void recordComputeCommands(VkCommandBuffer cmdBuffer) {
 		beginCmdBuffer(cmdBuffer);
 		
@@ -197,7 +187,6 @@ namespace Engine {
 		frameData.submits[0].signal.value = frameData.sync.waitSignals[0].signalVal;
 
 		recordDrawModelCommands(frameData.submits[1].cmds.commandBuffer, swapchainImageIndex);
-		updateTransformation();
 		frameData.submits[1].wait.value = frameData.sync.waitSignals[1].waitVal;
 		frameData.submits[1].signal.value = frameData.sync.waitSignals[1].signalVal;
 
@@ -219,25 +208,15 @@ namespace Engine {
 	}
 
 	void run() {
-		initTransformation();
-
 		std::chrono::steady_clock::time_point before{};
-		std::chrono::steady_clock::time_point after{};
-		float deltaTime = 0.0f;
 
 		while(!glfwWindowShouldClose(Backend::Window::gGlfwWindow)) {
 			glfwPollEvents();
-			if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-				glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
-			}
+			update();
 
 			before = std::chrono::high_resolution_clock::now();
 			renderNext();
-			after = std::chrono::high_resolution_clock::now();
-			deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
-			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
-
-			std::cout << deltaTime << "s\n";
+			std::cout << writeDeltaTime(std::chrono::high_resolution_clock::now(), before) << "s\n";
 		}
 
 		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
@@ -275,7 +254,6 @@ namespace Engine {
 
 	void beginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept {
 		vkResetCommandBuffer(cmdBuffer, 0);
-
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
 	}
@@ -306,37 +284,35 @@ namespace Engine {
 		FrameData::recreate();
 	}
 
-	void updateTransformation() {
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_X)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(-0.001f, 0.0f, 0.0f));
-		} else if(CHECK_PRESSED(GLFW_KEY_X)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(0.001f, 0.0f, 0.0f));
+	void update() {
+		if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+			glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
+		} else {
+			if(CHECK_PRESSED(GLFW_KEY_W)) {
+				gCamera.nudgeZ(false);
+			}
+			if(CHECK_PRESSED(GLFW_KEY_S)) {
+				gCamera.nudgeZ(true);
+			}
+			if(CHECK_PRESSED(GLFW_KEY_A)) {
+				gCamera.nudgeX(false);
+			}
+			if(CHECK_PRESSED(GLFW_KEY_D)) {
+				gCamera.nudgeX(true);
+			}
+
+			glm::mat4 modelMatrix(1.0f);
+			glm::mat4 projectionMatrix(glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f));
+			Vertex::Transforms transformation(modelMatrix, gCamera.convertViewMatrix(), projectionMatrix);
+
+			Memory::Host::Mutate::writeToBuffer(3 + FrameData::gFrameIndex, &transformation, sizeof(transformation));
 		}
+	}
+
+	float writeDeltaTime(std::chrono::steady_clock::time_point const& A, std::chrono::steady_clock::time_point const& B) {
+		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(A - B).count();
+		Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
 		
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Y)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(0.0f, -0.001f, 0.0f));
-		} else if(CHECK_PRESSED(GLFW_KEY_Y)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(0.0f, 0.001f, 0.0f));
-		}
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_Z)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(0.0f, 0.0f, -0.001f));
-		} else if(CHECK_PRESSED(GLFW_KEY_Z)) {
-			gTransformation.model = glm::translate(gTransformation.model, glm::vec3(0.0f, 0.0f, 0.001f));
-		}
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_S)) {
-			gTransformation.model = glm::scale(gTransformation.model, glm::vec3(0.999f, 0.999f, 0.999f));
-		} else if(CHECK_PRESSED(GLFW_KEY_S)) {
-			gTransformation.model = glm::scale(gTransformation.model, glm::vec3(1.001f, 1.001f, 1.001f));
-		}
-
-		if(CHECK_PRESSED(GLFW_KEY_LEFT_SHIFT) && CHECK_PRESSED(GLFW_KEY_R)) {
-			gTransformation.model = glm::rotate(gTransformation.model, glm::radians(-0.1f), glm::vec3(1.0f, 0.0f, 0.0f));
-		} else if(CHECK_PRESSED(GLFW_KEY_R)) {
-			gTransformation.model = glm::rotate(gTransformation.model, glm::radians(0.1f), glm::vec3(1.0f, 0.0f, 0.0f));
-		}
-
-		Memory::Host::Mutate::writeToBuffer(3 + FrameData::gFrameIndex, &gTransformation, sizeof(gTransformation));
+		return deltaTime;
 	}
 }

@@ -28,6 +28,16 @@ namespace Engine {
 		public:
 		explicit Camera(glm::vec3 const& POS, glm::vec3 const& WORLD_Y, EulerAngles const& ROTATION);
 		glm::mat4 convertViewMatrix() const noexcept;
+
+		void nudgeX(bool const& FORWARDS) noexcept {
+			(FORWARDS) ? pos.x += 0.001f : pos.x -= 0.001f;
+		}
+		void nudgeY(bool const& FORWARDS) noexcept {
+			(FORWARDS) ? pos.y += 0.001f : pos.y -= 0.001f;
+		}
+		void nudgeZ(bool const& FORWARDS) noexcept {
+			(FORWARDS) ? pos.z += 0.001f : pos.z -= 0.001f;
+		}
 	};
 
 	glm::mat3 rotate(glm::vec3 const&, float const&) noexcept;

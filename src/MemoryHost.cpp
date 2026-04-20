@@ -154,9 +154,9 @@ namespace Memory {
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
 
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
-				Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
-			}
+			//for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			//	Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
+			//}
 			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
 				Mutate::writeToBuffer(Engine::Swapchain::gIMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}

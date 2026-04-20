@@ -4,11 +4,10 @@
 #include <cstdint>
 #include <corecrt_math_defines.h>
 #include <chrono>
-#include "Transforms.hpp"
+#include "Camera.hpp"
 
 namespace Engine {
-	inline Vertex::Transforms gTransformation{};
-	void initTransformation() noexcept;
+	inline Camera gCamera(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), EulerAngles{});
 
 	void recordComputeCommands(VkCommandBuffer cmdBuffer);
 	void recordDrawModelCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX);
@@ -23,5 +22,6 @@ namespace Engine {
 	void beginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept;
 	void setViewportScissor(VkCommandBuffer cmdBuffer);
 	void resize();
-	void updateTransformation();
+	void update();
+	float writeDeltaTime(std::chrono::steady_clock::time_point const&, std::chrono::steady_clock::time_point const&);
 }
