@@ -38,7 +38,7 @@ struct FeatureChain<First, Rest...> : FeatureChain<Rest...> {
 		reroutePointers();
 	}
 
-	void reroutePointers() noexcept {
+	void reroutePointers() {
 		if constexpr (sizeof...(Rest) != 0) {
 			feature.pNext = &(FeatureChain<Rest...>::feature);
 			FeatureChain<Rest...>::reroutePointers();

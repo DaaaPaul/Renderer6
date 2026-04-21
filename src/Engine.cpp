@@ -18,9 +18,6 @@
 #include "Transforms.hpp"
 #include "Camera.hpp"
 
-#define CHECK_PRESSED(glfwKey) \
-	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
-
 namespace Engine {
 	void recordComputeCommands(VkCommandBuffer cmdBuffer) {
 		beginCmdBuffer(cmdBuffer);
@@ -237,7 +234,7 @@ namespace Engine {
 		return vkQueuePresentKHR(queue, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
 	}
 
-	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL) noexcept {
+	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL) {
 		VkSemaphoreWaitInfo wait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
 			.semaphoreCount = 1,
@@ -247,12 +244,12 @@ namespace Engine {
 		CHECK_VK_SUCCESS(vkWaitSemaphores(gDevice, &wait, UINT64_MAX), "Failed to wait for semaphore");
 	}
 
-	void waitForFence(VkFence fence) noexcept {
+	void waitForFence(VkFence fence) {
 		CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
 		CHECK_VK_SUCCESS(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
 	}
 
-	void beginCmdBuffer(VkCommandBuffer cmdBuffer) noexcept {
+	void beginCmdBuffer(VkCommandBuffer cmdBuffer) {
 		vkResetCommandBuffer(cmdBuffer, 0);
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
 		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
@@ -288,22 +285,8 @@ namespace Engine {
 		if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 			glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
 		} else {
-			if(CHECK_PRESSED(GLFW_KEY_W)) {
-				gCamera.nudgeZ(false);
-			}
-			if(CHECK_PRESSED(GLFW_KEY_S)) {
-				gCamera.nudgeZ(true);
-			}
-			if(CHECK_PRESSED(GLFW_KEY_A)) {
-				gCamera.nudgeX(false);
-			}
-			if(CHECK_PRESSED(GLFW_KEY_D)) {
-				gCamera.nudgeX(true);
-			}
-
-			glm::mat4 modelMatrix(1.0f);
-			glm::mat4 projectionMatrix(glm::perspective(glm::radians(45.0f), static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f));
-			Vertex::Transforms transformation(modelMatrix, gCamera.convertViewMatrix(), projectionMatrix);
+			gCamera.update();
+			Vertex::Transforms transformation(glm::mat4(1.0f), convertViewMatrix(gCamera), convertProjMatrix(gCamera));
 
 			Memory::Host::Mutate::writeToBuffer(3 + FrameData::gFrameIndex, &transformation, sizeof(transformation));
 		}

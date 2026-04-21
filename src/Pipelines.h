@@ -40,7 +40,7 @@ namespace Engine {
 			}
 
 			private:
-			void selfRefer() noexcept {
+			void selfRefer() {
 				vertexInput.vertexBindingDescriptionCount = UINT32(vertexBindings.size());
 				vertexInput.pVertexBindingDescriptions = vertexBindings.data();
 				vertexInput.vertexAttributeDescriptionCount = UINT32(vertexAttributes.size());
@@ -70,12 +70,12 @@ namespace Engine {
 
 		void add();
 
-		void addGraphicsAggregates() noexcept;
-		void addComputeCreates() noexcept;
+		void addGraphicsAggregates();
+		void addComputeCreates();
 		void createPipelines();
 
 		VkPipeline newGraphicsPipeline(GraphicsAggregate const&);
 		VkPipeline newComputePipeline(VkComputePipelineCreateInfo const&);
-		void clear() noexcept;
+		void clear();
 	}
 }

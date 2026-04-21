@@ -18,7 +18,7 @@ namespace Engine {
 			uint64_t timelineVal{};
 			std::vector<WaitSignal> waitSignals{};
 
-			void updateWaitSignals() noexcept {
+			void updateWaitSignals() {
 				for(WaitSignal& waitSignal : waitSignals) {
 					waitSignal.waitVal = timelineVal;
 					waitSignal.signalVal = ++timelineVal;
@@ -43,7 +43,7 @@ namespace Engine {
 			}
 
 			private:
-			void selfRefer() noexcept {
+			void selfRefer() {
 				for(SubmitData& submit : submits) {
 					submit.wait.semaphore = sync.timeline;
 					submit.signal.semaphore = sync.timeline;
@@ -61,12 +61,12 @@ namespace Engine {
 		inline constexpr uint32_t gFRAMES_IN_FLIGHT = Swapchain::gIMAGE_COUNT;
 
 		void init();
-		void deInit() noexcept;
+		void deInit();
 		void recreate();
 
 		void createCmdPool();
 		void createFrameData();
 
-		void clearFrameData() noexcept;
+		void clearFrameData();
 	}
 }

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "Vertex.hpp"
+#include "Window.h"
 
 #define UINT32(vecSize) \
 	static_cast<uint32_t>(vecSize)
@@ -31,13 +32,18 @@
 
 #define VK_NO_FLAGS 0U
 
+#define PRESSED(glfwKey) \
+	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
+
 using VkLogicalDevice = VkDevice;
 
 namespace Util {
 	std::vector<std::string> constCharToString(std::vector<const char*> const&);
 	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
 	std::vector<char> getFileBytes(std::string const& PATH);
-	float random() noexcept;
+	float random();
+	bool equal(float const&, float const&);
+	bool equal(glm::vec3 const&, glm::vec3 const&);
 
 	namespace Vulkan {
 		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& GRAPHICS_QF_INDEX);

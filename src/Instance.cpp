@@ -19,7 +19,7 @@ namespace Backend {
 			destroyInstance();
 		}
 
-		void initExtensions() noexcept {
+		void initExtensions() {
 			gExtensions = Util::Window::getRequiredWindowExtensionsForInstance();
 			#ifdef __APPLE__
 			gExtensions.push_back("VK_KHR_portability_enumeration");
@@ -80,7 +80,7 @@ namespace Backend {
 			CHECK_VK_SUCCESS(vkCreateInstance(&instanceCreate, nullptr, &gInstance), "Failed to create instance")
 		}
 		
-		void destroyInstance() noexcept {
+		void destroyInstance() {
 			vkDestroyInstance(gInstance, nullptr);
 		}
 	}

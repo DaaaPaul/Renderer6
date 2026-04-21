@@ -26,7 +26,7 @@ namespace Memory {
 			}
 		}
 
-		void populateBufferCreates() noexcept {
+		void populateBufferCreates() {
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -104,7 +104,7 @@ namespace Memory {
 			}
 		}
 
-		void populateBufferMemoryRequirements() noexcept {
+		void populateBufferMemoryRequirements() {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); i++) {
@@ -139,7 +139,7 @@ namespace Memory {
 			}
 		}
 
-		void populateBufferAddresses() noexcept {
+		void populateBufferAddresses() {
 			VkBufferDeviceAddressInfo rollingBufferAddressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
 			for(int i = 0; i < gBuffers.size(); i++) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
@@ -149,7 +149,7 @@ namespace Memory {
 			}
 		}
 
-		void initializeBufferData() noexcept {
+		void initializeBufferData() {
 			Mutate::writeToBuffer(0, Resources::gModelVertices.data(), Resources::gModelVertexBufferSize);
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);

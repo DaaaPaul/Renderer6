@@ -43,11 +43,11 @@ namespace Backend {
 			}
 		}
 
-		void destroyLogicalDevice() noexcept {
+		void destroyLogicalDevice() {
 			vkDestroyDevice(gDevice, nullptr);
 		}
 
-		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) noexcept {
+		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) {
 			uint32_t queueConsumer = 0;
 
 			for(int i = 0; i < QUEUE_FAMILY; i++) {

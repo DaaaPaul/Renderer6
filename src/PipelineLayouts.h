@@ -9,6 +9,6 @@ namespace Engine {
 
 		void add();
 		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const&);
-		void clear() noexcept;
+		void clear();
 	}
 }

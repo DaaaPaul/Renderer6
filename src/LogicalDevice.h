@@ -67,9 +67,9 @@ namespace Backend {
 
 		void createLogicalDevice();
 		void createQueues();
-		void destroyLogicalDevice() noexcept;
+		void destroyLogicalDevice();
 
-		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) noexcept;
+		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY);
 	}
 }
 

@@ -9,6 +9,6 @@ namespace Engine {
 
 		void add();
 		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const&);
-		void clear() noexcept;
+		void clear();
 	}
 }

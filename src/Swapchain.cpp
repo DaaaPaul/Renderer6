@@ -42,7 +42,7 @@ namespace Engine {
 			CHECK_VK_SUCCESS(glfwCreateWindowSurface(Backend::Instance::gInstance, Backend::Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
 		}
 
-		void populateCurrentSwapchainStatus() noexcept {
+		void populateCurrentSwapchainStatus() {
 			gCurrentSwapchainStatus = VkSwapchainCreateInfoKHR{
 				.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 				.surface = gSurface,
@@ -66,7 +66,7 @@ namespace Engine {
 			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(gDevice, &gCurrentSwapchainStatus, nullptr, &gSwapchain), "Failed to create swapchain")
 		}
 
-		void populateImages() noexcept {
+		void populateImages() {
 			uint32_t imageCount = UINT32_MAX;
 			vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, nullptr);
 			gImages.clear();
@@ -74,7 +74,7 @@ namespace Engine {
 			vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, gImages.data());
 		}
 
-		void populateImageSize() noexcept {
+		void populateImageSize() {
 			VkSurfaceCapabilitiesKHR surfaceCapabilities{};
 			CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
 		
@@ -123,11 +123,11 @@ namespace Engine {
 			}
 		}
 
-		void destroySurface() noexcept {
+		void destroySurface() {
 			vkDestroySurfaceKHR(Backend::Instance::gInstance, gSurface, nullptr);
 		}		
 
-		void destroySwapchain() noexcept {
+		void destroySwapchain() {
 			vkDestroySwapchainKHR(gDevice, gSwapchain, nullptr);
 		}
 	}

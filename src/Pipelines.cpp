@@ -14,7 +14,7 @@ namespace Engine {
 			createPipelines();
 		}
 
-		void addGraphicsAggregates() noexcept {
+		void addGraphicsAggregates() {
 			gGraphicsAggregates.reserve(2);
 
 			gGraphicsAggregates.emplace_back(
@@ -186,7 +186,7 @@ namespace Engine {
 			);
 		}
 
-		void addComputeCreates() noexcept {
+		void addComputeCreates() {
 			gComputeCreates.emplace_back(
 				VkComputePipelineCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
@@ -228,7 +228,7 @@ namespace Engine {
 			return compute;
 		}
 
-		void clear() noexcept {
+		void clear() {
 			for(VkPipeline pipeline : gPipelines) {
 				vkDestroyPipeline(gDevice, pipeline, nullptr);
 			}

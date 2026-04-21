@@ -16,11 +16,11 @@ namespace Backend {
 		void deInit();
 
 		void createInstance();
-		void destroyInstance() noexcept;
+		void destroyInstance();
 
 		void checkHaveExtensions(std::vector<const char*> const& EXTENSIONS);
 		void checkHaveLayers(std::vector<const char*> const& LAYERS);
 
-		void initExtensions() noexcept;
+		void initExtensions();
 	}
 }

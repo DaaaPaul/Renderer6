@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "Window.h"
+#include "Camera.hpp"
 
 namespace Backend {
 	namespace Window {
@@ -21,9 +22,11 @@ namespace Backend {
 
 			glfwSetWindowUserPointer(gGlfwWindow, gFrameBufferResizedPointer);
 			glfwSetFramebufferSizeCallback(gGlfwWindow, framebufferResizeCallback);
+			glfwSetScrollCallback(gGlfwWindow, Engine::glfwScrollCallback);
+			glfwSetCursorPosCallback(gGlfwWindow, Engine::glfwMouseMovedCallback);
 		}
 
-		void destroyGlfwWindow() noexcept {
+		void destroyGlfwWindow() {
 			glfwDestroyWindow(gGlfwWindow);
 			glfwTerminate();
 		}

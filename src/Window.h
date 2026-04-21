@@ -16,7 +16,7 @@ namespace Backend {
 		void deInit();
 
 		void createGlfwWindow();
-		void destroyGlfwWindow() noexcept;
+		void destroyGlfwWindow();
 
 		void framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height);
 	}

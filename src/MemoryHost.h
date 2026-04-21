@@ -15,13 +15,13 @@ namespace Memory  {
 		void init();
 		void deInit();
 
-		void populateBufferCreates() noexcept;
+		void populateBufferCreates();
 		void createBuffers();
-		void populateBufferMemoryRequirements() noexcept;
+		void populateBufferMemoryRequirements();
 		void createMemory();
 		void bindBuffers();
-		void populateBufferAddresses() noexcept;
-		void initializeBufferData() noexcept;
+		void populateBufferAddresses();
+		void initializeBufferData();
 
 		namespace Mutate {
 			void writeToBuffer(uint32_t const&, void const*, uint32_t const&);

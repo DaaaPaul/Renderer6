@@ -33,34 +33,34 @@ namespace Memory {
 		void deInit();
 
 		void initMemoryResources();
-		void populateSamplerCreates() noexcept;
+		void populateSamplerCreates();
 		void createSamplers();
 		void initDescriptorResources();
 
-		void populateBufferCreates() noexcept;
+		void populateBufferCreates();
 		void createBuffers();
-		void populateBufferMemoryRequirements() noexcept;
-		void populateImageCreates() noexcept;
+		void populateBufferMemoryRequirements();
+		void populateImageCreates();
 		void createImages();
-		void populateImageMemoryRequirements() noexcept;
+		void populateImageMemoryRequirements();
 		void createMemory();
 		void bindBuffers();
-		void populateBufferAddresses() noexcept;
+		void populateBufferAddresses();
 		void bindImages();
-		void initializeBufferData() noexcept;
-		void initializeImageData() noexcept;
+		void initializeBufferData();
+		void initializeImageData();
 
-		void populateDescriptorSetLayoutCreates() noexcept;
-		void populateDescriptorPoolCreate() noexcept;
+		void populateDescriptorSetLayoutCreates();
+		void populateDescriptorPoolCreate();
 		void createDescriptorSetLayouts();
 		void createDescriptorPool();
-		void populateDescriptorSetAllocates() noexcept;
+		void populateDescriptorSetAllocates();
 		void createDescriptorSets();
 		void writeToDescriptorSets();
 
-		void deInitMemoryResources() noexcept;
-		void destroySamplers() noexcept;
-		void deInitDescriptorResources() noexcept;
+		void deInitMemoryResources();
+		void destroySamplers();
+		void deInitDescriptorResources();
 
 		namespace Mutate {
 			void copyToBuffer(uint32_t const&, VkBuffer, std::vector<VkBufferCopy> const&);

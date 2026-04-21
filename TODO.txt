@@ -17,7 +17,7 @@ BY THE HOUR:
 - Consider multisampling
 
 5-MINUTE CRAFTS:
-
+- See if making small functions inline does anything
 
 
 
@@ -70,7 +70,7 @@ BY THE HOUR:
 - put prefix p for pointers
 - vkGetPhysicalDeviceSurfaceSupportKHR??? !IGNORED!
 
-- add noexcepts to warnings
+- adds to warnings
 - make different uniform buffer for each frame
 
 - wrap VkShaderModule

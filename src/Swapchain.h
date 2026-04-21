@@ -21,13 +21,13 @@ namespace Engine {
 		void recreate();
 
 		void createSurface();
-		void populateCurrentSwapchainStatus() noexcept;
+		void populateCurrentSwapchainStatus();
 		void createSwapchain();
-		void populateImages() noexcept;
-		void destroySurface() noexcept;
-		void destroySwapchain() noexcept;
+		void populateImages();
+		void destroySurface();
+		void destroySwapchain();
 
-		void populateImageSize() noexcept;
+		void populateImageSize();
 		void checkImageFormatAndColorspaceSupported();
 		void checkPresentModeSupported();
 	}

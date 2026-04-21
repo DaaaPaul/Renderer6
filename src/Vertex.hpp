@@ -24,7 +24,7 @@ namespace Vertex {
 
 template<> 
 struct std::hash<Vertex::Vertex> {
-    std::size_t operator()(Vertex::Vertex const& VERTEX) const noexcept {
+    std::size_t operator()(Vertex::Vertex const& VERTEX) const {
         std::size_t h1 = std::hash<float>{}(VERTEX.position[2]);
         std::size_t h2 = std::hash<float>{}(VERTEX.texCoord[1]);
         return h1 ^ (h2 << 1);

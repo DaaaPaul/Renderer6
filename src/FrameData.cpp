@@ -9,7 +9,7 @@ namespace Engine {
 			createFrameData();
 		}
 
-		void deInit() noexcept {
+		void deInit() {
 			clearFrameData();
 			vkDestroyCommandPool(gDevice, gCmdPool, nullptr);
 		}
@@ -101,7 +101,7 @@ namespace Engine {
 			}
 		}
 
-		void clearFrameData() noexcept {
+		void clearFrameData() {
 			for(FrameData& frameData : gFrameData) {
 				vkDestroyFence(gDevice, frameData.sync.guard, nullptr);
 				vkDestroySemaphore(gDevice, frameData.sync.timeline, nullptr);

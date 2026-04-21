@@ -47,7 +47,7 @@ namespace Memory {
 			writeToDescriptorSets();
 		}
 
-		void populateBufferCreates() noexcept {
+		void populateBufferCreates() {
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -90,7 +90,7 @@ namespace Memory {
 			}
 		}
 
-		void populateBufferMemoryRequirements() noexcept {
+		void populateBufferMemoryRequirements() {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); i++) {
@@ -99,7 +99,7 @@ namespace Memory {
 			}
 		}
 
-		void populateImageCreates() noexcept {
+		void populateImageCreates() {
 			gImageCreates.push_back(
 				VkImageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -144,7 +144,7 @@ namespace Memory {
 			}
 		}
 
-		void populateImageMemoryRequirements() noexcept {
+		void populateImageMemoryRequirements() {
 			gImageMemoryRequirements.resize(gImages.size(), {});
 
 			for(int i = 0; i < gImages.size(); i++) {
@@ -181,7 +181,7 @@ namespace Memory {
 			}
 		}
 
-		void populateBufferAddresses() noexcept {
+		void populateBufferAddresses() {
 			VkBufferDeviceAddressInfo rollingBufferAddressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
 			for(int i = 0; i < gBuffers.size(); i++) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
@@ -200,7 +200,7 @@ namespace Memory {
 			}
 		}
 
-		void initializeBufferData() noexcept {
+		void initializeBufferData() {
 			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::gModelVertexBufferSize)});
 			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::gModelIndexBufferSize)});
 
@@ -209,11 +209,11 @@ namespace Memory {
 			}
 		}
 
-		void initializeImageData() noexcept {
+		void initializeImageData() {
 			Mutate::copyToImage(0, Host::gBuffers[2].buffer, {VkBufferImageCopy(0, 0, 0, VkImageSubresourceLayers(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1), VkOffset3D(0, 0, 0), VkExtent3D(Resources::gTexture->baseWidth, Resources::gTexture->baseHeight, 1))});
 		}
 
-		void populateSamplerCreates() noexcept {
+		void populateSamplerCreates() {
 			gSamplerCreates.push_back(
 				VkSamplerCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -239,7 +239,7 @@ namespace Memory {
 			}
 		}
 
-		void populateDescriptorSetLayoutCreates() noexcept {
+		void populateDescriptorSetLayoutCreates() {
 			gDescriptorSetLayoutCreateBindings.push_back(
 				std::vector<VkDescriptorSetLayoutBinding>{
 					VkDescriptorSetLayoutBinding{
@@ -275,7 +275,7 @@ namespace Memory {
 			}
 		}
 
-		void populateDescriptorPoolCreate() noexcept {
+		void populateDescriptorPoolCreate() {
 			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT : gDescriptorSetLayoutCreates) {
 				for(int i = 0; i < LAYOUT.bindingCount; i++) {
 					gDescriptorPoolSizes.push_back(
@@ -300,7 +300,7 @@ namespace Memory {
 			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
 		}
 
-		void populateDescriptorSetAllocates() noexcept {
+		void populateDescriptorSetAllocates() {
 			gDescriptorSetAllocates.resize(gDescriptorSets.size(), {});
 
 			for(int i = 0; i < gDescriptorSets.size(); i++) {
@@ -324,7 +324,7 @@ namespace Memory {
 			Mutate::bindSampler(0, 1, 0);
 		}
 
-		void deInitMemoryResources() noexcept {
+		void deInitMemoryResources() {
 			vkFreeMemory(gDevice, gMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bufferBundle : gBuffers) {
@@ -335,13 +335,13 @@ namespace Memory {
 			}
 		}
 
-		void destroySamplers() noexcept {
+		void destroySamplers() {
 			for(VkSampler sampler : gSamplers) {
 				vkDestroySampler(gDevice, sampler, nullptr);
 			}
 		}
 
-		void deInitDescriptorResources() noexcept {
+		void deInitDescriptorResources() {
 			for(Util::Memory::DescriptorSetBundle& descriptorSetBundle : gDescriptorSets) {
 				vkFreeDescriptorSets(gDevice, gDescriptorPool, 1, &descriptorSetBundle.set);
 				vkDestroyDescriptorSetLayout(gDevice, descriptorSetBundle.layout, nullptr);

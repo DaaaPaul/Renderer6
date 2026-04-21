@@ -39,7 +39,7 @@ namespace Engine {
 			return shaderModule;
 		}
 
-		void clear() noexcept {
+		void clear() {
 			for(VkShaderModule shaderModule : gShaderModules) {
 				vkDestroyShaderModule(gDevice, shaderModule, nullptr);
 			}

@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <fstream>
-#include <random>
+#include <random>	
 #include <iostream>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -53,11 +53,19 @@ namespace Util {
 		return bytes;
 	}
 
-	float random() noexcept {
+	float random() {
 		static std::default_random_engine gEngine(static_cast<unsigned>(time(nullptr)));
 		static std::uniform_real_distribution gRange(0.0f, 1.0f);
 
 		return gRange(gEngine);
+	}
+
+	bool equal(float const& F1, float const& F2) {
+		return fabs(F1 - F2) < 0.001f;
+	}
+
+	bool equal(glm::vec3 const& V1, glm::vec3 const& V2) {
+		return equal(V1.x, V2.x) && equal(V1.y, V2.y) && equal(V1.z, V2.z);
 	}
 
 	namespace Vulkan {
