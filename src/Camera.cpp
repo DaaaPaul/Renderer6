@@ -25,11 +25,6 @@ namespace Engine {
 		glm::vec3 yMove = basis.y * move.y;
 		glm::vec3 zMove = basis.z * move.z;
 
-		std::cout << "basis.x:\n";
-		std::cout << basis.x.x << " " << basis.x.y << " " << basis.x.z << "\n";
-		std::cout << "xMove:\n";
-		std::cout << xMove.x << " " << xMove.y << " " << xMove.z << "\n";
-
 		pos += xMove;
 		pos += yMove;
 		pos += zMove;
@@ -48,7 +43,7 @@ namespace Engine {
 	}
 
 	glm::mat4 convertProjMatrix(Camera const& CAMERA) {
-		return glm::perspective(CAMERA.zoom, static_cast<float>(Swapchain::gImageSize.width) / static_cast<float>(Swapchain::gImageSize.height), 0.1f, 100.0f);
+		return glm::perspective(CAMERA.zoom, Backend::Window::gAspectRatio, 0.1f, 100.0f);
 	}
 
 	glm::mat3 rotate(glm::vec3 const& AXIS, float const& ANGLE_CC) {

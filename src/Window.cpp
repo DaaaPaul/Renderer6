@@ -5,21 +5,39 @@
 namespace Backend {
 	namespace Window {
 		void init() {
+			glfwInit();
+			getGlfwMonitor();
 			createGlfwWindow();
+			setWindowCallbacks();
 		}
 		void deInit() {
 			destroyGlfwWindow();
 		}
 
+		void getGlfwMonitor() {
+			gGlfwMonitor = glfwGetPrimaryMonitor();
+
+			if(!gGlfwMonitor) {
+				throw std::runtime_error("glfwGetPrimaryMonitor failed");
+			}
+
+			GLFWvidmode const* VIDEO_MODE = glfwGetVideoMode(gGlfwMonitor);
+			gMonitorWidth = VIDEO_MODE->width;
+			gMonitorHeight = VIDEO_MODE->height;
+			gAspectRatio = static_cast<float>(gMonitorWidth) / static_cast<float>(gMonitorHeight);
+		}
+
 		void createGlfwWindow() {
-			glfwInit();
+			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			gGlfwWindow = glfwCreateWindow(gWINDOW_WIDTH, gWINDOW_HEIGHT, gWINDOW_TITLE, nullptr, nullptr);
+			gGlfwWindow = glfwCreateWindow(gMonitorWidth, gMonitorHeight, gTITLE, gGlfwMonitor, nullptr);
 
 			if(!gGlfwWindow) {
 				throw std::runtime_error("glfwCreateWindow failed");
 			}
+		}
 
+		void setWindowCallbacks() {
 			glfwSetWindowUserPointer(gGlfwWindow, gFrameBufferResizedPointer);
 			glfwSetFramebufferSizeCallback(gGlfwWindow, framebufferResizeCallback);
 			glfwSetScrollCallback(gGlfwWindow, Engine::glfwScrollCallback);

@@ -17,9 +17,9 @@
 
 int main() {
     try {
-		Resources::load();
-
+		Resources::loadModel();
 		Backend::Window::init();
+		Resources::loadParticles();
 		Backend::Instance::init();
 		Backend::PhysicalDevice::init();
 		Backend::LogicalDevice::init();

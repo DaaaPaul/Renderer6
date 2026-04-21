@@ -77,7 +77,7 @@ namespace Engine {
 		};
 		VkRenderingInfo renderingInfo{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gCurrentSwapchainStatus.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gStatus.imageExtent),
 			.layerCount = 1,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachment,
@@ -141,7 +141,7 @@ namespace Engine {
 		};
 		VkRenderingInfo renderingInfo{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gCurrentSwapchainStatus.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gStatus.imageExtent),
 			.layerCount = 1,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &colorAttachment,
@@ -259,14 +259,14 @@ namespace Engine {
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(Swapchain::gCurrentSwapchainStatus.imageExtent.width),
-			.height = static_cast<float>(Swapchain::gCurrentSwapchainStatus.imageExtent.height),
+			.width = static_cast<float>(Swapchain::gStatus.imageExtent.width),
+			.height = static_cast<float>(Swapchain::gStatus.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 		VkRect2D scissor{
 			.offset = VkOffset2D(0, 0),
-			.extent = Swapchain::gCurrentSwapchainStatus.imageExtent
+			.extent = Swapchain::gStatus.imageExtent
 		};
 		vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 		vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);

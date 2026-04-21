@@ -223,9 +223,6 @@ namespace Util {
 					}
 				}
 			}
-
-			std::cout << "Model at " << PATH << " unique vertices : " << vertices.size() << "\n";
-			std::cout << "Model at " << PATH << " total vertices : " << indices.size() << "\n";
 		}
 
 		ktxTexture2* loadKtxImage(const char* const& PATH) {

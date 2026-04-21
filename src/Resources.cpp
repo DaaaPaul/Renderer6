@@ -7,9 +7,12 @@
 #include "Particle.hpp"
 
 namespace Resources {
-	void load() {
+	void loadModel() {
 		loadModelVertices();
 		loadKtxTexture2();
+	}
+
+	void loadParticles() {
 		loadParticlesData();
 	}
 	
@@ -24,7 +27,7 @@ namespace Resources {
 	}
 
 	void loadParticlesData() {
-		float ratio = static_cast<float>(Backend::Window::gWINDOW_HEIGHT) / Backend::Window::gWINDOW_WIDTH;
+		float ratio = Backend::Window::gAspectRatio;
 		float r{}, theta{}, x{}, y{};
 
 		for(Particle::Particle& p : gParticles) {

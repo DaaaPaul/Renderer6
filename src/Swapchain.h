@@ -8,7 +8,7 @@ namespace Engine {
 		inline VkSwapchainKHR gSwapchain{};
 		inline std::vector<VkImage> gImages{};
 		inline VkSurfaceKHR gSurface{};
-		inline VkSwapchainCreateInfoKHR gCurrentSwapchainStatus{};
+		inline VkSwapchainCreateInfoKHR gStatus{};
 
 		inline VkExtent2D gImageSize{};
 		inline constexpr uint32_t gIMAGE_COUNT = 4;

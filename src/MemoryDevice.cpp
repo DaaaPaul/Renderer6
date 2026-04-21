@@ -122,7 +122,7 @@ namespace Memory {
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 					.imageType = VK_IMAGE_TYPE_2D,
 					.format = VK_FORMAT_D32_SFLOAT,
-					.extent = VkExtent3D(Engine::Swapchain::gCurrentSwapchainStatus.imageExtent.width, Engine::Swapchain::gCurrentSwapchainStatus.imageExtent.height, 1),
+					.extent = VkExtent3D(Engine::Swapchain::gStatus.imageExtent.width, Engine::Swapchain::gStatus.imageExtent.height, 1),
 					.mipLevels = 1,
 					.arrayLayers = 1,
 					.samples = VK_SAMPLE_COUNT_1_BIT,

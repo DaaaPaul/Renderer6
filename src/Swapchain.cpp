@@ -43,7 +43,7 @@ namespace Engine {
 		}
 
 		void populateCurrentSwapchainStatus() {
-			gCurrentSwapchainStatus = VkSwapchainCreateInfoKHR{
+			gStatus = VkSwapchainCreateInfoKHR{
 				.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 				.surface = gSurface,
 				.minImageCount = gIMAGE_COUNT,
@@ -63,7 +63,7 @@ namespace Engine {
 		}
 
 		void createSwapchain() {
-			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(gDevice, &gCurrentSwapchainStatus, nullptr, &gSwapchain), "Failed to create swapchain")
+			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
 		}
 
 		void populateImages() {

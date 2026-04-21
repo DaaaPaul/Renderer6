@@ -18,7 +18,8 @@ namespace Resources {
 	inline constexpr uint32_t gPARTICLES_BUFFER_SIZE = gPARTICLES_COUNT * sizeof(Particle::Particle);
 	inline std::vector<Particle::Particle> gParticles(gPARTICLES_COUNT, {});
 
-	void load();
+	void loadModel();
+	void loadParticles();
 
 	void loadModelVertices();
 	void loadKtxTexture2();

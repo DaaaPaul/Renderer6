@@ -41,7 +41,7 @@ namespace Engine {
 		friend glm::vec3 keyboardInputMove(GLFWwindow* window);
 	};
 
-	inline Camera gCamera(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), EulerAngles{});
+	inline Camera gCamera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 1.0f, 0.0f), EulerAngles{});
 
 	glm::mat4 convertViewMatrix(Camera const&);
 	glm::mat4 convertProjMatrix(Camera const&);

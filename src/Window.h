@@ -5,17 +5,21 @@
 namespace Backend {
 	namespace Window {
 		inline GLFWwindow* gGlfwWindow{};
+		inline GLFWmonitor* gGlfwMonitor{};
 
-		inline constexpr int gWINDOW_WIDTH = 1200;
-		inline constexpr int gWINDOW_HEIGHT = 900;
-		inline constexpr const char* gWINDOW_TITLE = "Renderer6";
+		inline int gMonitorWidth{};
+		inline int gMonitorHeight{};
+		inline float gAspectRatio{};
+		inline constexpr const char* gTITLE = "Renderer6";
 		inline bool gFramebufferResized = false;
 		inline bool* gFrameBufferResizedPointer = &gFramebufferResized;
 
 		void init();
 		void deInit();
 
+		void getGlfwMonitor();
 		void createGlfwWindow();
+		void setWindowCallbacks();
 		void destroyGlfwWindow();
 
 		void framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height);
