@@ -23,7 +23,7 @@ namespace Engine {
 	bool isNormalized(glm::vec3 const&);
 
 	class Camera {
-		static constexpr float MOVE = 0.003f;
+		static constexpr float MOVE = 0.009f;
 
 		glm::vec3 pos{};
 		glm::vec3 worldY{};

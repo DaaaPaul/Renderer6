@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Camera.hpp"
 #include "Swapchain.h"
 
@@ -19,7 +20,20 @@ namespace Engine {
 		pos(POS), worldY(WORLD_Y), basis(applyRotation(OrthonormalBasis{}, ROTATION)), zoom{ DA_PI / 4.0f } {}
 
 	void Camera::update() {
-		pos += keyboardInputMove(Backend::Window::gGlfwWindow);
+		glm::vec3 move = keyboardInputMove(Backend::Window::gGlfwWindow);
+		glm::vec3 xMove = basis.x * move.x;
+		glm::vec3 yMove = basis.y * move.y;
+		glm::vec3 zMove = basis.z * move.z;
+
+		std::cout << "basis.x:\n";
+		std::cout << basis.x.x << " " << basis.x.y << " " << basis.x.z << "\n";
+		std::cout << "xMove:\n";
+		std::cout << xMove.x << " " << xMove.y << " " << xMove.z << "\n";
+
+		pos += xMove;
+		pos += yMove;
+		pos += zMove;
+		
 		zoom = DA_PI / 4.0f + gZoomAdd;
 		basis = applyRotation(OrthonormalBasis{}, gRotateAdd);
 	}
