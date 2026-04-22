@@ -18,10 +18,7 @@ BY THE HOUR:
 
 5-MINUTE CRAFTS:
 - See if making small functions inline does anything
-
-
-
-
+- make float comparison relative
 
 
   ______   ______   ______   ______   ______  

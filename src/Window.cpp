@@ -35,13 +35,15 @@ namespace Backend {
 			if(!gGlfwWindow) {
 				throw std::runtime_error("glfwCreateWindow failed");
 			}
+
+			glfwSetInputMode(gGlfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 
 		void setWindowCallbacks() {
 			glfwSetWindowUserPointer(gGlfwWindow, gFrameBufferResizedPointer);
 			glfwSetFramebufferSizeCallback(gGlfwWindow, framebufferResizeCallback);
-			glfwSetScrollCallback(gGlfwWindow, Engine::glfwScrollCallback);
-			glfwSetCursorPosCallback(gGlfwWindow, Engine::glfwMouseMovedCallback);
+			glfwSetScrollCallback(gGlfwWindow, Engine::Camera::scrolled);
+			glfwSetCursorPosCallback(gGlfwWindow, Engine::Camera::mouseMoved);
 		}
 
 		void destroyGlfwWindow() {

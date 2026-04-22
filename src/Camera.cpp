@@ -3,50 +3,20 @@
 #include "Swapchain.h"
 
 namespace Engine {
-	OrthonormalBasis normalize(OrthonormalBasis const& B) {
-		return OrthonormalBasis{ glm::normalize(B.x), glm::normalize(B.y), glm::normalize(B.z) };
-	}
-
-	bool isNormalized(OrthonormalBasis const& B) {
-		OrthonormalBasis normalized = normalize(B);
-		return Util::equal(normalized.x, B.x) && Util::equal(normalized.y, B.y) && Util::equal(normalized.z, B.z);
-	}
-
-	bool isNormalized(glm::vec3 const& V) {
+	bool Basis::isNormalized(glm::vec3 const& V) {
 		return Util::equal(glm::normalize(V), V);
 	}
-
-	Camera::Camera(glm::vec3 const& POS, glm::vec3 const& WORLD_Y, EulerAngles const& ROTATION) :
-		pos(POS), worldY(WORLD_Y), basis(applyRotation(OrthonormalBasis{}, ROTATION)), zoom{ DA_PI / 4.0f } {}
-
-	void Camera::update() {
-		glm::vec3 move = keyboardInputMove(Backend::Window::gGlfwWindow);
-		glm::vec3 xMove = basis.x * move.x;
-		glm::vec3 yMove = basis.y * move.y;
-		glm::vec3 zMove = basis.z * move.z;
-
-		pos += xMove;
-		pos += yMove;
-		pos += zMove;
-		
-		zoom = DA_PI / 4.0f + gZoomAdd;
-		basis = applyRotation(OrthonormalBasis{}, gRotateAdd);
+	
+	bool Basis::isNormalized(Basis const& B) {
+		Basis normalized = normalize(B);
+		return Util::equal(normalized.x, B.x) && Util::equal(normalized.y, B.y) && Util::equal(normalized.z, B.z);
+	}
+	
+	Basis Basis::normalize(Basis const& B) {
+		return Basis{ glm::normalize(B.x), glm::normalize(B.y), glm::normalize(B.z) };
 	}
 
-	glm::mat4 convertViewMatrix(Camera const& CAMERA) {
-		return glm::mat4(
-			CAMERA.basis.x.x, CAMERA.basis.y.x, CAMERA.basis.z.x, 0.0f,
-			CAMERA.basis.x.y, CAMERA.basis.y.y, CAMERA.basis.z.y, 0.0f,
-			CAMERA.basis.x.z, CAMERA.basis.y.z, CAMERA.basis.z.z, 0.0f,
-			-(CAMERA.basis.x.x * CAMERA.pos.x + CAMERA.basis.x.y * CAMERA.pos.y + CAMERA.basis.x.z * CAMERA.pos.z), -(CAMERA.basis.y.x * CAMERA.pos.x + CAMERA.basis.y.y * CAMERA.pos.y + CAMERA.basis.y.z * CAMERA.pos.z), -(CAMERA.basis.z.x * CAMERA.pos.x + CAMERA.basis.z.y * CAMERA.pos.y + CAMERA.basis.z.z * CAMERA.pos.z), 1.0f
-		);
-	}
-
-	glm::mat4 convertProjMatrix(Camera const& CAMERA) {
-		return glm::perspective(CAMERA.zoom, Backend::Window::gAspectRatio, 0.1f, 100.0f);
-	}
-
-	glm::mat3 rotate(glm::vec3 const& AXIS, float const& ANGLE_CC) {
+	glm::mat3 Basis::rotate(glm::vec3 const& AXIS, float const& ANGLE_CC) {
 		assert(isNormalized(AXIS));
 
 		const float COS = std::cos(ANGLE_CC);
@@ -68,34 +38,63 @@ namespace Engine {
 		);
 	}
 
-	OrthonormalBasis applyRotation(OrthonormalBasis const& BASIS, EulerAngles const& EULER) {
+	Basis Basis::applyRotation(Basis const& BASIS, Angles const& EULER) {
 		assert(isNormalized(BASIS));
 		
-		OrthonormalBasis moved(BASIS);
+		Basis moved(BASIS);
 		
-		glm::mat3 aboutX = rotate(moved.x, EULER.x);
-		moved.y = aboutX * moved.y;
-		moved.z = aboutX * moved.z;
+		const glm::mat3 ABOUT_X = rotate(moved.x, EULER.x);
+		moved.y = ABOUT_X * moved.y;
+		moved.z = ABOUT_X * moved.z;
 
-		glm::mat3 aboutY = rotate(moved.y, EULER.y);
-		moved.x = aboutY * moved.x;
-		moved.z = aboutY * moved.z;
+		const glm::mat3 ABOUT_Y = rotate(moved.y, EULER.y);
+		moved.x = ABOUT_Y * moved.x;
+		moved.z = ABOUT_Y * moved.z;
 
-		glm::mat3 aboutZ = rotate(moved.z, EULER.z);
-		moved.x = aboutZ * moved.x;
-		moved.y = aboutZ * moved.y;
+		const glm::mat3 ABOUT_Z = rotate(moved.z, EULER.z);
+		moved.x = ABOUT_Z * moved.x;
+		moved.y = ABOUT_Z * moved.y;
 
 		return moved;
 	}
 
-	void glfwScrollCallback(GLFWwindow* window, double x, double y) {
-		gZoomAdd += y / 20.0;
+	Camera::Camera(glm::vec3 const& POS, Angles const& ROTATION, float const& ZOOM) :
+		pos(POS), basis(Basis::applyRotation(DEFAULT_BASIS, ROTATION)), zoom{ DEFAULT_ZOOM + ZOOM } {}
+
+	void Camera::updateKeyboard(float const& DELTA) {
+		const float MOVE = SPEED * DELTA;
+
+		if(PRESSED(GLFW_KEY_W)) {
+			pos += -(MOVE * basis.z);
+		}
+		if(PRESSED(GLFW_KEY_S)) {
+			pos += MOVE * basis.z;
+		}
+		if(PRESSED(GLFW_KEY_A)) {
+			pos += -(MOVE * basis.x);
+		}
+		if(PRESSED(GLFW_KEY_D)) {
+			pos += MOVE * basis.x;
+		}
+		if(PRESSED(GLFW_KEY_SPACE) && PRESSED(GLFW_KEY_LEFT_SHIFT)) {
+			pos += -(MOVE * basis.y);
+		} else if(PRESSED(GLFW_KEY_SPACE)) {
+			pos += MOVE * basis.y;
+		}
 	}
 
-	void glfwMouseMovedCallback(GLFWwindow* window, double x, double y) {
+	void Camera::updateMouse(float const& X, float const& Y) {
+		basis = Basis::applyRotation(basis, Angles{Y * SENSITIVITY, X * SENSITIVITY, 0.0f});
+	}
+
+	void Camera::updateScrolled(float const& Y) {
+		zoom += Y * SCROLL_SENSITIVITY;
+	}
+
+	void Camera::mouseMoved(GLFWwindow* window, double x, double y) {
 		static bool first = true;
-		static float lastX = 0.0f;
-		static float lastY = 0.0f;
+		static float lastX{};
+		static float lastY{};
 
 		if(first) {
 			lastX = x;
@@ -108,26 +107,23 @@ namespace Engine {
 		lastX = x;
 		lastY = y;
 
-		gRotateAdd.x += yOff / 500.0f;
-		gRotateAdd.y += xOff / 500.0f;
+		gCamera.updateMouse(xOff, yOff);
 	}
 
-	glm::vec3 keyboardInputMove(GLFWwindow* window) {
-		glm::vec3 posChange(0.0f, 0.0f, 0.0f);
+	void Camera::scrolled(GLFWwindow* window, double x, double y) {
+		gCamera.updateScrolled(y);
+	}
 
-		if(PRESSED(GLFW_KEY_W)) {
-			posChange.z -= Camera::MOVE;
-		}
-		if(PRESSED(GLFW_KEY_S)) {
-			posChange.z += Camera::MOVE;
-		}
-		if(PRESSED(GLFW_KEY_A)) {
-			posChange.x -= Camera::MOVE;
-		}
-		if(PRESSED(GLFW_KEY_D)) {
-			posChange.x += Camera::MOVE;
-		}
+	glm::mat4 Camera::view(Camera const& CAMERA) {
+		return glm::mat4(
+			CAMERA.basis.x.x, CAMERA.basis.y.x, CAMERA.basis.z.x, 0.0f,
+			CAMERA.basis.x.y, CAMERA.basis.y.y, CAMERA.basis.z.y, 0.0f,
+			CAMERA.basis.x.z, CAMERA.basis.y.z, CAMERA.basis.z.z, 0.0f,
+			-(CAMERA.basis.x.x * CAMERA.pos.x + CAMERA.basis.x.y * CAMERA.pos.y + CAMERA.basis.x.z * CAMERA.pos.z), -(CAMERA.basis.y.x * CAMERA.pos.x + CAMERA.basis.y.y * CAMERA.pos.y + CAMERA.basis.y.z * CAMERA.pos.z), -(CAMERA.basis.z.x * CAMERA.pos.x + CAMERA.basis.z.y * CAMERA.pos.y + CAMERA.basis.z.z * CAMERA.pos.z), 1.0f
+		);
+	}
 
-		return posChange;
+	glm::mat4 Camera::proj(Camera const& CAMERA) {
+		return glm::perspective(CAMERA.zoom, Backend::Window::gAspectRatio, 0.1f, 100.0f);
 	}
 }

@@ -35,7 +35,7 @@ namespace Particle {
 		};
 	}
 
-	namespace DeltaTime {
+	namespace Delta {
 		VkDescriptorSetLayoutBinding getDescriptorSetBinding(uint32_t const& BINDING_NUM) {
 			return VkDescriptorSetLayoutBinding{
 				.binding = BINDING_NUM,

@@ -25,7 +25,7 @@ namespace Engine {
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 
 		std::vector<VkDeviceAddress> pushConstant{
-			Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex].address, // deltaTime
+			Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex].address, // delta
 			Memory::Device::gBuffers[2 + FrameData::gFrameIndex].address, // particlesIn
 			Memory::Device::gBuffers[2 + ((FrameData::gFrameIndex + 1) % FrameData::gFRAMES_IN_FLIGHT)].address // particlesOut
 		};
@@ -206,14 +206,17 @@ namespace Engine {
 
 	void run() {
 		std::chrono::steady_clock::time_point before{};
+		float delta{};
 
 		while(!glfwWindowShouldClose(Backend::Window::gGlfwWindow)) {
 			glfwPollEvents();
-			update();
+			update(delta);
 
 			before = std::chrono::high_resolution_clock::now();
 			renderNext();
-			std::cout << writeDeltaTime(std::chrono::high_resolution_clock::now(), before) << "s\n";
+			delta = getDelta(std::chrono::high_resolution_clock::now(), before);
+			std::cout << delta << "s\n";
+			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &delta, sizeof(delta));
 		}
 
 		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
@@ -281,21 +284,18 @@ namespace Engine {
 		FrameData::recreate();
 	}
 
-	void update() {
+	void update(float const& DELTA) {
 		if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 			glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
 		} else {
-			gCamera.update();
-			Vertex::Transforms transformation(glm::mat4(1.0f), convertViewMatrix(gCamera), convertProjMatrix(gCamera));
+			gCamera.updateKeyboard(DELTA);
+			Vertex::Transforms transformation(glm::mat4(1.0f), Camera::view(gCamera), Camera::proj(gCamera));
 
 			Memory::Host::Mutate::writeToBuffer(3 + FrameData::gFrameIndex, &transformation, sizeof(transformation));
 		}
 	}
 
-	float writeDeltaTime(std::chrono::steady_clock::time_point const& A, std::chrono::steady_clock::time_point const& B) {
-		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(A - B).count();
-		Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &deltaTime, sizeof(deltaTime));
-		
-		return deltaTime;
+	float getDelta(std::chrono::steady_clock::time_point const& A, std::chrono::steady_clock::time_point const& B) {
+		return std::chrono::duration<float, std::chrono::seconds::period>(A - B).count();
 	}
 }

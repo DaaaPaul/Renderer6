@@ -5,7 +5,7 @@ struct Particle {
 };
 
 struct PushConstant {
-    float *deltaTime;
+    float *delta;
     Particle *particlesIn;
     Particle *particlesOut;
 };
@@ -18,8 +18,8 @@ void computeShader(uint3 invocation: SV_DispatchThreadID) {
     uint i = invocation.x;
 
     Particle updated = pointers.particlesIn[i];
-    updated.position.x += pointers.particlesIn[i].velocity.x * pointers.deltaTime[0];
-    updated.position.y += pointers.particlesIn[i].velocity.y * pointers.deltaTime[0];
+    updated.position.x += pointers.particlesIn[i].velocity.x * pointers.delta[0];
+    updated.position.y += pointers.particlesIn[i].velocity.y * pointers.delta[0];
 
     if ((updated.position.x <= -1.0) || (updated.position.x >= 1.0)) {
         updated.velocity.x *= -1.0;

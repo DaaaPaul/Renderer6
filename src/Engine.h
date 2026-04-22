@@ -19,6 +19,6 @@ namespace Engine {
 	void beginCmdBuffer(VkCommandBuffer cmdBuffer);
 	void setViewportScissor(VkCommandBuffer cmdBuffer);
 	void resize();
-	void update();
-	float writeDeltaTime(std::chrono::steady_clock::time_point const&, std::chrono::steady_clock::time_point const&);
+	void update(float const&);
+	float getDelta(std::chrono::steady_clock::time_point const&, std::chrono::steady_clock::time_point const&);
 }
