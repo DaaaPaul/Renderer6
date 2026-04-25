@@ -23,8 +23,12 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT R
 target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.h
