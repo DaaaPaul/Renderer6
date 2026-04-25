@@ -57,14 +57,12 @@ namespace Engine {
 				T* componentPtr = static_cast<T*>(i->second);
 				componentMap.erase(i);
 
-				for(std::vector<std::unique_ptr<Component>>::iterator i2 = components.begin(); i2 < components.end(); i2++) {
+				for(std::vector<std::unique_ptr<Component>>::iterator i2 = components.begin(); i2 < components.end() && !removeSuccess; i2++) {
 					if(i2->get() == componentPtr) {
 						components.erase(i2);
-						break;
+						removeSuccess = true;
 					}
 				}
-
-				removeSuccess = true;
 			}
 
 			return removeSuccess;

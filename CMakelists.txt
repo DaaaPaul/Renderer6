@@ -29,6 +29,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Events.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Events.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.h
