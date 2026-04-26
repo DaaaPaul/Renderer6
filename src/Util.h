@@ -38,7 +38,7 @@
 using VkLogicalDevice = VkDevice;
 
 namespace Util {
-	std::vector<std::string> constCharToString(std::vector<const char*> const&);
+	std::vector<std::string> toStringVector(std::vector<const char*> const&);
 	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
 	std::vector<char> getFileBytes(std::string const& PATH);
 	float random();

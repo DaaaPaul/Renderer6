@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Util.h"
+#include <cstdint>
 
 namespace Engine {
 	class Entity;
@@ -14,24 +14,13 @@ namespace Engine {
 			return typeID;
 		}
 
-		enum class State {
-			UNINITIALIZED,
-			INITIALIZING,
-			INITIALIZED,
-			DESTROYING,
-			DESTROYED
-		};
-
 		protected:
-		explicit Component(Entity* const& ENTITY) : entity{ ENTITY }, state{ State::UNINITIALIZED } {}
-
+		explicit Component(Entity* entity) : entity{ entity } {}
 		Entity* entity{};
-		State state{};
 
 		public:
 		virtual ~Component() = default;
-		bool isInitialized() const { return state == State::INITIALIZED; }
-		void setEntity(Entity* const& ENTITY) { this->entity = ENTITY; }
+		void setEntity(Entity* entity) { this->entity = entity; }
 		Entity* getEntity() const { return entity; }
 	};
 }

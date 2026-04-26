@@ -18,7 +18,7 @@ namespace Engine {
 			T* componentPtr = nullptr;
 
 			uint32_t typeID = Component::getTypeID<T>();
-			std::unordered_map<uint32_t, Component*>::iterator i = componentMap.find(typeID);
+			auto i = componentMap.find(typeID);
 
 			if(i != componentMap.end()) {
 				componentPtr = static_cast<T*>(i->second);
@@ -38,7 +38,7 @@ namespace Engine {
 		T* getComponent() {
 			T* componentPtr = nullptr;
 
-			std::unordered_map<uint32_t, Component*>::iterator i = componentMap.find(Component::getTypeID<T>());
+			auto i = componentMap.find(Component::getTypeID<T>());
 
 			if(i != componentMap.end()) {
 				componentPtr = static_cast<T*>(i->second);
@@ -49,23 +49,22 @@ namespace Engine {
 
 		template<class T>
 		bool removeComponent() {
-			bool removeSuccess = false;
-
-			std::unordered_map<uint32_t, Component*>::iterator i = componentMap.find(Component::getTypeID<T>());
+			T* componentPtr = nullptr;
+			auto i = componentMap.find(Component::getTypeID<T>());
 
 			if(i != componentMap.end()) {
-				T* componentPtr = static_cast<T*>(i->second);
+				componentPtr = static_cast<T*>(i->second);
 				componentMap.erase(i);
 
-				for(std::vector<std::unique_ptr<Component>>::iterator i2 = components.begin(); i2 < components.end() && !removeSuccess; i2++) {
+				for(auto i2 = components.begin(); i2 < components.end(); i2++) {
 					if(i2->get() == componentPtr) {
 						components.erase(i2);
-						removeSuccess = true;
+						break;
 					}
 				}
 			}
 
-			return removeSuccess;
+			return componentPtr != nullptr;
 		}
 	};
 }

@@ -64,7 +64,7 @@ namespace Backend {
 				availableExtensionsNames.emplace_back(AVAILABLE.extensionName);
 			}
 
-			return Util::containsAll(availableExtensionsNames, Util::constCharToString(LogicalDevice::gExtensions));
+			return Util::containsAll(availableExtensionsNames, Util::toStringVector(LogicalDevice::gExtensions));
 		}
 
 		bool featuresCheck(VkPhysicalDevice physicalDevice) {

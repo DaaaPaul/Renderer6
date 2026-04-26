@@ -19,8 +19,8 @@ namespace Engine {
 		std::vector<EventListener*> listeners{};
 
 		public:
-		EventListener* addListener(EventListener* const&);
-		bool removeListener(EventListener* const&);
+		void addListener(EventListener*);
+		bool removeListener(EventListener*);
 		void dispatch(Event const&) const;
 	};
 }

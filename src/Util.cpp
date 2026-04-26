@@ -14,11 +14,11 @@
 #include "PhysicalDevice.h"
 
 namespace Util {
-	std::vector<std::string> constCharToString(std::vector<const char*> const& C_STRINGS) {
+	std::vector<std::string> toStringVector(std::vector<const char*> const& C_STRS) {
 		std::vector<std::string> strings{};
 
-		for(const char* const& C_STRING : C_STRINGS) {
-			strings.emplace_back(C_STRING);
+		for(const char* const& C : C_STRS) {
+			strings.emplace_back(C);
 		}
 
 		return strings;
