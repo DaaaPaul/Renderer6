@@ -1,19 +1,9 @@
-#include <iostream>
 #include "Camera.hpp"
 #include "Swapchain.h"
 
 namespace Engine {
 	bool Basis::isNormalized(glm::vec3 const& V) {
 		return Util::equal(glm::normalize(V), V);
-	}
-	
-	bool Basis::isNormalized(Basis const& B) {
-		Basis normalized = normalize(B);
-		return Util::equal(normalized.x, B.x) && Util::equal(normalized.y, B.y) && Util::equal(normalized.z, B.z);
-	}
-	
-	Basis Basis::normalize(Basis const& B) {
-		return Basis{ glm::normalize(B.x), glm::normalize(B.y), glm::normalize(B.z) };
 	}
 
 	glm::mat3 Basis::rotate(glm::vec3 const& AXIS, float const& ANGLE_CC) {
@@ -39,7 +29,7 @@ namespace Engine {
 	}
 
 	Basis Basis::applyRotation(Basis const& BASIS, Angles const& EULER) {
-		assert(isNormalized(BASIS));
+		assert(isNormalized(BASIS.x) && isNormalized(BASIS.y) && isNormalized(BASIS.z));
 		
 		Basis moved(BASIS);
 		

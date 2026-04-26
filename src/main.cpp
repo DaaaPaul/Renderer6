@@ -50,8 +50,8 @@ int main() {
 		Backend::LogicalDevice::deInit();
 		Backend::Instance::deInit();
 		Backend::Window::deInit();
-	} catch(std::exception const& EXCEPTION) {
-        std::cerr << "ERROR: " << EXCEPTION.what() << "\n";
+	} catch(std::runtime_error const& RT_ERROR) {
+        std::cerr << "ERROR: " << RT_ERROR.what() << "\n";
     }
 
     return 0;

@@ -5,8 +5,12 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <iostream>
 #include "Vertex.hpp"
 #include "Window.h"
+
+#define println(x) \
+	std::cout << x << '\n';
 
 #define UINT32(vecSize) \
 	static_cast<uint32_t>(vecSize)
@@ -42,8 +46,12 @@ namespace Util {
 	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
 	std::vector<char> getFileBytes(std::string const& PATH);
 	float random();
-	bool equal(float const&, float const&);
-	bool equal(glm::vec3 const&, glm::vec3 const&);
+	inline bool equal(float const& F1, float const& F2, float const& EPSILON = 0.001f) {
+		return fabs(F1 - F2) <= (((F1 > F2) ? F1 : F2) * EPSILON + 0.001f);
+	}
+	inline bool equal(glm::vec3 const& V1, glm::vec3 const& V2, float const& EPSILON = 0.001f) {
+		return equal(V1.x, V2.x, EPSILON) && equal(V1.y, V2.y, EPSILON) && equal(V1.z, V2.z, EPSILON);
+	}
 
 	namespace Vulkan {
 		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& GRAPHICS_QF_INDEX);
@@ -57,7 +65,7 @@ namespace Util {
 	}
 
 	namespace Window {
-		std::vector<const char*> getRequiredWindowExtensionsForInstance();
+		std::vector<const char*> getVkWindowExtensions();
 	}
 
 	namespace Memory {

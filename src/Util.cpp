@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <fstream>
 #include <random>	
-#include <iostream>
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -58,14 +57,6 @@ namespace Util {
 		static std::uniform_real_distribution gRange(0.0f, 1.0f);
 
 		return gRange(gEngine);
-	}
-
-	bool equal(float const& F1, float const& F2) {
-		return fabs(F1 - F2) < 0.001f;
-	}
-
-	bool equal(glm::vec3 const& V1, glm::vec3 const& V2) {
-		return equal(V1.x, V2.x) && equal(V1.y, V2.y) && equal(V1.z, V2.z);
 	}
 
 	namespace Vulkan {
@@ -246,7 +237,7 @@ namespace Util {
 	}
 
 	namespace Window {
-		std::vector<const char*> getRequiredWindowExtensionsForInstance() {
+		std::vector<const char*> getVkWindowExtensions() {
 			glfwInit();
 
 			uint32_t requiredCount{};

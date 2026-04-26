@@ -1,6 +1,5 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
-#include <iostream>
 #include <vector>
 #include "Engine.h"
 #include "FrameData.h"
@@ -215,7 +214,7 @@ namespace Engine {
 			before = std::chrono::high_resolution_clock::now();
 			renderNext();
 			delta = getDelta(std::chrono::high_resolution_clock::now(), before);
-			std::cout << delta << "s\n";
+			println(delta)
 			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &delta, sizeof(delta));
 		}
 

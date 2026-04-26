@@ -16,9 +16,12 @@ BY THE HOUR:
 - Use unified image layout and ask about it
 - Consider multisampling
 
+- texture resource thing
+- shader resource thing
+- asynchronus resource loading
+- hot reloading
+
 5-MINUTE CRAFTS:
-- See if making small functions inline does anything
-- make float comparison relative
 
 
   ______   ______   ______   ______   ______  
@@ -81,3 +84,6 @@ BY THE HOUR:
 
 - Remove prefix "p" from vulkan handles
 - Remove vulkan handle references
+
+- make float comparison relative
+- See if making small functions inline does anything

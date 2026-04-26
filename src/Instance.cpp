@@ -20,7 +20,7 @@ namespace Backend {
 		}
 
 		void initExtensions() {
-			gExtensions = Util::Window::getRequiredWindowExtensionsForInstance();
+			gExtensions = Util::Window::getVkWindowExtensions();
 			#ifdef __APPLE__
 			gExtensions.push_back("VK_KHR_portability_enumeration");
 			#endif

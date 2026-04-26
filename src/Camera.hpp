@@ -18,8 +18,6 @@ namespace Engine {
 		glm::vec3 z{0.0f, 0.0f, 1.0f};
 	
 		static bool isNormalized(glm::vec3 const&);
-		static bool isNormalized(Basis const&);
-		static Basis normalize(Basis const&);
 		static glm::mat3 rotate(glm::vec3 const&, float const&);
 		static Basis applyRotation(Basis const&, Angles const&);
 	};
