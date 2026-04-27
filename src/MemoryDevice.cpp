@@ -68,7 +68,7 @@ namespace Memory {
 					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -85,7 +85,7 @@ namespace Memory {
 		void createBuffers() {
 			gBuffers.resize(gBufferCreates.size(), {});
 
-			for(int i = 0; i < gBufferCreates.size(); i++) {
+			for(int i = 0; i < gBufferCreates.size(); ++i) {
 				CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
@@ -93,7 +93,7 @@ namespace Memory {
 		void populateBufferMemoryRequirements() {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
-			for(int i = 0; i < gBuffers.size(); i++) {
+			for(int i = 0; i < gBuffers.size(); ++i) {
 				vkGetBufferMemoryRequirements(gDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
@@ -139,7 +139,7 @@ namespace Memory {
 		void createImages() {
 			gImages.resize(gImageCreates.size(), {});
 
-			for(int i = 0; i < gImages.size(); i++) {
+			for(int i = 0; i < gImages.size(); ++i) {
 				CHECK_VK_SUCCESS(vkCreateImage(gDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
 			}
 		}
@@ -147,7 +147,7 @@ namespace Memory {
 		void populateImageMemoryRequirements() {
 			gImageMemoryRequirements.resize(gImages.size(), {});
 
-			for(int i = 0; i < gImages.size(); i++) {
+			for(int i = 0; i < gImages.size(); ++i) {
 				vkGetImageMemoryRequirements(gDevice, gImages[i].image, &gImageMemoryRequirements[i]);
 				gMemoryItemTypes.push_back((gImageCreates[i].tiling == VK_IMAGE_TILING_OPTIMAL) ? Util::Memory::ItemType::NON_LINEAR : Util::Memory::ItemType::LINEAR);
 			}
@@ -175,7 +175,7 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			for(int i = 0; i < gBuffers.size(); i++) {
+			for(int i = 0; i < gBuffers.size(); ++i) {
 				gBuffers[i].offset = gMemoryOffsets[i];
 				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
@@ -183,7 +183,7 @@ namespace Memory {
 
 		void populateBufferAddresses() {
 			VkBufferDeviceAddressInfo rollingBufferAddressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
-			for(int i = 0; i < gBuffers.size(); i++) {
+			for(int i = 0; i < gBuffers.size(); ++i) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
 					gBuffers[i].address = vkGetBufferDeviceAddress(gDevice, &rollingBufferAddressInfo);
@@ -192,7 +192,7 @@ namespace Memory {
 		}
 
 		void bindImages() {
-			for(int i = gBuffers.size(); i < gMemoryOffsets.size(); i++) {
+			for(int i = gBuffers.size(); i < gMemoryOffsets.size(); ++i) {
 				int imageIndex = i - gBuffers.size();
 
 				gImages[imageIndex].offset = gMemoryOffsets[i];
@@ -204,7 +204,7 @@ namespace Memory {
 			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::gModelVertexBufferSize)});
 			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::gModelIndexBufferSize)});
 
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Engine::Swapchain::gIMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
 			}
 		}
@@ -234,7 +234,7 @@ namespace Memory {
 		void createSamplers() {
 			gSamplers.resize(gSamplerCreates.size(), {});
 
-			for(int i = 0; i < gSamplers.size(); i++) {
+			for(int i = 0; i < gSamplers.size(); ++i) {
 				CHECK_VK_SUCCESS(vkCreateSampler(gDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
 			}
 		}
@@ -270,14 +270,14 @@ namespace Memory {
 
 		void createDescriptorSetLayouts() {
 			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
-			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); i++) {
+			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); ++i) {
 				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
 			}
 		}
 
 		void populateDescriptorPoolCreate() {
 			for(VkDescriptorSetLayoutCreateInfo const& LAYOUT : gDescriptorSetLayoutCreates) {
-				for(int i = 0; i < LAYOUT.bindingCount; i++) {
+				for(int i = 0; i < LAYOUT.bindingCount; ++i) {
 					gDescriptorPoolSizes.push_back(
 						VkDescriptorPoolSize{
 							.type = LAYOUT.pBindings[i].descriptorType,
@@ -303,7 +303,7 @@ namespace Memory {
 		void populateDescriptorSetAllocates() {
 			gDescriptorSetAllocates.resize(gDescriptorSets.size(), {});
 
-			for(int i = 0; i < gDescriptorSets.size(); i++) {
+			for(int i = 0; i < gDescriptorSets.size(); ++i) {
 				gDescriptorSetAllocates[i] = VkDescriptorSetAllocateInfo{
 					.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
 					.descriptorPool = gDescriptorPool,
@@ -314,7 +314,7 @@ namespace Memory {
 		}
 
 		void createDescriptorSets() {
-			for(int i = 0; i < gDescriptorSets.size(); i++) {
+			for(int i = 0; i < gDescriptorSets.size(); ++i) {
 				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
 			}
 		}

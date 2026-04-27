@@ -93,7 +93,7 @@ namespace Engine {
 
 			bool supported = false;
 
-			for(int i = 0; i < supportedFormatColorspacePairCount && !supported; i++) {
+			for(int i = 0; i < supportedFormatColorspacePairCount && !supported; ++i) {
 				if (supportedFormatColorspacePairs[i].format == gIMAGE_FORMAT && supportedFormatColorspacePairs[i].colorSpace == gIMAGE_COLOR_SPACE) {
 					supported = true;
 				}
@@ -112,7 +112,7 @@ namespace Engine {
 
 			bool supported = false;
 
-			for(int i = 0; i < supportedPresentModeCount && !supported; i++) {
+			for(int i = 0; i < supportedPresentModeCount && !supported; ++i) {
 				if(supportedPresentModes[i] == gPRESENT_MODE) {
 					supported = true;
 				}

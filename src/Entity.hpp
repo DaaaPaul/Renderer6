@@ -56,7 +56,7 @@ namespace Engine {
 				componentPtr = static_cast<T*>(i->second);
 				componentMap.erase(i);
 
-				for(auto i2 = components.begin(); i2 < components.end(); i2++) {
+				for(auto i2 = components.begin(); i2 < components.end(); ++i2) {
 					if(i2->get() == componentPtr) {
 						components.erase(i2);
 						break;

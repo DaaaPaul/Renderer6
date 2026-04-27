@@ -45,6 +45,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/NameTable.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/NameTable.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/OldResources.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/OldResources.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.cpp

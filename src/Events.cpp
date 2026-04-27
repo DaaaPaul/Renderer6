@@ -8,7 +8,7 @@ namespace Engine {
 	bool Events::removeListener(EventListener* l) {
 		bool removeSuccess = false;
 
-		for(auto i = listeners.begin(); i < listeners.end() && !removeSuccess; i++) {
+		for(auto i = listeners.begin(); i < listeners.end() && !removeSuccess; ++i) {
 			if(*i == l) {
 				listeners.erase(i);
 				removeSuccess = true;

@@ -16,7 +16,7 @@ namespace Backend {
 		}
 	
 		void selectPhysicalDevice() {
-			for(int i = 0; i < gSystemPhysicalDevices.size() && !gPhysicalDevice; i++) {
+			for(int i = 0; i < gSystemPhysicalDevices.size() && !gPhysicalDevice; ++i) {
 				if(physicalDeviceGood(gSystemPhysicalDeviceProperties[i], gSystemPhysicalDevices[i])) {
 					gPhysicalDevice = gSystemPhysicalDevices[i];
 
@@ -39,7 +39,7 @@ namespace Backend {
 			gSystemPhysicalDeviceProperties.resize(physicalDeviceCount, {});
 			CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
 			
-			for(int i = 0; i < physicalDeviceCount; i++) {
+			for(int i = 0; i < physicalDeviceCount; ++i) {
 				vkGetPhysicalDeviceProperties(gSystemPhysicalDevices[i], &gSystemPhysicalDeviceProperties[i]);
 			}
 		}
@@ -83,7 +83,7 @@ namespace Backend {
 			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableQfCount, availableQfs.data());
 
 			bool thisQfGood = false;
-			for(int i = 0; i < gQUEUE_FAMILY_CAPABILITIES.size() && hasAllQueueFamiliesWithEnoughQueues; i++) {
+			for(int i = 0; i < gQUEUE_FAMILY_CAPABILITIES.size() && hasAllQueueFamiliesWithEnoughQueues; ++i) {
 				thisQfGood = false;
 
 				for(int j = 0; j < availableQfs.size() && !thisQfGood; j++) {

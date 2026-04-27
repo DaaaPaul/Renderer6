@@ -167,7 +167,7 @@ namespace Util {
 					}
 
 					// Process vertices
-					for (size_t i = 0; i < POSITION_ACCESSOR.count; i++) {
+					for (size_t i = 0; i < POSITION_ACCESSOR.count; ++i) {
 						Vertex::Vertex vertex{};
 
 						// Get position
@@ -195,19 +195,19 @@ namespace Util {
 					// Handle different index component types
 					if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
 						uint16_t const* pUI16 = reinterpret_cast<const uint16_t*>(pINDEX_DATA);
-						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; ++i) {
 							Vertex::Vertex vertex = vertices[pUI16[i]];
 							indices.push_back(uniqueVertices[vertex]);
 						}
 					} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
 						uint32_t const* pUI32 = reinterpret_cast<const uint32_t*>(pINDEX_DATA);
-						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; ++i) {
 							Vertex::Vertex vertex = vertices[pUI32[i]];
 							indices.push_back(uniqueVertices[vertex]);
 						}
 					} else if (INDEX_ACCESSOR.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
 						uint8_t const* pUI8 = reinterpret_cast<const uint8_t*>(pINDEX_DATA);
-						for (size_t i = 0; i < INDEX_ACCESSOR.count; i++) {
+						for (size_t i = 0; i < INDEX_ACCESSOR.count; ++i) {
 							Vertex::Vertex vertex = vertices[pUI8[i]];
 							indices.push_back(uniqueVertices[vertex]);
 						}
@@ -250,7 +250,7 @@ namespace Util {
 				requiredVector.push_back("VK_EXT_metal_surface");
 			}
 			#endif
-			for (int i = 0; i < requiredCount; i++) {
+			for (int i = 0; i < requiredCount; ++i) {
 				requiredVector.push_back(required[i]);
 			}
 
@@ -283,7 +283,7 @@ namespace Util {
 			VkDeviceSize endingByte = 0;
 			VkDeviceSize nextOpenSpace = 0;
 
-			for(int i = 0; i < ITEM_REQUIREMENTS.size(); i++) {
+			for(int i = 0; i < ITEM_REQUIREMENTS.size(); ++i) {
 				beginningByte = alignNextHighest(beginningByte, ITEM_REQUIREMENTS[i].alignment);
 
 				if(i > 0) {
@@ -318,7 +318,7 @@ namespace Util {
 
 			uint32_t suitableMemoryTypeIndex = UINT32_MAX;
 			bool suitableMemoryCondition = false;
-			for (int i = 0; i < memoryProperties.memoryTypeCount && suitableMemoryTypeIndex == UINT32_MAX; i++) {
+			for (int i = 0; i < memoryProperties.memoryTypeCount && suitableMemoryTypeIndex == UINT32_MAX; ++i) {
 				suitableMemoryCondition = (suitableMemoryMask & suitableMemoryMask << i) && (memoryProperties.memoryTypes[i].propertyFlags & WANTED_PROPERTIES);
 
 				if(suitableMemoryCondition) {

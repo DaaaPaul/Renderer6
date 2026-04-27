@@ -120,7 +120,7 @@ namespace Util {
 			SNIPER_CHECK += firstVkBool32Offset;
 			VkBool32 const* BOOL_SNIPER_CHECK = reinterpret_cast<VkBool32 const*>(SNIPER_CHECK);
 		
-			for(int i = 0; i < howManyVkBool32 && hasAll; i++) {
+			for(int i = 0; i < howManyVkBool32 && hasAll; ++i) {
 				if(*BOOL_SNIPER_HAVE == VK_FALSE && *BOOL_SNIPER_CHECK == VK_TRUE) {
 					hasAll = false;
 				} else {

@@ -58,7 +58,7 @@ namespace Memory {
 				}
 			);
 
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -70,7 +70,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -82,7 +82,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -99,7 +99,7 @@ namespace Memory {
 		void createBuffers() {
 			gBuffers.resize(gBufferCreates.size(), {});
 
-			for(int i = 0; i < gBufferCreates.size(); i++) {
+			for(int i = 0; i < gBufferCreates.size(); ++i) {
 				CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
@@ -107,7 +107,7 @@ namespace Memory {
 		void populateBufferMemoryRequirements() {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
-			for(int i = 0; i < gBuffers.size(); i++) {
+			for(int i = 0; i < gBuffers.size(); ++i) {
 				vkGetBufferMemoryRequirements(gDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
@@ -133,7 +133,7 @@ namespace Memory {
 		void bindBuffers() {
 			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).second);
 
-			for(int i = 0; i < bufferOffsets.size(); i++) {
+			for(int i = 0; i < bufferOffsets.size(); ++i) {
 				gBuffers[i].offset = bufferOffsets[i];
 				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
@@ -141,7 +141,7 @@ namespace Memory {
 
 		void populateBufferAddresses() {
 			VkBufferDeviceAddressInfo rollingBufferAddressInfo{ .sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO };
-			for(int i = 0; i < gBuffers.size(); i++) {
+			for(int i = 0; i < gBuffers.size(); ++i) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
 					gBuffers[i].address = vkGetBufferDeviceAddress(gDevice, &rollingBufferAddressInfo);
@@ -154,10 +154,10 @@ namespace Memory {
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
 
-			//for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			//for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 			//	Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
 			//}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; i++) {
+			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
 				Mutate::writeToBuffer(Engine::Swapchain::gIMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}
 		}

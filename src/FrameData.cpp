@@ -25,7 +25,7 @@ namespace Engine {
 		}
 
 		void createFrameData() {
-			for(int i = 0; i < gFRAMES_IN_FLIGHT; i++) {
+			for(int i = 0; i < gFRAMES_IN_FLIGHT; ++i) {
 				gFrameData.emplace_back(
 					Util::FrameData::createFence(VK_NO_FLAGS),
 					Util::FrameData::createSemaphore(VkSemaphoreTypeCreateInfo{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO, .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE, .initialValue = 0 }),
