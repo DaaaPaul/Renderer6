@@ -9,35 +9,20 @@
 #include "Vertex.hpp"
 #include "Window.h"
 
-#define println(x) \
-	std::cout << x << '\n';
+#define println(x) std::cout << x << '\n';
 
-#define UINT32(vecSize) \
-	static_cast<uint32_t>(vecSize)
+#define UINT32(vecSize) static_cast<uint32_t>(vecSize)
 
-#define CHECK_VK_SUCCESS(vkCreateCmd, errMsg) \
-	if(vkCreateCmd != VK_SUCCESS) { \
-		std::string errCode = #vkCreateCmd " did not return VK_SUCCESS, instead returning " + std::to_string(static_cast<int>(vkCreateCmd)) + ". "; \
-        throw std::runtime_error(errCode + errMsg); \
+#define CHECK_VK_SUCCESS(createCmd, errMsg) \
+	if(createCmd != VK_SUCCESS) { \
+        throw std::runtime_error(errMsg); \
 	}
 
-#define PTR_TO_DECIMAL(p) \
-	reinterpret_cast<uintptr_t>(p)
+#define POINTER_SIZE(num) (8 * num)
 
-#define POINTER_SIZE(num) \
-	(8 * num)
+#define DA_PI 3.14159274f
 
-#define DA_PI 3.14159265358979323846f
-
-#define IMAGE_VIEW_TYPE(imageType) \
-((imageType == VK_IMAGE_TYPE_1D) ? VK_IMAGE_VIEW_TYPE_1D : \
-((imageType == VK_IMAGE_TYPE_2D) ? VK_IMAGE_VIEW_TYPE_2D : \
-((imageType == VK_IMAGE_TYPE_3D) ? VK_IMAGE_VIEW_TYPE_3D : static_cast<VkImageViewType>(9999))))
-
-#define VK_NO_FLAGS 0U
-
-#define PRESSED(glfwKey) \
-	glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
+#define PRESSED(glfwKey) glfwGetKey(Backend::Window::gGlfwWindow, glfwKey) == GLFW_PRESS
 
 using VkLogicalDevice = VkDevice;
 

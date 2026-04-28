@@ -387,7 +387,7 @@ namespace Memory {
 					.imageView = ImageViewHotspot::newView(VkImageViewCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 						.image = gImages[IMAGE_INDEX].image,
-						.viewType = IMAGE_VIEW_TYPE(gImageCreates[IMAGE_INDEX].imageType),
+						.viewType = VK_IMAGE_VIEW_TYPE_2D,
 						.format = gImageCreates[IMAGE_INDEX].format,
 						.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
 					}),

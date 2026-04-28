@@ -1,7 +1,7 @@
 #include "NameTable.h"
 
 namespace NameTable {
-	constexpr uint32_t pushEntry(const char* name) {
+	uint32_t pushEntry(const char* name) {
 		assert(nextIdx < NUM_ENTRIES);
 
 		uint32_t idx = nextIdx;

@@ -59,7 +59,7 @@ namespace Backend {
 		}
 
 		void createInstance() {
-			VkInstanceCreateFlags instanceCreateFlags = VK_NO_FLAGS;
+			VkInstanceCreateFlags instanceCreateFlags = 0;
 			#ifdef __APPLE__
 			instanceCreateFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 			#endif

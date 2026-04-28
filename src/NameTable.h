@@ -11,7 +11,7 @@ namespace NameTable {
 	inline std::unordered_map<const char*, uint32_t> lookup{};
 	inline uint32_t nextIdx = 0;
 
-	constexpr uint32_t pushEntry(const char* name);
+	uint32_t pushEntry(const char* name);
 
 	uint32_t getIdx(const char* name);
 

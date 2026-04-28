@@ -12,7 +12,7 @@ namespace Engine {
 		uint32_t users{};
 
 		protected:
-		explicit Resource(uint32_t idx, uint32_t u = 1) : nameIdx(idx), users{ u } {}
+		explicit Resource(uint32_t idx) : nameIdx(idx), users{ 1 } {}
 		virtual ~Resource() = default;
 
 		public:
@@ -32,7 +32,7 @@ namespace Engine {
 
 		public:
 		template<class T, class... Args>
-		T* useResource(uint32_t idx, uint32_t u = 1, Args&&... args) {
+		T* useResource(uint32_t idx, Args&&... args) {
 			static_assert(std::is_base_of<Resource, T>::value, "T needs to be a Resource");
 			T* resourcePtr = nullptr;
 
@@ -42,7 +42,7 @@ namespace Engine {
 				i->second->incrementUsers();
 				resourcePtr = static_cast<T*>(i->second.get());
 			} else {
-				resources[idx] = std::make_unique<T>(idx, u, std::forward<Args>(args)...);
+				resources[idx] = std::make_unique<T>(idx, std::forward<Args>(args)...);
 				resourcePtr = static_cast<T*>(resources[idx].get());
 			}
 
