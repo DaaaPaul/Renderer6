@@ -13,6 +13,8 @@ namespace Resource {
 		explicit Buffer(VkDeviceSize size, VkBufferUsageFlags usage);
 		~Buffer();
 
+		VkMemoryRequirements getRequirements() const { return requirements; }
+
 		private:
 		static VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
 	};
