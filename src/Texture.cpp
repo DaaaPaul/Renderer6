@@ -4,7 +4,7 @@
 #include "LogicalDevice.h"
 #include "Util.h"
 
-namespace Engine {
+namespace Resource {
 	Texture::Texture(uint32_t idx, const char* texturePath) : Resource(idx) {
 		texture = getKtx(texturePath);
 		image = createImage(texture);

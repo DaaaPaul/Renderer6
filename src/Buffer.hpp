@@ -1,9 +1,8 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include "Util.h"
 
-namespace Engine {
+namespace Resource {
 	class Buffer {
 		private:
 		VkBuffer buffer{};

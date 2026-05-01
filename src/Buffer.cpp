@@ -1,8 +1,9 @@
 #include "PhysicalDevice.h"
 #include "Buffer.hpp"
+#include "Util.h"
 
-namespace Engine {
-	explicit Buffer::Buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
+namespace Resource {
+	Buffer::Buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
 		buffer = createBuffer(size, usage);
 
 		vkGetBufferMemoryRequirements(gDevice, buffer, &requirements);

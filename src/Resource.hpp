@@ -5,7 +5,7 @@
 #include <memory>
 #include <cstdint>
 
-namespace Engine {
+namespace Resource {
 	class Resource {
 		private:
 		uint32_t nameIdx{};

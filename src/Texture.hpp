@@ -4,7 +4,7 @@
 #include <ktx.h>
 #include "Resource.hpp"
 
-namespace Engine {
+namespace Resource {
 	class Texture : public Resource {
 		private:
 		VkImage image{};
