@@ -39,7 +39,7 @@ namespace Engine {
 		}
 
 		void createSurface() {
-			CHECK_VK_SUCCESS(glfwCreateWindowSurface(Backend::Instance::gInstance, Backend::Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
+			VK_CHECK(glfwCreateWindowSurface(Backend::Instance::gInstance, Backend::Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
 		}
 
 		void populateCurrentSwapchainStatus() {
@@ -63,7 +63,7 @@ namespace Engine {
 		}
 
 		void createSwapchain() {
-			CHECK_VK_SUCCESS(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
+			VK_CHECK(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
 		}
 
 		void populateImages() {
@@ -76,7 +76,7 @@ namespace Engine {
 
 		void populateImageSize() {
 			VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-			CHECK_VK_SUCCESS(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
+			VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
 		
 			gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 

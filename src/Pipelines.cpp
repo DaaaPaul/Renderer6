@@ -213,7 +213,7 @@ namespace Engine {
 		VkPipeline newGraphicsPipeline(GraphicsAggregate const& AGGREGATE) {
 			VkPipeline graphics{};
 
-			CHECK_VK_SUCCESS(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &AGGREGATE.create, nullptr, &graphics), "Failed to create graphics pipeline")
+			VK_CHECK(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &AGGREGATE.create, nullptr, &graphics), "Failed to create graphics pipeline")
 			gPipelines.push_back(graphics);
 
 			return graphics;
@@ -222,7 +222,7 @@ namespace Engine {
 		VkPipeline newComputePipeline(VkComputePipelineCreateInfo const& CREATE) {
 			VkPipeline compute{};
 
-			CHECK_VK_SUCCESS(vkCreateComputePipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
+			VK_CHECK(vkCreateComputePipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
 			gPipelines.push_back(compute);
 
 			return compute;

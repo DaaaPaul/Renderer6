@@ -31,7 +31,7 @@ namespace Engine {
 		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), pushConstant.data());
 		vkCmdDispatch(cmdBuffer, Resources::gPARTICLES_COUNT / 256, 1, 1);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Failed to end compute command buffer")
+		VK_CHECK(vkEndCommandBuffer(cmdBuffer), "Failed to end compute command buffer")
 	}
 
 	void recordDrawModelCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX) {
@@ -84,7 +84,7 @@ namespace Engine {
 		};
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
+		VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
 		setViewportScissor(cmdBuffer);
@@ -116,7 +116,7 @@ namespace Engine {
 		vkCmdDrawIndexed(cmdBuffer, Resources::gModelIndices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmdBuffer);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
+		VK_CHECK(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
 	};
 
 	void recordDrawParticlesCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX) {
@@ -147,7 +147,7 @@ namespace Engine {
 		};
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
+		VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin command buffer")
 
 		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
 		setViewportScissor(cmdBuffer);
@@ -164,7 +164,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
 
-		CHECK_VK_SUCCESS(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
+		VK_CHECK(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
 	}
 
 	void renderNext() {
@@ -218,7 +218,7 @@ namespace Engine {
 			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &delta, sizeof(delta));
 		}
 
-		CHECK_VK_SUCCESS(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
+		VK_CHECK(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
 	}
 
 	bool acquireSwapchainImage(uint32_t& index, VkFence fenceToSignal) {
@@ -243,18 +243,18 @@ namespace Engine {
 			.pSemaphores = &timeline,
 			.pValues = &WAIT_VAL
 		};
-		CHECK_VK_SUCCESS(vkWaitSemaphores(gDevice, &wait, UINT64_MAX), "Failed to wait for semaphore");
+		VK_CHECK(vkWaitSemaphores(gDevice, &wait, UINT64_MAX), "Failed to wait for semaphore");
 	}
 
 	void waitForFence(VkFence fence) {
-		CHECK_VK_SUCCESS(vkWaitForFences(gDevice, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
-		CHECK_VK_SUCCESS(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
+		VK_CHECK(vkWaitForFences(gDevice, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
+		VK_CHECK(vkResetFences(gDevice, 1, &fence), "Failed to reset fence");
 	}
 
 	void beginCmdBuffer(VkCommandBuffer cmdBuffer) {
 		vkResetCommandBuffer(cmdBuffer, 0);
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		CHECK_VK_SUCCESS(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
+		VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin compute command buffer")
 	}
 
 	void setViewportScissor(VkCommandBuffer cmdBuffer) {

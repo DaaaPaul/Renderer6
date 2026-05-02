@@ -33,7 +33,7 @@ namespace Engine {
 		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const& CREATE) {
 			VkShaderModule shaderModule{};
 
-			CHECK_VK_SUCCESS(vkCreateShaderModule(gDevice, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
+			VK_CHECK(vkCreateShaderModule(gDevice, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
 			gShaderModules.push_back(shaderModule);
 
 			return shaderModule;

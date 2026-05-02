@@ -38,7 +38,7 @@ namespace Engine {
 		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const& CREATE) {
 			VkPipelineLayout layout{};
 
-			CHECK_VK_SUCCESS(vkCreatePipelineLayout(gDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
+			VK_CHECK(vkCreatePipelineLayout(gDevice, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
 			gLayouts.push_back(layout);
 
 			return layout;

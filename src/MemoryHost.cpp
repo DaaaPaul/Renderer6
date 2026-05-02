@@ -100,7 +100,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); ++i) {
-				CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				VK_CHECK(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -165,7 +165,7 @@ namespace Memory {
 		namespace Mutate {
 			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* DATA, uint32_t const& SIZE_TO_WRITE) {
 				void* bufferPointer{};
-				CHECK_VK_SUCCESS(vkMapMemory(gDevice, gMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &bufferPointer), "Failed to map memory")
+				VK_CHECK(vkMapMemory(gDevice, gMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &bufferPointer), "Failed to map memory")
 				std::memcpy(bufferPointer, DATA, SIZE_TO_WRITE);
 				vkUnmapMemory(gDevice, gMemory);
 			}

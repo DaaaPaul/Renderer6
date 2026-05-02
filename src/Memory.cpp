@@ -10,38 +10,52 @@ namespace Resource {
 	
 	}
 
-	std::pair<VkDeviceSize, std::vector<VkDeviceSize>> Memory::sizeAndOffsets(std::vector<Texture> const& TEXTURES, std::vector<Buffer> const& BUFFER) {
+	std::pair<VkDeviceSize, std::vector<VkDeviceSize>> Memory::sizeAndOffsets(std::vector<Texture> const& TEXTURES, std::vector<Buffer> const& BUFFERS) {
 		std::vector<VkDeviceSize> offsets{};
+		VkDeviceSize running = 0;
 
-		VkDeviceSize beginning = 0;
-		VkDeviceSize ending = 0;
-		VkDeviceSize nextOpenSpace = 0;
-
-		for(Texture const& T : TEXTURES) {
-			beginning = Util::Memory::alignNextHighest(beginning, )
+		for(Texture const& TEXT : TEXTURES) {
+			running = alignNext(running, TEXT.getRequirements().alignment);
+			offsets.push_back(running);
+			running += TEXT.getRequirements().size;
 		}
 
-		for(int i = 0; i < ITEM_REQUIREMENTS.size(); ++i) {
-			beginningByte = alignNextHighest(beginningByte, ITEM_REQUIREMENTS[i].alignment);
+		alignNext(running, Backend::PhysicalDevice::gLimits.bufferImageGranularity);
 
-			if(i > 0) {
-				bool linearFollowedByNonLinear = TYPES[i] == ItemType::LINEAR && TYPES[i - 1] == ItemType::NON_LINEAR;
-				bool nonLinearFollowedByLinear = TYPES[i] == ItemType::NON_LINEAR && TYPES[i - 1] == ItemType::LINEAR;
-
-				if(linearFollowedByNonLinear || nonLinearFollowedByLinear) {
-					nextOpenSpace = alignNextHighest(endingByte, BI_GRANULARITY);
-
-					if(beginningByte < nextOpenSpace) {
-						beginningByte = nextOpenSpace;
-					}
-				}
-			}
-
-			beginnings.push_back(beginningByte);
-			beginningByte += ITEM_REQUIREMENTS[i].size;
-			endingByte = beginningByte - 1;
+		for(Buffer const& BUF : BUFFERS) {
+			running = alignNext(running, BUF.getRequirements().alignment);
+			offsets.push_back(running);
+			running += BUF.getRequirements().size;
 		}
 
-		return { beginningByte, beginnings };
+		return { running, offsets };
+	}
+
+	void Memory::copyToImage(ktxTexture2* texture, VkImage image) {
+		VkHostImageLayoutTransitionInfo transition{
+			.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+			.image = image,
+			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.newLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+		};
+		VK_CHECK(vkTransitionImageLayoutEXT(gDevice, 1, &transition), "copyToImage: transition error")
+
+		VkMemoryToImageCopyEXT region{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
+			.pHostPointer = texture->pData,
+			.imageSubresource = VkImageSubresourceLayers{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+			.imageExtent = VkExtent3D{texture->baseWidth, texture->baseHeight, texture->baseDepth}
+		};
+
+		VkCopyMemoryToImageInfoEXT copy{
+			.sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT,
+			.dstImage = image,
+			.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.regionCount = 1,
+			.pRegions = &region,
+		};
+
+		VK_CHECK(vkCopyMemoryToImage(gDevice, &copy), "copyToImage: copy error");
 	}
 }

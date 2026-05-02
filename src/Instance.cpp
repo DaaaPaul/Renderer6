@@ -77,7 +77,7 @@ namespace Backend {
 				.ppEnabledExtensionNames = gExtensions.data(),
 			};
 
-			CHECK_VK_SUCCESS(vkCreateInstance(&instanceCreate, nullptr, &gInstance), "Failed to create instance")
+			VK_CHECK(vkCreateInstance(&instanceCreate, nullptr, &gInstance), "Failed to create instance")
 		}
 		
 		void destroyInstance() {

@@ -30,7 +30,7 @@ namespace Backend {
 				.ppEnabledExtensionNames = gExtensions.data(),
 			};
 
-			CHECK_VK_SUCCESS(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &gDevice), "Failed to create logical device")
+			VK_CHECK(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &gDevice), "Failed to create logical device")
 		}
 
 		void createQueues() {

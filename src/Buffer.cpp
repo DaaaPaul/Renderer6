@@ -25,7 +25,7 @@ namespace Resource {
 			.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
 		};
 
-		CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &create, nullptr, &buffer), "createBuffer: failed")
+		VK_CHECK(vkCreateBuffer(gDevice, &create, nullptr, &buffer), "createBuffer: failed")
 
 		return buffer;
 	}

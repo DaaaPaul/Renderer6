@@ -13,7 +13,7 @@
 
 #define UINT32(vecSize) static_cast<uint32_t>(vecSize)
 
-#define CHECK_VK_SUCCESS(createCmd, errMsg) \
+#define VK_CHECK(createCmd, errMsg) \
 	if(createCmd != VK_SUCCESS) { \
         throw std::runtime_error(errMsg); \
 	}
@@ -77,7 +77,6 @@ namespace Util {
 
 		VkImageView createImageView(VkImageViewCreateInfo const&);
 		VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
-		VkDeviceSize alignNextLowest(VkDeviceSize const&, VkDeviceSize const&);
 		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
 		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
 	}

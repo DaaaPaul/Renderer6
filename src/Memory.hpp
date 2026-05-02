@@ -18,6 +18,8 @@ namespace Resource {
 		~Memory();
 
 		private:
+		static void copyToImage(ktxTexture2* texture, VkImage image);
 		static std::pair<VkDeviceSize, std::vector<VkDeviceSize>> sizeAndOffsets(std::vector<Texture> const&, std::vector<Buffer> const&);
+		static VkDeviceSize alignNext(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) { return (N + ALIGNMENT - 1) & ~(ALIGNMENT - 1); }
 	};
 }

@@ -34,10 +34,10 @@ namespace Backend {
 
 		void enumerateSystemPhysicalDevices() {
 			uint32_t physicalDeviceCount{};
-			CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
+			VK_CHECK(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
 			gSystemPhysicalDevices.resize(physicalDeviceCount, {});
 			gSystemPhysicalDeviceProperties.resize(physicalDeviceCount, {});
-			CHECK_VK_SUCCESS(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
+			VK_CHECK(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
 			
 			for(int i = 0; i < physicalDeviceCount; ++i) {
 				vkGetPhysicalDeviceProperties(gSystemPhysicalDevices[i], &gSystemPhysicalDeviceProperties[i]);

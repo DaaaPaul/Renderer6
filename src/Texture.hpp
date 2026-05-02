@@ -19,8 +19,10 @@ namespace Resource {
 		explicit Texture(uint32_t idx, const char* texturePath);
 		~Texture();
 
-		VkMemoryRequirements getRequirements() const { return requirements; }
+		VkImage getImage() const { return image; }
 		VkImageView getImageView() const { return imageView; }
+		ktxTexture2* getTexture() const { return texture; }
+		VkMemoryRequirements getRequirements() const { return requirements; }
 
 		private:
 		static ktxTexture2* getKtx(const char* ktxPath);

@@ -42,26 +42,26 @@ namespace Resource {
 		return t;
 	}
 
-	VkImage Texture::createImage(ktxTexture2* ktxTexture) {
+	VkImage Texture::createImage(ktxTexture2* texture) {
 		VkImage image{};
 
 		VkImageCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 			.imageType = VK_IMAGE_TYPE_2D,
-			.format = static_cast<VkFormat>(ktxTexture->vkFormat),
-			.extent = VkExtent3D(ktxTexture->baseWidth, ktxTexture->baseHeight, 1),
+			.format = static_cast<VkFormat>(texture->vkFormat),
+			.extent = VkExtent3D(texture->baseWidth, texture->baseHeight, texture->baseDepth),
 			.mipLevels = 1,
 			.arrayLayers = 1,
 			.samples = VK_SAMPLE_COUNT_1_BIT,
 			.tiling = VK_IMAGE_TILING_OPTIMAL,
-			.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			.usage = VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = 1,
 			.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0],
 			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		};
 
-		CHECK_VK_SUCCESS(vkCreateImage(gDevice, &create, nullptr, &image), "createImage: failed")
+		VK_CHECK(vkCreateImage(gDevice, &create, nullptr, &image), "createImage: failed")
 
 		return image;
 	}
@@ -96,7 +96,7 @@ namespace Resource {
 			.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 		};
 
-		CHECK_VK_SUCCESS(vkCreateSampler(gDevice, &create, nullptr, &sampler), "createSampler: failed")
+		VK_CHECK(vkCreateSampler(gDevice, &create, nullptr, &sampler), "createSampler: failed")
 
 		return sampler;
 	}

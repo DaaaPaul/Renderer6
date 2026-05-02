@@ -86,7 +86,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); ++i) {
-				CHECK_VK_SUCCESS(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				VK_CHECK(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -140,7 +140,7 @@ namespace Memory {
 			gImages.resize(gImageCreates.size(), {});
 
 			for(int i = 0; i < gImages.size(); ++i) {
-				CHECK_VK_SUCCESS(vkCreateImage(gDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
+				VK_CHECK(vkCreateImage(gDevice, &gImageCreates[i], nullptr, &gImages[i].image), "Failed to create image")
 			}
 		}
 
@@ -235,7 +235,7 @@ namespace Memory {
 			gSamplers.resize(gSamplerCreates.size(), {});
 
 			for(int i = 0; i < gSamplers.size(); ++i) {
-				CHECK_VK_SUCCESS(vkCreateSampler(gDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
+				VK_CHECK(vkCreateSampler(gDevice, &gSamplerCreates[i], nullptr, &gSamplers[i]), "Failed to create sampler")
 			}
 		}
 
@@ -271,7 +271,7 @@ namespace Memory {
 		void createDescriptorSetLayouts() {
 			gDescriptorSets.resize(gDescriptorSetLayoutCreates.size(), {});
 			for(int i = 0; i < gDescriptorSetLayoutCreates.size(); ++i) {
-				CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
+				VK_CHECK(vkCreateDescriptorSetLayout(gDevice, &gDescriptorSetLayoutCreates[i], nullptr, &gDescriptorSets[i].layout), "Failed to create descriptor set");
 			}
 		}
 
@@ -297,7 +297,7 @@ namespace Memory {
 		}
 
 		void createDescriptorPool() {
-			CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
+			VK_CHECK(vkCreateDescriptorPool(gDevice, &gDescriptorPoolCreate, nullptr, &gDescriptorPool), "Failed to create descriptor pool");
 		}
 
 		void populateDescriptorSetAllocates() {
@@ -315,7 +315,7 @@ namespace Memory {
 
 		void createDescriptorSets() {
 			for(int i = 0; i < gDescriptorSets.size(); ++i) {
-				CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
+				VK_CHECK(vkAllocateDescriptorSets(gDevice, &gDescriptorSetAllocates[i], &gDescriptorSets[i].set), "Failed to create descriptor set");
 			}
 		}
 

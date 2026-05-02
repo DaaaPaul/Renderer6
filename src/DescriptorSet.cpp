@@ -3,7 +3,7 @@
 #include "Util.h"
 
 namespace Resource {
-	explicit DescriptorSet::DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {
+	DescriptorSet::DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {
 		layout = createLayout(BINDINGS);
 		pool = createPool(BINDINGS);
 		set = createDescriptorSet(layout, pool);
@@ -24,7 +24,7 @@ namespace Resource {
 			.pBindings = BINDINGS.data()
 		};
 
-		CHECK_VK_SUCCESS(vkCreateDescriptorSetLayout(gDevice, &create, nullptr, &layout), "createLayout: failed")
+		VK_CHECK(vkCreateDescriptorSetLayout(gDevice, &create, nullptr, &layout), "createLayout: failed")
 
 		return layout;
 	}
@@ -43,7 +43,7 @@ namespace Resource {
 			.pPoolSizes = poolSizes.data()
 		};
 		
-		CHECK_VK_SUCCESS(vkCreateDescriptorPool(gDevice, &create, nullptr, &pool), "createPool: failed")
+		VK_CHECK(vkCreateDescriptorPool(gDevice, &create, nullptr, &pool), "createPool: failed")
 
 		return pool;
 	}
@@ -58,7 +58,7 @@ namespace Resource {
 			.pSetLayouts = &layout,
 		};
 
-		CHECK_VK_SUCCESS(vkAllocateDescriptorSets(gDevice, nullptr, &set), "createDescriptorSet: failed")
+		VK_CHECK(vkAllocateDescriptorSets(gDevice, nullptr, &set), "createDescriptorSet: failed")
 
 		return set;
 	}

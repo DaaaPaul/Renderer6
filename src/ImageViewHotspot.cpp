@@ -5,7 +5,7 @@ namespace ImageViewHotspot {
 	VkImageView newView(VkImageViewCreateInfo const& CREATE) {
 		VkImageView newView{};
 
-		CHECK_VK_SUCCESS(vkCreateImageView(gDevice, &CREATE, nullptr, &newView), "Failed to create image view")
+		VK_CHECK(vkCreateImageView(gDevice, &CREATE, nullptr, &newView), "Failed to create image view")
 		views.push_back(newView);
 
 		return newView;
