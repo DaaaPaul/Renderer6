@@ -14,6 +14,9 @@ namespace Backend {
 			"VK_KHR_synchronization2",
 			"VK_KHR_spirv_1_4",
 			"VK_EXT_host_image_copy",
+			"VK_KHR_copy_commands2",
+			"VK_KHR_format_feature_flags2",
+			"qwudbsduai",
 			#ifdef __APPLE__
 			"VK_KHR_portability_subset"
 			#endif
@@ -52,7 +55,7 @@ namespace Backend {
 				.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
 				.extendedDynamicState2 = VK_TRUE
 			},
-			VkPhysicalDeviceHostImageCopyFeatures{
+			VkPhysicalDeviceHostImageCopyFeaturesEXT{
 				.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
 				.hostImageCopy = VK_TRUE
 			}

@@ -10,7 +10,9 @@ namespace Backend {
 		inline std::vector<const char*> gLayers{
 			"VK_LAYER_KHRONOS_validation"
 		};
-		inline std::vector<const char*> gExtensions{};
+		inline std::vector<const char*> gExtensions{
+			"VK_KHR_get_physical_device_properties2"
+		};
 
 		void init();
 		void deInit();

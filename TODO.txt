@@ -21,6 +21,8 @@ BY THE HOUR:
 - asynchronus resource loading
 - hot reloading
 
+* YO GET THE GENERAL LAYOUTS IN *
+
 - clean the fk up (nested namespaces fk that, fk the util dynamic thing, etc)
 
 5-MINUTE CRAFTS:
