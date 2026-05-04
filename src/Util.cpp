@@ -60,11 +60,11 @@ namespace Util {
 	}
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& QUEUE_FAMILY_INDEX) {
+		void begin(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t qfIndex) {
 			VkCommandPoolCreateInfo poolCreate{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 				.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-				.queueFamilyIndex = QUEUE_FAMILY_INDEX
+				.queueFamilyIndex = qfIndex
 			};
 			VK_CHECK(vkCreateCommandPool(gDevice, &poolCreate, nullptr, &cmdPool), "Failed to create temporary command pool")
 
@@ -80,7 +80,7 @@ namespace Util {
 			VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin temporary command buffer recording")
 		}
 
-		void endOneTimeCommandBuffer(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer) {
+		void end(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer) {
 			VK_CHECK(vkEndCommandBuffer(cmdBuffer), "Failed to end temporary command buffer recording")
 
 			VkFence cmdBufferDone{};

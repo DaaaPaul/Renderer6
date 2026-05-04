@@ -77,6 +77,8 @@ namespace Resource {
 			.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
 		};
 
+		VK_CHECK(vkCreateImageView(gDevice, &create, nullptr, &view), "createImageView: failed")
+
 		return view;
 	}
 

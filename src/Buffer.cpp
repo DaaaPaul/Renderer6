@@ -3,13 +3,15 @@
 #include "Util.h"
 
 namespace Resource {
-	Buffer::Buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
-		buffer = createBuffer(size, usage);
+	Buffer::Buffer(void* data, uint32_t size, VkBufferUsageFlags usageFlags) : 
+		data{ data }, size{ size }, usageFlags{ usageFlags } {
+		buffer = createBuffer(size, usageFlags);
 
 		vkGetBufferMemoryRequirements(gDevice, buffer, &requirements);
 	}
 
 	Buffer::~Buffer() {
+		delete data;
 		vkDestroyBuffer(gDevice, buffer, nullptr);
 	}
 
@@ -28,5 +30,16 @@ namespace Resource {
 		VK_CHECK(vkCreateBuffer(gDevice, &create, nullptr, &buffer), "createBuffer: failed")
 
 		return buffer;
+	}
+
+	void Buffer::copy(Buffer& dst, Buffer const& SRC) {
+		VkCommandPool tempPool{};
+		VkCommandBuffer tempCmds{};
+		
+		const VkBufferCopy FULL = SRC.getFullRegion();
+
+		Util::Vulkan::begin(tempPool, tempCmds, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		vkCmdCopyBuffer(tempCmds, SRC.buffer, dst.buffer, 1, &FULL);
+		Util::Vulkan::end(Backend::LogicalDevice::gQueues[0], tempPool, tempCmds);
 	}
 }

@@ -39,8 +39,8 @@ namespace Util {
 	}
 
 	namespace Vulkan {
-		void beginOneTimeCommandBuffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t const& GRAPHICS_QF_INDEX);
-		void endOneTimeCommandBuffer(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer);
+		void begin(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t qfIndex);
+		void end(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer);
 		void transitionImageLayout(VkCommandBuffer cmdBuffer, VkImage image, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
 	}
 
