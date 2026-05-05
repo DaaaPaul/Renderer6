@@ -21,8 +21,9 @@ namespace Resource {
 
 		VkImage getImage() const { return image; }
 		VkImageView getImageView() const { return imageView; }
-		ktxTexture2* getTexture() const { return texture; }
 		VkMemoryRequirements getRequirements() const { return requirements; }
+
+		void copyToImage();
 
 		private:
 		static ktxTexture2* getKtx(const char* ktxPath);

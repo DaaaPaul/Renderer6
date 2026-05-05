@@ -25,8 +25,10 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Buffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DescriptorSet.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DescriptorSet.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Entity.hpp
@@ -40,6 +42,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Load.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Load.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LogicalDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp

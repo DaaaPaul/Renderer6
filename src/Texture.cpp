@@ -3,6 +3,7 @@
 #include "PhysicalDevice.h"
 #include "LogicalDevice.h"
 #include "Util.h"
+#include "Load.h"
 
 namespace Resource {
 	Texture::Texture(uint32_t idx, const char* texturePath) : Resource(idx) {
@@ -21,6 +22,34 @@ namespace Resource {
 		vkDestroyImageView(gDevice, imageView, nullptr);
 		vkDestroyImage(gDevice, image, nullptr);
 		ktxTexture_Destroy(ktxTexture(texture));
+	}
+
+	void Texture::copyToImage() {
+		VkHostImageLayoutTransitionInfo transition{
+			.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+			.image = image,
+			.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+			.newLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+		};
+		VK_CHECK(Load::vkTransitionImageLayoutEXT(gDevice, 1, &transition), "copyToImage: transition error")
+
+		VkMemoryToImageCopyEXT region{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
+			.pHostPointer = texture->pData,
+			.imageSubresource = VkImageSubresourceLayers{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+			.imageExtent = VkExtent3D{texture->baseWidth, texture->baseHeight, texture->baseDepth}
+		};
+
+		VkCopyMemoryToImageInfoEXT copy{
+			.sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT,
+			.dstImage = image,
+			.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.regionCount = 1,
+			.pRegions = &region,
+		};
+
+		VK_CHECK(vkCopyMemoryToImage(gDevice, &copy), "copyToImage: copy error");
 	}
 
 	ktxTexture2* Texture::getKtx(const char* ktxPath) {

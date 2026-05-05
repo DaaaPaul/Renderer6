@@ -3,7 +3,8 @@
 #include "Util.h"
 
 namespace Resource {
-	DescriptorSet::DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {
+	DescriptorSet::DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS, Write const& WRITE) :
+		write(WRITE) {
 		layout = createLayout(BINDINGS);
 		pool = createPool(BINDINGS);
 		set = createDescriptorSet(layout, pool);
@@ -13,6 +14,10 @@ namespace Resource {
 		vkFreeDescriptorSets(gDevice, pool, 1, &set);
 		vkDestroyDescriptorSetLayout(gDevice, layout, nullptr);
 		vkDestroyDescriptorPool(gDevice, pool, nullptr);
+	}
+
+	void DescriptorSet::bind() {
+		vkUpdateDescriptorSets(gDevice, 1, &write.info, 0, nullptr);
 	}
 
 	VkDescriptorSetLayout DescriptorSet::createLayout(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {

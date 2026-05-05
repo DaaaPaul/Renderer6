@@ -24,7 +24,7 @@ namespace Resource {
 		std::vector<VkDeviceAddress> bufferAddresses{};
 
 		public:
-		explicit Memory(std::vector<Texture>&, std::vector<Buffer>&, std::vector<DescriptorSet> const&);
+		explicit Memory(std::vector<Texture>&, std::vector<Buffer>&, std::vector<DescriptorSet>&);
 		~Memory();
 
 		private:
@@ -40,15 +40,14 @@ namespace Resource {
 		static std::vector<VkMemoryRequirements> getRequirements(std::vector<Texture> const&, std::vector<Buffer> const&);
 		static VkDeviceSize alignNext(VkDeviceSize const& N, VkDeviceSize const& ALIGNMENT) { return (N + ALIGNMENT - 1) & ~(ALIGNMENT - 1); }
 
-		static VkDeviceMemory bindTextures(VkDeviceMemory, std::vector<VkDeviceSize> const&, std::vector<Texture> const&);
-		static VkDeviceMemory bindBuffers(VkDeviceMemory, std::vector<VkDeviceSize> const&, std::vector<Buffer> const&);
+		void bindTextures(std::vector<VkDeviceSize> const&, std::vector<Texture> const&);
+		void bindBuffers(std::vector<VkDeviceSize> const&, std::vector<Buffer> const&);
 
 		static std::vector<VkDeviceAddress> getBufferAddresses(std::vector<Buffer> const&);
+		static VkDeviceAddress getBufferAddress(Buffer const&);
 
 		static void completeBuffers(std::vector<VkDeviceAddress> const&, std::vector<Buffer>&);
+		static void copyToBuffer(VkDeviceAddress, Buffer&);
 		static void migrateToBuffers(std::vector<Buffer>&);
-
-		static void completeTextures(std::vector<Texture>&);
-		static void copyToImage(ktxTexture2* texture, VkImage image);
 	};
 }
