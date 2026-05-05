@@ -18,6 +18,30 @@
 #include "Camera.hpp"
 
 namespace Engine {
+	void imageBarrier(VkCommandBuffer cmdBuffer, VkImage image, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX) {
+		VkImageMemoryBarrier2 imageBarrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+			.srcStageMask = SRC_STAGE,
+			.srcAccessMask = SRC_ACCESS,
+			.dstStageMask = DST_STAGE,
+			.dstAccessMask = DST_ACCESS,
+			.oldLayout = OLD_LAYOUT,
+			.newLayout = NEW_LAYOUT,
+			.srcQueueFamilyIndex = GRAPHICS_QF_INDEX,
+			.dstQueueFamilyIndex = GRAPHICS_QF_INDEX,
+			.image = image,
+			.subresourceRange = SUBRESOURCE_RANGE,
+		};
+
+		VkDependencyInfo dependencyInfo{
+			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.imageMemoryBarrierCount = 1,
+			.pImageMemoryBarriers = &imageBarrier,
+		};
+
+		vkCmdPipelineBarrier2(cmdBuffer, &dependencyInfo);
+	}
+
 	void recordComputeCommands(VkCommandBuffer cmdBuffer) {
 		beginCmdBuffer(cmdBuffer);
 		
@@ -102,15 +126,15 @@ namespace Engine {
 		};
 		vkCmdPushConstants(cmdBuffer, PipelineLayouts::gLayouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), pushConstant.data()); 
 		
-		Util::Vulkan::transitionImageLayout(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		imageBarrier(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::gQueueFamilyIndices[0]);
 
-		Util::Vulkan::transitionImageLayout(cmdBuffer, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		imageBarrier(cmdBuffer, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, PhysicalDevice::gQueueFamilyIndices[0]);
 
 		vkCmdBeginRendering(cmdBuffer, &renderingInfo);
 		vkCmdDrawIndexed(cmdBuffer, Resources::gModelIndices.size(), 1, 0, 0, 0);
@@ -159,10 +183,10 @@ namespace Engine {
 		vkCmdDraw(cmdBuffer, Resources::gPARTICLES_COUNT, 1, 0, 0);
 		vkCmdEndRendering(cmdBuffer);
 
-		Util::Vulkan::transitionImageLayout(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		imageBarrier(cmdBuffer, Swapchain::gImages[IMAGE_INDEX], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::gQueueFamilyIndices[0]);
 
 		VK_CHECK(vkEndCommandBuffer(cmdBuffer), "Command buffer end recording failure")
 	}
@@ -191,11 +215,11 @@ namespace Engine {
 		frameData.submits[2].signal.value = frameData.sync.waitSignals[2].signalVal;
 
 		std::vector<VkSubmitInfo2> submits{ frameData.submits[0].info, frameData.submits[1].info, frameData.submits[2].info };
-		vkQueueSubmit2(Backend::LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
+		vkQueueSubmit2(LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
 
 		waitForTimelineSemaphore(frameData.sync.timeline, frameData.sync.waitSignals[2].signalVal);
 		
-		if(presentSwapchainImage(swapchainImageIndex, Backend::LogicalDevice::gQueues[0])) {
+		if(presentSwapchainImage(swapchainImageIndex, LogicalDevice::gQueues[0])) {
 			resize();
 			return;
 		}
@@ -207,7 +231,7 @@ namespace Engine {
 		std::chrono::steady_clock::time_point before{};
 		float delta{};
 
-		while(!glfwWindowShouldClose(Backend::Window::gGlfwWindow)) {
+		while(!glfwWindowShouldClose(Window::gGlfwWindow)) {
 			glfwPollEvents();
 			update(delta);
 
@@ -218,11 +242,11 @@ namespace Engine {
 			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::gFrameIndex, &delta, sizeof(delta));
 		}
 
-		VK_CHECK(vkDeviceWaitIdle(Backend::LogicalDevice::gDevice), "Failed to wait idle");
+		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::gDevice), "Failed to wait idle");
 	}
 
 	bool acquireSwapchainImage(uint32_t& index, VkFence fenceToSignal) {
-		return vkAcquireNextImageKHR(gDevice, Swapchain::gSwapchain, UINT64_MAX, VK_NULL_HANDLE, fenceToSignal, &index) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
+		return vkAcquireNextImageKHR(gDevice, Swapchain::gSwapchain, UINT64_MAX, VK_NULL_HANDLE, fenceToSignal, &index) == VK_ERROR_OUT_OF_DATE_KHR || Window::gFramebufferResized;
 	}
 
 	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue queue) {
@@ -233,7 +257,7 @@ namespace Engine {
 			.pImageIndices = &INDEX
 		};
 
-		return vkQueuePresentKHR(queue, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Backend::Window::gFramebufferResized;
+		return vkQueuePresentKHR(queue, &presentInfo) == VK_ERROR_OUT_OF_DATE_KHR || Window::gFramebufferResized;
 	}
 
 	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL) {
@@ -279,13 +303,13 @@ namespace Engine {
 
 		Swapchain::recreate();
 		// TODO: add functionality to recreate depth resources
-		Backend::Window::gFramebufferResized = false;
+		Window::gFramebufferResized = false;
 		FrameData::recreate();
 	}
 
 	void update(float const& DELTA) {
-		if(glfwGetKey(Backend::Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-			glfwSetWindowShouldClose(Backend::Window::gGlfwWindow, GLFW_TRUE);
+		if(glfwGetKey(Window::gGlfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+			glfwSetWindowShouldClose(Window::gGlfwWindow, GLFW_TRUE);
 		} else {
 			gCamera.updateKeyboard(DELTA);
 			Vertex::Transforms transformation(glm::mat4(1.0f), Camera::view(gCamera), Camera::proj(gCamera));

@@ -6,25 +6,23 @@
 #include <cstdint>
 #include "LogicalDevice.h"
 
-namespace Backend {
-	namespace PhysicalDevice {
-		inline VkPhysicalDevice gPhysicalDevice{};
-		inline std::vector<VkPhysicalDevice> gSystemPhysicalDevices{};
-		inline std::vector<VkPhysicalDeviceProperties> gSystemPhysicalDeviceProperties{};
+namespace PhysicalDevice {
+	inline VkPhysicalDevice gPhysicalDevice{};
+	inline std::vector<VkPhysicalDevice> gSystemPhysicalDevices{};
+	inline std::vector<VkPhysicalDeviceProperties> gSystemPhysicalDeviceProperties{};
 
-		inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{};
+	inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{};
 
-		inline VkPhysicalDeviceLimits gLimits{};
+	inline VkPhysicalDeviceLimits gLimits{};
 
-		void init();
+	void init();
 	
-		void enumerateSystemPhysicalDevices();
-		void selectPhysicalDevice();
+	void enumerateSystemPhysicalDevices();
+	void selectPhysicalDevice();
 
-		bool physicalDeviceGood(VkPhysicalDeviceProperties const&, VkPhysicalDevice);
-		bool apiVersionCheck(VkPhysicalDeviceProperties const&);
-		bool extensionsCheck(VkPhysicalDevice);
-		bool featuresCheck(VkPhysicalDevice);
-		bool queuesCheck(VkPhysicalDevice);
-	}
+	bool physicalDeviceGood(VkPhysicalDeviceProperties const&, VkPhysicalDevice);
+	bool apiVersionCheck(VkPhysicalDeviceProperties const&);
+	bool extensionsCheck(VkPhysicalDevice);
+	bool featuresCheck(VkPhysicalDevice);
+	bool queuesCheck(VkPhysicalDevice);
 }

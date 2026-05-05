@@ -4,6 +4,7 @@
 #include "Swapchain.h"
 #include "MemoryHost.h"
 #include "ImageViewHotspot.h"
+#include "Engine.h"
 
 namespace Memory {
 	namespace Device {
@@ -55,7 +56,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
 			gBufferCreates.push_back(
@@ -65,10 +66,10 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -76,7 +77,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 					}
 				);
 			}
@@ -113,7 +114,7 @@ namespace Memory {
 					.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0],
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0],
 					.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				}
 			);
@@ -122,7 +123,7 @@ namespace Memory {
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 					.imageType = VK_IMAGE_TYPE_2D,
 					.format = VK_FORMAT_D32_SFLOAT,
-					.extent = VkExtent3D(Engine::Swapchain::gStatus.imageExtent.width, Engine::Swapchain::gStatus.imageExtent.height, 1),
+					.extent = VkExtent3D(Swapchain::gStatus.imageExtent.width, Swapchain::gStatus.imageExtent.height, 1),
 					.mipLevels = 1,
 					.arrayLayers = 1,
 					.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -130,7 +131,7 @@ namespace Memory {
 					.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0],
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0],
 					.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 				}
 			);
@@ -156,9 +157,9 @@ namespace Memory {
 		void createMemory() {
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gBufferMemoryRequirements.begin(), gBufferMemoryRequirements.end());
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gImageMemoryRequirements.begin(), gImageMemoryRequirements.end());
-			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).second;
+			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).second;
 
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).first;
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -204,8 +205,8 @@ namespace Memory {
 			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::gModelVertexBufferSize)});
 			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::gModelIndexBufferSize)});
 
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
-				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Engine::Swapchain::gIMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Swapchain::gIMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
 			}
 		}
 
@@ -224,7 +225,7 @@ namespace Memory {
 					.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 					.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 					.anisotropyEnable = VK_TRUE,
-					.maxAnisotropy = Backend::PhysicalDevice::gLimits.maxSamplerAnisotropy,
+					.maxAnisotropy = PhysicalDevice::gLimits.maxSamplerAnisotropy,
 					.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 					.unnormalizedCoordinates = VK_FALSE
 				}
@@ -354,32 +355,32 @@ namespace Memory {
 				VkCommandPool tempCmdPool{};
 				VkCommandBuffer tempCmdBuffer{};
 
-				Util::Vulkan::begin(tempCmdPool, tempCmdBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::begin(tempCmdPool, tempCmdBuffer, PhysicalDevice::gQueueFamilyIndices[0]);
 				vkCmdCopyBuffer(tempCmdBuffer, source, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Util::Vulkan::end(Backend::LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
+				Util::end(LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
 			}
 
 			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer source, std::vector<VkBufferImageCopy> const& REGIONS) {
 				VkCommandPool tempCmdPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::Vulkan::begin(tempCmdPool, tempCommandBuffer, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				Util::begin(tempCmdPool, tempCommandBuffer, PhysicalDevice::gQueueFamilyIndices[0]);
 		
-				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				Engine::imageBarrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
 				VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, PhysicalDevice::gQueueFamilyIndices[0]);
 
 				vkCmdCopyBufferToImage(tempCommandBuffer, source, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
 		
-				Util::Vulkan::transitionImageLayout(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				Engine::imageBarrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, PhysicalDevice::gQueueFamilyIndices[0]);
 
-				Util::Vulkan::end(Backend::LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
+				Util::end(LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {

@@ -3,12 +3,12 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace Engine {
-	namespace ShaderModule {
-		inline std::vector<VkShaderModule> gShaderModules{};
+namespace ShaderModule {
+	inline std::vector<VkShaderModule> gShaderModules{};
 
-		void add();
-		VkShaderModule newShaderModule(VkShaderModuleCreateInfo const&);
-		void clear();
-	}
+	std::vector<char> getBytes(std::string const& PATH);
+
+	void add();
+	VkShaderModule newShaderModule(VkShaderModuleCreateInfo const&);
+	void clear();
 }

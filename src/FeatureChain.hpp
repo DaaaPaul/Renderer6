@@ -47,9 +47,36 @@ struct FeatureChain<First, Rest...> : FeatureChain<Rest...> {
 
 	bool hasAllOf(FeatureChain<First, Rest...> const& REQUIREMENTS) {
 		if constexpr (sizeof...(Rest) != 0) {
-			return Util::FeatureChain::checkFeatureHasAll(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::hasAllOf(REQUIREMENTS);
+			return featuresContainsAll(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::hasAllOf(REQUIREMENTS);
 		} else {
-			return Util::FeatureChain::checkFeatureHasAll(feature, REQUIREMENTS.feature);
+			return featuresContainsAll(feature, REQUIREMENTS.feature);
 		}
+	}
+
+	template<class F>
+	static bool featuresContainsAll(F const& HAVE, F const& CHECK) {
+		bool hasAll = true;
+
+		uint32_t firstVkBool32Offset = offsetof(F, pNext) + sizeof(void*);
+		uint32_t howManyVkBool32 = (sizeof(F) - firstVkBool32Offset) / sizeof(VkBool32) - 1;
+
+		char const* SNIPER_HAVE = reinterpret_cast<char const*>(&HAVE);
+		SNIPER_HAVE += firstVkBool32Offset;
+		VkBool32 const* BOOL_SNIPER_HAVE = reinterpret_cast<VkBool32 const*>(SNIPER_HAVE);
+
+		const char* SNIPER_CHECK = reinterpret_cast<char const*>(&CHECK);
+		SNIPER_CHECK += firstVkBool32Offset;
+		VkBool32 const* BOOL_SNIPER_CHECK = reinterpret_cast<VkBool32 const*>(SNIPER_CHECK);
+		
+		for(int i = 0; i < howManyVkBool32 && hasAll; ++i) {
+			if(*BOOL_SNIPER_HAVE == VK_FALSE && *BOOL_SNIPER_CHECK == VK_TRUE) {
+				hasAll = false;
+			} else {
+				BOOL_SNIPER_HAVE++;
+				BOOL_SNIPER_CHECK++;
+			}
+		}
+
+		return hasAll;
 	}
 };

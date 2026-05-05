@@ -1,27 +1,28 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
+#include <vector>
 
-namespace Backend {
-	namespace Window {
-		inline GLFWwindow* gGlfwWindow{};
-		inline GLFWmonitor* gGlfwMonitor{};
+namespace Window {
+	inline GLFWwindow* gGlfwWindow{};
+	inline GLFWmonitor* gGlfwMonitor{};
 
-		inline int gMonitorWidth{};
-		inline int gMonitorHeight{};
-		inline float gAspectRatio{};
-		inline constexpr const char* gTITLE = "Renderer6";
-		inline bool gFramebufferResized = false;
-		inline bool* gFrameBufferResizedPointer = &gFramebufferResized;
+	inline int gMonitorWidth{};
+	inline int gMonitorHeight{};
+	inline float gAspectRatio{};
+	inline constexpr const char* gTITLE = "Renderer6";
+	inline bool gFramebufferResized = false;
+	inline bool* gFrameBufferResizedPointer = &gFramebufferResized;
 
-		void init();
-		void deInit();
+	std::vector<const char*> getInstanceWindowExtensions();
 
-		void getGlfwMonitor();
-		void createGlfwWindow();
-		void setWindowCallbacks();
-		void destroyGlfwWindow();
+	void init();
+	void deInit();
 
-		void framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height);
-	}
+	void getGlfwMonitor();
+	void createGlfwWindow();
+	void setWindowCallbacks();
+	void destroyGlfwWindow();
+
+	void framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height);
 }

@@ -24,7 +24,7 @@ namespace Resource {
 			.usage = usage,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = 1,
-			.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+			.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 		};
 
 		VK_CHECK(vkCreateBuffer(gDevice, &create, nullptr, &buffer), "createBuffer: failed")
@@ -38,8 +38,8 @@ namespace Resource {
 		
 		const VkBufferCopy FULL = SRC.getFullRegion();
 
-		Util::Vulkan::begin(tempPool, tempCmds, Backend::PhysicalDevice::gQueueFamilyIndices[0]);
+		Util::begin(tempPool, tempCmds, PhysicalDevice::gQueueFamilyIndices[0]);
 		vkCmdCopyBuffer(tempCmds, SRC.buffer, dst.buffer, 1, &FULL);
-		Util::Vulkan::end(Backend::LogicalDevice::gQueues[0], tempPool, tempCmds);
+		Util::end(LogicalDevice::gQueues[0], tempPool, tempCmds);
 	}
 }

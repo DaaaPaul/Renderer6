@@ -1,5 +1,6 @@
 #include "Memory.hpp"
 #include "PhysicalDevice.h"
+#include <vulkan/vulkan.h>
 #include <cstdlib>
 
 namespace Resource {
@@ -76,7 +77,7 @@ namespace Resource {
 			running += TEXT.getRequirements().size;
 		}
 
-		alignNext(running, Backend::PhysicalDevice::gLimits.bufferImageGranularity);
+		alignNext(running, PhysicalDevice::gLimits.bufferImageGranularity);
 
 		for(Buffer const& BUF : BUFFERS) {
 			running = alignNext(running, BUF.getRequirements().alignment);
@@ -91,7 +92,7 @@ namespace Resource {
 
 	uint32_t Memory::getType(uint32_t mask, VkMemoryPropertyFlags propertyMask) {
 		VkPhysicalDeviceMemoryProperties memoryProperties{};
-		vkGetPhysicalDeviceMemoryProperties(Backend::PhysicalDevice::gPhysicalDevice, &memoryProperties);
+		vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::gPhysicalDevice, &memoryProperties);
 
 		uint32_t index = UINT32_MAX;
 		for (int i = 0; i < memoryProperties.memoryTypeCount && index == UINT32_MAX; ++i) {

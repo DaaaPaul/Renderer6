@@ -3,12 +3,10 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace Engine {
-	namespace PipelineLayouts {
-		inline std::vector<VkPipelineLayout> gLayouts{};
+namespace PipelineLayouts {
+	inline std::vector<VkPipelineLayout> gLayouts{};
 
-		void add();
-		VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const&);
-		void clear();
-	}
+	void add();
+	VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const&);
+	void clear();
 }

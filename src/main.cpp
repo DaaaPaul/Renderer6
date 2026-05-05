@@ -18,38 +18,38 @@
 int main() {
     try {
 		Resources::loadModel();
-		Backend::Window::init();
+		Window::init();
 		Resources::loadParticles();
-		Backend::Instance::init();
-		Backend::PhysicalDevice::init();
-		Backend::LogicalDevice::init();
-		Engine::Swapchain::init();
+		Instance::init();
+		PhysicalDevice::init();
+		LogicalDevice::init();
+		Swapchain::init();
 
 		Memory::Host::init();
 		Memory::Device::init();
 
-		Engine::PipelineLayouts::add();
-		Engine::ShaderModule::add();
-		Engine::Pipelines::add();
+		PipelineLayouts::add();
+		ShaderModule::add();
+		Pipelines::add();
 
-		Engine::FrameData::init();
+		FrameData::init();
 		
 		Engine::run();
 
-		Engine::FrameData::deInit();
+		FrameData::deInit();
 		ImageViewHotspot::clear();
 
-		Engine::Pipelines::clear();
-		Engine::ShaderModule::clear();
-		Engine::PipelineLayouts::clear();
-		Engine::Swapchain::deInit();
+		Pipelines::clear();
+		ShaderModule::clear();
+		PipelineLayouts::clear();
+		Swapchain::deInit();
 
 		Memory::Device::deInit();
 		Memory::Host::deInit();
 
-		Backend::LogicalDevice::deInit();
-		Backend::Instance::deInit();
-		Backend::Window::deInit();
+		LogicalDevice::deInit();
+		Instance::deInit();
+		Window::deInit();
 	} catch(std::runtime_error const& RT_ERROR) {
         std::cerr << "ERROR: " << RT_ERROR.what() << "\n";
     }

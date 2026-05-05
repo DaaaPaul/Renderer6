@@ -34,7 +34,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
 			gBufferCreates.push_back(
@@ -44,7 +44,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
 			gBufferCreates.push_back(
@@ -54,11 +54,11 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 				}
 			);
 
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -66,11 +66,11 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 					}
 				);
 			}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -78,11 +78,11 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 					}
 				);
 			}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -90,7 +90,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
 					}
 				);
 			}
@@ -114,7 +114,7 @@ namespace Memory {
 		}
 
 		void createMemory() {
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).first;
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -131,7 +131,7 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, Backend::PhysicalDevice::gLimits.bufferImageGranularity).second);
+			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).second);
 
 			for(int i = 0; i < bufferOffsets.size(); ++i) {
 				gBuffers[i].offset = bufferOffsets[i];
@@ -154,11 +154,11 @@ namespace Memory {
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
 
-			//for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
-			//	Mutate::writeToBuffer(3 + i, &Engine::gTransformation, sizeof(Vertex::Transforms));
+			//for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			//	Mutate::writeToBuffer(3 + i, &gTransformation, sizeof(Vertex::Transforms));
 			//}
-			for(int i = 0; i < Engine::Swapchain::gIMAGE_COUNT; ++i) {
-				Mutate::writeToBuffer(Engine::Swapchain::gIMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
+			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+				Mutate::writeToBuffer(Swapchain::gIMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}
 		}
 

@@ -17,17 +17,17 @@ namespace Resources {
 	}
 	
 	void loadModelVertices() {
-		Util::Resources::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", gModelVertices, gModelIndices);
+		Util::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", gModelVertices, gModelIndices);
 		gModelVertexBufferSize = gModelVertices.size() * sizeof(Vertex::Vertex); /* (aa) */
 		gModelIndexBufferSize = gModelIndices.size() * sizeof(uint32_t); /* (ab) */
 	}
 
 	void loadKtxTexture2() {
-		gTexture = Util::Resources::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
+		gTexture = Util::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 	}
 
 	void loadParticlesData() {
-		float ratio = Backend::Window::gAspectRatio;
+		float ratio = Window::gAspectRatio;
 		float r{}, theta{}, x{}, y{};
 
 		for(Particle::Particle& p : gParticles) {

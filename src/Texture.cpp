@@ -57,7 +57,7 @@ namespace Resource {
 			.usage = VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = 1,
-			.pQueueFamilyIndices = &Backend::PhysicalDevice::gQueueFamilyIndices[0],
+			.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0],
 			.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 		};
 
@@ -94,7 +94,7 @@ namespace Resource {
 			.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			.anisotropyEnable = VK_TRUE,
-			.maxAnisotropy = Backend::PhysicalDevice::gLimits.maxSamplerAnisotropy,
+			.maxAnisotropy = PhysicalDevice::gLimits.maxSamplerAnisotropy,
 			.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 		};
 

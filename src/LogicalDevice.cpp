@@ -1,60 +1,58 @@
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 
-namespace Backend {
-	namespace LogicalDevice {
-		void init() {
-			createLogicalDevice();
-			createQueues();
+namespace LogicalDevice {
+	void init() {
+		createLogicalDevice();
+		createQueues();
+	}
+
+	void deInit() {
+		destroyLogicalDevice();
+	}
+
+	void createLogicalDevice() {
+		std::vector<VkDeviceQueueCreateInfo> queuesCreate(gQUEUE_FAMILY_COUNT, {});
+		for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
+			queuesCreate[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+			queuesCreate[i].queueFamilyIndex = PhysicalDevice::gQueueFamilyIndices[i];
+			queuesCreate[i].queueCount = gQUEUES_PER_QUEUE_FAMILY[i];
+			queuesCreate[i].pQueuePriorities = gQUEUE_PRIORITIES[i].data();
 		}
 
-		void deInit() {
-			destroyLogicalDevice();
-		}
+		VkDeviceCreateInfo logicalDeviceCreate{
+			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+			.pNext = &gFeatures.feature,
+			.queueCreateInfoCount = gQUEUE_FAMILY_COUNT,
+			.pQueueCreateInfos = queuesCreate.data(),
+			.enabledExtensionCount = UINT32(gExtensions.size()),
+			.ppEnabledExtensionNames = gExtensions.data(),
+		};
 
-		void createLogicalDevice() {
-			std::vector<VkDeviceQueueCreateInfo> queuesCreate(gQUEUE_FAMILY_COUNT, {});
-			for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
-				queuesCreate[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-				queuesCreate[i].queueFamilyIndex = PhysicalDevice::gQueueFamilyIndices[i];
-				queuesCreate[i].queueCount = gQUEUES_PER_QUEUE_FAMILY[i];
-				queuesCreate[i].pQueuePriorities = gQUEUE_PRIORITIES[i].data();
-			}
+		VK_CHECK(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &gDevice), "Failed to create logical device")
+	}
 
-			VkDeviceCreateInfo logicalDeviceCreate{
-				.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-				.pNext = &gFeatures.feature,
-				.queueCreateInfoCount = gQUEUE_FAMILY_COUNT,
-				.pQueueCreateInfos = queuesCreate.data(),
-				.enabledExtensionCount = UINT32(gExtensions.size()),
-				.ppEnabledExtensionNames = gExtensions.data(),
-			};
+	void createQueues() {
+		gQueues.resize(getQueueIndex(gQUEUE_FAMILY_COUNT - 1, gQUEUES_PER_QUEUE_FAMILY[gQUEUE_FAMILY_COUNT - 1]) + 1, VK_NULL_HANDLE);
 
-			VK_CHECK(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &gDevice), "Failed to create logical device")
-		}
-
-		void createQueues() {
-			gQueues.resize(getQueueIndex(gQUEUE_FAMILY_COUNT - 1, gQUEUES_PER_QUEUE_FAMILY[gQUEUE_FAMILY_COUNT - 1]) + 1, VK_NULL_HANDLE);
-
-			for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
-				for(int j = 0; j < gQUEUES_PER_QUEUE_FAMILY[i]; j++) {
-					vkGetDeviceQueue(gDevice, PhysicalDevice::gQueueFamilyIndices[i], j, &gQueues[getQueueIndex(i, j)]);
-				}
+		for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
+			for(int j = 0; j < gQUEUES_PER_QUEUE_FAMILY[i]; j++) {
+				vkGetDeviceQueue(gDevice, PhysicalDevice::gQueueFamilyIndices[i], j, &gQueues[getQueueIndex(i, j)]);
 			}
 		}
+	}
 
-		void destroyLogicalDevice() {
-			vkDestroyDevice(gDevice, nullptr);
+	void destroyLogicalDevice() {
+		vkDestroyDevice(gDevice, nullptr);
+	}
+
+	uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) {
+		uint32_t queueConsumer = 0;
+
+		for(int i = 0; i < QUEUE_FAMILY; ++i) {
+			queueConsumer += gQUEUES_PER_QUEUE_FAMILY[i];
 		}
 
-		uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) {
-			uint32_t queueConsumer = 0;
-
-			for(int i = 0; i < QUEUE_FAMILY; ++i) {
-				queueConsumer += gQUEUES_PER_QUEUE_FAMILY[i];
-			}
-
-			return queueConsumer + QUEUE_IN_QUEUE_FAMILY;
-		}
+		return queueConsumer + QUEUE_IN_QUEUE_FAMILY;
 	}
 }

@@ -6,129 +6,127 @@
 #include "Instance.h"
 #include "Window.h"
 
-namespace Engine {
-	namespace Swapchain {
-		void init() {
-			createSurface();
+namespace Swapchain {
+	void init() {
+		createSurface();
 
-			populateImageSize();
-			checkImageFormatAndColorspaceSupported();
-			checkPresentModeSupported();
+		populateImageSize();
+		checkImageFormatAndColorspaceSupported();
+		checkPresentModeSupported();
 
-			populateCurrentSwapchainStatus();
-			createSwapchain();
-			populateImages();
+		populateCurrentSwapchainStatus();
+		createSwapchain();
+		populateImages();
+	}
+
+	void deInit() {
+		destroySwapchain();
+		destroySurface();
+	}
+
+	void recreate() {
+		populateImageSize();
+		while(gImageSize.width == 0 && gImageSize.height == 0) {
+			glfwWaitEvents(); // wait for the next glfw event, and process it when it comes
+			populateImageSize(); // query window size after glfw event is processed
 		}
 
-		void deInit() {
-			destroySwapchain();
-			destroySurface();
-		}
+		destroySwapchain();
+		populateCurrentSwapchainStatus();
+		createSwapchain();
+		populateImages();
+	}
 
-		void recreate() {
-			populateImageSize();
-			while(gImageSize.width == 0 && gImageSize.height == 0) {
-				glfwWaitEvents(); // wait for the next glfw event, and process it when it comes
-				populateImageSize(); // query window size after glfw event is processed
-			}
+	void createSurface() {
+		VK_CHECK(glfwCreateWindowSurface(Instance::gInstance, Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
+	}
 
-			destroySwapchain();
-			populateCurrentSwapchainStatus();
-			createSwapchain();
-			populateImages();
-		}
+	void populateCurrentSwapchainStatus() {
+		gStatus = VkSwapchainCreateInfoKHR{
+			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+			.surface = gSurface,
+			.minImageCount = gIMAGE_COUNT,
+			.imageFormat = gIMAGE_FORMAT,
+			.imageColorSpace = gIMAGE_COLOR_SPACE,
+			.imageExtent = gImageSize,
+			.imageArrayLayers = 1,
+			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+			.queueFamilyIndexCount = LogicalDevice::gQUEUE_FAMILY_COUNT,
+			.pQueueFamilyIndices = PhysicalDevice::gQueueFamilyIndices.data(),
+			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
+			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+			.presentMode = gPRESENT_MODE,
+			.clipped = VK_TRUE,
+		};
+	}
 
-		void createSurface() {
-			VK_CHECK(glfwCreateWindowSurface(Backend::Instance::gInstance, Backend::Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
-		}
+	void createSwapchain() {
+		VK_CHECK(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
+	}
 
-		void populateCurrentSwapchainStatus() {
-			gStatus = VkSwapchainCreateInfoKHR{
-				.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-				.surface = gSurface,
-				.minImageCount = gIMAGE_COUNT,
-				.imageFormat = gIMAGE_FORMAT,
-				.imageColorSpace = gIMAGE_COLOR_SPACE,
-				.imageExtent = gImageSize,
-				.imageArrayLayers = 1,
-				.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-				.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-				.queueFamilyIndexCount = Backend::LogicalDevice::gQUEUE_FAMILY_COUNT,
-				.pQueueFamilyIndices = Backend::PhysicalDevice::gQueueFamilyIndices.data(),
-				.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
-				.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-				.presentMode = gPRESENT_MODE,
-				.clipped = VK_TRUE,
-			};
-		}
+	void populateImages() {
+		uint32_t imageCount = UINT32_MAX;
+		vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, nullptr);
+		gImages.clear();
+		gImages.resize(imageCount, {});
+		vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, gImages.data());
+	}
 
-		void createSwapchain() {
-			VK_CHECK(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
-		}
-
-		void populateImages() {
-			uint32_t imageCount = UINT32_MAX;
-			vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, nullptr);
-			gImages.clear();
-			gImages.resize(imageCount, {});
-			vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, gImages.data());
-		}
-
-		void populateImageSize() {
-			VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-			VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
+	void populateImageSize() {
+		VkSurfaceCapabilitiesKHR surfaceCapabilities{};
+		VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
 		
-			gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
+		gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 
-			if(gImageSize.width == UINT32_MAX) {
-				glfwGetFramebufferSize(Backend::Window::gGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
+		if(gImageSize.width == UINT32_MAX) {
+			glfwGetFramebufferSize(Window::gGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
+		}
+	}
+
+	void checkImageFormatAndColorspaceSupported() {
+		uint32_t supportedFormatColorspacePairCount{};
+		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, nullptr);
+		std::vector<VkSurfaceFormatKHR> supportedFormatColorspacePairs(supportedFormatColorspacePairCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
+
+		bool supported = false;
+
+		for(int i = 0; i < supportedFormatColorspacePairCount && !supported; ++i) {
+			if (supportedFormatColorspacePairs[i].format == gIMAGE_FORMAT && supportedFormatColorspacePairs[i].colorSpace == gIMAGE_COLOR_SPACE) {
+				supported = true;
 			}
 		}
 
-		void checkImageFormatAndColorspaceSupported() {
-			uint32_t supportedFormatColorspacePairCount{};
-			vkGetPhysicalDeviceSurfaceFormatsKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, nullptr);
-			std::vector<VkSurfaceFormatKHR> supportedFormatColorspacePairs(supportedFormatColorspacePairCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
+		if(!supported) {
+			throw std::runtime_error("Swapchain format and colorspace pair not supported");
+		}
+	}
 
-			bool supported = false;
+	void checkPresentModeSupported() {
+		uint32_t supportedPresentModeCount{};
+		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, nullptr);
+		std::vector<VkPresentModeKHR> supportedPresentModes(supportedPresentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, supportedPresentModes.data());
 
-			for(int i = 0; i < supportedFormatColorspacePairCount && !supported; ++i) {
-				if (supportedFormatColorspacePairs[i].format == gIMAGE_FORMAT && supportedFormatColorspacePairs[i].colorSpace == gIMAGE_COLOR_SPACE) {
-					supported = true;
-				}
-			}
+		bool supported = false;
 
-			if(!supported) {
-				throw std::runtime_error("Swapchain format and colorspace pair not supported");
+		for(int i = 0; i < supportedPresentModeCount && !supported; ++i) {
+			if(supportedPresentModes[i] == gPRESENT_MODE) {
+				supported = true;
 			}
 		}
 
-		void checkPresentModeSupported() {
-			uint32_t supportedPresentModeCount{};
-			vkGetPhysicalDeviceSurfacePresentModesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, nullptr);
-			std::vector<VkPresentModeKHR> supportedPresentModes(supportedPresentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(Backend::PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, supportedPresentModes.data());
-
-			bool supported = false;
-
-			for(int i = 0; i < supportedPresentModeCount && !supported; ++i) {
-				if(supportedPresentModes[i] == gPRESENT_MODE) {
-					supported = true;
-				}
-			}
-
-			if(!supported) {
-				throw std::runtime_error("Swapchain present mode not supported");
-			}
+		if(!supported) {
+			throw std::runtime_error("Swapchain present mode not supported");
 		}
+	}
 
-		void destroySurface() {
-			vkDestroySurfaceKHR(Backend::Instance::gInstance, gSurface, nullptr);
-		}		
+	void destroySurface() {
+		vkDestroySurfaceKHR(Instance::gInstance, gSurface, nullptr);
+	}		
 
-		void destroySwapchain() {
-			vkDestroySwapchainKHR(gDevice, gSwapchain, nullptr);
-		}
+	void destroySwapchain() {
+		vkDestroySwapchainKHR(gDevice, gSwapchain, nullptr);
 	}
 }
