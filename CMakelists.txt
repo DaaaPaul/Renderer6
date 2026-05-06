@@ -27,6 +27,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Component.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DepthImage.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/DepthImage.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DescriptorSet.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/DescriptorSet.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine.cpp
@@ -49,6 +51,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryManager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/MemoryHost.cpp

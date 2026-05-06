@@ -3,31 +3,29 @@
 #include <vulkan/vulkan.h>
 #include <utility>
 
-namespace Resource {
-	class Buffer {
-		private:
-		VkBuffer buffer{};
-		void* data{};
-		uint32_t size{};
+class Buffer {
+	private:
+	VkBuffer buffer{};
+	void* data{};
+	uint32_t size{};
 
-		VkMemoryRequirements requirements{};
-		VkBufferUsageFlags usageFlags{};
+	VkMemoryRequirements requirements{};
+	VkBufferUsageFlags usageFlags{};
 
-		public:
-		explicit Buffer(void* data, uint32_t size, VkBufferUsageFlags usage);
-		~Buffer();
+	public:
+	explicit Buffer(void* data, uint32_t size, VkBufferUsageFlags usage);
+	~Buffer();
 
-		VkBuffer getBuffer() const { return buffer; }
-		VkMemoryRequirements getRequirements() const { return requirements; }
-		VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
-		void* getData() const { return data; }
-		uint32_t getSize() const { return size; } 
+	VkBuffer getBuffer() const { return buffer; }
+	VkMemoryRequirements getRequirements() const { return requirements; }
+	VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
+	void* getData() const { return data; }
+	uint32_t getSize() const { return size; } 
 
-		static void copy(Buffer&, Buffer const&);
+	static void copy(Buffer&, Buffer const&);
 
-		private:
-		static VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
+	private:
+	static VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);
 
-		VkBufferCopy getFullRegion() const { return VkBufferCopy{0, 0, this->size}; }
-	};
-}
+	VkBufferCopy getFullRegion() const { return VkBufferCopy{0, 0, this->size}; }
+};

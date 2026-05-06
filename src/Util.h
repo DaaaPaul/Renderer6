@@ -13,16 +13,18 @@
 
 #define UINT32(vecSize) static_cast<uint32_t>(vecSize)
 
-#define VK_CHECK(createCmd, errMsg) \
-	if(createCmd != VK_SUCCESS) { \
-        throw std::runtime_error(errMsg); \
-	}
-
 #define POINTER_SIZE(num) (8 * num)
 
 #define DA_PI 3.14159274f
 
 #define PRESSED(glfwKey) glfwGetKey(Window::gGlfwWindow, glfwKey) == GLFW_PRESS
+
+#define VK_CHECK(createCmd, errMsg) \
+	if(createCmd != VK_SUCCESS) { \
+        throw std::runtime_error(errMsg); \
+	}
+
+#define VK_NO_FLAGS 0U
 
 using VkLogicalDevice = VkDevice;
 

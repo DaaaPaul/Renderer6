@@ -14,6 +14,5 @@ namespace NameTable {
 	uint32_t pushEntry(const char* name);
 
 	uint32_t getIdx(const char* name);
-
 	constexpr const char* getName(uint32_t idx);
 }
