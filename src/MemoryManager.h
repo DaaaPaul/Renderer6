@@ -7,7 +7,7 @@ namespace MemoryManager {
 	inline std::vector<DescriptorSet> gDescriptorSets{};
 
 	inline Memory gHost{};
-	inline Memory gDevice{};
+	inline Memory g_device{};
 
 	void init();
 

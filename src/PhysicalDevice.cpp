@@ -69,7 +69,7 @@ namespace PhysicalDevice {
 		auto availableFeatures(LogicalDevice::gFeatures);
 		vkGetPhysicalDeviceFeatures2(physicalDevice, &availableFeatures.feature);
 
-		return availableFeatures.hasAllOf(LogicalDevice::gFeatures);
+		return availableFeatures.has_all(LogicalDevice::gFeatures);
 	}
 
 	bool queuesCheck(VkPhysicalDevice physicalDevice) {
@@ -89,7 +89,7 @@ namespace PhysicalDevice {
 				if ((availableQfs[j].queueFlags & gQUEUE_FAMILY_CAPABILITIES[i]) && 
 					(availableQfs[j].queueCount >= gQUEUES_PER_QUEUE_FAMILY[i])) {
 					thisQfGood = true;
-					gQueueFamilyIndices[i] = j;
+					g_queue_family_indices[i] = j;
 				}
 			}
 

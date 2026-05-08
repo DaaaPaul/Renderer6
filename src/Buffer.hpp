@@ -9,7 +9,7 @@ class Buffer {
 	void* data{};
 	uint32_t size{};
 
-	VkMemoryRequirements requirements{};
+	VkMemoryRequirements memory_requirements{};
 	VkBufferUsageFlags usageFlags{};
 
 	public:
@@ -17,12 +17,12 @@ class Buffer {
 	~Buffer();
 
 	VkBuffer getBuffer() const { return buffer; }
-	VkMemoryRequirements getRequirements() const { return requirements; }
+	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
 	VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
 	void* getData() const { return data; }
 	uint32_t getSize() const { return size; } 
 
-	static void copy(Buffer&, Buffer const&);
+	static void copy(Buffer& dst, const Buffer& src);
 
 	private:
 	static VkBuffer createBuffer(VkDeviceSize size, VkBufferUsageFlags usage);

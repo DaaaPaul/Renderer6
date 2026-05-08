@@ -50,7 +50,7 @@ namespace Util {
 			.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
 			.queueFamilyIndex = qfIndex
 		};
-		VK_CHECK(vkCreateCommandPool(gDevice, &poolCreate, nullptr, &cmdPool), "Failed to create temporary command pool")
+		VK_CHECK(vkCreateCommandPool(g_device, &poolCreate, nullptr, &cmdPool), "Failed to create temporary command pool")
 
 		VkCommandBufferAllocateInfo commandBufferCreate{
 			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -58,7 +58,7 @@ namespace Util {
 			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
 			.commandBufferCount = 1,
 		};
-		VK_CHECK(vkAllocateCommandBuffers(gDevice, &commandBufferCreate, &cmdBuffer), "Failed to create temporary command buffer")
+		VK_CHECK(vkAllocateCommandBuffers(g_device, &commandBufferCreate, &cmdBuffer), "Failed to create temporary command buffer")
 
 		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT };
 		VK_CHECK(vkBeginCommandBuffer(cmdBuffer, &BEGIN), "Failed to begin temporary command buffer recording")
@@ -69,7 +69,7 @@ namespace Util {
 
 		VkFence cmdBufferDone{};
 		constexpr VkFenceCreateInfo CREATE{ .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
-		VK_CHECK(vkCreateFence(gDevice, &CREATE, nullptr, &cmdBufferDone), "Failed to create copy command done fence")
+		VK_CHECK(vkCreateFence(g_device, &CREATE, nullptr, &cmdBufferDone), "Failed to create copy command done fence")
 
 		VkSubmitInfo commandBufferSubmit{
 			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -77,11 +77,11 @@ namespace Util {
 			.pCommandBuffers = &cmdBuffer,
 		};
 		VK_CHECK(vkQueueSubmit(queue, 1, &commandBufferSubmit, cmdBufferDone), "Failed to submit temporary command buffer")
-		VK_CHECK(vkWaitForFences(gDevice, 1, &cmdBufferDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
+		VK_CHECK(vkWaitForFences(g_device, 1, &cmdBufferDone, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
 
-		vkDestroyFence(gDevice, cmdBufferDone, nullptr);
-		vkFreeCommandBuffers(gDevice, cmdPool, 1, &cmdBuffer);
-		vkDestroyCommandPool(gDevice, cmdPool, nullptr);
+		vkDestroyFence(g_device, cmdBufferDone, nullptr);
+		vkFreeCommandBuffers(g_device, cmdPool, 1, &cmdBuffer);
+		vkDestroyCommandPool(g_device, cmdPool, nullptr);
 	}
 
 	void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices) {
@@ -194,10 +194,10 @@ namespace Util {
 	}
 
 	namespace Memory {
-		VkImageView createImageView(VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
+		VkImageView create_image_view(VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
 			VkImageView view{};
 		
-			VK_CHECK(vkCreateImageView(gDevice, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
+			VK_CHECK(vkCreateImageView(g_device, &IMAGE_VIEW_INFO, nullptr, &view), "Failed to create image view")
 	
 			return view;
 		}

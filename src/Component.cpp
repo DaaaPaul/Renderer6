@@ -1,5 +1,3 @@
 #include "Component.hpp"
 
-namespace Engine {
-	uint32_t Component::nextTypeID = 0;
-}
+uint32_t Component::next_type_id = 0;

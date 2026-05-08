@@ -4,7 +4,7 @@
 #include "PhysicalDevice.h"
 
 Memory::Memory(std::vector<Texture>& textures, std::vector<DepthImage> const& DEPTH_IMAGES, std::vector<Buffer>& buffers, std::vector<DescriptorSet>& descriptorSets) :
-	measurements{ getMeasurements(textures, DEPTH_IMAGES, buffers) }, typeIndex{ getType(getMask(getRequirements(textures, DEPTH_IMAGES, buffers)), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) }, pTextures(toPointers(textures)), pBuffers(toPointers(buffers)) {
+	measurements{ getMeasurements(textures, DEPTH_IMAGES, buffers) }, typeIndex{ getType(getMask(get_memory_requirements(textures, DEPTH_IMAGES, buffers)), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) }, pTextures(toPointers(textures)), pBuffers(toPointers(buffers)) {
 	memory = createMemory(measurements.size, typeIndex);
 	bindTextures(measurements.textureOffsets, textures);
 	bindBuffers(measurements.bufferOffsets, buffers);
@@ -22,7 +22,7 @@ Memory::Memory(std::vector<Texture>& textures, std::vector<DepthImage> const& DE
 }
 
 Memory::Memory(std::vector<Buffer>& buffers) :
-	measurements{ getMeasurements({}, {}, buffers) }, typeIndex{ getType(getMask(getRequirements({}, {}, buffers)), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) }, pTextures{}, pBuffers(toPointers(buffers)) {
+	measurements{ getMeasurements({}, {}, buffers) }, typeIndex{ getType(getMask(get_memory_requirements({}, {}, buffers)), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) }, pTextures{}, pBuffers(toPointers(buffers)) {
 	memory = createMemory(measurements.size, typeIndex);
 	bindBuffers(measurements.bufferOffsets, buffers);
 
@@ -31,7 +31,7 @@ Memory::Memory(std::vector<Buffer>& buffers) :
 }
 
 Memory::~Memory() {
-	vkFreeMemory(gDevice, memory, nullptr);
+	vkFreeMemory(g_device, memory, nullptr);
 }
 
 std::vector<Texture*> Memory::toPointers(std::vector<Texture>& pTextures) {
@@ -67,7 +67,7 @@ VkDeviceMemory Memory::createMemory(VkDeviceSize size, uint32_t typeIndex) {
 		.allocationSize = size,
 		.memoryTypeIndex = typeIndex
 	};
-	VK_CHECK(vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &memory), "createMemory: failed")
+	VK_CHECK(vkAllocateMemory(g_device, &memoryAllocate, nullptr, &memory), "createMemory: failed")
 		
 	return memory;
 }
@@ -78,22 +78,22 @@ Memory::Measurements Memory::getMeasurements(std::vector<Texture> const& TEXTURE
 	VkDeviceSize running = 0;
 
 	for(Texture const& TEXT : TEXTURES) {
-		running = alignNext(running, TEXT.getRequirements().alignment);
+		running = alignNext(running, TEXT.get_memory_requirements().alignment);
 		measurements.textureOffsets.push_back(running);
-		running += TEXT.getRequirements().size;
+		running += TEXT.get_memory_requirements().size;
 	}
 
 	for(DepthImage const& DEPTH : DEPTH_IMAGES) {
-		running = alignNext(running, DEPTH.getRequirements().alignment);
-		running += DEPTH.getRequirements().alignment;
+		running = alignNext(running, DEPTH.get_memory_requirements().alignment);
+		running += DEPTH.get_memory_requirements().alignment;
 	}
 
 	alignNext(running, PhysicalDevice::gLimits.bufferImageGranularity);
 
 	for(Buffer const& BUF : BUFFERS) {
-		running = alignNext(running, BUF.getRequirements().alignment);
+		running = alignNext(running, BUF.get_memory_requirements().alignment);
 		measurements.bufferOffsets.push_back(running);
-		running += BUF.getRequirements().size;
+		running += BUF.get_memory_requirements().size;
 	}
 
 	measurements.size = running;
@@ -127,27 +127,27 @@ uint32_t Memory::getMask(std::vector<VkMemoryRequirements> const& REQS) {
 	return mask;
 }
 
-std::vector<VkMemoryRequirements> Memory::getRequirements(std::vector<Texture> const& TEXTURES, std::vector<DepthImage> const& DEPTH_IMAGES, std::vector<Buffer> const& BUFFERS) {
-	std::vector<VkMemoryRequirements> requirements{};
+std::vector<VkMemoryRequirements> Memory::get_memory_requirements(std::vector<Texture> const& TEXTURES, std::vector<DepthImage> const& DEPTH_IMAGES, std::vector<Buffer> const& BUFFERS) {
+	std::vector<VkMemoryRequirements> memory_requirements{};
 
 	for(Texture const& TEXT : TEXTURES) {
-		requirements.push_back(TEXT.getRequirements());
+		memory_requirements.push_back(TEXT.get_memory_requirements());
 	}
 	for(DepthImage const& DEPTH : DEPTH_IMAGES) {
-		requirements.push_back(DEPTH.getRequirements());
+		memory_requirements.push_back(DEPTH.get_memory_requirements());
 	}
 	for(Buffer const& BUF : BUFFERS) {
-		requirements.push_back(BUF.getRequirements());
+		memory_requirements.push_back(BUF.get_memory_requirements());
 	}
 
-	return requirements;
+	return memory_requirements;
 }
 
 void Memory::bindTextures(std::vector<VkDeviceSize> const& OFFSETS, std::vector<Texture> const& TEXTURES) {
 	assert(OFFSETS.size() == TEXTURES.size());
 		
 	for(int i = 0; i < TEXTURES.size(); i++) {
-		vkBindImageMemory(gDevice, TEXTURES[i].getImage(), memory, OFFSETS[i]);
+		vkBindImageMemory(g_device, TEXTURES[i].get_image(), memory, OFFSETS[i]);
 	}
 }
 
@@ -155,7 +155,7 @@ void Memory::bindBuffers(std::vector<VkDeviceSize> const& OFFSETS, std::vector<B
 	assert(OFFSETS.size() == BUFFERS.size());
 		
 	for(int i = 0; i < BUFFERS.size(); i++) {
-		vkBindBufferMemory(gDevice, BUFFERS[i].getBuffer(), memory, OFFSETS[i]);
+		vkBindBufferMemory(g_device, BUFFERS[i].getBuffer(), memory, OFFSETS[i]);
 	}
 }
 
@@ -177,7 +177,7 @@ VkDeviceAddress Memory::getBufferAddress(Buffer const& BUFFER) {
 		.buffer = BUFFER.getBuffer()
 	};
 
-	return vkGetBufferDeviceAddress(gDevice, &buffer);
+	return vkGetBufferDeviceAddress(g_device, &buffer);
 }
 
 std::vector<void*> Memory::mapBuffers(std::vector<VkDeviceSize> const& OFFSETS, std::vector<Buffer> const& BUFFERS) {
@@ -193,7 +193,7 @@ std::vector<void*> Memory::mapBuffers(std::vector<VkDeviceSize> const& OFFSETS, 
 void* Memory::mapBuffer(VkDeviceSize const& OFFSET, Buffer const& BUFFER) {
 	void* mapped{};
 
-	VK_CHECK(vkMapMemory(gDevice, memory, OFFSET, BUFFER.getSize(), VK_NO_FLAGS, &mapped), "mapBuffer: failed")
+	VK_CHECK(vkMapMemory(g_device, memory, OFFSET, BUFFER.getSize(), VK_NO_FLAGS, &mapped), "mapBuffer: failed")
 
 	return mapped;
 }

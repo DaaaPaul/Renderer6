@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace Swapchain {
-	inline VkSwapchainKHR gSwapchain{};
+	inline VkSwapchainKHR g_swapchain{};
 	inline std::vector<VkImage> gImages{};
 	inline VkSurfaceKHR gSurface{};
 	inline VkSwapchainCreateInfoKHR gStatus{};

@@ -48,7 +48,7 @@ namespace ShaderModule {
 	VkShaderModule newShaderModule(VkShaderModuleCreateInfo const& CREATE) {
 		VkShaderModule shaderModule{};
 
-		VK_CHECK(vkCreateShaderModule(gDevice, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
+		VK_CHECK(vkCreateShaderModule(g_device, &CREATE, nullptr, &shaderModule), "Failed to create shader module")
 		gShaderModules.push_back(shaderModule);
 
 		return shaderModule;
@@ -56,7 +56,7 @@ namespace ShaderModule {
 
 	void clear() {
 		for(VkShaderModule shaderModule : gShaderModules) {
-			vkDestroyShaderModule(gDevice, shaderModule, nullptr);
+			vkDestroyShaderModule(g_device, shaderModule, nullptr);
 		}
 	}
 }

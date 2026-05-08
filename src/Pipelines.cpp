@@ -212,7 +212,7 @@ namespace Pipelines {
 	VkPipeline newGraphicsPipeline(GraphicsAggregate const& AGGREGATE) {
 		VkPipeline graphics{};
 
-		VK_CHECK(vkCreateGraphicsPipelines(gDevice, VK_NULL_HANDLE, 1, &AGGREGATE.create, nullptr, &graphics), "Failed to create graphics pipeline")
+		VK_CHECK(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &AGGREGATE.create, nullptr, &graphics), "Failed to create graphics pipeline")
 		gPipelines.push_back(graphics);
 
 		return graphics;
@@ -221,7 +221,7 @@ namespace Pipelines {
 	VkPipeline newComputePipeline(VkComputePipelineCreateInfo const& CREATE) {
 		VkPipeline compute{};
 
-		VK_CHECK(vkCreateComputePipelines(gDevice, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
+		VK_CHECK(vkCreateComputePipelines(g_device, VK_NULL_HANDLE, 1, &CREATE, nullptr, &compute), "Failed to create compute pipeline")
 		gPipelines.push_back(compute);
 
 		return compute;
@@ -229,7 +229,7 @@ namespace Pipelines {
 
 	void clear() {
 		for(VkPipeline pipeline : gPipelines) {
-			vkDestroyPipeline(gDevice, pipeline, nullptr);
+			vkDestroyPipeline(g_device, pipeline, nullptr);
 		}
 	}
 }

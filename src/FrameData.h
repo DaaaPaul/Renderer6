@@ -6,58 +6,76 @@
 #include "Swapchain.h"
 
 namespace FrameData {
-	struct WaitSignal {
-		uint64_t waitVal{};
-		uint64_t signalVal{};
+	struct SyncTargets {
+		uint64_t wait_val{};
+		uint64_t signal_val{};
 	};
 
 	struct SyncData {
 		VkFence guard{};
-		VkSemaphore timeline{};
-		uint64_t timelineVal{};
-		std::vector<WaitSignal> waitSignals{};
+		VkSemaphore timeline_semaphore{};
+		uint64_t val{};
+		std::vector<SyncTargets> targets{};
 
-		void updateWaitSignals() {
-			for(WaitSignal& waitSignal : waitSignals) {
-				waitSignal.waitVal = timelineVal;
-				waitSignal.signalVal = ++timelineVal;
+		void increment_targets() {
+			for(SyncTargets& target : targets) {
+				target.wait_val = val;
+				target.signal_val = ++val;
 			}
 		}
 	};
 
 	struct SubmitData {
-		VkSemaphoreSubmitInfo wait{};
-		VkCommandBufferSubmitInfo cmds{};
-		VkSemaphoreSubmitInfo signal{};
-		VkSubmitInfo2 info{};
+		VkSemaphoreSubmitInfo wait_info{};
+		VkCommandBufferSubmitInfo cmd_info{};
+		VkSemaphoreSubmitInfo signal_info{};
+		VkSubmitInfo2 submit_info{};
+
+		SubmitData(VkSemaphore wait_semaphore, VkSemaphore signal_semaphore) :
+			wait_info{ .semaphore = wait }
+
+		void setup() {
+			submit_info.pWaitSemaphoreInfos = &wait_info;
+			submit_info.pCommandBufferInfos = &cmd_info;
+			submit_info.pSignalSemaphoreInfos = &signal_info;
+		}
+
+		void set_wait_semaphore(VkSemaphore semaphore) {
+			wait_info.semaphore = semaphore;
+		}
+
+		void set_signal_semaphore(VkSemaphore semaphore) {
+			signal_info.semaphore = semaphore;
+		}
 	};
 
 	struct FrameData {
-		SyncData sync{};
-		std::vector<SubmitData> submits{};
+		SyncData sync_data{};
+		std::vector<SubmitData> submit_datas{};
 
-		explicit FrameData(VkFence guard, VkSemaphore timeline, uint64_t const& TIMELINE_VAL, std::vector<WaitSignal> const& WAIT_SIGNALS, std::vector<SubmitData> const& SUBMITS) :
-			sync{guard, timeline, TIMELINE_VAL, WAIT_SIGNALS}, submits(SUBMITS) {
+		explicit FrameData(const SyncData& sync_data, const std::vector<SubmitData>& submit_datas) :
+			sync_data(sync_data), submit_datas(submit_datas) {
 			selfRefer();
 		}
 
 		private:
 		void selfRefer() {
-			for(SubmitData& submit : submits) {
-				submit.wait.semaphore = sync.timeline;
-				submit.signal.semaphore = sync.timeline;
+			for(SubmitData& submit_data : submit_datas) {
+				submit_data.setup();
+				submit.wait_info.semaphore = sync_data.timeline_semaphore;
+				submit.signal_info.semaphore = sync_data.timeline_semaphore;
 
-				submit.info.pWaitSemaphoreInfos = &submit.wait;
-				submit.info.pCommandBufferInfos = &submit.cmds;
-				submit.info.pSignalSemaphoreInfos = &submit.signal;
+				submit.submit_info.pWaitSemaphoreInfos = &submit.wait_info;
+				submit.submit_info.pCommandBufferInfos = &submit.cmd_info;
+				submit.submit_info.pSignalSemaphoreInfos = &submit.signal_info;
 			}
 		}
 	};
 
 	inline VkCommandPool gCmdPool{};
 	inline std::vector<FrameData> gFrameData{};
-	inline uint32_t gFrameIndex = 0;
-	inline constexpr uint32_t gFRAMES_IN_FLIGHT = Swapchain::gIMAGE_COUNT;
+	inline uint32_t g_frame_index = 0;
+	inline constexpr uint32_t g_FRAMES_IN_FLIGHT = Swapchain::gIMAGE_COUNT;
 
 	VkCommandPool createCmdPool(VkCommandPoolCreateFlags const&, uint32_t const&);
 	VkCommandBuffer createCmdBuffer(VkCommandPool, VkCommandBufferLevel const&);

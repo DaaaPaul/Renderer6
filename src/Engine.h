@@ -6,21 +6,22 @@
 #include "Camera.hpp"
 
 namespace Engine {
-	void imageBarrier(VkCommandBuffer cmdBuffer, VkImage image, VkImageSubresourceRange const& SUBRESOURCE_RANGE, VkPipelineStageFlags2 const& SRC_STAGE, VkAccessFlags2 const& SRC_ACCESS, VkPipelineStageFlags2 const& DST_STAGE, VkAccessFlags2 const& DST_ACCESS, VkImageLayout const& OLD_LAYOUT, VkImageLayout const& NEW_LAYOUT, uint32_t const& GRAPHICS_QF_INDEX);
+	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, const VkImageSubresourceRange& subresource_range, const VkPipelineStageFlags2& stage1, const VkAccessFlags2& access1, const VkPipelineStageFlags2& stage2, const VkAccessFlags2& access2, const VkImageLayout& old_layout, const VkImageLayout& new_layout, const uint32_t& graphics_queue_family_index);
 	
-	void recordComputeCommands(VkCommandBuffer cmdBuffer);
-	void recordDrawModelCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX);
-	void recordDrawParticlesCommands(VkCommandBuffer cmdBuffer, uint32_t const& IMAGE_INDEX);
-	void renderNext();
+	void record_compute(VkCommandBuffer cmd_buf);
+	void record_draw_model(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index);
+	void record_draw_particles(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index);
+	void render_next();
 	void run();
 
-	bool acquireSwapchainImage(uint32_t& INDEX, VkFence fenceToSignal);
-	bool presentSwapchainImage(uint32_t const& INDEX, VkQueue queue);
-	void waitForTimelineSemaphore(VkSemaphore timeline, uint64_t const& WAIT_VAL);
-	void waitForFence(VkFence fence);
-	void beginCmdBuffer(VkCommandBuffer cmdBuffer);
-	void setViewportScissor(VkCommandBuffer cmdBuffer);
+	bool acquire_sc_image(uint32_t& sc_image_index, VkFence fence_to_signal);
+	bool present_sc_image(const uint32_t& sc_image_index, VkQueue queue);
+	void wait_timeline_semaphore(VkSemaphore semaphore, const uint64_t& wait_val);
+	void wait_fence(VkFence fence);
+	void begin_cmd_buf(VkCommandBuffer cmd_buf);
+	void set_viewport_and_scissor(VkCommandBuffer cmd_buf);
 	void resize();
-	void update(float const&);
-	float getDelta(std::chrono::steady_clock::time_point const&, std::chrono::steady_clock::time_point const&);
+	void check_close();
+	void update(const float&);
+	float get_delta_time(const std::chrono::steady_clock::time_point&, const std::chrono::steady_clock::time_point&);
 }

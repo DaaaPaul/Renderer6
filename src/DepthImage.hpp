@@ -5,19 +5,19 @@
 class DepthImage {
 	private:
 	VkImage image{};
-	VkImageView imageView{};
+	VkImageView image_view{};
 
-	VkMemoryRequirements requirements{};
+	VkMemoryRequirements memory_requirements{};
 
 	public:
 	explicit DepthImage(VkExtent3D);
 	~DepthImage();
 
-	VkImage getImage() const { return image; }
-	VkImageView getImageView() const { return imageView; }
-	VkMemoryRequirements getRequirements() const { return requirements; }
+	VkImage get_image() const { return image; }
+	VkImageView get_image_view() const { return image_view; }
+	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
 
 	private:
-	static VkImage createImage(VkExtent3D);
-	static VkImageView createImageView(VkImage);
+	static VkImage create_image(VkExtent3D extent);
+	static VkImageView create_image_view(VkImage image);
 };

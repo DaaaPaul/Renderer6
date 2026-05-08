@@ -27,7 +27,7 @@ namespace Window {
 		glfwInit();
 		getGlfwMonitor();
 		createGlfwWindow();
-		setWindowCallbacks();
+		set_callbacks();
 	}
 	void deInit() {
 		destroyGlfwWindow();
@@ -49,24 +49,24 @@ namespace Window {
 	void createGlfwWindow() {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		gGlfwWindow = glfwCreateWindow(gMonitorWidth, gMonitorHeight, gTITLE, gGlfwMonitor, nullptr);
+		g_glfw_window = glfwCreateWindow(gMonitorWidth, gMonitorHeight, gTITLE, gGlfwMonitor, nullptr);
 
-		if(!gGlfwWindow) {
+		if(!g_glfw_window) {
 			throw std::runtime_error("glfwCreateWindow failed");
 		}
 
-		glfwSetInputMode(gGlfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
 
-	void setWindowCallbacks() {
-		glfwSetWindowUserPointer(gGlfwWindow, gFrameBufferResizedPointer);
-		glfwSetFramebufferSizeCallback(gGlfwWindow, framebufferResizeCallback);
-		glfwSetScrollCallback(gGlfwWindow, Camera::scrolled);
-		glfwSetCursorPosCallback(gGlfwWindow, Camera::mouseMoved);
+	void set_callbacks() {
+		glfwSetWindowUserPointer(g_glfw_window, gFrameBufferResizedPointer);
+		glfwSetFramebufferSizeCallback(g_glfw_window, framebufferResizeCallback);
+		glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
+		glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
 	}
 
 	void destroyGlfwWindow() {
-		glfwDestroyWindow(gGlfwWindow);
+		glfwDestroyWindow(g_glfw_window);
 		glfwTerminate();
 	}
 

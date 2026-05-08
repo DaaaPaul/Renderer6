@@ -2,25 +2,23 @@
 
 #include <vector>
 
-namespace Engine {
-	class Event {
-		public:
-		virtual ~Event() = default;
-	};
+class Event {
+	public:
+	virtual ~Event() = default;
+};
 
-	class EventListener {
-		public:
-		virtual ~EventListener() = default;
-		virtual void onEvent(Event const&) = 0;
-	};
+class EventListener {
+	public:
+	virtual ~EventListener() = default;
+	virtual void on_event(const Event& event) = 0;
+};
 
-	class Events {
-		private:
-		std::vector<EventListener*> listeners{};
+class Events {
+	private:
+	std::vector<EventListener*> listeners{};
 
-		public:
-		void addListener(EventListener*);
-		bool removeListener(EventListener*);
-		void dispatch(Event const&) const;
-	};
-}
+	public:
+	void add_listener(EventListener* listener);
+	bool remove_listener(EventListener* listener);
+	void dispatch(const Event& event) const;
+};

@@ -6,10 +6,9 @@
 class DescriptorSet {
 	public:
 	struct Write {
-		VkWriteDescriptorSet info{};
-		VkDescriptorImageInfo imageInfo{};
-		VkDescriptorBufferInfo bufferInfo{};
-		VkBufferView bufferViewInfo{};
+		VkWriteDescriptorSet write_info{};
+		VkDescriptorImageInfo image_info{};
+		VkDescriptorBufferInfo buffer_info{};
 	};
 
 	private:
@@ -19,13 +18,13 @@ class DescriptorSet {
 	Write write{};
 
 	public:
-	explicit DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const&, Write const&);
+	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const Write& write);
 	~DescriptorSet();
 
 	void bind();
 
 	private:
-	static VkDescriptorSetLayout createLayout(std::vector<VkDescriptorSetLayoutBinding> const&);
-	static VkDescriptorPool createPool(std::vector<VkDescriptorSetLayoutBinding> const&);
-	static VkDescriptorSet createDescriptorSet(VkDescriptorSetLayout, VkDescriptorPool);
+	static VkDescriptorSetLayout create_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+	static VkDescriptorPool create_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+	static VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool);
 };

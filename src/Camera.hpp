@@ -16,13 +16,10 @@ struct Basis {
 	glm::vec3 y{0.0f, 1.0f, 0.0f};
 	glm::vec3 z{0.0f, 0.0f, 1.0f};
 	
-	static bool isNormalized(glm::vec3 const&);
-	static glm::mat3 rotate(glm::vec3 const&, float const&);
-	static Basis applyRotation(Basis const&, Angles const&);
+	static bool is_normalized(const glm::vec3& vec3);
+	static glm::mat3 rotate(const glm::vec3& axis, const float& angle_cc);
+	static Basis apply_rotation(const Basis& basis, const Angles& euler_angles);
 };
-
-inline float gZoom{};
-inline Angles gRotate{};
 
 class Camera {
 	static constexpr float SPEED = 10.5f;
@@ -31,23 +28,23 @@ class Camera {
 	static constexpr float DEFAULT_ZOOM = DA_PI / 4.0f;
 	static constexpr Basis DEFAULT_BASIS = Basis{};
 
-	static void mouseMoved(GLFWwindow* window, double x, double y);
-	static void scrolled(GLFWwindow* window, double xOffset, double yOffset);
+	static void mouse_moved_callback(GLFWwindow* window, double x, double y);
+	static void scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
 
-	friend void Window::setWindowCallbacks();
+	friend void Window::set_callbacks();
 
 	glm::vec3 pos{};
 	Basis basis{};
 	float zoom{};
 
 	public:
-	explicit Camera(glm::vec3 const& POS, Angles const& ROTATION, float const& ZOOM);
+	explicit Camera(const glm::vec3& pos, const Angles& starting_rotation, const float& starting_zoom);
 
-	void updateKeyboard(float const&);
-	void updateMouse(float const&, float const&);
-	void updateScrolled(float const&);
-	static glm::mat4 view(Camera const&);
-	static glm::mat4 proj(Camera const&);
+	void update_position(const float& delta_time);
+	void update_rotation(const float& x_offset, const float& y_offset);
+	void update_zoom(const float& y_offset);
+	static glm::mat4 to_view_matrix(const Camera& cam);
+	static glm::mat4 to_projection_matrix(const Camera& cam);
 };
 
-inline Camera gCamera(glm::vec3(0.0f, 0.0f, 10.0f), Angles{}, 0.0f);
+inline Camera g_camera(glm::vec3(0.0f, 0.0f, 10.0f), Angles{}, 0.0f);

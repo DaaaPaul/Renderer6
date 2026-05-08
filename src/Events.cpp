@@ -1,26 +1,24 @@
 #include "Events.hpp"
 
-namespace Engine {
-	void Events::addListener(EventListener* l) {
-		listeners.push_back(l);
+void Events::add_listener(EventListener* p_listener) {
+	listeners.push_back(p_listener);
+}
+
+bool Events::remove_listener(EventListener* p_listener) {
+	bool removeSuccess = false;
+
+	for(auto i = listeners.begin(); i < listeners.end() && !removeSuccess; ++i) {
+		if(*i == p_listener) {
+			listeners.erase(i);
+			removeSuccess = true;
+		}
 	}
 
-	bool Events::removeListener(EventListener* l) {
-		bool removeSuccess = false;
+	return removeSuccess;
+}
 
-		for(auto i = listeners.begin(); i < listeners.end() && !removeSuccess; ++i) {
-			if(*i == l) {
-				listeners.erase(i);
-				removeSuccess = true;
-			}
-		}
-
-		return removeSuccess;
-	}
-
-	void Events::dispatch(Event const& E) const {
-		for(EventListener* l : listeners) {
-			l->onEvent(E);
-		}
+void Events::dispatch(const Event& event) const {
+	for(EventListener* listener : listeners) {
+		listener->on_event(event);
 	}
 }

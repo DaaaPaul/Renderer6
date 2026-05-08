@@ -9,7 +9,7 @@
 #include "Vertex.hpp"
 #include "Window.h"
 
-#define println(x) std::cout << x << '\n';
+#define println(x) std::cout << x << '\n'
 
 #define UINT32(vecSize) static_cast<uint32_t>(vecSize)
 
@@ -17,7 +17,7 @@
 
 #define DA_PI 3.14159274f
 
-#define PRESSED(glfwKey) glfwGetKey(Window::gGlfwWindow, glfwKey) == GLFW_PRESS
+#define PRESSED(glfwKey) glfwGetKey(Window::g_glfw_window, glfwKey) == GLFW_PRESS
 
 #define VK_CHECK(createCmd, errMsg) \
 	if(createCmd != VK_SUCCESS) { \
@@ -73,7 +73,7 @@ namespace Util {
 			NON_LINEAR = 1
 		};
 
-		VkImageView createImageView(VkImageViewCreateInfo const&);
+		VkImageView create_image_view(VkImageViewCreateInfo const&);
 		VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
 		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
 		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);

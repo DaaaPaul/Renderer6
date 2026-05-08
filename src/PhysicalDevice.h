@@ -11,7 +11,7 @@ namespace PhysicalDevice {
 	inline std::vector<VkPhysicalDevice> gSystemPhysicalDevices{};
 	inline std::vector<VkPhysicalDeviceProperties> gSystemPhysicalDeviceProperties{};
 
-	inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> gQueueFamilyIndices{};
+	inline std::array<uint32_t, LogicalDevice::gQUEUE_FAMILY_COUNT> g_queue_family_indices{};
 
 	inline VkPhysicalDeviceLimits gLimits{};
 

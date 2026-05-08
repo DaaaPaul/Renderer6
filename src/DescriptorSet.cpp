@@ -2,43 +2,43 @@
 #include "LogicalDevice.h"
 #include "Util.h"
 
-DescriptorSet::DescriptorSet(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS, Write const& WRITE) :
-	write(WRITE) {
-	layout = createLayout(BINDINGS);
-	pool = createPool(BINDINGS);
-	set = createDescriptorSet(layout, pool);
+DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const Write& write) :
+	write(write) {
+	layout = create_layout(bindings);
+	pool = create_pool(bindings);
+	set = create_descriptor_set(layout, pool);
 }
 
 DescriptorSet::~DescriptorSet() {
-	vkFreeDescriptorSets(gDevice, pool, 1, &set);
-	vkDestroyDescriptorSetLayout(gDevice, layout, nullptr);
-	vkDestroyDescriptorPool(gDevice, pool, nullptr);
+	vkFreeDescriptorSets(g_device, pool, 1, &set);
+	vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
+	vkDestroyDescriptorPool(g_device, pool, nullptr);
 }
 
 void DescriptorSet::bind() {
-	vkUpdateDescriptorSets(gDevice, 1, &write.info, 0, nullptr);
+	vkUpdateDescriptorSets(g_device, 1, &write.write_info, 0, nullptr);
 }
 
-VkDescriptorSetLayout DescriptorSet::createLayout(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {
+VkDescriptorSetLayout DescriptorSet::create_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
 	VkDescriptorSetLayout layout{};
 
 	VkDescriptorSetLayoutCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-		.bindingCount = UINT32(BINDINGS.size()),
-		.pBindings = BINDINGS.data()
+		.bindingCount = UINT32(bindings.size()),
+		.pBindings = bindings.data()
 	};
 
-	VK_CHECK(vkCreateDescriptorSetLayout(gDevice, &create, nullptr, &layout), "createLayout: failed")
+	VK_CHECK(vkCreateDescriptorSetLayout(g_device, &create, nullptr, &layout), "create_layout: failed")
 
 	return layout;
 }
 
-VkDescriptorPool DescriptorSet::createPool(std::vector<VkDescriptorSetLayoutBinding> const& BINDINGS) {
+VkDescriptorPool DescriptorSet::create_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
 	VkDescriptorPool pool{};
 	std::vector<VkDescriptorPoolSize> poolSizes{};
 
-	for(VkDescriptorSetLayoutBinding const& B : BINDINGS) {
-		poolSizes.push_back(VkDescriptorPoolSize{ .type = B.descriptorType, .descriptorCount = B.descriptorCount });
+	for(const VkDescriptorSetLayoutBinding& binding : bindings) {
+		poolSizes.push_back(VkDescriptorPoolSize{ .type = binding.descriptorType, .descriptorCount = binding.descriptorCount });
 	}
 	VkDescriptorPoolCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -47,12 +47,12 @@ VkDescriptorPool DescriptorSet::createPool(std::vector<VkDescriptorSetLayoutBind
 		.pPoolSizes = poolSizes.data()
 	};
 		
-	VK_CHECK(vkCreateDescriptorPool(gDevice, &create, nullptr, &pool), "createPool: failed")
+	VK_CHECK(vkCreateDescriptorPool(g_device, &create, nullptr, &pool), "create_pool: failed")
 
 	return pool;
 }
 
-VkDescriptorSet DescriptorSet::createDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
+VkDescriptorSet DescriptorSet::create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
 	VkDescriptorSet set{};
 
 	VkDescriptorSetAllocateInfo create{
@@ -62,7 +62,7 @@ VkDescriptorSet DescriptorSet::createDescriptorSet(VkDescriptorSetLayout layout,
 		.pSetLayouts = &layout,
 	};
 
-	VK_CHECK(vkAllocateDescriptorSets(gDevice, nullptr, &set), "createDescriptorSet: failed")
+	VK_CHECK(vkAllocateDescriptorSets(g_device, nullptr, &set), "create_descriptor_set: failed")
 
 	return set;
 }

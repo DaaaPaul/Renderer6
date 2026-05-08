@@ -41,7 +41,7 @@ class Memory {
 
 	static uint32_t getType(uint32_t, VkMemoryPropertyFlags);
 	static uint32_t getMask(std::vector<VkMemoryRequirements> const&);
-	static std::vector<VkMemoryRequirements> getRequirements(std::vector<Texture> const&, std::vector<DepthImage> const&, std::vector<Buffer> const&);
+	static std::vector<VkMemoryRequirements> get_memory_requirements(std::vector<Texture> const&, std::vector<DepthImage> const&, std::vector<Buffer> const&);
 
 	void bindTextures(std::vector<VkDeviceSize> const&, std::vector<Texture> const&);
 	void bindBuffers(std::vector<VkDeviceSize> const&, std::vector<Buffer> const&);

@@ -1,57 +1,57 @@
 #include "Camera.hpp"
 #include "Swapchain.h"
 
-bool Basis::isNormalized(glm::vec3 const& V) {
-	return Util::equal(glm::normalize(V), V);
+bool Basis::is_normalized(const glm::vec3& vec3) {
+	return Util::equal(glm::normalize(vec3), vec3);
 }
 
-glm::mat3 Basis::rotate(glm::vec3 const& AXIS, float const& ANGLE_CC) {
-	assert(isNormalized(AXIS));
+glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
+	assert(is_normalized(axis));
 
-	const float COS = std::cos(ANGLE_CC);
-	const float SIN = std::sin(ANGLE_CC);
-	const float ONE_MINUS_COS = 1.0f - std::cos(ANGLE_CC);
+	const float COS = std::cos(angle_cc);
+	const float SIN = std::sin(angle_cc);
+	const float ONE_MINUS_COS = 1.0f - std::cos(angle_cc);
 
 	return glm::mat3(
-		COS + AXIS.x * AXIS.x * ONE_MINUS_COS,
-		AXIS.y * AXIS.x * ONE_MINUS_COS - AXIS.z * SIN,
-		AXIS.z * AXIS.x * ONE_MINUS_COS + AXIS.y * SIN,
+		COS + axis.x * axis.x * ONE_MINUS_COS,
+		axis.y * axis.x * ONE_MINUS_COS - axis.z * SIN,
+		axis.z * axis.x * ONE_MINUS_COS + axis.y * SIN,
 
-		AXIS.x * AXIS.y * ONE_MINUS_COS + AXIS.z * SIN,
-		COS + AXIS.y * AXIS.y * ONE_MINUS_COS,
-		AXIS.z * AXIS.y * ONE_MINUS_COS - AXIS.x * SIN,
+		axis.x * axis.y * ONE_MINUS_COS + axis.z * SIN,
+		COS + axis.y * axis.y * ONE_MINUS_COS,
+		axis.z * axis.y * ONE_MINUS_COS - axis.x * SIN,
 
-		AXIS.x * AXIS.z * ONE_MINUS_COS - AXIS.y * SIN,
-		AXIS.y * AXIS.z * ONE_MINUS_COS + AXIS.x * SIN,
-		COS + AXIS.z * AXIS.z * ONE_MINUS_COS
+		axis.x * axis.z * ONE_MINUS_COS - axis.y * SIN,
+		axis.y * axis.z * ONE_MINUS_COS + axis.x * SIN,
+		COS + axis.z * axis.z * ONE_MINUS_COS
 	);
 }
 
-Basis Basis::applyRotation(Basis const& BASIS, Angles const& EULER) {
-	assert(isNormalized(BASIS.x) && isNormalized(BASIS.y) && isNormalized(BASIS.z));
+Basis Basis::apply_rotation(const Basis& basis, const Angles& euler_angles) {
+	assert(is_normalized(basis.x) && is_normalized(basis.y) && is_normalized(basis.z));
 		
-	Basis moved(BASIS);
+	Basis moved(basis);
 		
-	const glm::mat3 ABOUT_X = rotate(moved.x, EULER.x);
+	const glm::mat3 ABOUT_X = rotate(moved.x, euler_angles.x);
 	moved.y = ABOUT_X * moved.y;
 	moved.z = ABOUT_X * moved.z;
 
-	const glm::mat3 ABOUT_Y = rotate(moved.y, EULER.y);
+	const glm::mat3 ABOUT_Y = rotate(moved.y, euler_angles.y);
 	moved.x = ABOUT_Y * moved.x;
 	moved.z = ABOUT_Y * moved.z;
 
-	const glm::mat3 ABOUT_Z = rotate(moved.z, EULER.z);
+	const glm::mat3 ABOUT_Z = rotate(moved.z, euler_angles.z);
 	moved.x = ABOUT_Z * moved.x;
 	moved.y = ABOUT_Z * moved.y;
 
 	return moved;
 }
 
-Camera::Camera(glm::vec3 const& POS, Angles const& ROTATION, float const& ZOOM) :
-	pos(POS), basis(Basis::applyRotation(DEFAULT_BASIS, ROTATION)), zoom{ DEFAULT_ZOOM + ZOOM } {}
+Camera::Camera(const glm::vec3& pos, const Angles& starting_rotation, const float& starting_zoom) :
+	pos(pos), basis(Basis::apply_rotation(DEFAULT_BASIS, starting_rotation)), zoom{ DEFAULT_ZOOM + starting_zoom } {}
 
-void Camera::updateKeyboard(float const& DELTA) {
-	const float MOVE = SPEED * DELTA;
+void Camera::update_position(const float& delta_time) {
+	const float MOVE = SPEED * delta_time;
 
 	if(PRESSED(GLFW_KEY_W)) {
 		pos += -(MOVE * basis.z);
@@ -72,46 +72,46 @@ void Camera::updateKeyboard(float const& DELTA) {
 	}
 }
 
-void Camera::updateMouse(float const& X, float const& Y) {
-	basis = Basis::applyRotation(basis, Angles{Y * SENSITIVITY, X * SENSITIVITY, 0.0f});
+void Camera::update_rotation(const float& x_offset, const float& y_offset) {
+	basis = Basis::apply_rotation(basis, Angles{y_offset * SENSITIVITY, x_offset * SENSITIVITY, 0.0f});
 }
 
-void Camera::updateScrolled(float const& Y) {
-	zoom += Y * SCROLL_SENSITIVITY;
+void Camera::update_zoom(const float& y_offset) {
+	zoom += y_offset * SCROLL_SENSITIVITY;
 }
 
-void Camera::mouseMoved(GLFWwindow* window, double x, double y) {
-	static bool first = true;
-	static float lastX{};
-	static float lastY{};
+void Camera::mouse_moved_callback(GLFWwindow* window, double x, double y) {
+	static bool first_callback = true;
+	static float previous_x{};
+	static float previous_y{};
 
-	if(first) {
-		lastX = x;
-		lastY = y;
-		first = false;
+	if(first_callback) {
+		previous_x = x;
+		previous_y = y;
+		first_callback = false;
 	}
 
-	float xOff = x - lastX;
-	float yOff = y - lastY;
-	lastX = x;
-	lastY = y;
+	float x_offset = x - previous_x;
+	float y_offset = y - previous_y;
+	previous_x = x;
+	previous_y = y;
 
-	gCamera.updateMouse(xOff, yOff);
+	g_camera.update_rotation(x_offset, y_offset);
 }
 
-void Camera::scrolled(GLFWwindow* window, double x, double y) {
-	gCamera.updateScrolled(y);
+void Camera::scroll_callback(GLFWwindow* window, double x_offset, double y_offset) {
+	g_camera.update_zoom(y_offset);
 }
 
-glm::mat4 Camera::view(Camera const& CAMERA) {
+glm::mat4 Camera::to_view_matrix(const Camera& cam) {
 	return glm::mat4(
-		CAMERA.basis.x.x, CAMERA.basis.y.x, CAMERA.basis.z.x, 0.0f,
-		CAMERA.basis.x.y, CAMERA.basis.y.y, CAMERA.basis.z.y, 0.0f,
-		CAMERA.basis.x.z, CAMERA.basis.y.z, CAMERA.basis.z.z, 0.0f,
-		-(CAMERA.basis.x.x * CAMERA.pos.x + CAMERA.basis.x.y * CAMERA.pos.y + CAMERA.basis.x.z * CAMERA.pos.z), -(CAMERA.basis.y.x * CAMERA.pos.x + CAMERA.basis.y.y * CAMERA.pos.y + CAMERA.basis.y.z * CAMERA.pos.z), -(CAMERA.basis.z.x * CAMERA.pos.x + CAMERA.basis.z.y * CAMERA.pos.y + CAMERA.basis.z.z * CAMERA.pos.z), 1.0f
+		cam.basis.x.x, cam.basis.y.x, cam.basis.z.x, 0.0f,
+		cam.basis.x.y, cam.basis.y.y, cam.basis.z.y, 0.0f,
+		cam.basis.x.z, cam.basis.y.z, cam.basis.z.z, 0.0f,
+		-(cam.basis.x.x * cam.pos.x + cam.basis.x.y * cam.pos.y + cam.basis.x.z * cam.pos.z), -(cam.basis.y.x * cam.pos.x + cam.basis.y.y * cam.pos.y + cam.basis.y.z * cam.pos.z), -(cam.basis.z.x * cam.pos.x + cam.basis.z.y * cam.pos.y + cam.basis.z.z * cam.pos.z), 1.0f
 	);
 }
 
-glm::mat4 Camera::proj(Camera const& CAMERA) {
-	return glm::perspective(CAMERA.zoom, Window::gAspectRatio, 0.1f, 100.0f);
+glm::mat4 Camera::to_projection_matrix(const Camera& cam) {
+	return glm::perspective(cam.zoom, Window::gAspectRatio, 0.1f, 100.0f);
 }

@@ -19,10 +19,10 @@ namespace Memory {
 		}
 
 		void deInit() {
-			vkFreeMemory(gDevice, gMemory, nullptr);
+			vkFreeMemory(g_device, gMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bundle : gBuffers) {
-				vkDestroyBuffer(gDevice, bundle.buffer, nullptr);
+				vkDestroyBuffer(g_device, bundle.buffer, nullptr);
 			}
 		}
 
@@ -34,7 +34,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 				}
 			);
 			gBufferCreates.push_back(
@@ -44,7 +44,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 				}
 			);
 			gBufferCreates.push_back(
@@ -54,7 +54,7 @@ namespace Memory {
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 				}
 			);
 
@@ -66,7 +66,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 					}
 				);
 			}
@@ -78,7 +78,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 					}
 				);
 			}
@@ -90,7 +90,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 					}
 				);
 			}
@@ -100,7 +100,7 @@ namespace Memory {
 			gBuffers.resize(gBufferCreates.size(), {});
 
 			for(int i = 0; i < gBufferCreates.size(); ++i) {
-				VK_CHECK(vkCreateBuffer(gDevice, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
+				VK_CHECK(vkCreateBuffer(g_device, &gBufferCreates[i], nullptr, &gBuffers[i].buffer), "Failed to create buffer")
 			}
 		}
 
@@ -108,7 +108,7 @@ namespace Memory {
 			gBufferMemoryRequirements.resize(gBuffers.size(), {});
 
 			for(int i = 0; i < gBuffers.size(); ++i) {
-				vkGetBufferMemoryRequirements(gDevice, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
+				vkGetBufferMemoryRequirements(g_device, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
 				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
 			}
 		}
@@ -127,7 +127,7 @@ namespace Memory {
 				.allocationSize = memorySize,
 				.memoryTypeIndex = memoryType
 			};
-			vkAllocateMemory(gDevice, &memoryAllocate, nullptr, &gMemory);
+			vkAllocateMemory(g_device, &memoryAllocate, nullptr, &gMemory);
 		}
 
 		void bindBuffers() {
@@ -135,7 +135,7 @@ namespace Memory {
 
 			for(int i = 0; i < bufferOffsets.size(); ++i) {
 				gBuffers[i].offset = bufferOffsets[i];
-				vkBindBufferMemory(gDevice, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
+				vkBindBufferMemory(g_device, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
 		}
 
@@ -144,7 +144,7 @@ namespace Memory {
 			for(int i = 0; i < gBuffers.size(); ++i) {
 				if(gBufferCreates[i].usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 					rollingBufferAddressInfo.buffer = gBuffers[i].buffer;
-					gBuffers[i].address = vkGetBufferDeviceAddress(gDevice, &rollingBufferAddressInfo);
+					gBuffers[i].address = vkGetBufferDeviceAddress(g_device, &rollingBufferAddressInfo);
 				}
 			}
 		}
@@ -165,9 +165,9 @@ namespace Memory {
 		namespace Mutate {
 			void writeToBuffer(uint32_t const& INDEX_OF_BUFFER, void const* DATA, uint32_t const& SIZE_TO_WRITE) {
 				void* bufferPointer{};
-				VK_CHECK(vkMapMemory(gDevice, gMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &bufferPointer), "Failed to map memory")
+				VK_CHECK(vkMapMemory(g_device, gMemory, gBuffers[INDEX_OF_BUFFER].offset, gBufferMemoryRequirements[INDEX_OF_BUFFER].size, 0, &bufferPointer), "Failed to map memory")
 				std::memcpy(bufferPointer, DATA, SIZE_TO_WRITE);
-				vkUnmapMemory(gDevice, gMemory);
+				vkUnmapMemory(g_device, gMemory);
 			}
 		}
 	}

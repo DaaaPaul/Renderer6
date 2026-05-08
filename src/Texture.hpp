@@ -10,7 +10,7 @@ class Texture : public Resource {
 	VkImageView imageView{};
 	VkSampler sampler{};
 
-	VkMemoryRequirements requirements{};
+	VkMemoryRequirements memory_requirements{};
 
 	ktxTexture2* texture{};
 
@@ -18,15 +18,15 @@ class Texture : public Resource {
 	explicit Texture(uint32_t idx, const char* texturePath);
 	~Texture();
 
-	VkImage getImage() const { return image; }
-	VkImageView getImageView() const { return imageView; }
-	VkMemoryRequirements getRequirements() const { return requirements; }
+	VkImage get_image() const { return image; }
+	VkImageView get_image_view() const { return imageView; }
+	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
 
 	void copyToImage();
 
 	private:
 	static ktxTexture2* getKtx(const char* ktxPath);
-	static VkImage createImage(ktxTexture2* ktxTexture);
-	static VkImageView createImageView(VkImage image, VkFormat format);
+	static VkImage create_image(ktxTexture2* ktxTexture);
+	static VkImageView create_image_view(VkImage image, VkFormat format);
 	static VkSampler createSampler();
 };

@@ -38,7 +38,7 @@ namespace Swapchain {
 	}
 
 	void createSurface() {
-		VK_CHECK(glfwCreateWindowSurface(Instance::gInstance, Window::gGlfwWindow, nullptr, &gSurface), "Failed to create surface")
+		VK_CHECK(glfwCreateWindowSurface(Instance::gInstance, Window::g_glfw_window, nullptr, &gSurface), "Failed to create surface")
 	}
 
 	void populateCurrentSwapchainStatus() {
@@ -53,7 +53,7 @@ namespace Swapchain {
 			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = LogicalDevice::gQUEUE_FAMILY_COUNT,
-			.pQueueFamilyIndices = PhysicalDevice::gQueueFamilyIndices.data(),
+			.pQueueFamilyIndices = PhysicalDevice::g_queue_family_indices.data(),
 			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
 			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 			.presentMode = gPRESENT_MODE,
@@ -62,15 +62,15 @@ namespace Swapchain {
 	}
 
 	void createSwapchain() {
-		VK_CHECK(vkCreateSwapchainKHR(gDevice, &gStatus, nullptr, &gSwapchain), "Failed to create swapchain")
+		VK_CHECK(vkCreateSwapchainKHR(g_device, &gStatus, nullptr, &g_swapchain), "Failed to create swapchain")
 	}
 
 	void populateImages() {
 		uint32_t imageCount = UINT32_MAX;
-		vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, nullptr);
+		vkGetSwapchainImagesKHR(g_device, g_swapchain, &imageCount, nullptr);
 		gImages.clear();
 		gImages.resize(imageCount, {});
-		vkGetSwapchainImagesKHR(gDevice, gSwapchain, &imageCount, gImages.data());
+		vkGetSwapchainImagesKHR(g_device, g_swapchain, &imageCount, gImages.data());
 	}
 
 	void populateImageSize() {
@@ -80,7 +80,7 @@ namespace Swapchain {
 		gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 
 		if(gImageSize.width == UINT32_MAX) {
-			glfwGetFramebufferSize(Window::gGlfwWindow, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
+			glfwGetFramebufferSize(Window::g_glfw_window, reinterpret_cast<int*>(&gImageSize.width), reinterpret_cast<int*>(&gImageSize.height));
 		}
 	}
 
@@ -127,6 +127,6 @@ namespace Swapchain {
 	}		
 
 	void destroySwapchain() {
-		vkDestroySwapchainKHR(gDevice, gSwapchain, nullptr);
+		vkDestroySwapchainKHR(g_device, g_swapchain, nullptr);
 	}
 }

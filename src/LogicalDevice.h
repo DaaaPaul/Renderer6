@@ -5,7 +5,7 @@
 #include "FeatureChain.hpp"
 
 namespace LogicalDevice {
-	inline VkLogicalDevice gDevice{};
+	inline VkLogicalDevice g_device{};
 	inline std::vector<VkQueue> gQueues{};
 
 	inline std::vector<const char*> gExtensions{
@@ -77,4 +77,4 @@ namespace LogicalDevice {
 	uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY);
 }
 
-using LogicalDevice::gDevice;
+using LogicalDevice::g_device;

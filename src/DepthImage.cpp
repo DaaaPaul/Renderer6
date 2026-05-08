@@ -3,16 +3,16 @@
 #include "PhysicalDevice.h"
 
 DepthImage::DepthImage(VkExtent3D extent) :
-	image{ createImage(extent) }, imageView{ createImageView(image) } {
-	vkGetImageMemoryRequirements(gDevice, image, &requirements);
+	image{ create_image(extent) }, image_view{ create_image_view(image) } {
+	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
 }
 
 DepthImage::~DepthImage() {
-	vkDestroyImageView(gDevice, imageView, nullptr);
-	vkDestroyImage(gDevice, image, nullptr);
+	vkDestroyImageView(g_device, image_view, nullptr);
+	vkDestroyImage(g_device, image, nullptr);
 }
 
-VkImage DepthImage::createImage(VkExtent3D extent) {
+VkImage DepthImage::create_image(VkExtent3D extent) {
 	VkImage image{};
 
 	VkImageCreateInfo create{
@@ -27,16 +27,16 @@ VkImage DepthImage::createImage(VkExtent3D extent) {
 		.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices = &PhysicalDevice::gQueueFamilyIndices[0],
+		.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0],
 		.initialLayout = VK_IMAGE_LAYOUT_GENERAL,
 	};
 
-	VK_CHECK(vkCreateImage(gDevice, &create, nullptr, &image), "createImage: failed")
+	VK_CHECK(vkCreateImage(g_device, &create, nullptr, &image), "create_image: failed")
 
 	return image;
 }
 
-VkImageView DepthImage::createImageView(VkImage image) {
+VkImageView DepthImage::create_image_view(VkImage image) {
 	VkImageView view{};
 
 	VkImageViewCreateInfo create{
@@ -47,7 +47,7 @@ VkImageView DepthImage::createImageView(VkImage image) {
 		.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1)
 	};
 
-	VK_CHECK(vkCreateImageView(gDevice, &create, nullptr, &view), "createImageView: failed")
+	VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &view), "create_image_view: failed")
 
 	return view;
 }

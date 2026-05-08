@@ -12,7 +12,7 @@ struct FeatureChain;
 template<>
 struct FeatureChain<> {
 	FeatureChain() = default;
-	FeatureChain(FeatureChain<> const&) = default;
+	FeatureChain(const FeatureChain<>&) = default;
 };
 
 // partial specialization of FeatureChain with 1 or more template type parameters
@@ -32,51 +32,51 @@ struct FeatureChain<First, Rest...> : FeatureChain<Rest...> {
 		}
 	}
 
-	FeatureChain(FeatureChain<First, Rest...> const& OTHER) :
-		FeatureChain<Rest...>(OTHER),
-		feature{ OTHER.feature } {
-		reroutePointers();
+	FeatureChain(const FeatureChain<First, Rest...>& feature_chain) :
+		FeatureChain<Rest...>(feature_chain),
+		feature{ feature_chain.feature } {
+		set_pointers();
 	}
 
-	void reroutePointers() {
+	void set_pointers() {
 		if constexpr (sizeof...(Rest) != 0) {
 			feature.pNext = &(FeatureChain<Rest...>::feature);
-			FeatureChain<Rest...>::reroutePointers();
+			FeatureChain<Rest...>::set_pointers();
 		}
 	}
 
-	bool hasAllOf(FeatureChain<First, Rest...> const& REQUIREMENTS) {
+	bool has_all(const FeatureChain<First, Rest...>& REQUIREMENTS) {
 		if constexpr (sizeof...(Rest) != 0) {
-			return featuresContainsAll(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::hasAllOf(REQUIREMENTS);
+			return feature_struct_contains_all(feature, REQUIREMENTS.feature) && FeatureChain<Rest...>::has_all(REQUIREMENTS);
 		} else {
-			return featuresContainsAll(feature, REQUIREMENTS.feature);
+			return feature_struct_contains_all(feature, REQUIREMENTS.feature);
 		}
 	}
 
 	template<class F>
-	static bool featuresContainsAll(F const& HAVE, F const& CHECK) {
-		bool hasAll = true;
+	static bool feature_struct_contains_all(const F& features, const F& features_to_check) {
+		bool result = true;
 
-		uint32_t firstVkBool32Offset = offsetof(F, pNext) + sizeof(void*);
-		uint32_t howManyVkBool32 = (sizeof(F) - firstVkBool32Offset) / sizeof(VkBool32) - 1;
+		uint32_t bool_offset = offsetof(F, pNext) + sizeof(void*);
+		uint32_t bool_count = (sizeof(F) - bool_offset) / sizeof(VkBool32) - 1;
 
-		char const* SNIPER_HAVE = reinterpret_cast<char const*>(&HAVE);
-		SNIPER_HAVE += firstVkBool32Offset;
-		VkBool32 const* BOOL_SNIPER_HAVE = reinterpret_cast<VkBool32 const*>(SNIPER_HAVE);
+		const char* p_features_small = reinterpret_cast<const char*>(&features);
+		p_features_small += bool_offset;
+		const VkBool32* p_features = reinterpret_cast<const VkBool32*>(p_features_small);
 
-		const char* SNIPER_CHECK = reinterpret_cast<char const*>(&CHECK);
-		SNIPER_CHECK += firstVkBool32Offset;
-		VkBool32 const* BOOL_SNIPER_CHECK = reinterpret_cast<VkBool32 const*>(SNIPER_CHECK);
+		const char* p_check_small = reinterpret_cast<const char*>(&features_to_check);
+		p_check_small += bool_offset;
+		const VkBool32* p_check = reinterpret_cast<const VkBool32*>(p_check_small);
 		
-		for(int i = 0; i < howManyVkBool32 && hasAll; ++i) {
-			if(*BOOL_SNIPER_HAVE == VK_FALSE && *BOOL_SNIPER_CHECK == VK_TRUE) {
-				hasAll = false;
+		for(int i = 0; i < bool_count && result; ++i) {
+			if(*p_features == VK_FALSE && *p_check == VK_TRUE) {
+				result = false;
 			} else {
-				BOOL_SNIPER_HAVE++;
-				BOOL_SNIPER_CHECK++;
+				p_features++;
+				p_check++;
 			}
 		}
 
-		return hasAll;
+		return result;
 	}
 };

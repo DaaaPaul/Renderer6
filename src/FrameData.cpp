@@ -12,7 +12,7 @@ namespace FrameData {
 			.queueFamilyIndex = QF_INDEX
 		};
 
-		VK_CHECK(vkCreateCommandPool(gDevice, &cmdPoolCreate, nullptr, &cmdPool), "Failed to create command pool")
+		VK_CHECK(vkCreateCommandPool(g_device, &cmdPoolCreate, nullptr, &cmdPool), "Failed to create command pool")
 
 		return cmdPool;
 	}
@@ -27,7 +27,7 @@ namespace FrameData {
 			.commandBufferCount = 1
 		};
 
-		VK_CHECK(vkAllocateCommandBuffers(gDevice, &cmdBufferCreate, &cmdBuffer), "Failed to create command buffer")
+		VK_CHECK(vkAllocateCommandBuffers(g_device, &cmdBufferCreate, &cmdBuffer), "Failed to create command buffer")
 
 		return cmdBuffer;
 	}
@@ -40,7 +40,7 @@ namespace FrameData {
 			.flags = FLAGS
 		};
 
-		VK_CHECK(vkCreateFence(gDevice, &fenceCreate, nullptr, &fence), "Failed to create fence")
+		VK_CHECK(vkCreateFence(g_device, &fenceCreate, nullptr, &fence), "Failed to create fence")
 
 		return fence;
 	}
@@ -53,7 +53,7 @@ namespace FrameData {
 			.pNext = &TYPE
 		};
 
-		VK_CHECK(vkCreateSemaphore(gDevice, &semaphoreCreate, nullptr, &semaphore), "Failed to create semaphore")
+		VK_CHECK(vkCreateSemaphore(g_device, &semaphoreCreate, nullptr, &semaphore), "Failed to create semaphore")
 
 		return semaphore;
 	}
@@ -65,29 +65,29 @@ namespace FrameData {
 
 	void deInit() {
 		clearFrameData();
-		vkDestroyCommandPool(gDevice, gCmdPool, nullptr);
+		vkDestroyCommandPool(g_device, gCmdPool, nullptr);
 	}
 
 	void recreate() {
-		gFrameIndex = 0;
+		g_frame_index = 0;
 		clearFrameData();
 		createFrameData();
 	}
 
 	void createCmdPool() {
-		gCmdPool = createCmdPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::gQueueFamilyIndices[0]);
+		gCmdPool = createCmdPool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::g_queue_family_indices[0]);
 	}
 
 	void createFrameData() {
-		for(int i = 0; i < gFRAMES_IN_FLIGHT; ++i) {
+		for(int i = 0; i < g_FRAMES_IN_FLIGHT; ++i) {
 			gFrameData.emplace_back(
 				createFence(0),
 				createSemaphore(VkSemaphoreTypeCreateInfo{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO, .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE, .initialValue = 0 }),
 				0,
-				std::vector<WaitSignal>{
-					WaitSignal{0, 0},
-					WaitSignal{0, 0},
-					WaitSignal{0, 0}
+				std::vector<SyncTargets>{
+					SyncTargets{0, 0},
+					SyncTargets{0, 0},
+					SyncTargets{0, 0}
 				},
 				std::vector<SubmitData>{
 					SubmitData{
@@ -157,11 +157,11 @@ namespace FrameData {
 
 	void clearFrameData() {
 		for(FrameData& frameData : gFrameData) {
-			vkDestroyFence(gDevice, frameData.sync.guard, nullptr);
-			vkDestroySemaphore(gDevice, frameData.sync.timeline, nullptr);
+			vkDestroyFence(g_device, frameData.sync_data.guard, nullptr);
+			vkDestroySemaphore(g_device, frameData.sync_data.timeline_semaphore, nullptr);
 
-			for(SubmitData& submit : frameData.submits) {
-				vkFreeCommandBuffers(gDevice, gCmdPool, 1, &submit.cmds.commandBuffer);
+			for(SubmitData& submit : frameData.submit_datas) {
+				vkFreeCommandBuffers(g_device, gCmdPool, 1, &submit.cmd_info.commandBuffer);
 			}
 		}
 		gFrameData.clear();
