@@ -193,6 +193,67 @@ namespace Util {
 		return pKtxTexture;
 	}
 
+	VkCommandPool create_cmd_pool(VkCommandPoolCreateFlags const& flags, uint32_t const& qf_index) {
+		VkCommandPool cmd_pool{};
+
+		VkCommandPoolCreateInfo cmd_pool_create{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+			.flags = flags,
+			.queueFamilyIndex = qf_index
+		};
+
+		VK_CHECK(vkCreateCommandPool(g_device, &cmd_pool_create, nullptr, &cmd_pool), "Failed to create command pool")
+
+		return cmd_pool;
+	}
+
+	VkCommandBuffer create_cmd_buffer(VkCommandPool cmd_pool) {
+		VkCommandBuffer cmd_buffer{};
+
+		VkCommandBufferAllocateInfo cmd_buffer_create{
+			.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+			.commandPool = cmd_pool,
+			.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+			.commandBufferCount = 1
+		};
+
+		VK_CHECK(vkAllocateCommandBuffers(g_device, &cmd_buffer_create, &cmd_buffer), "Failed to create command buffer")
+
+		return cmd_buffer;
+	}
+
+	VkFence create_fence(VkFenceCreateFlags const& flags) {
+		VkFence fence{};
+
+		VkFenceCreateInfo fence_create{
+			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+			.flags = flags
+		};
+
+		VK_CHECK(vkCreateFence(g_device, &fence_create, nullptr, &fence), "Failed to create fence")
+
+		return fence;
+	}
+
+	VkSemaphore create_semaphore(VkSemaphoreType const& semaphore_type) {
+		VkSemaphore semaphore{};
+
+		VkSemaphoreTypeCreateInfo type_info{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+			.semaphoreType = semaphore_type,
+			.initialValue = 0
+		};
+
+		VkSemaphoreCreateInfo semaphore_create{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+			.pNext = &type_info
+		};
+
+		VK_CHECK(vkCreateSemaphore(g_device, &semaphore_create, nullptr, &semaphore), "Failed to create semaphore")
+
+		return semaphore;
+	}
+
 	namespace Memory {
 		VkImageView create_image_view(VkImageViewCreateInfo const& IMAGE_VIEW_INFO) {
 			VkImageView view{};

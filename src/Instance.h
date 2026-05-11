@@ -13,7 +13,7 @@ namespace Instance {
 	};
 
 	void init();
-	void deInit();
+	void destroy();
 
 	void createInstance();
 	void destroyInstance();

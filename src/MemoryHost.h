@@ -13,7 +13,7 @@ namespace Memory  {
 		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
 
 		void init();
-		void deInit();
+		void destroy();
 
 		void populateBufferCreates();
 		void createBuffers();

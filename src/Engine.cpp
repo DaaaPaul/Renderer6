@@ -2,7 +2,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include "Engine.h"
-#include "FrameData.h"
+#include "FrameKits.h"
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
@@ -47,9 +47,9 @@ namespace Engine {
 		
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 		
-		VkDeviceAddress p_delta_time = Memory::Host::gBuffers[3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::g_frame_index].address;
-		VkDeviceAddress p_input_particles = Memory::Device::gBuffers[2 + FrameData::g_frame_index].address;
-		VkDeviceAddress p_output_particles = Memory::Device::gBuffers[2 + ((FrameData::g_frame_index + 1) % FrameData::g_FRAMES_IN_FLIGHT)].address;
+		VkDeviceAddress p_delta_time = Memory::Host::gBuffers[3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index].address;
+		VkDeviceAddress p_input_particles = Memory::Device::gBuffers[2 + FrameKits::g_frame_index].address;
+		VkDeviceAddress p_output_particles = Memory::Device::gBuffers[2 + ((FrameKits::g_frame_index + 1) % FrameKits::g_FRAMES_IN_FLIGHT)].address;
 
 		std::vector<VkDeviceAddress> push_constant{ p_delta_time, p_input_particles, p_output_particles };
 
@@ -122,7 +122,7 @@ namespace Engine {
 		std::vector<VkDescriptorSet> drawDescriptorSets{ textureDescriptors };
 		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::gLayouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
 		
-		VkDeviceAddress p_transform_matrices = Memory::Host::gBuffers[3 + FrameData::g_frame_index].address;
+		VkDeviceAddress p_transform_matrices = Memory::Host::gBuffers[3 + FrameKits::g_frame_index].address;
 		std::vector<VkDeviceAddress> push_constant{ p_transform_matrices };
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::gLayouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
 		
@@ -177,7 +177,7 @@ namespace Engine {
 		set_viewport_and_scissor(cmd_buf);
 
 		constexpr VkDeviceSize zero = 0;
-		VkBuffer vertex_buffer = Memory::Device::gBuffers[2 + ((FrameData::g_frame_index + 1) % FrameData::g_FRAMES_IN_FLIGHT)].buffer;
+		VkBuffer vertex_buffer = Memory::Device::gBuffers[2 + ((FrameKits::g_frame_index + 1) % FrameKits::g_FRAMES_IN_FLIGHT)].buffer;
 		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, &zero);
 
 		vkCmdBeginRendering(cmd_buf, &rendering_info);
@@ -193,39 +193,31 @@ namespace Engine {
 	}
 
 	void render_next() {
-		FrameData::FrameData& frame_data = FrameData::gFrameData[FrameData::g_frame_index];
-		frame_data.sync_data.increment_targets();
+		FrameKits::FrameKit& frame_kit = FrameKits::g_frame_kits[FrameKits::g_frame_index];
+		frame_kit.progress_sync();
 
 		uint32_t sc_image_index = UINT32_MAX;
-		if(acquire_sc_image(sc_image_index, frame_data.sync_data.guard)) {
+		if(acquire_sc_image(sc_image_index, frame_kit.sync_kit.guard)) {
 			resize();
 			return;
 		}
-		wait_fence(frame_data.sync_data.guard);
+		wait_fence(frame_kit.sync_kit.guard);
 
-		record_compute(frame_data.submit_datas[0].cmd_info.commandBuffer);
-		frame_data.submit_datas[0].wait_info.value = frame_data.sync_data.targets[0].wait_val;
-		frame_data.submit_datas[0].signal_info.value = frame_data.sync_data.targets[0].signal_val;
+		record_compute(frame_kit.submit_kits[0].cmd_info.commandBuffer);
+		record_draw_model(frame_kit.submit_kits[1].cmd_info.commandBuffer, sc_image_index);
+		record_draw_particles(frame_kit.submit_kits[2].cmd_info.commandBuffer, sc_image_index);
 
-		record_draw_model(frame_data.submit_datas[1].cmd_info.commandBuffer, sc_image_index);
-		frame_data.submit_datas[1].wait_info.value = frame_data.sync_data.targets[1].wait_val;
-		frame_data.submit_datas[1].signal_info.value = frame_data.sync_data.targets[1].signal_val;
-
-		record_draw_particles(frame_data.submit_datas[2].cmd_info.commandBuffer, sc_image_index);
-		frame_data.submit_datas[2].wait_info.value = frame_data.sync_data.targets[2].wait_val;
-		frame_data.submit_datas[2].signal_info.value = frame_data.sync_data.targets[2].signal_val;
-
-		std::vector<VkSubmitInfo2> submits{ frame_data.submit_datas[0].submit_info, frame_data.submit_datas[1].submit_info, frame_data.submit_datas[2].submit_info };
+		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info, frame_kit.submit_kits[1].submit_info, frame_kit.submit_kits[2].submit_info };
 		vkQueueSubmit2(LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
 
-		wait_timeline_semaphore(frame_data.sync_data.timeline_semaphore, frame_data.sync_data.targets[2].signal_val);
+		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[2].signal_val);
 		
 		if(present_sc_image(sc_image_index, LogicalDevice::gQueues[0])) {
 			resize();
 			return;
 		}
 
-		FrameData::g_frame_index = (FrameData::g_frame_index + 1) % FrameData::g_FRAMES_IN_FLIGHT;
+		FrameKits::increment_frame_index();
 	}
 
 	void run() {
@@ -240,7 +232,7 @@ namespace Engine {
 			render_next();
 			delta_time = get_delta_time(std::chrono::high_resolution_clock::now(), before);
 			println(delta_time);
-			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::gIMAGE_COUNT + FrameData::g_frame_index, &delta_time, sizeof(delta_time));
+			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index, &delta_time, sizeof(delta_time));
 		}
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
@@ -305,7 +297,7 @@ namespace Engine {
 		Swapchain::recreate();
 		// TODO: add functionality to recreate depth resources
 		Window::g_window_resized = false;
-		FrameData::recreate();
+		FrameKits::recreate();
 	}
 
 	void check_close() {
@@ -319,7 +311,7 @@ namespace Engine {
 
 		Vertex::Transforms transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
-		Memory::Host::Mutate::writeToBuffer(3 + FrameData::g_frame_index, &transformation, sizeof(transformation));
+		Memory::Host::Mutate::writeToBuffer(3 + FrameKits::g_frame_index, &transformation, sizeof(transformation));
 	}
 
 	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1) {

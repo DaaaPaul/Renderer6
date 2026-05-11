@@ -13,7 +13,7 @@
 #include "Pipelines.h"
 #include "Engine.h"
 #include "ImageViewHotspot.h"
-#include "FrameData.h"
+#include "FrameKit.h"
 
 int main() {
     try {
@@ -32,24 +32,24 @@ int main() {
 		ShaderModule::add();
 		Pipelines::add();
 
-		FrameData::init();
+		FrameKits::init();
 		
 		Engine::run();
 
-		FrameData::deInit();
+		FrameKits::destroy();
 		ImageViewHotspot::clear();
 
 		Pipelines::clear();
 		ShaderModule::clear();
 		PipelineLayouts::clear();
-		Swapchain::deInit();
+		Swapchain::destroy();
 
-		Memory::Device::deInit();
-		Memory::Host::deInit();
+		Memory::Device::destroy();
+		Memory::Host::destroy();
 
-		LogicalDevice::deInit();
-		Instance::deInit();
-		Window::deInit();
+		LogicalDevice::destroy();
+		Instance::destroy();
+		Window::destroy();
 	} catch(std::runtime_error const& RT_ERROR) {
         std::cerr << "ERROR: " << RT_ERROR.what() << "\n";
     }

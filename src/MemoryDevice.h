@@ -30,7 +30,7 @@ namespace Memory {
 		inline std::vector<VkDescriptorSetAllocateInfo> gDescriptorSetAllocates{};
 
 		void init();
-		void deInit();
+		void destroy();
 
 		void initMemoryResources();
 		void populateSamplerCreates();

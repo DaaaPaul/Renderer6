@@ -19,7 +19,7 @@ namespace Swapchain {
 		populateImages();
 	}
 
-	void deInit() {
+	void destroy() {
 		destroySwapchain();
 		destroySurface();
 	}
@@ -45,7 +45,7 @@ namespace Swapchain {
 		gStatus = VkSwapchainCreateInfoKHR{
 			.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
 			.surface = gSurface,
-			.minImageCount = gIMAGE_COUNT,
+			.minImageCount = g_IMAGE_COUNT,
 			.imageFormat = gIMAGE_FORMAT,
 			.imageColorSpace = gIMAGE_COLOR_SPACE,
 			.imageExtent = gImageSize,

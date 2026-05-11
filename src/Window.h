@@ -17,7 +17,7 @@ namespace Window {
 	std::vector<const char*> getInstanceWindowExtensions();
 
 	void init();
-	void deInit();
+	void destroy();
 
 	void getGlfwMonitor();
 	void createGlfwWindow();

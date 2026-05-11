@@ -29,7 +29,7 @@ namespace Window {
 		createGlfwWindow();
 		set_callbacks();
 	}
-	void deInit() {
+	void destroy() {
 		destroyGlfwWindow();
 	}
 

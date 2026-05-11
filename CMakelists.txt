@@ -38,8 +38,8 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Events.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Events.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/FeatureChain.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameData.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameKits.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/FrameKits.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ImageViewHotspot.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Instance.cpp

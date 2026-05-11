@@ -17,7 +17,7 @@ namespace Memory {
 			initDescriptorResources();
 		}
 
-		void deInit() {
+		void destroy() {
 			deInitMemoryResources();
 			destroySamplers();
 			deInitDescriptorResources();
@@ -69,7 +69,7 @@ namespace Memory {
 					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
 				}
 			);
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -205,8 +205,8 @@ namespace Memory {
 			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::gModelVertexBufferSize)});
 			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::gModelIndexBufferSize)});
 
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
-				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Swapchain::gIMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
+				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Swapchain::g_IMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
 			}
 		}
 

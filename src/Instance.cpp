@@ -14,7 +14,7 @@ namespace Instance {
 		createInstance();
 	}
 
-	void deInit() {
+	void destroy() {
 		destroyInstance();
 	}
 

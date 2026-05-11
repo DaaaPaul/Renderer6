@@ -10,13 +10,13 @@ namespace Swapchain {
 	inline VkSwapchainCreateInfoKHR gStatus{};
 
 	inline VkExtent2D gImageSize{};
-	inline constexpr uint32_t gIMAGE_COUNT = 4;
+	inline constexpr uint32_t g_IMAGE_COUNT = 4;
 	inline constexpr VkFormat gIMAGE_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
 	inline constexpr VkColorSpaceKHR gIMAGE_COLOR_SPACE = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
 	inline constexpr VkPresentModeKHR gPRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
 	void init();
-	void deInit();
+	void destroy();
 	void recreate();
 
 	void createSurface();

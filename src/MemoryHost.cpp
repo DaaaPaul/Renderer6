@@ -18,7 +18,7 @@ namespace Memory {
 			initializeBufferData();
 		}
 
-		void deInit() {
+		void destroy() {
 			vkFreeMemory(g_device, gMemory, nullptr);
 
 			for(Util::Memory::BufferBundle& bundle : gBuffers) {
@@ -58,7 +58,7 @@ namespace Memory {
 				}
 			);
 
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -70,7 +70,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -82,7 +82,7 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -154,11 +154,11 @@ namespace Memory {
 			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
 			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
 
-			//for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
+			//for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			//	Mutate::writeToBuffer(3 + i, &gTransformation, sizeof(Vertex::Transforms));
 			//}
-			for(int i = 0; i < Swapchain::gIMAGE_COUNT; ++i) {
-				Mutate::writeToBuffer(Swapchain::gIMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
+			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
+				Mutate::writeToBuffer(Swapchain::g_IMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}
 		}
 

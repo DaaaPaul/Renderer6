@@ -7,7 +7,7 @@ namespace LogicalDevice {
 		createQueues();
 	}
 
-	void deInit() {
+	void destroy() {
 		destroyLogicalDevice();
 	}
 

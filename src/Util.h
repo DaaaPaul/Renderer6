@@ -51,6 +51,14 @@ namespace Util {
 
 	ktxTexture2* loadKtxImage(const char* const& PATH);
 
+	VkCommandPool create_cmd_pool(const VkCommandPoolCreateFlags& flags, const uint32_t& qf_index);
+
+	VkCommandBuffer create_cmd_buffer(VkCommandPool cmd_pool);
+
+	VkFence create_fence(const VkFenceCreateFlags& flags);
+
+	VkSemaphore create_semaphore(const VkSemaphoreType& semaphore_type);
+
 	namespace Memory {
 		struct BufferBundle {
 			VkBuffer buffer{};

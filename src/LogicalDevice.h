@@ -68,7 +68,7 @@ namespace LogicalDevice {
 	};
 
 	void init();
-	void deInit();
+	void destroy();
 
 	void createLogicalDevice();
 	void createQueues();
