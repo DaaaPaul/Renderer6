@@ -25,6 +25,8 @@ BY THE HOUR:
 
 - clean the fk up (nested namespaces fk that, fk the util dynamic thing, etc)
 
+- AFTER THE _ underscore REFACTOR: get the image view hotspot out, put create vulkan objects in util and specializations in independant namespaces
+
 5-MINUTE CRAFTS:
 
 

@@ -2,22 +2,22 @@
 #include "LogicalDevice.h"
 
 namespace ImageViewHotspot {
-	VkImageView newView(VkImageViewCreateInfo const& CREATE) {
-		VkImageView newView{};
+	VkImageView newView(VkImageViewCreateInfo const& create) {
+		VkImageView view{};
 
-		VK_CHECK(vkCreateImageView(g_device, &CREATE, nullptr, &newView), "Failed to create image view")
-		views.push_back(newView);
+		VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &view), "Failed to create image view")
+		g_image_views.push_back(view);
 
-		return newView;
+		return view;
 	}
 
 	void pop() {
-		vkDestroyImageView(g_device, views[views.size() - 1], nullptr);
-		views.pop_back();
+		vkDestroyImageView(g_device, g_image_views[g_image_views.size() - 1], nullptr);
+		g_image_views.pop_back();
 	}
 
 	void clear() {
-		for(VkImageView view : views) {
+		for(VkImageView view : g_image_views) {
 			vkDestroyImageView(g_device, view, nullptr);
 		}
 	}

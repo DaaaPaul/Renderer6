@@ -33,10 +33,10 @@ namespace PhysicalDevice {
 
 	void enumerateSystemPhysicalDevices() {
 		uint32_t physicalDeviceCount{};
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
+		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
 		gSystemPhysicalDevices.resize(physicalDeviceCount, {});
 		gSystemPhysicalDeviceProperties.resize(physicalDeviceCount, {});
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::gInstance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
+		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
 			
 		for(int i = 0; i < physicalDeviceCount; ++i) {
 			vkGetPhysicalDeviceProperties(gSystemPhysicalDevices[i], &gSystemPhysicalDeviceProperties[i]);
@@ -62,7 +62,7 @@ namespace PhysicalDevice {
 			availableExtensionsNames.emplace_back(AVAILABLE.extensionName);
 		}
 
-		return Util::containsAll(availableExtensionsNames, Util::toString(LogicalDevice::gExtensions));
+		return Util::containsAll(availableExtensionsNames, Util::toString(LogicalDevice::g_extensions));
 	}
 
 	bool featuresCheck(VkPhysicalDevice physicalDevice) {

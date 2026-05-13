@@ -355,16 +355,16 @@ namespace Memory {
 				VkCommandPool tempCmdPool{};
 				VkCommandBuffer tempCmdBuffer{};
 
-				Util::begin(tempCmdPool, tempCmdBuffer, PhysicalDevice::g_queue_family_indices[0]);
+				Vulkan::begin_one_time_cmd_buffer(tempCmdPool, tempCmdBuffer, PhysicalDevice::g_queue_family_indices[0]);
 				vkCmdCopyBuffer(tempCmdBuffer, source, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Util::end(LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
+				Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
 			}
 
 			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer source, std::vector<VkBufferImageCopy> const& REGIONS) {
 				VkCommandPool tempCmdPool{};
 				VkCommandBuffer tempCommandBuffer{};
 
-				Util::begin(tempCmdPool, tempCommandBuffer, PhysicalDevice::g_queue_family_indices[0]);
+				Vulkan::begin_one_time_cmd_buffer(tempCmdPool, tempCommandBuffer, PhysicalDevice::g_queue_family_indices[0]);
 		
 				Engine::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
@@ -380,7 +380,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, PhysicalDevice::g_queue_family_indices[0]);
 
-				Util::end(LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
+				Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {

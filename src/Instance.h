@@ -2,24 +2,22 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
+#include "RuntimeError.hpp"
 
 namespace Instance {
-	inline VkInstance gInstance{};
+	inline VkInstance g_instance{};
 
-	inline std::vector<const char*> gLayers{
+	inline std::vector<const char*> g_layers{
 		"VK_LAYER_KHRONOS_validation"
 	};
-	inline std::vector<const char*> gExtensions{
-	};
+	std::vector<const char*> init_extensions();
+	inline std::vector<const char*> g_extensions(init_extensions());
 
 	void init();
 	void destroy();
 
-	void createInstance();
-	void destroyInstance();
+	RuntimeError check_have_layers(const std::vector<const char*>& needed_layers);
+	RuntimeError check_have_extensions(const std::vector<const char*>& needed_extensions);
 
-	void checkHaveExtensions(std::vector<const char*> const& EXTENSIONS);
-	void checkHaveLayers(std::vector<const char*> const& LAYERS);
-
-	void initExtensions();
+	VkInstance create_instance();
 }

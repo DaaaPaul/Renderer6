@@ -16,6 +16,7 @@
 #include "Util.h"
 #include "Transforms.hpp"
 #include "Camera.hpp"
+#include "Vulkan.h"
 
 namespace Engine {
 	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, const VkImageSubresourceRange& subresource_range, const VkPipelineStageFlags2& stage1, const VkAccessFlags2& access1, const VkPipelineStageFlags2& stage2, const VkAccessFlags2& access2, const VkImageLayout& old_layout, const VkImageLayout& new_layout, const uint32_t& graphics_queue_family_index) {
@@ -23,7 +24,7 @@ namespace Engine {
 			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
 			.srcStageMask = stage1,
 			.srcAccessMask = access1,
-			.dstStageMask = stage1,
+			.dstStageMask = stage2,
 			.dstAccessMask = access2,
 			.oldLayout = old_layout,
 			.newLayout = new_layout,
@@ -43,7 +44,7 @@ namespace Engine {
 	}
 
 	void record_compute(VkCommandBuffer cmd_buf) {
-		begin_cmd_buf(cmd_buf);
+		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 		
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
 		
@@ -60,8 +61,6 @@ namespace Engine {
 	}
 
 	void record_draw_model(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index) {
-		vkResetCommandBuffer(cmd_buf, 0);
-
 		VkImageView sc_image_view = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -107,9 +106,7 @@ namespace Engine {
 			.pColorAttachments = &sc_image_attachment,
 			.pDepthAttachment = &depth_image_attachment
 		};
-
-		constexpr VkCommandBufferBeginInfo begin{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		VK_CHECK(vkBeginCommandBuffer(cmd_buf, &begin), "Failed to begin command buffer")
+		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
 		set_viewport_and_scissor(cmd_buf);
@@ -144,8 +141,6 @@ namespace Engine {
 	};
 
 	void record_draw_particles(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index) {
-		vkResetCommandBuffer(cmd_buf, 0);
-
 		VkImageView sc_image_view = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
 				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -170,8 +165,7 @@ namespace Engine {
 			.pColorAttachments = &sc_image_attachment,
 		};
 
-		constexpr VkCommandBufferBeginInfo begin{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		VK_CHECK(vkBeginCommandBuffer(cmd_buf, &begin), "Failed to begin command buffer")
+		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
 		set_viewport_and_scissor(cmd_buf);
@@ -266,12 +260,6 @@ namespace Engine {
 	void wait_fence(VkFence fence) {
 		VK_CHECK(vkWaitForFences(g_device, 1, &fence, VK_TRUE, UINT64_MAX), "Failed to wait for fence");
 		VK_CHECK(vkResetFences(g_device, 1, &fence), "Failed to reset fence");
-	}
-
-	void begin_cmd_buf(VkCommandBuffer cmd_buf) {
-		vkResetCommandBuffer(cmd_buf, 0);
-		constexpr VkCommandBufferBeginInfo BEGIN{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-		VK_CHECK(vkBeginCommandBuffer(cmd_buf, &BEGIN), "Failed to begin compute command buffer")
 	}
 
 	void set_viewport_and_scissor(VkCommandBuffer cmd_buf) {

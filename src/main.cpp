@@ -13,7 +13,7 @@
 #include "Pipelines.h"
 #include "Engine.h"
 #include "ImageViewHotspot.h"
-#include "FrameKit.h"
+#include "FrameKits.h"
 
 int main() {
     try {

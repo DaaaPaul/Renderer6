@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cassert>
 #include "Swapchain.h"
+#include "LogicalDevice.h"
 
 namespace FrameKits {
 	struct SyncKit {
@@ -16,10 +17,12 @@ namespace FrameKits {
 			guard{ guard }, timeline_semaphore{ timeline_semaphore }, val{ 0 } {}
 
 		~SyncKit() {
-			vkDestroyFence(g_device, guard, nullptr);
-			vkDestroySemaphore(g_device, timeline_semaphore, nullptr);
+			//vkDestroyFence(g_device, guard, nullptr);
+			//vkDestroySemaphore(g_device, timeline_semaphore, nullptr);
 		}
 	};
+
+	inline VkCommandPool g_cmd_pool{};
 
 	struct SubmitKit {
 		VkSemaphoreSubmitInfo wait_info{};
@@ -34,7 +37,7 @@ namespace FrameKits {
 			submit_info{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2, .waitSemaphoreInfoCount = 1, .pWaitSemaphoreInfos = &wait_info, .commandBufferInfoCount = 1, .pCommandBufferInfos = &cmd_info, .signalSemaphoreInfoCount = 1, .pSignalSemaphoreInfos = &signal_info } {}
 	
 		~SubmitKit() {
-			vkFreeCommandBuffers(g_device, g_cmd_pool, 1, &cmd_info.commandBuffer);
+			//vkFreeCommandBuffers(g_device, g_cmd_pool, 1, &cmd_info.commandBuffer);
 		}
 	};
 
@@ -61,7 +64,6 @@ namespace FrameKits {
 		}
 	};
 
-	inline VkCommandPool g_cmd_pool{};
 	inline std::vector<FrameKit> g_frame_kits{};
 	inline uint32_t g_frame_index = 0;
 	inline constexpr uint32_t g_FRAMES_IN_FLIGHT = Swapchain::g_IMAGE_COUNT;

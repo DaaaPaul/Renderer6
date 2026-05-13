@@ -1,5 +1,6 @@
 #include "PhysicalDevice.h"
 #include "Buffer.hpp"
+#include "Vulkan.h"
 #include "Util.h"
 
 Buffer::Buffer(void* data, uint32_t size, VkBufferUsageFlags usageFlags) : 
@@ -37,7 +38,7 @@ void Buffer::copy(Buffer& dst, const Buffer& src) {
 		
 	const VkBufferCopy FULL = src.getFullRegion();
 
-	Util::begin(tempPool, tempCmds, PhysicalDevice::g_queue_family_indices[0]);
+	Vulkan::begin_one_time_cmd_buffer(tempPool, tempCmds, PhysicalDevice::g_queue_family_indices[0]);
 	vkCmdCopyBuffer(tempCmds, src.buffer, dst.buffer, 1, &FULL);
-	Util::end(LogicalDevice::gQueues[0], tempPool, tempCmds);
+	Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempPool, tempCmds);
 }

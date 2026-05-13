@@ -7,79 +7,90 @@
 #include "Util.h"
 
 namespace Instance {
+	std::vector<const char*> init_extensions() {
+		std::vector<const char*> extensions{};
+
+		extensions = Window::getInstanceWindowExtensions();
+		#ifdef __APPLE__
+		extensions.push_back("VK_KHR_portability_enumeration");
+		#endif
+
+		return extensions;
+	}
+	
 	void init() {
-		initExtensions();
-		checkHaveLayers(gLayers);
-		checkHaveExtensions(gExtensions);
-		createInstance();
+		check_have_layers(g_layers).throw_if_error();
+		check_have_extensions(g_extensions).throw_if_error();
+		g_instance = create_instance();
 	}
 
 	void destroy() {
-		destroyInstance();
+		vkDestroyInstance(g_instance, nullptr);
 	}
 
-	void initExtensions() {
-		gExtensions = Window::getInstanceWindowExtensions();
+	RuntimeError check_have_extensions(const std::vector<const char*>& needed_extensions) {
+		uint32_t have_count{};
+		vkEnumerateInstanceExtensionProperties(nullptr, &have_count, nullptr);
+		std::vector<VkExtensionProperties> extensions(have_count);
+		vkEnumerateInstanceExtensionProperties(nullptr, &have_count, extensions.data());
+
+		std::vector<std::string> extension_names{};
+		for(const VkExtensionProperties& extension : extensions) {
+			extension_names.emplace_back(extension.extensionName);
+		}
+
+		if(Util::containsAll(extension_names, Util::toString(needed_extensions))) {
+			return RuntimeError{};
+		} else {
+			return RuntimeError("Your GPU does not have the required VkInstance extensions");
+		}
+	}
+
+	RuntimeError check_have_layers(const std::vector<const char*>& needed_layers) {
+		uint32_t have_count{};
+		vkEnumerateInstanceLayerProperties(&have_count, nullptr);
+		std::vector<VkLayerProperties> layers(have_count);
+		vkEnumerateInstanceLayerProperties(&have_count, layers.data());
+
+		std::vector<std::string> layer_names{};
+		for(const VkLayerProperties& layer : layers) {
+			layer_names.emplace_back(layer.layerName);
+		}
+
+		if(Util::containsAll(layer_names, Util::toString(needed_layers))) {
+			return RuntimeError{};
+		} else {
+			return RuntimeError("Your GPU does not have the required Vulkan layers");
+		}
+	}
+
+	VkInstance create_instance() {
+		VkInstance instance{};
+
+		constexpr VkInstanceCreateFlags flags = 
 		#ifdef __APPLE__
-		gExtensions.push_back("VK_KHR_portability_enumeration");
+		VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+		#else
+		VK_NO_FLAGS;
 		#endif
-	}
 
-	void checkHaveExtensions(std::vector<const char*> const& EXTENSIONS) {
-		uint32_t haveExtensionsCount{};
-		vkEnumerateInstanceExtensionProperties(nullptr, &haveExtensionsCount, nullptr);
-		std::vector<VkExtensionProperties> haveExtensions(haveExtensionsCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &haveExtensionsCount, haveExtensions.data());
-
-		std::vector<std::string> haveExtensionsNames{};
-		for(VkExtensionProperties const& HAVE : haveExtensions) {
-			haveExtensionsNames.emplace_back(HAVE.extensionName);
-		}
-
-		if(!Util::containsAll(haveExtensionsNames, Util::toString(EXTENSIONS))) {
-			throw std::runtime_error("Your GPU does not have the required VkInstance extensions");
-		}
-	}
-
-	void checkHaveLayers(std::vector<const char*> const& LAYERS) {
-		uint32_t haveLayersCount{};
-		vkEnumerateInstanceLayerProperties(&haveLayersCount, nullptr);
-		std::vector<VkLayerProperties> haveLayers(haveLayersCount);
-		vkEnumerateInstanceLayerProperties(&haveLayersCount, haveLayers.data());
-
-		std::vector<std::string> haveLayersNames{};
-		for(VkLayerProperties const& HAVE : haveLayers) {
-			haveLayersNames.emplace_back(HAVE.layerName);
-		}
-
-		if(!Util::containsAll(haveLayersNames, Util::toString(LAYERS))) {
-			throw std::runtime_error("Your GPU does not have the required Vulkan layers");
-		}
-	}
-
-	void createInstance() {
-		VkInstanceCreateFlags instanceCreateFlags = 0;
-		#ifdef __APPLE__
-		instanceCreateFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-		#endif
-		VkApplicationInfo appInfo{
+		VkApplicationInfo app_info{
 			.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 			.apiVersion = VK_API_VERSION_1_3,
 		};
-		VkInstanceCreateInfo instanceCreate{
+
+		VkInstanceCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-			.flags = instanceCreateFlags,
-			.pApplicationInfo = &appInfo,
-			.enabledLayerCount = UINT32(gLayers.size()),
-			.ppEnabledLayerNames = gLayers.data(),
-			.enabledExtensionCount = UINT32(gExtensions.size()),
-			.ppEnabledExtensionNames = gExtensions.data(),
+			.flags = flags,
+			.pApplicationInfo = &app_info,
+			.enabledLayerCount = UINT32(g_layers.size()),
+			.ppEnabledLayerNames = g_layers.data(),
+			.enabledExtensionCount = UINT32(g_extensions.size()),
+			.ppEnabledExtensionNames = g_extensions.data(),
 		};
 
-		VK_CHECK(vkCreateInstance(&instanceCreate, nullptr, &gInstance), "Failed to create instance")
-	}
-		
-	void destroyInstance() {
-		vkDestroyInstance(gInstance, nullptr);
+		VK_CHECK(vkCreateInstance(&create, nullptr, &instance), "Failed to create instance")
+
+		return instance;
 	}
 }

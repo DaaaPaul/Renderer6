@@ -8,7 +8,7 @@ namespace LogicalDevice {
 	inline VkLogicalDevice g_device{};
 	inline std::vector<VkQueue> gQueues{};
 
-	inline std::vector<const char*> gExtensions{
+	inline std::vector<const char*> g_extensions{
 		"VK_KHR_swapchain",
 		"VK_KHR_synchronization2",
 		"VK_KHR_spirv_1_4",

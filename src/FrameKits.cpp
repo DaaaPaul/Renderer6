@@ -20,7 +20,7 @@ namespace FrameKits {
 	}
 
 	VkCommandPool create_cmd_pool() {
-		return Util::create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::g_queue_family_indices[0]);
+		return Vulkan::create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::g_queue_family_indices[0]);
 	}
 
 	std::vector<FrameKit> create_frame_kits() {
@@ -28,15 +28,15 @@ namespace FrameKits {
 		frame_kits.reserve(g_FRAMES_IN_FLIGHT);
 
 		for(int i = 0; i < g_FRAMES_IN_FLIGHT; ++i) {
-			VkSemaphore shared_semaphore = Util::create_semaphore(VK_SEMAPHORE_TYPE_TIMELINE);
+			VkSemaphore shared_semaphore = Vulkan::create_semaphore(VK_SEMAPHORE_TYPE_TIMELINE);
 
-			SubmitKit compute_shader_submit(shared_semaphore, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, Util::create_cmd_buffer(g_cmd_pool));
-			SubmitKit model_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Util::create_cmd_buffer(g_cmd_pool));
-			SubmitKit particles_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Util::create_cmd_buffer(g_cmd_pool));
+			SubmitKit compute_shader_submit(shared_semaphore, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
+			SubmitKit model_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
+			SubmitKit particles_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
 			std::vector<SubmitKit> submit_kits{ compute_shader_submit, model_draw_submit, particles_draw_submit };
 
 			g_frame_kits.emplace_back(
-				SyncKit(Util::create_fence(VK_NO_FLAGS), shared_semaphore), 
+				SyncKit(Vulkan::create_fence(VK_NO_FLAGS), shared_semaphore), 
 				submit_kits,
 				std::vector<SyncPair>(submit_kits.size())
 			);

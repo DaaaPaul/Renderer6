@@ -18,7 +18,6 @@ namespace Engine {
 	bool present_sc_image(const uint32_t& sc_image_index, VkQueue queue);
 	void wait_timeline_semaphore(VkSemaphore semaphore, const uint64_t& wait_val);
 	void wait_fence(VkFence fence);
-	void begin_cmd_buf(VkCommandBuffer cmd_buf);
 	void set_viewport_and_scissor(VkCommandBuffer cmd_buf);
 	void resize();
 	void check_close();

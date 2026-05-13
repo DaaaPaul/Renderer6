@@ -38,7 +38,7 @@ namespace Swapchain {
 	}
 
 	void createSurface() {
-		VK_CHECK(glfwCreateWindowSurface(Instance::gInstance, Window::g_glfw_window, nullptr, &gSurface), "Failed to create surface")
+		VK_CHECK(glfwCreateWindowSurface(Instance::g_instance, Window::g_glfw_window, nullptr, &gSurface), "Failed to create surface")
 	}
 
 	void populateCurrentSwapchainStatus() {
@@ -123,7 +123,7 @@ namespace Swapchain {
 	}
 
 	void destroySurface() {
-		vkDestroySurfaceKHR(Instance::gInstance, gSurface, nullptr);
+		vkDestroySurfaceKHR(Instance::g_instance, gSurface, nullptr);
 	}		
 
 	void destroySwapchain() {

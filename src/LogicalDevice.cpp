@@ -25,8 +25,8 @@ namespace LogicalDevice {
 			.pNext = &gFeatures.feature,
 			.queueCreateInfoCount = gQUEUE_FAMILY_COUNT,
 			.pQueueCreateInfos = queuesCreate.data(),
-			.enabledExtensionCount = UINT32(gExtensions.size()),
-			.ppEnabledExtensionNames = gExtensions.data(),
+			.enabledExtensionCount = UINT32(g_extensions.size()),
+			.ppEnabledExtensionNames = g_extensions.data(),
 		};
 
 		VK_CHECK(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &g_device), "Failed to create logical device")

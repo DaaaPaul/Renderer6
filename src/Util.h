@@ -2,12 +2,13 @@
 
 #include <vulkan/vulkan.h>
 #include <ktx.h>
-#include <stdexcept>
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include <iostream>
 #include "Vertex.hpp"
 #include "Window.h"
+#include "Vulkan.h"
 
 #define println(x) std::cout << x << '\n'
 
@@ -43,21 +44,9 @@ namespace Util {
 		return equal(V1.x, V2.x, EPSILON) && equal(V1.y, V2.y, EPSILON) && equal(V1.z, V2.z, EPSILON);
 	}
 
-	void begin(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t qfIndex);
-
-	void end(VkQueue queue, VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer);
-
 	void loadGltfModel(const char* const& PATH, std::vector<Vertex::Vertex>& vertices, std::vector<uint32_t>& indices);
 
 	ktxTexture2* loadKtxImage(const char* const& PATH);
-
-	VkCommandPool create_cmd_pool(const VkCommandPoolCreateFlags& flags, const uint32_t& qf_index);
-
-	VkCommandBuffer create_cmd_buffer(VkCommandPool cmd_pool);
-
-	VkFence create_fence(const VkFenceCreateFlags& flags);
-
-	VkSemaphore create_semaphore(const VkSemaphoreType& semaphore_type);
 
 	namespace Memory {
 		struct BufferBundle {

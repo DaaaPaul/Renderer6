@@ -71,6 +71,7 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipelines.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resource.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Resource.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/RuntimeError.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderModule.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Swapchain.cpp
@@ -83,6 +84,8 @@ target_sources(Renderer6 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Util.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Vertex.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Vulkan.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h
 
