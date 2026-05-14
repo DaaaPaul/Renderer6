@@ -22,9 +22,9 @@ namespace Vulkan {
 		VK_CHECK(vkQueueSubmit(queue, 1, &commandBufferSubmit, cmds_done), "Failed to submit temporary command buffer")
 		VK_CHECK(vkWaitForFences(g_device, 1, &cmds_done, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
 
-		//vkDestroyFence(g_device, cmds_done, nullptr);
-		//vkFreeCommandBuffers(g_device, cmd_pool, 1, &cmd_buf);
-		//vkDestroyCommandPool(g_device, cmd_pool, nullptr);
+		vkDestroyFence(g_device, cmds_done, nullptr);
+		vkFreeCommandBuffers(g_device, cmd_pool, 1, &cmd_buf);
+		vkDestroyCommandPool(g_device, cmd_pool, nullptr);
 	}
 
 	VkCommandPool create_cmd_pool(VkCommandPoolCreateFlags const& flags, uint32_t const& qf_index) {

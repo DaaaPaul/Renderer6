@@ -28,11 +28,11 @@ class Camera {
 	static constexpr float DEFAULT_ZOOM = DA_PI / 4.0f;
 	static constexpr Basis DEFAULT_BASIS = Basis{};
 
+	public:
 	static void mouse_moved_callback(GLFWwindow* window, double x, double y);
 	static void scroll_callback(GLFWwindow* window, double x_offset, double y_offset);
 
-	friend void Window::set_callbacks();
-
+	private:
 	glm::vec3 pos{};
 	Basis basis{};
 	float zoom{};

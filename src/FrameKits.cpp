@@ -15,11 +15,7 @@ namespace FrameKits {
 
 	void destroy() {
 		for(FrameKit& frame_kit : g_frame_kits) {
-			frame_kit.sync_kit.destroy();
-
-			for(SubmitKit& submit_kit : frame_kit.submit_kits) {
-				submit_kit.destroy();
-			}
+			frame_kit.destroy();
 		}
 
 		vkDestroyCommandPool(g_device, g_cmd_pool, nullptr);

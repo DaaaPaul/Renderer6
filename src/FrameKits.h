@@ -71,6 +71,14 @@ namespace FrameKits {
 				submit_kits[i].signal_info.value = sync_pairs[i].signal_val;
 			}
 		}
+
+		void destroy() noexcept {
+			sync_kit.destroy();
+
+			for(SubmitKit& submit_kit : submit_kits) {
+				submit_kit.destroy();
+			}
+		}
 	};
 
 	inline std::vector<FrameKit> g_frame_kits{};

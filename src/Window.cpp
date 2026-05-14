@@ -1,10 +1,9 @@
 #include <stdexcept>
 #include "Window.h"
 #include "Camera.hpp"
-#include "Util.h"
 
 namespace Window {
-	std::vector<const char*> getInstanceWindowExtensions() {
+	std::vector<const char*> get_instance_window_extensions() {
 		glfwInit();
 
 		uint32_t requiredCount{};
@@ -26,69 +25,72 @@ namespace Window {
 
 	void init() {
 		glfwInit();
-		set_glfw_window_hints();
-		getGlfwMonitor();
-		#ifndef DEBUGGING
-		createGlfwWindow();
-		#else
-		create_glfw_window_independant();
-		#endif
-		set_callbacks();
-	}
-	void destroy() {
-		destroyGlfwWindow();
-	}
-
-	void getGlfwMonitor() {
-		gGlfwMonitor = glfwGetPrimaryMonitor();
-
-		if(!gGlfwMonitor) {
-			throw std::runtime_error("glfwGetPrimaryMonitor failed");
-		}
-
-		GLFWvidmode const* VIDEO_MODE = glfwGetVideoMode(gGlfwMonitor);
-		gMonitorWidth = VIDEO_MODE->width;
-		gMonitorHeight = VIDEO_MODE->height;
-		gAspectRatio = static_cast<float>(gMonitorWidth) / static_cast<float>(gMonitorHeight);
-	}
-
-	void set_glfw_window_hints() {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+		Extent window_extent = 
+		#ifdef WINDOW_MONITOR_MODE
+		get_window_extent_monitor();
+		#else
+		get_window_extent_independant();
+		#endif
+		
+		WindowCreated window_create = 
+		#ifdef WINDOW_MONITOR_MODE
+		create_glfw_window_monitor(window_extent);
+		#else
+		create_glfw_window_independant(window_extent);
+		#endif
+
+		g_glfw_window = window_create.window;
+		window_create.setup();
 	}
-
-	void createGlfwWindow() {
-		g_glfw_window = glfwCreateWindow(gMonitorWidth, gMonitorHeight, gTITLE, gGlfwMonitor, nullptr);
-
-		if(!g_glfw_window) {
-			throw std::runtime_error("glfwCreateWindow failed");
-		}
-
-		glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	}
-
-	void create_glfw_window_independant() {
-		g_glfw_window = glfwCreateWindow(800, 600, gTITLE, nullptr, nullptr);
-
-		if(!g_glfw_window) {
-			throw std::runtime_error("glfwCreateWindow failed");
-		}
-	}
-
-	void set_callbacks() {
-		glfwSetWindowUserPointer(g_glfw_window, gFrameBufferResizedPointer);
-		glfwSetFramebufferSizeCallback(g_glfw_window, framebufferResizeCallback);
-		glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
-		glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
-	}
-
-	void destroyGlfwWindow() {
+	void destroy() {
 		glfwDestroyWindow(g_glfw_window);
 		glfwTerminate();
 	}
 
-	void framebufferResizeCallback(GLFWwindow* pGlfwWindow, int width, int height) {
-		bool* resized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(pGlfwWindow));
+	Extent get_window_extent_monitor() {
+		const GLFWvidmode* video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+		return {
+			video_mode->width,
+			video_mode->height
+		};
+	}
+
+	Extent get_window_extent_independant() {
+		return g_DEBUG_EXTENT;
+	}
+
+	WindowCreated create_glfw_window_monitor(const Extent& extent) {
+		return {
+			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, glfwGetPrimaryMonitor(), nullptr),
+			[]() -> void {
+				glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+				glfwSetWindowUserPointer(g_glfw_window, g_p_window_resized);
+				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
+				glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
+				glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
+			}
+		};
+	}
+
+	WindowCreated create_glfw_window_independant(const Extent& extent) {
+		return {
+			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, nullptr, nullptr),
+			[]() -> void {
+				glfwSetWindowUserPointer(g_glfw_window, g_p_window_resized);
+				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
+				glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
+				glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
+			}
+		};
+	}
+
+	void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
+		bool* resized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(glfw_window));
 		*resized = true;
 	}
 }

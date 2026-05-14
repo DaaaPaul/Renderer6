@@ -113,5 +113,5 @@ glm::mat4 Camera::to_view_matrix(const Camera& cam) {
 }
 
 glm::mat4 Camera::to_projection_matrix(const Camera& cam) {
-	return glm::perspective(cam.zoom, Window::gAspectRatio, 0.1f, 100.0f);
+	return glm::perspective(cam.zoom, Window::get_aspect_ratio(), 0.1f, 100.0f);
 }

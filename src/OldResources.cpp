@@ -27,7 +27,7 @@ namespace Resources {
 	}
 
 	void loadParticlesData() {
-		float ratio = Window::gAspectRatio;
+		float ratio = Window::get_aspect_ratio();
 		float r{}, theta{}, x{}, y{};
 
 		for(Particle::Particle& p : gParticles) {

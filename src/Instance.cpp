@@ -10,7 +10,7 @@ namespace Instance {
 	std::vector<const char*> init_extensions() {
 		std::vector<const char*> extensions{};
 
-		extensions = Window::getInstanceWindowExtensions();
+		extensions = Window::get_instance_window_extensions();
 		#ifdef __APPLE__
 		extensions.push_back("VK_KHR_portability_enumeration");
 		#endif
