@@ -16,9 +16,9 @@ namespace FrameKits {
 		explicit SyncKit(VkFence guard, VkSemaphore timeline_semaphore) :
 			guard{ guard }, timeline_semaphore{ timeline_semaphore }, val{ 0 } {}
 
-		~SyncKit() {
-			//vkDestroyFence(g_device, guard, nullptr);
-			//vkDestroySemaphore(g_device, timeline_semaphore, nullptr);
+		void destroy() noexcept {
+			vkDestroyFence(g_device, guard, nullptr);
+			vkDestroySemaphore(g_device, timeline_semaphore, nullptr);
 		}
 	};
 
@@ -34,10 +34,19 @@ namespace FrameKits {
 			wait_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_1 },
 			cmd_info{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, .commandBuffer = cmd_buf },
 			signal_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_2 },
-			submit_info{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2, .waitSemaphoreInfoCount = 1, .pWaitSemaphoreInfos = &wait_info, .commandBufferInfoCount = 1, .pCommandBufferInfos = &cmd_info, .signalSemaphoreInfoCount = 1, .pSignalSemaphoreInfos = &signal_info } {}
+			submit_info{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2, .waitSemaphoreInfoCount = 1, .commandBufferInfoCount = 1, .signalSemaphoreInfoCount = 1 } {
+			
+			self_refer();
+		}
 	
-		~SubmitKit() {
-			//vkFreeCommandBuffers(g_device, g_cmd_pool, 1, &cmd_info.commandBuffer);
+		void self_refer() {
+			submit_info.pWaitSemaphoreInfos = &wait_info;
+			submit_info.pCommandBufferInfos = &cmd_info;
+			submit_info.pSignalSemaphoreInfos = &signal_info;
+		}
+
+		void destroy() noexcept {
+			vkFreeCommandBuffers(g_device, g_cmd_pool, 1, &cmd_info.commandBuffer);
 		}
 	};
 

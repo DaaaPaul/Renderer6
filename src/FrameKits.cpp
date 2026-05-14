@@ -6,10 +6,22 @@ namespace FrameKits {
 	void init() {
 		g_cmd_pool = create_cmd_pool();
 		g_frame_kits = create_frame_kits();
+		for(FrameKit& frame_kit : g_frame_kits) {
+			for(SubmitKit& submit_kit : frame_kit.submit_kits) {
+				submit_kit.self_refer();
+			}
+		}
 	}
 
 	void destroy() {
-		g_frame_kits.clear();
+		for(FrameKit& frame_kit : g_frame_kits) {
+			frame_kit.sync_kit.destroy();
+
+			for(SubmitKit& submit_kit : frame_kit.submit_kits) {
+				submit_kit.destroy();
+			}
+		}
+
 		vkDestroyCommandPool(g_device, g_cmd_pool, nullptr);
 	}
 
@@ -35,7 +47,7 @@ namespace FrameKits {
 			SubmitKit particles_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
 			std::vector<SubmitKit> submit_kits{ compute_shader_submit, model_draw_submit, particles_draw_submit };
 
-			g_frame_kits.emplace_back(
+			frame_kits.emplace_back(
 				SyncKit(Vulkan::create_fence(VK_NO_FLAGS), shared_semaphore), 
 				submit_kits,
 				std::vector<SyncPair>(submit_kits.size())

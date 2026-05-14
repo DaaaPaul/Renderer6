@@ -10,6 +10,8 @@
 #include "Window.h"
 #include "Vulkan.h"
 
+//#define DEBUGGING
+
 #define println(x) std::cout << x << '\n'
 
 #define UINT32(vecSize) static_cast<uint32_t>(vecSize)

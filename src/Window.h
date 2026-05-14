@@ -20,7 +20,9 @@ namespace Window {
 	void destroy();
 
 	void getGlfwMonitor();
+	void set_glfw_window_hints();
 	void createGlfwWindow();
+	void create_glfw_window_independant();
 	void set_callbacks();
 	void destroyGlfwWindow();
 

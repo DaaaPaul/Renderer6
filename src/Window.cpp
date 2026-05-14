@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include "Window.h"
 #include "Camera.hpp"
+#include "Util.h"
 
 namespace Window {
 	std::vector<const char*> getInstanceWindowExtensions() {
@@ -25,8 +26,13 @@ namespace Window {
 
 	void init() {
 		glfwInit();
+		set_glfw_window_hints();
 		getGlfwMonitor();
+		#ifndef DEBUGGING
 		createGlfwWindow();
+		#else
+		create_glfw_window_independant();
+		#endif
 		set_callbacks();
 	}
 	void destroy() {
@@ -46,9 +52,12 @@ namespace Window {
 		gAspectRatio = static_cast<float>(gMonitorWidth) / static_cast<float>(gMonitorHeight);
 	}
 
-	void createGlfwWindow() {
+	void set_glfw_window_hints() {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	}
+
+	void createGlfwWindow() {
 		g_glfw_window = glfwCreateWindow(gMonitorWidth, gMonitorHeight, gTITLE, gGlfwMonitor, nullptr);
 
 		if(!g_glfw_window) {
@@ -56,6 +65,14 @@ namespace Window {
 		}
 
 		glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	void create_glfw_window_independant() {
+		g_glfw_window = glfwCreateWindow(800, 600, gTITLE, nullptr, nullptr);
+
+		if(!g_glfw_window) {
+			throw std::runtime_error("glfwCreateWindow failed");
+		}
 	}
 
 	void set_callbacks() {
