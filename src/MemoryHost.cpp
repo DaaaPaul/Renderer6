@@ -5,6 +5,7 @@
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
 #include "Transforms.hpp"
+#include "LogicalDevice.h"
 
 namespace Memory {
 	namespace Host {

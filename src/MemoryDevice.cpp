@@ -5,6 +5,7 @@
 #include "MemoryHost.h"
 #include "ImageViewHotspot.h"
 #include "Engine.h"
+#include "LogicalDevice.h"
 
 namespace Memory {
 	namespace Device {

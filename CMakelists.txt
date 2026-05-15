@@ -17,6 +17,9 @@ endif()
 find_package(GLM REQUIRED)
 
 set(DEBUG_MODE OFF)
+if(DEBUG_MODE)
+	target_compile_options(Renderer6 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4> $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address /Zi>)
+endif()
 
 add_executable(Renderer6)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Renderer6)
@@ -94,9 +97,6 @@ target_sources(Renderer6 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/shaders/particleCompute.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
 )
-if(DEBUG_MODE)
-	target_compile_options(Renderer6 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4> $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address /Zi>)
-endif()
 target_link_libraries(Renderer6 PRIVATE
     ${GLFW3_LIBRARY} 
 	Vulkan::Vulkan

@@ -31,7 +31,7 @@ Memory::Memory(std::vector<Buffer>& buffers) :
 }
 
 Memory::~Memory() {
-	vkFreeMemory(g_device, memory, nullptr);
+	//vkFreeMemory(g_device, memory, nullptr);
 }
 
 std::vector<Texture*> Memory::toPointers(std::vector<Texture>& pTextures) {
