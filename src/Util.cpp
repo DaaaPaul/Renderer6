@@ -13,7 +13,7 @@
 #include "PhysicalDevice.h"
 
 namespace Util {
-	std::vector<std::string> toString(std::vector<const char*> const& C_STRS) {
+	std::vector<std::string> to_string(std::vector<const char*> const& C_STRS) {
 		std::vector<std::string> strings{};
 
 		for(const char* const& C : C_STRS) {
@@ -23,7 +23,7 @@ namespace Util {
 		return strings;
 	}
 
-	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK) {
+	bool contains_all(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK) {
 		if(CHECK.empty()) {
 			return true;
 		} else {
@@ -205,7 +205,7 @@ namespace Util {
 			}
 
 			VkPhysicalDeviceMemoryProperties memoryProperties{};
-			vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::gPhysicalDevice, &memoryProperties);
+			vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::g_physical_device, &memoryProperties);
 
 			uint32_t suitableMemoryTypeIndex = UINT32_MAX;
 			bool suitableMemoryCondition = false;

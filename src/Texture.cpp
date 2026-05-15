@@ -122,7 +122,7 @@ VkSampler Texture::createSampler() {
 		.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 		.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 		.anisotropyEnable = VK_TRUE,
-		.maxAnisotropy = PhysicalDevice::gLimits.maxSamplerAnisotropy,
+		.maxAnisotropy = PhysicalDevice::g_limits.maxSamplerAnisotropy,
 		.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 	};
 

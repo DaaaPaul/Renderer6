@@ -63,7 +63,7 @@ namespace FrameKits {
 		void progress_sync() {
 			assert(submit_kits.size() == sync_pairs.size());
 			
-			for(int i = 0; i < submit_kits.size(); i++) {
+			for(int i = 0; i < submit_kits.size(); ++i) {
 				sync_pairs[i].wait_val = sync_kit.val;
 				sync_pairs[i].signal_val = ++sync_kit.val;
 

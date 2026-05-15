@@ -88,7 +88,7 @@ Memory::Measurements Memory::getMeasurements(std::vector<Texture> const& TEXTURE
 		running += DEPTH.get_memory_requirements().alignment;
 	}
 
-	alignNext(running, PhysicalDevice::gLimits.bufferImageGranularity);
+	alignNext(running, PhysicalDevice::g_limits.bufferImageGranularity);
 
 	for(Buffer const& BUF : BUFFERS) {
 		running = alignNext(running, BUF.get_memory_requirements().alignment);
@@ -103,7 +103,7 @@ Memory::Measurements Memory::getMeasurements(std::vector<Texture> const& TEXTURE
 
 uint32_t Memory::getType(uint32_t mask, VkMemoryPropertyFlags propertyMask) {
 	VkPhysicalDeviceMemoryProperties memoryProperties{};
-	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::gPhysicalDevice, &memoryProperties);
+	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::g_physical_device, &memoryProperties);
 
 	uint32_t index = UINT32_MAX;
 	for (int i = 0; i < memoryProperties.memoryTypeCount && index == UINT32_MAX; ++i) {
@@ -146,7 +146,7 @@ std::vector<VkMemoryRequirements> Memory::get_memory_requirements(std::vector<Te
 void Memory::bindTextures(std::vector<VkDeviceSize> const& OFFSETS, std::vector<Texture> const& TEXTURES) {
 	assert(OFFSETS.size() == TEXTURES.size());
 		
-	for(int i = 0; i < TEXTURES.size(); i++) {
+	for(int i = 0; i < TEXTURES.size(); ++i) {
 		vkBindImageMemory(g_device, TEXTURES[i].get_image(), memory, OFFSETS[i]);
 	}
 }
@@ -154,7 +154,7 @@ void Memory::bindTextures(std::vector<VkDeviceSize> const& OFFSETS, std::vector<
 void Memory::bindBuffers(std::vector<VkDeviceSize> const& OFFSETS, std::vector<Buffer> const& BUFFERS) {
 	assert(OFFSETS.size() == BUFFERS.size());
 		
-	for(int i = 0; i < BUFFERS.size(); i++) {
+	for(int i = 0; i < BUFFERS.size(); ++i) {
 		vkBindBufferMemory(g_device, BUFFERS[i].getBuffer(), memory, OFFSETS[i]);
 	}
 }
@@ -162,7 +162,7 @@ void Memory::bindBuffers(std::vector<VkDeviceSize> const& OFFSETS, std::vector<B
 std::vector<VkDeviceAddress> Memory::getBufferAddresses(std::vector<Buffer> const& BUFFERS) {
 	std::vector<VkDeviceAddress> addresses(BUFFERS.size(), UINT64_MAX);
 		
-	for(int i = 0; i < BUFFERS.size(); i++) {
+	for(int i = 0; i < BUFFERS.size(); ++i) {
 		if(BUFFERS[i].getUsageFlags() & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 			addresses[i] = getBufferAddress(BUFFERS[i]);
 		}
@@ -183,7 +183,7 @@ VkDeviceAddress Memory::getBufferAddress(Buffer const& BUFFER) {
 std::vector<void*> Memory::mapBuffers(std::vector<VkDeviceSize> const& OFFSETS, std::vector<Buffer> const& BUFFERS) {
 	std::vector<void*> mapped{};
 		
-	for(int i = 0; i < BUFFERS.size(); i++) {
+	for(int i = 0; i < BUFFERS.size(); ++i) {
 		mapped.push_back(mapBuffer(OFFSETS[i], BUFFERS[i]));
 	}
 
@@ -199,7 +199,7 @@ void* Memory::mapBuffer(VkDeviceSize const& OFFSET, Buffer const& BUFFER) {
 }
 
 void Memory::completeBuffers(std::vector<void*> const& maps, std::vector<Buffer>& buffers) {
-	for(int i = 0; i < buffers.size(); i++) {
+	for(int i = 0; i < buffers.size(); ++i) {
 		copyToBuffer(maps[i], buffers[i]);
 	}
 }
@@ -212,7 +212,7 @@ void Memory::migrateToBuffers(std::vector<Buffer>& buffers) {
 	Memory hostVisible(buffers);
 	std::vector<Buffer*> hostBuffers = hostVisible.pBuffers;
 
-	for(int i = 0; i < buffers.size(); i++) {
+	for(int i = 0; i < buffers.size(); ++i) {
 		Buffer::copy(buffers[i], *hostBuffers[i]);
 	}
 }

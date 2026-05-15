@@ -2,6 +2,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cstdint>
+#include <algorithm>
 #include <string>
 #include "PhysicalDevice.h"
 #include "LogicalDevice.h"
@@ -10,94 +11,101 @@
 
 namespace PhysicalDevice {
 	void init() {
-		enumerateSystemPhysicalDevices();
-		selectPhysicalDevice();
+		std::vector<VkPhysicalDevice> physical_devices(get_physical_devices());
+		g_physical_device = select_physical_device(physical_devices, get_physical_device_properties(physical_devices));
+
+		if(!g_physical_device) {
+			throw std::runtime_error("Failed to select a GPU on your system");
+		} else {
+			VkPhysicalDeviceProperties selected_properties{};
+			vkGetPhysicalDeviceProperties(g_physical_device, &selected_properties);
+			g_limits = selected_properties.limits;
+		}
 	}
 	
-	void selectPhysicalDevice() {
-		for(int i = 0; i < gSystemPhysicalDevices.size() && !gPhysicalDevice; ++i) {
-			if(physicalDeviceGood(gSystemPhysicalDeviceProperties[i], gSystemPhysicalDevices[i])) {
-				gPhysicalDevice = gSystemPhysicalDevices[i];
+	VkPhysicalDevice select_physical_device(const std::vector<VkPhysicalDevice>& system_physical_devices, const std::vector<VkPhysicalDeviceProperties>& system_physical_device_properties) {
+		assert(system_physical_devices.size() == system_physical_device_properties.size());
+		VkPhysicalDevice selected = nullptr;
 
-				VkPhysicalDeviceProperties physicalDeviceProperties{};
-				vkGetPhysicalDeviceProperties(gPhysicalDevice, &physicalDeviceProperties);
-
-				gLimits = physicalDeviceProperties.limits;
+		for(int i = 0; i < system_physical_devices.size() && !selected; ++i) {
+			if(physical_device_good(system_physical_device_properties[i], system_physical_devices[i])) {
+				selected = system_physical_devices[i];
 			}
 		}
-
-		if(!gPhysicalDevice) {
-			throw std::runtime_error("There are no suitable GPUs on your system for this to run on");
-		}
+		
+		return selected;
 	}
 
-	void enumerateSystemPhysicalDevices() {
-		uint32_t physicalDeviceCount{};
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physicalDeviceCount, nullptr), "Failed to enumerate physical devices on your instance");
-		gSystemPhysicalDevices.resize(physicalDeviceCount, {});
-		gSystemPhysicalDeviceProperties.resize(physicalDeviceCount, {});
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physicalDeviceCount, gSystemPhysicalDevices.data()), "Failed to enumerate physical devices on your instance");
+	std::vector<VkPhysicalDevice> get_physical_devices() {
+		uint32_t physical_device_count{};
+		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, nullptr), "get_physical_devices: failed to enumerate physical devices");
+		std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
+		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, physical_devices.data()), "get_physical_devices: failed to enumerate physical devices");
 			
-		for(int i = 0; i < physicalDeviceCount; ++i) {
-			vkGetPhysicalDeviceProperties(gSystemPhysicalDevices[i], &gSystemPhysicalDeviceProperties[i]);
-		}
+		return physical_devices;
 	}
 
-	bool physicalDeviceGood(VkPhysicalDeviceProperties const& PROPERTIES, VkPhysicalDevice physicalDevice) {
-		return apiVersionCheck(PROPERTIES) && extensionsCheck(physicalDevice) && featuresCheck(physicalDevice) && queuesCheck(physicalDevice);
-	}
+	std::vector<VkPhysicalDeviceProperties> get_physical_device_properties(const std::vector<VkPhysicalDevice>& physical_devices) {
+		std::vector<VkPhysicalDeviceProperties> physical_device_properties(physical_devices.size());
 
-	bool apiVersionCheck(VkPhysicalDeviceProperties const& PROPERTIES) {
-		return PROPERTIES.apiVersion >= VK_API_VERSION_1_3;
-	}
-
-	bool extensionsCheck(VkPhysicalDevice physicalDevice) {
-		uint32_t extensionsCount{};
-		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, nullptr);
-		std::vector<VkExtensionProperties> availableExtensions(extensionsCount);
-		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionsCount, availableExtensions.data());
-
-		std::vector<std::string> availableExtensionsNames{};
-		for(VkExtensionProperties const& AVAILABLE : availableExtensions) {
-			availableExtensionsNames.emplace_back(AVAILABLE.extensionName);
+		for(int i = 0; i < physical_devices.size(); ++i) {
+			vkGetPhysicalDeviceProperties(physical_devices[i], &physical_device_properties[i]);
 		}
 
-		return Util::containsAll(availableExtensionsNames, Util::toString(LogicalDevice::g_extensions));
+		return physical_device_properties;
 	}
 
-	bool featuresCheck(VkPhysicalDevice physicalDevice) {
-		auto availableFeatures(LogicalDevice::gFeatures);
-		vkGetPhysicalDeviceFeatures2(physicalDevice, &availableFeatures.feature);
-
-		return availableFeatures.has_all(LogicalDevice::gFeatures);
+	bool physical_device_good(VkPhysicalDeviceProperties properties, VkPhysicalDevice physical_device) {
+		return check_api_version(properties) && check_extensions(physical_device) && check_features(physical_device) && check_queues(physical_device);
 	}
 
-	bool queuesCheck(VkPhysicalDevice physicalDevice) {
-		using namespace LogicalDevice;
-		bool hasAllQueueFamiliesWithEnoughQueues = true;
+	bool check_api_version(VkPhysicalDeviceProperties properties) {
+		return properties.apiVersion >= VK_API_VERSION_1_3;
+	}
 
-		uint32_t availableQfCount = UINT32_MAX;
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableQfCount, nullptr);
-		std::vector<VkQueueFamilyProperties> availableQfs(availableQfCount, {});
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &availableQfCount, availableQfs.data());
+	bool check_extensions(VkPhysicalDevice physical_device) {
+		uint32_t extensions_count{};
+		vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extensions_count, nullptr);
+		std::vector<VkExtensionProperties> extensions(extensions_count);
+		vkEnumerateDeviceExtensionProperties(physical_device, nullptr, &extensions_count, extensions.data());
 
-		bool thisQfGood = false;
-		for(int i = 0; i < gQUEUE_FAMILY_CAPABILITIES.size() && hasAllQueueFamiliesWithEnoughQueues; ++i) {
-			thisQfGood = false;
+		std::vector<std::string> extension_strings{};
+		for(const VkExtensionProperties& extension : extensions) {
+			extension_strings.emplace_back(extension.extensionName);
+		}
 
-			for(int j = 0; j < availableQfs.size() && !thisQfGood; j++) {
-				if ((availableQfs[j].queueFlags & gQUEUE_FAMILY_CAPABILITIES[i]) && 
-					(availableQfs[j].queueCount >= gQUEUES_PER_QUEUE_FAMILY[i])) {
-					thisQfGood = true;
+		return Util::contains_all(extension_strings, Util::to_string(LogicalDevice::g_extensions));
+	}
+
+	bool check_features(VkPhysicalDevice physical_device) {
+		auto feature_structure(LogicalDevice::g_features);
+		vkGetPhysicalDeviceFeatures2(physical_device, &feature_structure.feature);
+
+		return feature_structure.has_all(LogicalDevice::g_features);
+	}
+
+	bool check_queues(VkPhysicalDevice physical_device) {
+		bool has_queues = true;
+
+		uint32_t queue_family_count = UINT32_MAX;
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
+		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
+
+		g_queue_family_indices.fill(UINT32_MAX);
+		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && has_queues; ++i) {
+			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] != UINT32_MAX; ++j) {
+				if ((queue_families[j].queueFlags & LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i]) && 
+					(queue_families[j].queueCount >= LogicalDevice::g_QUEUE_FAMILY_QUEUES[i])) {
 					g_queue_family_indices[i] = j;
 				}
 			}
 
-			if(!thisQfGood) {
-				hasAllQueueFamiliesWithEnoughQueues = false;
+			if(g_queue_family_indices[i] == UINT32_MAX) {
+				has_queues = false;
 			}
 		}
 
-		return hasAllQueueFamiliesWithEnoughQueues;
+		return has_queues;
 	}
 }

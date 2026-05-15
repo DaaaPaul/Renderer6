@@ -115,7 +115,7 @@ namespace Memory {
 		}
 
 		void createMemory() {
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).first;
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -132,7 +132,7 @@ namespace Memory {
 		}
 
 		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).second);
+			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second);
 
 			for(int i = 0; i < bufferOffsets.size(); ++i) {
 				gBuffers[i].offset = bufferOffsets[i];

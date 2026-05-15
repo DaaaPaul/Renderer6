@@ -52,7 +52,7 @@ namespace Swapchain {
 			.imageArrayLayers = 1,
 			.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
 			.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-			.queueFamilyIndexCount = LogicalDevice::gQUEUE_FAMILY_COUNT,
+			.queueFamilyIndexCount = LogicalDevice::g_QUEUE_FAMILY_COUNT,
 			.pQueueFamilyIndices = PhysicalDevice::g_queue_family_indices.data(),
 			.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
 			.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -75,7 +75,7 @@ namespace Swapchain {
 
 	void populateImageSize() {
 		VkSurfaceCapabilitiesKHR surfaceCapabilities{};
-		VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
+		VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, gSurface, &surfaceCapabilities), "Failed to get surface capabilities")
 		
 		gImageSize = VkExtent2D(surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height);
 
@@ -86,9 +86,9 @@ namespace Swapchain {
 
 	void checkImageFormatAndColorspaceSupported() {
 		uint32_t supportedFormatColorspacePairCount{};
-		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, nullptr);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::g_physical_device, gSurface, &supportedFormatColorspacePairCount, nullptr);
 		std::vector<VkSurfaceFormatKHR> supportedFormatColorspacePairs(supportedFormatColorspacePairCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::g_physical_device, gSurface, &supportedFormatColorspacePairCount, supportedFormatColorspacePairs.data());
 
 		bool supported = false;
 
@@ -105,9 +105,9 @@ namespace Swapchain {
 
 	void checkPresentModeSupported() {
 		uint32_t supportedPresentModeCount{};
-		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, nullptr);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::g_physical_device, gSurface, &supportedPresentModeCount, nullptr);
 		std::vector<VkPresentModeKHR> supportedPresentModes(supportedPresentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::gPhysicalDevice, gSurface, &supportedPresentModeCount, supportedPresentModes.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::g_physical_device, gSurface, &supportedPresentModeCount, supportedPresentModes.data());
 
 		bool supported = false;
 

@@ -39,7 +39,7 @@ namespace Instance {
 			extension_names.emplace_back(extension.extensionName);
 		}
 
-		if(Util::containsAll(extension_names, Util::toString(needed_extensions))) {
+		if(Util::contains_all(extension_names, Util::to_string(needed_extensions))) {
 			return RuntimeError{};
 		} else {
 			return RuntimeError("Your GPU does not have the required VkInstance extensions");
@@ -57,7 +57,7 @@ namespace Instance {
 			layer_names.emplace_back(layer.layerName);
 		}
 
-		if(Util::containsAll(layer_names, Util::toString(needed_layers))) {
+		if(Util::contains_all(layer_names, Util::to_string(needed_layers))) {
 			return RuntimeError{};
 		} else {
 			return RuntimeError("Your GPU does not have the required Vulkan layers");

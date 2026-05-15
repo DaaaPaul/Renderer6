@@ -158,9 +158,9 @@ namespace Memory {
 		void createMemory() {
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gBufferMemoryRequirements.begin(), gBufferMemoryRequirements.end());
 			gAllMemoryRequirements.insert(gAllMemoryRequirements.end(), gImageMemoryRequirements.begin(), gImageMemoryRequirements.end());
-			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).second;
+			gMemoryOffsets = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second;
 
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::gLimits.bufferImageGranularity).first;
+			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gAllMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).first;
 			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gAllMemoryRequirements, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
@@ -226,7 +226,7 @@ namespace Memory {
 					.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 					.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 					.anisotropyEnable = VK_TRUE,
-					.maxAnisotropy = PhysicalDevice::gLimits.maxSamplerAnisotropy,
+					.maxAnisotropy = PhysicalDevice::g_limits.maxSamplerAnisotropy,
 					.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 					.unnormalizedCoordinates = VK_FALSE
 				}
@@ -358,7 +358,7 @@ namespace Memory {
 
 				Vulkan::begin_one_time_cmd_buffer(tempCmdPool, tempCmdBuffer, PhysicalDevice::g_queue_family_indices[0]);
 				vkCmdCopyBuffer(tempCmdBuffer, source, gBuffers[INDEX_OF_BUFFER].buffer, UINT32(REGIONS.size()), REGIONS.data());
-				Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempCmdPool, tempCmdBuffer);
+				Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), tempCmdPool, tempCmdBuffer);
 			}
 
 			void copyToImage(uint32_t const& INDEX_OF_IMAGE, VkBuffer source, std::vector<VkBufferImageCopy> const& REGIONS) {
@@ -381,7 +381,7 @@ namespace Memory {
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, PhysicalDevice::g_queue_family_indices[0]);
 
-				Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempCmdPool, tempCommandBuffer);
+				Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), tempCmdPool, tempCommandBuffer);
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {

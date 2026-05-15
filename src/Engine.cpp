@@ -203,11 +203,11 @@ namespace Engine {
 
 		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info, frame_kit.submit_kits[1].submit_info, frame_kit.submit_kits[2].submit_info };
 		
-		vkQueueSubmit2(LogicalDevice::gQueues[0], 3, submits.data(), VK_NULL_HANDLE);
+		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), 3, submits.data(), VK_NULL_HANDLE);
 
 		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[2].signal_val);
 		
-		if(present_sc_image(sc_image_index, LogicalDevice::gQueues[0])) {
+		if(present_sc_image(sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT))) {
 			resize();
 			return;
 		}

@@ -30,9 +30,9 @@
 using VkLogicalDevice = VkDevice;
 
 namespace Util {
-	std::vector<std::string> toString(std::vector<const char*> const& C_STRS);
+	std::vector<std::string> to_string(std::vector<const char*> const& C_STRS);
 
-	bool containsAll(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
+	bool contains_all(std::vector<std::string> const& HAVE, std::vector<std::string> const& CHECK);
 
 	float random();
 

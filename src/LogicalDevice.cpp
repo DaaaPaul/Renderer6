@@ -3,56 +3,75 @@
 
 namespace LogicalDevice {
 	void init() {
-		createLogicalDevice();
-		createQueues();
+		g_device = create_logical_device(PhysicalDevice::g_physical_device,
+			PhysicalDevice::g_queue_family_indices,
+			g_QUEUE_FAMILY_QUEUES,
+			g_QUEUE_PRIORITIES,
+			&g_features.feature,
+			g_extensions);
+		g_queues = create_queues(PhysicalDevice::g_queue_family_indices);
 	}
 
 	void destroy() {
-		destroyLogicalDevice();
-	}
-
-	void createLogicalDevice() {
-		std::vector<VkDeviceQueueCreateInfo> queuesCreate(gQUEUE_FAMILY_COUNT, {});
-		for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
-			queuesCreate[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-			queuesCreate[i].queueFamilyIndex = PhysicalDevice::g_queue_family_indices[i];
-			queuesCreate[i].queueCount = gQUEUES_PER_QUEUE_FAMILY[i];
-			queuesCreate[i].pQueuePriorities = gQUEUE_PRIORITIES[i].data();
-		}
-
-		VkDeviceCreateInfo logicalDeviceCreate{
-			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-			.pNext = &gFeatures.feature,
-			.queueCreateInfoCount = gQUEUE_FAMILY_COUNT,
-			.pQueueCreateInfos = queuesCreate.data(),
-			.enabledExtensionCount = UINT32(g_extensions.size()),
-			.ppEnabledExtensionNames = g_extensions.data(),
-		};
-
-		VK_CHECK(vkCreateDevice(PhysicalDevice::gPhysicalDevice, &logicalDeviceCreate, nullptr, &g_device), "Failed to create logical device")
-	}
-
-	void createQueues() {
-		gQueues.resize(getQueueIndex(gQUEUE_FAMILY_COUNT - 1, gQUEUES_PER_QUEUE_FAMILY[gQUEUE_FAMILY_COUNT - 1]) + 1, VK_NULL_HANDLE);
-
-		for(int i = 0; i < gQUEUE_FAMILY_COUNT; ++i) {
-			for(int j = 0; j < gQUEUES_PER_QUEUE_FAMILY[i]; j++) {
-				vkGetDeviceQueue(g_device, PhysicalDevice::g_queue_family_indices[i], j, &gQueues[getQueueIndex(i, j)]);
-			}
-		}
-	}
-
-	void destroyLogicalDevice() {
 		vkDestroyDevice(g_device, nullptr);
 	}
 
-	uint32_t getQueueIndex(uint32_t const& QUEUE_FAMILY, uint32_t const& QUEUE_IN_QUEUE_FAMILY) {
-		uint32_t queueConsumer = 0;
+	VkLogicalDevice create_logical_device(VkPhysicalDevice physical_device,
+		const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_indices,
+		const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_queues,
+		const std::array<std::vector<float>, g_QUEUE_FAMILY_COUNT>& queue_priorities,
+		void* p_features,
+		const std::vector<const char*>& extensions) {
 
-		for(int i = 0; i < QUEUE_FAMILY; ++i) {
-			queueConsumer += gQUEUES_PER_QUEUE_FAMILY[i];
+		VkLogicalDevice logical_device{};
+
+		std::vector<VkDeviceQueueCreateInfo> queue_creates(g_QUEUE_FAMILY_COUNT);
+		for(int i = 0; i < g_QUEUE_FAMILY_COUNT; ++i) {
+			queue_creates[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+			queue_creates[i].queueFamilyIndex = queue_family_indices[i];
+			queue_creates[i].queueCount = queue_family_queues[i];
+			queue_creates[i].pQueuePriorities = queue_priorities[i].data();
 		}
 
-		return queueConsumer + QUEUE_IN_QUEUE_FAMILY;
+		VkDeviceCreateInfo logical_device_create{
+			.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+			.pNext = p_features,
+			.queueCreateInfoCount = g_QUEUE_FAMILY_COUNT,
+			.pQueueCreateInfos = queue_creates.data(),
+			.enabledExtensionCount = UINT32(extensions.size()),
+			.ppEnabledExtensionNames = extensions.data(),
+		};
+
+		VK_CHECK(vkCreateDevice(physical_device, &logical_device_create, nullptr, &logical_device), "create_logical_device: failed")
+
+		return logical_device;
+	}
+
+	std::vector<VkQueue> create_queues(const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_indices) {
+		std::vector<VkQueue> queues(calculate_queue_index(g_QUEUE_FAMILY_COUNT - 1, g_QUEUE_FAMILY_QUEUES[g_QUEUE_FAMILY_COUNT - 1]) + 1);
+
+		for(int i = 0; i < g_QUEUE_FAMILY_COUNT; ++i) {
+			for(int j = 0; j < g_QUEUE_FAMILY_QUEUES[i]; ++j) {
+				vkGetDeviceQueue(g_device, queue_family_indices[i], j, &g_queues[calculate_queue_index(i, j)]);
+			}
+		}
+
+		return queues;
+	}
+
+	VkQueue get_queue(VkQueueFlags queue_family_capabilities, uint32_t queue_index) {
+		uint32_t queue_family_index = UINT32_MAX;
+		for(int i = 0; i < g_QUEUE_FAMILY_COUNT && queue_family_index == UINT32_MAX; ++i) {
+			if(g_QUEUE_FAMILY_CAPABILITIES[i] & queue_family_capabilities) {
+				queue_family_index = i;
+			}
+		}
+
+		uint32_t linear_queue_index = calculate_queue_index(queue_family_index, queue_index);
+		if(linear_queue_index >= g_queues.size()) {
+			throw std::runtime_error("Attempted to retrieve queue that doesn't exist");
+		} else {
+			return g_queues[linear_queue_index];
+		}
 	}
 }

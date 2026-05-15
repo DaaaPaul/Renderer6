@@ -40,5 +40,5 @@ void Buffer::copy(Buffer& dst, const Buffer& src) {
 
 	Vulkan::begin_one_time_cmd_buffer(tempPool, tempCmds, PhysicalDevice::g_queue_family_indices[0]);
 	vkCmdCopyBuffer(tempCmds, src.buffer, dst.buffer, 1, &FULL);
-	Vulkan::end_one_time_cmd_buffer(LogicalDevice::gQueues[0], tempPool, tempCmds);
+	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), tempPool, tempCmds);
 }
