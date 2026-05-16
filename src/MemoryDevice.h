@@ -44,7 +44,7 @@ namespace Memory {
 		void createImages();
 		void populateImageMemoryRequirements();
 		void createMemory();
-		void bindBuffers();
+		void bind_buffers();
 		void populateBufferAddresses();
 		void bindImages();
 		void initializeBufferData();

@@ -94,7 +94,7 @@ namespace PhysicalDevice {
 
 		g_queue_family_indices.fill(UINT32_MAX);
 		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && has_queues; ++i) {
-			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] != UINT32_MAX; ++j) {
+			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] == UINT32_MAX; ++j) {
 				if ((queue_families[j].queueFlags & LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i]) && 
 					(queue_families[j].queueCount >= LogicalDevice::g_QUEUE_FAMILY_QUEUES[i])) {
 					g_queue_family_indices[i] = j;

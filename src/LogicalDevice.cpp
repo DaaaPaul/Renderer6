@@ -52,7 +52,7 @@ namespace LogicalDevice {
 
 		for(int i = 0; i < g_QUEUE_FAMILY_COUNT; ++i) {
 			for(int j = 0; j < g_QUEUE_FAMILY_QUEUES[i]; ++j) {
-				vkGetDeviceQueue(g_device, queue_family_indices[i], j, &g_queues[calculate_queue_index(i, j)]);
+				vkGetDeviceQueue(g_device, queue_family_indices[i], j, &queues[calculate_queue_index(i, j)]);
 			}
 		}
 

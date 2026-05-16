@@ -14,4 +14,6 @@ namespace Vulkan {
 	VkFence create_fence(const VkFenceCreateFlags& flags);
 
 	VkSemaphore create_semaphore(const VkSemaphoreType& semaphore_type);
+
+	VkDeviceMemory create_memory(VkDeviceSize size, uint32_t type_index, const void* p_next);
 }

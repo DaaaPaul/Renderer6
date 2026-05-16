@@ -14,7 +14,7 @@ namespace Memory {
 			createBuffers();
 			populateBufferMemoryRequirements();
 			createMemory();
-			bindBuffers();
+			bind_buffers();
 			populateBufferAddresses();
 			initializeBufferData();
 		}
@@ -131,11 +131,11 @@ namespace Memory {
 			vkAllocateMemory(g_device, &memoryAllocate, nullptr, &gMemory);
 		}
 
-		void bindBuffers() {
-			std::vector<VkDeviceSize> bufferOffsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second);
+		void bind_buffers() {
+			std::vector<VkDeviceSize> buffer_offsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second);
 
-			for(int i = 0; i < bufferOffsets.size(); ++i) {
-				gBuffers[i].offset = bufferOffsets[i];
+			for(int i = 0; i < buffer_offsets.size(); ++i) {
+				gBuffers[i].offset = buffer_offsets[i];
 				vkBindBufferMemory(g_device, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
 			}
 		}

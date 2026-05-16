@@ -16,7 +16,7 @@ class Buffer {
 	explicit Buffer(void* data, uint32_t size, VkBufferUsageFlags usage);
 	~Buffer();
 
-	VkBuffer getBuffer() const { return buffer; }
+	VkBuffer get_buffer() const { return buffer; }
 	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
 	VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
 	void* getData() const { return data; }

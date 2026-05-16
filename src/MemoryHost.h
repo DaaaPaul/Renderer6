@@ -19,7 +19,7 @@ namespace Memory  {
 		void createBuffers();
 		void populateBufferMemoryRequirements();
 		void createMemory();
-		void bindBuffers();
+		void bind_buffers();
 		void populateBufferAddresses();
 		void initializeBufferData();
 

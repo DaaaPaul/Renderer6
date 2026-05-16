@@ -96,4 +96,18 @@ namespace Vulkan {
 
 		return semaphore;
 	}
+
+	VkDeviceMemory create_memory(VkDeviceSize size, uint32_t type_index, const void* p_next) {
+		VkDeviceMemory memory{};
+
+		VkMemoryAllocateInfo allocate{
+			.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+			.pNext = p_next,
+			.allocationSize = size,
+			.memoryTypeIndex = type_index
+		};
+		VK_CHECK(vkAllocateMemory(g_device, &allocate, nullptr, &memory), "create_memory: failed")
+		
+		return memory;
+	}
 }

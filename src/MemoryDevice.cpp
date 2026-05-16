@@ -32,7 +32,7 @@ namespace Memory {
 			createImages();
 			populateImageMemoryRequirements();
 			createMemory();
-			bindBuffers();
+			bind_buffers();
 			populateBufferAddresses();
 			bindImages();
 			initializeBufferData();
@@ -176,7 +176,7 @@ namespace Memory {
 			vkAllocateMemory(g_device, &memoryAllocate, nullptr, &gMemory);
 		}
 
-		void bindBuffers() {
+		void bind_buffers() {
 			for(int i = 0; i < gBuffers.size(); ++i) {
 				gBuffers[i].offset = gMemoryOffsets[i];
 				vkBindBufferMemory(g_device, gBuffers[i].buffer, gMemory, gBuffers[i].offset);
