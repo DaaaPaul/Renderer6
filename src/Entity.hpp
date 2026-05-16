@@ -11,18 +11,19 @@ class Entity {
 	std::unordered_map<uint32_t, Component*> component_map{};
 
 	public:
-	template<class T, class... Args>
-	T* add_component(Args&&... args) {
-		static_assert(std::is_base_of<Component, T>::value, "T needs to be a Component");
-		T* p_component = nullptr;
+	template<class ComponentType, class... Args>
+	ComponentType* add_component(Args&&... args) {
+		static_assert(std::is_base_of<Component, ComponentType>::value, "ComponentType needs to be a Component");
 
-		uint32_t type_id = Component::get_type_id<T>();
+		ComponentType* p_component = nullptr;
+
+		uint32_t type_id = Component::get_type_id<ComponentType>();
 		auto i = component_map.find(type_id);
 
 		if(i != component_map.end()) {
-			p_component = static_cast<T*>(i->second);
+			p_component = static_cast<ComponentType*>(i->second);
 		} else {
-			std::unique_ptr<T> component = std::make_unique<T>(this, std::forward<Args>(args)...);
+			std::unique_ptr<ComponentType> component = std::make_unique<ComponentType>(this, std::forward<Args>(args)...);
 
 			p_component = component.get();
 			component_map[type_id] = p_component;
@@ -33,26 +34,31 @@ class Entity {
 		return p_component;
 	}
 
-	template<class T>
-	T* get_component() {
-		T* p_component = nullptr;
+	template<class ComponentType>
+	ComponentType* get_component() {
+		static_assert(std::is_base_of<Component, ComponentType>::value, "ComponentType needs to be a Component");
 
-		auto i = component_map.find(Component::get_type_id<T>());
+		ComponentType* p_component = nullptr;
+
+		auto i = component_map.find(Component::get_type_id<ComponentType>());
 
 		if(i != component_map.end()) {
-			p_component = static_cast<T*>(i->second);
+			p_component = static_cast<ComponentType*>(i->second);
 		}
 
 		return p_component;
 	}
 
-	template<class T>
+	template<class ComponentType>
 	bool remove_component() {
-		T* p_component = nullptr;
-		auto i = component_map.find(Component::get_type_id<T>());
+		static_assert(std::is_base_of<Component, ComponentType>::value, "ComponentType needs to be a Component");
+
+		ComponentType* p_component = nullptr;
+
+		auto i = component_map.find(Component::get_type_id<ComponentType>());
 
 		if(i != component_map.end()) {
-			p_component = static_cast<T*>(i->second);
+			p_component = static_cast<ComponentType*>(i->second);
 			component_map.erase(i);
 
 			for(auto i2 = components.begin(); i2 < components.end(); ++i2) {

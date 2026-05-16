@@ -5,14 +5,17 @@
 #include <cassert>
 
 namespace NameTable {
-	inline constexpr uint32_t NUM_ENTRIES = 1024;
+	inline constexpr uint32_t NAME_COUNT = 1024;
 
-	inline std::array<const char*, NUM_ENTRIES> names{};
+	inline std::array<const char*, NAME_COUNT> names{};
 	inline std::unordered_map<const char*, uint32_t> lookup{};
-	inline uint32_t nextIdx = 0;
+	inline uint32_t next_index = 0;
 
-	uint32_t pushEntry(const char* name);
+	uint32_t push_name(const char* name);
+	uint32_t get_index(const char* name);
 
-	uint32_t getIdx(const char* name);
-	constexpr const char* getName(uint32_t idx);
+	inline const char* get_name(uint32_t index) {
+		assert(index < next_index);
+		return names[index];
+	}
 }

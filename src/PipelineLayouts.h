@@ -4,9 +4,8 @@
 #include <vector>
 
 namespace PipelineLayouts {
-	inline std::vector<VkPipelineLayout> gLayouts{};
+	inline std::vector<VkPipelineLayout> g_layouts{};
 
-	void add();
-	VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const&);
+	void init();
 	void clear();
 }

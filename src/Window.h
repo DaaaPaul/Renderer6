@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <vector>
-#include "Util.h"
+#include "Utility.h"
 
 #undef WINDOW_MONITOR_MODE
 

@@ -4,11 +4,8 @@
 #include <vector>
 
 namespace ShaderModule {
-	inline std::vector<VkShaderModule> gShaderModules{};
+	inline std::vector<VkShaderModule> g_shader_modules{};
 
-	std::vector<char> getBytes(std::string const& PATH);
-
-	void add();
-	VkShaderModule newShaderModule(VkShaderModuleCreateInfo const&);
+	void init();
 	void clear();
 }

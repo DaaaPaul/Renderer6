@@ -60,14 +60,14 @@ namespace LogicalDevice {
 	}
 
 	VkQueue get_queue(VkQueueFlags queue_family_capabilities, uint32_t queue_index) {
-		uint32_t queue_family_index = UINT32_MAX;
-		for(int i = 0; i < g_QUEUE_FAMILY_COUNT && queue_family_index == UINT32_MAX; ++i) {
-			if(g_QUEUE_FAMILY_CAPABILITIES[i] & queue_family_capabilities) {
-				queue_family_index = i;
+		size_t queue_family_array_index = UINT64_MAX;
+		for(int i = 0; i < g_QUEUE_FAMILY_COUNT && queue_family_array_index == UINT64_MAX; ++i) {
+			if ((g_QUEUE_FAMILY_CAPABILITIES[i] & queue_family_capabilities) == queue_family_capabilities) {
+				queue_family_array_index = i;
 			}
 		}
 
-		uint32_t linear_queue_index = calculate_queue_index(queue_family_index, queue_index);
+		size_t linear_queue_index = calculate_queue_index(queue_family_array_index, queue_index);
 		if(linear_queue_index >= g_queues.size()) {
 			throw std::runtime_error("Attempted to retrieve queue that doesn't exist");
 		} else {

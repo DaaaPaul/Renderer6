@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Util.h"
+#include "Utility.h"
 
 namespace Memory {
 	namespace Device {
 		inline VkDeviceMemory gMemory{};
-		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
-		inline std::vector<Util::Memory::ImageBundle> gImages{};
+		inline std::vector<Utility::Memory::BufferBundle> gBuffers{};
+		inline std::vector<Utility::Memory::ImageBundle> gImages{};
 		inline std::vector<VkSampler> gSamplers{};
 		inline VkDescriptorPool gDescriptorPool{};
-		inline std::vector<Util::Memory::DescriptorSetBundle> gDescriptorSets{};
+		inline std::vector<Utility::Memory::DescriptorSetBundle> gDescriptorSets{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
 		inline std::vector<VkMemoryRequirements> gBufferMemoryRequirements{};
@@ -19,7 +19,7 @@ namespace Memory {
 
 		inline std::vector<VkMemoryRequirements> gAllMemoryRequirements{};
 		inline std::vector<VkDeviceSize> gMemoryOffsets{};
-		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
+		inline std::vector<Utility::Memory::ItemType> gMemoryItemTypes{};
 
 		inline std::vector<VkSamplerCreateInfo> gSamplerCreates{};
 

@@ -2,44 +2,15 @@
 #include <cmath>
 #include "Vertex.hpp"
 #include "OldResources.h"
-#include "Util.h"
+#include "Utility.h"
 #include "Window.h"
-#include "Particle.hpp"
 
 namespace Resources {
-	void loadModel() {
-		loadModelVertices();
-		loadKtxTexture2();
-	}
+	void load_model() {
+		Utility::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", g_model_vertices, g_model_indices);
+		g_vertex_buffer_size = g_model_vertices.size() * sizeof(Vertex);
+		g_index_buffer_size = g_model_indices.size() * sizeof(uint32_t);
 
-	void loadParticles() {
-		loadParticlesData();
-	}
-	
-	void loadModelVertices() {
-		Util::loadGltfModel(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", gModelVertices, gModelIndices);
-		gModelVertexBufferSize = gModelVertices.size() * sizeof(Vertex::Vertex); /* (aa) */
-		gModelIndexBufferSize = gModelIndices.size() * sizeof(uint32_t); /* (ab) */
-	}
-
-	void loadKtxTexture2() {
-		gTexture = Util::loadKtxImage(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
-	}
-
-	void loadParticlesData() {
-		float ratio = Window::get_aspect_ratio();
-		float r{}, theta{}, x{}, y{};
-
-		for(Particle::Particle& p : gParticles) {
-			r = sqrtf(Util::random());
-			theta = 2.0f * DA_PI * Util::random();
-
-			x = r * cosf(theta) * ratio;
-			y = r * sinf(theta);
-
-			p.color = glm::vec4(Util::random(), Util::random(), Util::random(), 1.0f);
-			p.position = glm::vec2(x, y);
-			p.velocity = normalize(p.position);
-		}
+		g_texture = Utility::load_ktx_image(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 	}
 }

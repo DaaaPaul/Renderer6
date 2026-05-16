@@ -6,27 +6,27 @@
 
 class Texture : public Resource {
 	private:
+	ktxTexture2* p_ktx_texture{};
+
 	VkImage image{};
-	VkImageView imageView{};
+	VkImageView image_view{};
 	VkSampler sampler{};
 
 	VkMemoryRequirements memory_requirements{};
 
-	ktxTexture2* texture{};
-
 	public:
-	explicit Texture(uint32_t idx, const char* texturePath);
+	explicit Texture(uint32_t index, const char* texturePath);
 	~Texture();
 
 	VkImage get_image() const { return image; }
-	VkImageView get_image_view() const { return imageView; }
+	VkImageView get_image_view() const { return image_view; }
 	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
 
-	void copyToImage();
+	static VkResult copy(VkImage image, const ktxTexture2* p_ktx_texture);
 
 	private:
-	static ktxTexture2* getKtx(const char* ktxPath);
+	static ktxTexture2* get_ktx_texture(const char* ktxPath);
 	static VkImage create_image(ktxTexture2* ktxTexture);
 	static VkImageView create_image_view(VkImage image, VkFormat format);
-	static VkSampler createSampler();
+	static VkSampler create_sampler();
 };

@@ -1,6 +1,6 @@
 #include "DescriptorSet.hpp"
 #include "LogicalDevice.h"
-#include "Util.h"
+#include "Utility.h"
 
 DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const Write& write) :
 	write(write) {

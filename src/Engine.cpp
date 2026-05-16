@@ -13,8 +13,8 @@
 #include "PipelineLayouts.h"
 #include "OldResources.h"
 #include "ImageViewHotspot.h"
-#include "Util.h"
-#include "Transforms.hpp"
+#include "Utility.h"
+#include "TransformMatrices.hpp"
 #include "Camera.hpp"
 #include "Vulkan.h"
 
@@ -46,7 +46,7 @@ namespace Engine {
 	void record_compute(VkCommandBuffer cmd_buf) {
 		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 		
-		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::gPipelines[2]);
+		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::g_pipelines[2]);
 		
 		VkDeviceAddress p_delta_time = Memory::Host::gBuffers[3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index].address;
 		VkDeviceAddress p_input_particles = Memory::Device::gBuffers[2 + FrameKits::g_frame_index].address;
@@ -54,7 +54,7 @@ namespace Engine {
 
 		std::vector<VkDeviceAddress> push_constant{ p_delta_time, p_input_particles, p_output_particles };
 
-		vkCmdPushConstants(cmd_buf, PipelineLayouts::gLayouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), push_constant.data());
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), push_constant.data());
 		vkCmdDispatch(cmd_buf, Resources::gPARTICLES_COUNT / 256, 1, 1);
 
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Failed to end compute command buffer")
@@ -82,7 +82,7 @@ namespace Engine {
 		
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = sc_image_view,
+			.image_view = sc_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -91,7 +91,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = depth_image_view,
+			.image_view = depth_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -108,7 +108,7 @@ namespace Engine {
 		};
 		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 
-		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[0]);
+		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[0]);
 		set_viewport_and_scissor(cmd_buf);
 
 		constexpr VkDeviceSize zero = 0;
@@ -117,24 +117,24 @@ namespace Engine {
 
 		VkDescriptorSet textureDescriptors = Memory::Device::gDescriptorSets[0].set;
 		std::vector<VkDescriptorSet> drawDescriptorSets{ textureDescriptors };
-		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::gLayouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
 		
 		VkDeviceAddress p_transform_matrices = Memory::Host::gBuffers[3 + FrameKits::g_frame_index].address;
 		std::vector<VkDeviceAddress> push_constant{ p_transform_matrices };
-		vkCmdPushConstants(cmd_buf, PipelineLayouts::gLayouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
 		
 		insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::g_queue_family_indices[0]);
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		insert_image_barrier(cmd_buf, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, PhysicalDevice::g_queue_family_indices[0]);
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		vkCmdBeginRendering(cmd_buf, &rendering_info);
-		vkCmdDrawIndexed(cmd_buf, Resources::gModelIndices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(cmd_buf, Resources::g_model_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
@@ -152,7 +152,7 @@ namespace Engine {
 		);
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = sc_image_view,
+			.image_view = sc_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -167,7 +167,7 @@ namespace Engine {
 
 		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
 
-		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::gPipelines[1]);
+		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[1]);
 		set_viewport_and_scissor(cmd_buf);
 
 		constexpr VkDeviceSize zero = 0;
@@ -181,7 +181,7 @@ namespace Engine {
 		insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::g_queue_family_indices[0]);
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
 	}
@@ -228,7 +228,7 @@ namespace Engine {
 			before = std::chrono::high_resolution_clock::now();
 			render_next();
 			delta_time = get_delta_time(std::chrono::high_resolution_clock::now(), before);
-			println(delta_time);
+			PRINTLN(delta_time);
 			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index, &delta_time, sizeof(delta_time));
 		}
 
@@ -300,7 +300,7 @@ namespace Engine {
 	void update(const float& DELTA) {
 		g_camera.update_position(DELTA);
 
-		Vertex::Transforms transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
+		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
 		Memory::Host::Mutate::writeToBuffer(3 + FrameKits::g_frame_index, &transformation, sizeof(transformation));
 	}

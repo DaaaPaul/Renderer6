@@ -7,20 +7,20 @@
 
 class Resource {
 	private:
-	uint32_t nameIdx{};
-	uint32_t users{};
+	uint32_t name_index{};
+	uint32_t user_count{};
 
 	protected:
-	explicit Resource(uint32_t idx) : nameIdx(idx), users{ 1 } {}
+	explicit Resource(uint32_t name_index) : name_index{ name_index }, user_count{ 1 } {}
 	virtual ~Resource() = default;
 
 	public:
-	void setNameIdx(uint32_t idx) { nameIdx = idx; }
-	uint32_t getNameIdx() const { return nameIdx; }
+	void set_name_index(uint32_t name_index) { name_index = name_index; }
+	uint32_t get_name_index() const { return name_index; }
 
-	void incrementUsers() { ++users; };
-	void decrementUsers() { if(users > 0) --users; };
-	uint32_t getUsers() const { return users; }
+	void inc_user_count() { ++user_count; };
+	void dec_user_count() { if(user_count > 0) --user_count; };
+	uint32_t get_user_count() const { return user_count; }
 };
 
 class Resources {
@@ -28,39 +28,38 @@ class Resources {
 	std::unordered_map<uint32_t, std::unique_ptr<Resource>> resources{};
 
 	public:
-	template<class T, class... Args>
-	T* useResource(uint32_t idx, Args&&... args) {
-		static_assert(std::is_base_of<Resource, T>::value, "T needs to be a Resource");
-		T* resourcePtr = nullptr;
+	template<class ResourceType, class... Args>
+	ResourceType* add(uint32_t name_index, Args&&... args) {
+		static_assert(std::is_base_of<Resource, ResourceType>::value, "ResourceType needs to inherit Resource");
+		ResourceType* p_resource = nullptr;
 
-		auto i = resources.find(idx);
+		auto i = resources.find(name_index);
 
 		if(i != resources.end()) {
-			i->second->incrementUsers();
-			resourcePtr = static_cast<T*>(i->second.get());
+			i->second->inc_user_count();
+			p_resource = static_cast<ResourceType*>(i->second.get());
 		} else {
-			resources[idx] = std::make_unique<T>(idx, std::forward<Args>(args)...);
-			resourcePtr = static_cast<T*>(resources[idx].get());
+			resources[name_index] = std::make_unique<ResourceType>(name_index, std::forward<Args>(args)...);
+			p_resource = static_cast<ResourceType*>(resources[name_index].get());
 		}
 
-		return resourcePtr;
+		return p_resource;
 	}
 
-	template<class T>
-	bool removeResource(uint32_t idx) {
-		bool removeSuccess = false;
-		auto i = resources.find(idx);
+	bool remove(uint32_t name_index) {
+		bool remove_success = false;
+		auto i = resources.find(name_index);
 
 		if(i != resources.end()) {
-			i->second->decrementUsers();
+			i->second->dec_user_count();
 
-			if(i->second->getUsers() == 0) {
+			if(i->second->get_user_count() == 0) {
 				resources.erase(i);
 			}
 
-			removeSuccess = true;
+			remove_success = true;
 		}
 
-		return removeSuccess;
+		return remove_success;
 	}
 };

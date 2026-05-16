@@ -3,49 +3,24 @@
 #include "MemoryDevice.h"
 
 namespace PipelineLayouts {
-	void add() {
-		VkPushConstantRange vertexDataPointer{
-			.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
-			.offset = 0,
-			.size = POINTER_SIZE(1)
+	void init() {
+		std::vector<VkDescriptorSetLayout> descriptor_set_layouts{
+			Memory::Device::gDescriptorSets[0].layout // p_ktx_texture image and sampler
 		};
-		VkPipelineLayoutCreateInfo modelPipelineLayoutCreate{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-			.setLayoutCount = 1,
-			.pSetLayouts = &Memory::Device::gDescriptorSets[0].layout, // texture image and sampler
-			.pushConstantRangeCount = 1,
-			.pPushConstantRanges = &vertexDataPointer
+		std::vector<VkPushConstantRange> push_constant_ranges{
+			VkPushConstantRange{
+				.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+				.offset = 0,
+				.size = POINTER_SIZE(1)
+			}
 		};
-		newLayout(modelPipelineLayoutCreate);
-
-		// empty layout for particle graphics pipeline
-		newLayout(VkPipelineLayoutCreateInfo{ .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO });
-
-		VkPushConstantRange computePointers{
-			.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
-			.offset = 0,
-			.size = POINTER_SIZE(3)
-		};
-		VkPipelineLayoutCreateInfo computePipelineLayoutCreate{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-			.pushConstantRangeCount = 1,
-			.pPushConstantRanges = &computePointers
-		};
-		newLayout(computePipelineLayoutCreate);
-	}
-
-	VkPipelineLayout newLayout(VkPipelineLayoutCreateInfo const& CREATE) {
-		VkPipelineLayout layout{};
-
-		VK_CHECK(vkCreatePipelineLayout(g_device, &CREATE, nullptr, &layout), "Failed to create pipeline layout")
-		gLayouts.push_back(layout);
-
-		return layout;
+		Vulkan::create_pipeline_layout(descriptor_set_layouts, push_constant_ranges);
 	}
 
 	void clear() {
-		for(VkPipelineLayout layout : gLayouts) {
+		for(VkPipelineLayout layout : g_layouts) {
 			vkDestroyPipelineLayout(g_device, layout, nullptr);
 		}
+		g_layouts.clear();
 	}
 }

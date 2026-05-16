@@ -1,5 +1,5 @@
 #include "DepthImage.hpp"
-#include "Util.h"
+#include "Utility.h"
 #include "PhysicalDevice.h"
 
 DepthImage::DepthImage(VkExtent3D extent) :
@@ -27,7 +27,7 @@ VkImage DepthImage::create_image(VkExtent3D extent) {
 		.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0],
+		.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT),
 		.initialLayout = VK_IMAGE_LAYOUT_GENERAL,
 	};
 

@@ -3,25 +3,15 @@
 #include <ktx.h>
 #include <cstdint>
 #include <vector>
-#include "Particle.hpp"
 #include "Vertex.hpp"
 
 namespace Resources {
-	inline std::vector<Vertex::Vertex> gModelVertices{};
-	inline uint32_t gModelVertexBufferSize = UINT32_MAX; /* (aa) */
-	inline std::vector<uint32_t> gModelIndices{};
-	inline uint32_t gModelIndexBufferSize = UINT32_MAX; /* (ab) */
+	inline std::vector<Vertex> g_model_vertices{};
+	inline uint32_t g_vertex_buffer_size = UINT32_MAX;
+	inline std::vector<uint32_t> g_model_indices{};
+	inline uint32_t g_index_buffer_size = UINT32_MAX;
 
-	inline ktxTexture2* gTexture{};
+	inline ktxTexture2* g_texture{};
 
-	inline constexpr uint32_t gPARTICLES_COUNT = 256;
-	inline constexpr uint32_t gPARTICLES_BUFFER_SIZE = gPARTICLES_COUNT * sizeof(Particle::Particle);
-	inline std::vector<Particle::Particle> gParticles(gPARTICLES_COUNT, {});
-
-	void loadModel();
-	void loadParticles();
-
-	void loadModelVertices();
-	void loadKtxTexture2();
-	void loadParticlesData();
+	void load_model();
 }

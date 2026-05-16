@@ -4,7 +4,7 @@
 #include "OldResources.h"
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
-#include "Transforms.hpp"
+#include "TransformMatrices.hpp"
 #include "LogicalDevice.h"
 
 namespace Memory {
@@ -22,7 +22,7 @@ namespace Memory {
 		void destroy() {
 			vkFreeMemory(g_device, gMemory, nullptr);
 
-			for(Util::Memory::BufferBundle& bundle : gBuffers) {
+			for(Utility::Memory::BufferBundle& bundle : gBuffers) {
 				vkDestroyBuffer(g_device, bundle.buffer, nullptr);
 			}
 		}
@@ -31,31 +31,31 @@ namespace Memory {
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-					.size = Resources::gModelVertexBufferSize,
+					.size = Resources::g_vertex_buffer_size,
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 				}
 			);
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-					.size = Resources::gModelIndexBufferSize,
+					.size = Resources::g_index_buffer_size,
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 				}
 			);
 			gBufferCreates.push_back(
 				VkBufferCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-					.size = Resources::gTexture->dataSize,
+					.size = Resources::g_texture->dataSize,
 					.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 					.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 					.queueFamilyIndexCount = 1,
-					.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+					.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 				}
 			);
 
@@ -63,11 +63,11 @@ namespace Memory {
 				gBufferCreates.push_back(
 					VkBufferCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-						.size = sizeof(Vertex::Transforms),
+						.size = sizeof(TransformMatrices),
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 					}
 				);
 			}
@@ -79,7 +79,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 					}
 				);
 			}
@@ -91,7 +91,7 @@ namespace Memory {
 						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
 						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
+						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 					}
 				);
 			}
@@ -110,13 +110,13 @@ namespace Memory {
 
 			for(int i = 0; i < gBuffers.size(); ++i) {
 				vkGetBufferMemoryRequirements(g_device, gBuffers[i].buffer, &gBufferMemoryRequirements[i]);
-				gMemoryItemTypes.push_back(Util::Memory::ItemType::LINEAR);
+				gMemoryItemTypes.push_back(Utility::Memory::ItemType::LINEAR);
 			}
 		}
 
 		void createMemory() {
-			VkDeviceSize memorySize = Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).first;
-			uint32_t memoryType = Util::Memory::getMemoryTypeIndex(gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			VkDeviceSize memorySize = Utility::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).first;
+			uint32_t memoryType = Utility::Memory::getMemoryTypeIndex(gBufferMemoryRequirements, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		
 			VkMemoryAllocateFlagsInfo deviceAddressBit{
 				.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO,
@@ -132,7 +132,7 @@ namespace Memory {
 		}
 
 		void bind_buffers() {
-			std::vector<VkDeviceSize> buffer_offsets(Util::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second);
+			std::vector<VkDeviceSize> buffer_offsets(Utility::Memory::doMemoryCalculations(gBufferMemoryRequirements, gMemoryItemTypes, PhysicalDevice::g_limits.bufferImageGranularity).second);
 
 			for(int i = 0; i < buffer_offsets.size(); ++i) {
 				gBuffers[i].offset = buffer_offsets[i];
@@ -151,13 +151,10 @@ namespace Memory {
 		}
 
 		void initializeBufferData() {
-			Mutate::writeToBuffer(0, Resources::gModelVertices.data(), Resources::gModelVertexBufferSize);
-			Mutate::writeToBuffer(1, Resources::gModelIndices.data(), Resources::gModelIndexBufferSize);
-			Mutate::writeToBuffer(2, Resources::gTexture->pData, Resources::gTexture->dataSize);
+			Mutate::writeToBuffer(0, Resources::g_model_vertices.data(), Resources::g_vertex_buffer_size);
+			Mutate::writeToBuffer(1, Resources::g_model_indices.data(), Resources::g_index_buffer_size);
+			Mutate::writeToBuffer(2, Resources::g_texture->pData, Resources::g_texture->dataSize);
 
-			//for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-			//	Mutate::writeToBuffer(3 + i, &gTransformation, sizeof(Vertex::Transforms));
-			//}
 			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 				Mutate::writeToBuffer(Swapchain::g_IMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
 			}

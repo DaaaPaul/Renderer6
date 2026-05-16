@@ -1,6 +1,7 @@
 #include "Vulkan.h"
-#include "Util.h"
+#include "Utility.h"
 #include "LogicalDevice.h"
+#include "PhysicalDevice.h"
 
 namespace Vulkan {
 	VkResult begin_one_time_cmd_buffer(VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf, uint32_t queue_family_index) {
@@ -109,5 +110,54 @@ namespace Vulkan {
 		VK_CHECK(vkAllocateMemory(g_device, &allocate, nullptr, &memory), "create_memory: failed")
 		
 		return memory;
+	}
+
+	VkBuffer create_buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
+		VkBuffer buffer{};
+
+		VkBufferCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+			.size = size,
+			.usage = usage,
+			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+			.queueFamilyIndexCount = 1,
+			.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
+		};
+
+		VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "create_buffer: failed")
+
+		return buffer;
+	}
+
+	VkPipelineLayout create_pipeline_layout(const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts, const std::vector<VkPushConstantRange>& push_constant_ranges) {
+		VkPipelineLayout pipeline_layout{};
+
+		VkPipelineLayoutCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+			.setLayoutCount = UINT32(descriptor_set_layouts.size()),
+			.pSetLayouts = descriptor_set_layouts.data(),
+			.pushConstantRangeCount = UINT32(push_constant_ranges.size()),
+			.pPushConstantRanges = push_constant_ranges.data()
+		};
+
+		VK_CHECK(vkCreatePipelineLayout(g_device, &create, nullptr, &pipeline_layout), "create_pipeline_layout: failed")
+
+		return pipeline_layout;
+	}
+
+	VkShaderModule create_shader_module(const std::string& file_path) {
+		VkShaderModule shader_module{};
+		
+		std::vector<char> file_bytes = Utility::get_file_bytes(file_path);
+
+		VkShaderModuleCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+			.codeSize = file_bytes.size(),
+			.pCode = reinterpret_cast<uint32_t*>(file_bytes.data())
+		};
+
+		VK_CHECK(vkCreateShaderModule(g_device, &create, nullptr, &shader_module), "create_shader_module: failed")
+
+		return shader_module;
 	}
 }

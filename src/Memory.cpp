@@ -107,7 +107,7 @@ std::vector<VkDeviceAddress> Memory::address_buffers(const std::vector<Buffer>& 
 	std::vector<VkDeviceAddress> addresses(buffers.size(), UINT64_MAX);
 		
 	for(int i = 0; i < buffers.size(); ++i) {
-		if(buffers[i].getUsageFlags() & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+		if(buffers[i].get_usage_flags() & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 			VkBufferDeviceAddressInfo buffer_address{
 				.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
 				.buffer = buffers[i].get_buffer()
@@ -125,7 +125,7 @@ std::vector<void*> Memory::map_buffers(VkDeviceMemory memory, const std::vector<
 		
 	for(int i = 0; i < buffers.size(); ++i) {
 		void* map{};
-		VK_CHECK(vkMapMemory(g_device, memory, buffer_offsets[i], buffers[i].getSize(), VK_NO_FLAGS, &map), "map_buffers: failed")
+		VK_CHECK(vkMapMemory(g_device, memory, buffer_offsets[i], buffers[i].get_size(), VK_NO_FLAGS, &map), "map_buffers: failed")
 		maps.push_back(map);
 	}
 
@@ -134,6 +134,6 @@ std::vector<void*> Memory::map_buffers(VkDeviceMemory memory, const std::vector<
 
 void Memory::fill_buffers(const std::vector<void*>& buffer_maps, std::vector<Buffer>& buffers) {
 	for(int i = 0; i < buffers.size(); ++i) {
-		std::memcpy(buffer_maps[i], buffers[i].getData(), buffers[i].getSize());
+		std::memcpy(buffer_maps[i], buffers[i].get_datra(), buffers[i].get_size());
 	}
 }

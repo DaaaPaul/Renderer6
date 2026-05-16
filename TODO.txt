@@ -27,6 +27,8 @@ BY THE HOUR:
 
 - AFTER THE _ underscore REFACTOR: get the image view hotspot out, put create vulkan objects in util and specializations in independant namespaces
 
+- HIT BINDLESS DESCRIPTORS
+
 - remove host local memory
 
 5-MINUTE CRAFTS:

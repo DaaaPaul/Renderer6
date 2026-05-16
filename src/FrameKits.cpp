@@ -1,5 +1,5 @@
 #include "FrameKits.h"
-#include "Util.h"
+#include "Utility.h"
 #include "PhysicalDevice.h"
 
 namespace FrameKits {
@@ -28,7 +28,7 @@ namespace FrameKits {
 	}
 
 	VkCommandPool create_cmd_pool() {
-		return Vulkan::create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::g_queue_family_indices[0]);
+		return Vulkan::create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 	}
 
 	std::vector<FrameKit> create_frame_kits() {

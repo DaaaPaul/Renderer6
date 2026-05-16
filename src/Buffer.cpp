@@ -1,11 +1,9 @@
 #include "PhysicalDevice.h"
 #include "Buffer.hpp"
 #include "Vulkan.h"
-#include "Util.h"
 
-Buffer::Buffer(void* data, uint32_t size, VkBufferUsageFlags usageFlags) : 
-	data{ data }, size{ size }, usageFlags{ usageFlags } {
-	buffer = createBuffer(size, usageFlags);
+Buffer::Buffer(void* data, uint32_t size, VkBufferUsageFlags usage_flags) : 
+	buffer{ Vulkan::create_buffer(size, usage_flags) }, data{ data }, size{ size }, usage_flags{ usage_flags } {
 
 	vkGetBufferMemoryRequirements(g_device, buffer, &memory_requirements);
 }
@@ -15,30 +13,12 @@ Buffer::~Buffer() {
 	vkDestroyBuffer(g_device, buffer, nullptr);
 }
 
-VkBuffer Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage) {
-	VkBuffer buffer{};
-
-	VkBufferCreateInfo create{
-		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-		.size = size,
-		.usage = usage,
-		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0]
-	};
-
-	VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "createBuffer: failed")
-
-	return buffer;
-}
-
 void Buffer::copy(Buffer& dst, const Buffer& src) {
-	VkCommandPool tempPool{};
-	VkCommandBuffer tempCmds{};
-		
-	const VkBufferCopy FULL = src.getFullRegion();
+	VkCommandPool pool{};
+	VkCommandBuffer one_time_cmds{};
+	const VkBufferCopy FULL_SRC_REGION = src.get_full_region();
 
-	Vulkan::begin_one_time_cmd_buffer(tempPool, tempCmds, PhysicalDevice::g_queue_family_indices[0]);
-	vkCmdCopyBuffer(tempCmds, src.buffer, dst.buffer, 1, &FULL);
-	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), tempPool, tempCmds);
+	Vulkan::begin_one_time_cmd_buffer(pool, one_time_cmds, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
+	vkCmdCopyBuffer(one_time_cmds, src.buffer, dst.buffer, 1, &FULL_SRC_REGION);
+	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), pool, one_time_cmds);
 }

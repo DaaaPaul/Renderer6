@@ -2,7 +2,7 @@
 #include "Swapchain.h"
 
 bool Basis::is_normalized(const glm::vec3& vec3) {
-	return Util::equal(glm::normalize(vec3), vec3);
+	return Utility::equal(glm::normalize(vec3), vec3);
 }
 
 glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
@@ -53,21 +53,21 @@ Camera::Camera(const glm::vec3& pos, const Angles& starting_rotation, const floa
 void Camera::update_position(const float& delta_time) {
 	const float MOVE = SPEED * delta_time;
 
-	if(PRESSED(GLFW_KEY_W)) {
+	if(GLFW_PRESSED(GLFW_KEY_W)) {
 		pos += -(MOVE * basis.z);
 	}
-	if(PRESSED(GLFW_KEY_S)) {
+	if(GLFW_PRESSED(GLFW_KEY_S)) {
 		pos += MOVE * basis.z;
 	}
-	if(PRESSED(GLFW_KEY_A)) {
+	if(GLFW_PRESSED(GLFW_KEY_A)) {
 		pos += -(MOVE * basis.x);
 	}
-	if(PRESSED(GLFW_KEY_D)) {
+	if(GLFW_PRESSED(GLFW_KEY_D)) {
 		pos += MOVE * basis.x;
 	}
-	if(PRESSED(GLFW_KEY_SPACE) && PRESSED(GLFW_KEY_LEFT_SHIFT)) {
+	if(GLFW_PRESSED(GLFW_KEY_SPACE) && GLFW_PRESSED(GLFW_KEY_LEFT_SHIFT)) {
 		pos += -(MOVE * basis.y);
-	} else if(PRESSED(GLFW_KEY_SPACE)) {
+	} else if(GLFW_PRESSED(GLFW_KEY_SPACE)) {
 		pos += MOVE * basis.y;
 	}
 }

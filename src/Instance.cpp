@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include "Instance.h"
-#include "Util.h"
+#include "Utility.h"
 
 namespace Instance {
 	std::vector<const char*> init_extensions() {
@@ -39,7 +39,7 @@ namespace Instance {
 			extension_names.emplace_back(extension.extensionName);
 		}
 
-		if(Util::contains_all(extension_names, Util::to_string(needed_extensions))) {
+		if(Utility::contains_all(extension_names, Utility::to_string(needed_extensions))) {
 			return RuntimeError{};
 		} else {
 			return RuntimeError("Your GPU does not have the required VkInstance extensions");
@@ -57,7 +57,7 @@ namespace Instance {
 			layer_names.emplace_back(layer.layerName);
 		}
 
-		if(Util::contains_all(layer_names, Util::to_string(needed_layers))) {
+		if(Utility::contains_all(layer_names, Utility::to_string(needed_layers))) {
 			return RuntimeError{};
 		} else {
 			return RuntimeError("Your GPU does not have the required Vulkan layers");

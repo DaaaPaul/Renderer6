@@ -17,9 +17,8 @@
 
 int main() {
     try {
-		Resources::loadModel();
+		Resources::load_model();
 		Window::init();
-		Resources::loadParticles();
 		Instance::init();
 		PhysicalDevice::init();
 		LogicalDevice::init();
@@ -28,9 +27,9 @@ int main() {
 		Memory::Host::init();
 		Memory::Device::init();
 
-		PipelineLayouts::add();
-		ShaderModule::add();
-		Pipelines::add();
+		PipelineLayouts::init();
+		ShaderModule::init();
+		Pipelines::init();
 
 		FrameKits::init();
 		
@@ -50,9 +49,7 @@ int main() {
 		LogicalDevice::destroy();
 		Instance::destroy();
 		Window::destroy();
-	} catch(std::runtime_error const& RT_ERROR) {
-        std::cerr << "ERROR: " << RT_ERROR.what() << "\n";
+	} catch(const std::runtime_error& runtime_error) {
+        PRINTLN("ERROR: " << runtime_error.what());
     }
-
-    return 0;
 }

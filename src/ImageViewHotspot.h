@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
-#include "Util.h"
+#include "Utility.h"
 
 namespace ImageViewHotspot {
 	inline std::vector<VkImageView> g_image_views{};

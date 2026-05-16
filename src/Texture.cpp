@@ -2,28 +2,24 @@
 #include "Texture.hpp"
 #include "PhysicalDevice.h"
 #include "LogicalDevice.h"
-#include "Util.h"
+#include "Utility.h"
 #include "Load.h"
 
-Texture::Texture(uint32_t idx, const char* texturePath) : Resource(idx) {
-	texture = getKtx(texturePath);
-	image = create_image(texture);
-		
+Texture::Texture(uint32_t name_index, const char* texturePath) : 
+	Resource(name_index), p_ktx_texture{ get_ktx_texture(texturePath) }, image{ create_image(p_ktx_texture) }, 
+	image_view{ create_image_view(image, static_cast<VkFormat>(p_ktx_texture->vkFormat)) }, sampler{ create_sampler() } {
+	
 	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
-
-	imageView = create_image_view(image, static_cast<VkFormat>(texture->vkFormat));
-
-	sampler = createSampler();
 }
 
 Texture::~Texture() {
 	vkDestroySampler(g_device, sampler, nullptr);
-	vkDestroyImageView(g_device, imageView, nullptr);
+	vkDestroyImageView(g_device, image_view, nullptr);
 	vkDestroyImage(g_device, image, nullptr);
-	ktxTexture_Destroy(ktxTexture(texture));
+	ktxTexture_Destroy(ktxTexture(p_ktx_texture));
 }
 
-void Texture::copyToImage() {
+VkResult Texture::copy(VkImage image, const ktxTexture2* p_ktx_texture) {
 	VkHostImageLayoutTransitionInfo transition{
 		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
 		.image = image,
@@ -35,9 +31,9 @@ void Texture::copyToImage() {
 
 	VkMemoryToImageCopyEXT region{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
-		.pHostPointer = texture->pData,
+		.pHostPointer = p_ktx_texture->pData,
 		.imageSubresource = VkImageSubresourceLayers{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-		.imageExtent = VkExtent3D{texture->baseWidth, texture->baseHeight, texture->baseDepth}
+		.imageExtent = VkExtent3D{p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, p_ktx_texture->baseDepth}
 	};
 
 	VkCopyMemoryToImageInfoEXT copy{
@@ -48,36 +44,36 @@ void Texture::copyToImage() {
 		.pRegions = &region,
 	};
 
-	VK_CHECK(vkCopyMemoryToImage(g_device, &copy), "copyToImage: copy error");
+	return vkCopyMemoryToImage(g_device, &copy);
 }
 
-ktxTexture2* Texture::getKtx(const char* ktxPath) {
-	ktxTexture2* t{};
-	KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktxPath, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &t);
+ktxTexture2* Texture::get_ktx_texture(const char* ktxPath) {
+	ktxTexture2* p_ktx_texture{};
+	KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktxPath, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktx_texture);
 
 	if(error != KTX_SUCCESS) {
-		throw std::runtime_error("getKtx: load failure");
+		throw std::runtime_error("get_ktx_texture: load failure");
 	} else {
-		if(ktxTexture2_NeedsTranscoding(t)) {
+		if(ktxTexture2_NeedsTranscoding(p_ktx_texture)) {
 			constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
 
-			if(ktxTexture2_TranscodeBasis(t, TARGET_FORMAT, 0) != KTX_SUCCESS) {
-				throw std::runtime_error("getKtx: compress failure");
+			if(ktxTexture2_TranscodeBasis(p_ktx_texture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
+				throw std::runtime_error("get_ktx_texture: compress failure");
 			}
 		}
 	}
 
-	return t;
+	return p_ktx_texture;
 }
 
-VkImage Texture::create_image(ktxTexture2* texture) {
+VkImage Texture::create_image(ktxTexture2* p_ktx_texture) {
 	VkImage image{};
 
 	VkImageCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.imageType = VK_IMAGE_TYPE_2D,
-		.format = static_cast<VkFormat>(texture->vkFormat),
-		.extent = VkExtent3D(texture->baseWidth, texture->baseHeight, texture->baseDepth),
+		.format = static_cast<VkFormat>(p_ktx_texture->vkFormat),
+		.extent = VkExtent3D(p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, p_ktx_texture->baseDepth),
 		.mipLevels = 1,
 		.arrayLayers = 1,
 		.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -85,7 +81,7 @@ VkImage Texture::create_image(ktxTexture2* texture) {
 		.usage = VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT | VK_IMAGE_USAGE_SAMPLED_BIT,
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = 1,
-		.pQueueFamilyIndices = &PhysicalDevice::g_queue_family_indices[0],
+		.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT),
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
@@ -110,7 +106,7 @@ VkImageView Texture::create_image_view(VkImage image, VkFormat format) {
 	return view;
 }
 
-VkSampler Texture::createSampler() {
+VkSampler Texture::create_sampler() {
 	VkSampler sampler{};
 
 	VkSamplerCreateInfo create{
@@ -126,7 +122,7 @@ VkSampler Texture::createSampler() {
 		.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
 	};
 
-	VK_CHECK(vkCreateSampler(g_device, &create, nullptr, &sampler), "createSampler: failed")
+	VK_CHECK(vkCreateSampler(g_device, &create, nullptr, &sampler), "create_sampler: failed")
 
 	return sampler;
 }

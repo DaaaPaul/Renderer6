@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Util.h"
+#include "Utility.h"
 
 namespace Memory  {
 	namespace Host {
 		inline VkDeviceMemory gMemory{};
-		inline std::vector<Util::Memory::BufferBundle> gBuffers{};
+		inline std::vector<Utility::Memory::BufferBundle> gBuffers{};
 
 		inline std::vector<VkBufferCreateInfo> gBufferCreates{};
 		inline std::vector<VkMemoryRequirements> gBufferMemoryRequirements{};
 
-		inline std::vector<Util::Memory::ItemType> gMemoryItemTypes{};
+		inline std::vector<Utility::Memory::ItemType> gMemoryItemTypes{};
 
 		void init();
 		void destroy();

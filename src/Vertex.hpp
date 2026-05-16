@@ -8,46 +8,45 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace Vertex {
-	struct Vertex {
-		glm::vec4 position{};
-		glm::vec2 texCoord{};
+struct Vertex {
+	glm::vec4 position{};
+	glm::vec2 tex_coord{};
 
-		static constexpr VkVertexInputBindingDescription getInputBinding(uint32_t const& N)  {
-			return VkVertexInputBindingDescription{
-				.binding = N,
-				.stride = sizeof(Vertex),
-				.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
-			};
-		}
-		static constexpr std::vector<VkVertexInputAttributeDescription> getInputAttributes(uint32_t const& N)  {
-			return { 
-				VkVertexInputAttributeDescription{
-					.location = 0,
-					.binding = N,
-					.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-					.offset = offsetof(Vertex, position)
-				}, 
-				VkVertexInputAttributeDescription{
-					.location = 1,
-					.binding = N,
-					.format = VK_FORMAT_R32G32_SFLOAT,
-					.offset = offsetof(Vertex, texCoord)
-				}
-			};
-		}
-	};
-
-	inline bool operator==(Vertex const& L, Vertex const& R) {
-		return L.position == R.position && L.texCoord == R.texCoord;
+	static constexpr VkVertexInputBindingDescription get_vertex_input_binding_description(const uint32_t& binding_num)  {
+		return {
+			.binding = binding_num,
+			.stride = sizeof(Vertex),
+			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+		};
 	}
+	static constexpr std::vector<VkVertexInputAttributeDescription> get_vertex_input_attributes(const uint32_t& binding_num)  {
+		return { 
+			VkVertexInputAttributeDescription{
+				.location = 0,
+				.binding = binding_num,
+				.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+				.offset = offsetof(Vertex, position)
+			}, 
+			VkVertexInputAttributeDescription{
+				.location = 1,
+				.binding = binding_num,
+				.format = VK_FORMAT_R32G32_SFLOAT,
+				.offset = offsetof(Vertex, tex_coord)
+			}
+		};
+	}
+};
+
+inline bool operator==(const Vertex& vertex_1, const Vertex& vertex_2) {
+	return vertex_1.position == vertex_2.position && vertex_1.tex_coord == vertex_2.tex_coord;
 }
 
 template<> 
-struct std::hash<Vertex::Vertex> {
-    std::size_t operator()(Vertex::Vertex const& VERTEX) const {
-        std::size_t h1 = std::hash<float>{}(VERTEX.position[2]);
-        std::size_t h2 = std::hash<float>{}(VERTEX.texCoord[1]);
-        return h1 ^ (h2 << 1);
+struct std::hash<Vertex> {
+    std::size_t operator()(const Vertex& vertex) const {
+        std::size_t hash_1 = std::hash<float>{}(vertex.position[2]);
+        std::size_t hash_2 = std::hash<float>{}(vertex.tex_coord[1]);
+
+        return hash_1 ^ (hash_2 << 1);
     }
 };

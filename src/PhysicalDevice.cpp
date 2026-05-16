@@ -7,7 +7,7 @@
 #include "PhysicalDevice.h"
 #include "LogicalDevice.h"
 #include "Instance.h"
-#include "Util.h"
+#include "Utility.h"
 
 namespace PhysicalDevice {
 	void init() {
@@ -74,7 +74,7 @@ namespace PhysicalDevice {
 			extension_strings.emplace_back(extension.extensionName);
 		}
 
-		return Util::contains_all(extension_strings, Util::to_string(LogicalDevice::g_extensions));
+		return Utility::contains_all(extension_strings, Utility::to_string(LogicalDevice::g_extensions));
 	}
 
 	bool check_features(VkPhysicalDevice physical_device) {
@@ -107,5 +107,17 @@ namespace PhysicalDevice {
 		}
 
 		return has_queues;
+	}
+
+	uint32_t& get_queue_family_index(VkQueueFlags queue_family_capabilities) {
+		size_t queue_family_array_index = UINT64_MAX;
+		
+		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && queue_family_array_index == UINT64_MAX; i++) {
+			if ((LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i] & queue_family_capabilities) == queue_family_capabilities) {
+				queue_family_array_index = i;
+			}
+		}
+
+		return g_queue_family_indices[queue_family_array_index];
 	}
 }
