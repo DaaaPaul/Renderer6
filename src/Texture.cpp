@@ -12,7 +12,7 @@ Texture::Texture(uint32_t name_index, const char* texturePath) :
 	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
 }
 
-Texture::~Texture() {
+void Texture::destroy() noexcept {
 	vkDestroySampler(g_device, sampler, nullptr);
 	vkDestroyImageView(g_device, image_view, nullptr);
 	vkDestroyImage(g_device, image, nullptr);

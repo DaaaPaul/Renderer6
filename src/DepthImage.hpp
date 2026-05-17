@@ -10,8 +10,8 @@ class DepthImage {
 	VkMemoryRequirements memory_requirements{};
 
 	public:
-	explicit DepthImage(VkExtent3D);
-	~DepthImage();
+	explicit DepthImage(VkExtent3D extent);
+	void destroy() noexcept;
 
 	VkImage get_image() const { return image; }
 	VkImageView get_image_view() const { return image_view; }

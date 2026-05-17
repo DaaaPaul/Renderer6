@@ -34,7 +34,7 @@ class Memory {
 	public:
 	Memory() = default;
 	explicit Memory(std::vector<Texture>& textures, const std::vector<DepthImage>& depth_images, std::vector<Buffer>& buffers, std::vector<DescriptorSet>& descriptor_sets, VkMemoryPropertyFlags memory_property_flags);
-	~Memory();
+	void destroy() noexcept;
 
 	private:
 	void bind_textures(const std::vector<VkDeviceSize>& texture_offsets, const std::vector<Texture>& textures);

@@ -2,21 +2,42 @@
 #include "LogicalDevice.h"
 #include "Utility.h"
 
-DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const Write& write) :
-	write(write) {
+DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const std::vector<Write>& writes) :
+	writes(writes) {
 	layout = create_layout(bindings);
 	pool = create_pool(bindings);
-	set = create_descriptor_set(layout, pool);
+	descriptor_set = create_descriptor_set(layout, pool);
 }
 
-DescriptorSet::~DescriptorSet() {
-	vkFreeDescriptorSets(g_device, pool, 1, &set);
+void DescriptorSet::destroy() noexcept {
+	vkFreeDescriptorSets(g_device, pool, 1, &descriptor_set);
 	vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
 	vkDestroyDescriptorPool(g_device, pool, nullptr);
 }
 
-void DescriptorSet::bind() {
-	vkUpdateDescriptorSets(g_device, 1, &write.write_info, 0, nullptr);
+void DescriptorSet::write() {
+	std::vector<VkWriteDescriptorSet> descriptor_writes(writes.size());
+	std::vector<VkDescriptorImageInfo> descriptor_image_info(writes.size());
+
+	for(int i = 0; i < writes.size(); i++) {
+		descriptor_image_info[i] = VkDescriptorImageInfo{
+			.sampler = writes[i].sampler,
+			.imageView = writes[i].image_view,
+			.imageLayout = writes[i].image_layout
+		};
+
+		descriptor_writes[i] = VkWriteDescriptorSet{
+			.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+			.dstSet = descriptor_set,
+			.dstBinding = writes[i].binding_num,
+			.dstArrayElement = writes[i].descriptor_num,
+			.descriptorCount = writes[i].descriptor_count,
+			.descriptorType = writes[i].descriptor_type,
+			.pImageInfo = &descriptor_image_info[i]
+		};
+	}
+
+	vkUpdateDescriptorSets(g_device, UINT32(descriptor_writes.size()), descriptor_writes.data(), 0, nullptr);
 }
 
 VkDescriptorSetLayout DescriptorSet::create_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {

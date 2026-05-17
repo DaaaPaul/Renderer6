@@ -7,7 +7,7 @@ DepthImage::DepthImage(VkExtent3D extent) :
 	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
 }
 
-DepthImage::~DepthImage() {
+void DepthImage::destroy() noexcept {
 	vkDestroyImageView(g_device, image_view, nullptr);
 	vkDestroyImage(g_device, image, nullptr);
 }

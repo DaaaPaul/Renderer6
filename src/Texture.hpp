@@ -15,8 +15,8 @@ class Texture : public Resource {
 	VkMemoryRequirements memory_requirements{};
 
 	public:
-	explicit Texture(uint32_t index, const char* texturePath);
-	~Texture();
+	explicit Texture(uint32_t name_index, const char* texturePath);
+	void destroy() noexcept;
 
 	ktxTexture2* get_ktx_texture() const { return p_ktx_texture; }
 	VkImage get_image() const { return image; }

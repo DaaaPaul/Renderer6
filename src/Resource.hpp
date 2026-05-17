@@ -64,3 +64,5 @@ class Resources {
 		return remove_success;
 	}
 };
+
+inline Resources g_resources{};

@@ -8,7 +8,7 @@ Buffer::Buffer(void* data, uint32_t size, VkBufferUsageFlags usage_flags) :
 	vkGetBufferMemoryRequirements(g_device, buffer, &memory_requirements);
 }
 
-Buffer::~Buffer() {
+void Buffer::destroy() noexcept {
 	delete data;
 	vkDestroyBuffer(g_device, buffer, nullptr);
 }

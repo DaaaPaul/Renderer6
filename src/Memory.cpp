@@ -11,18 +11,21 @@ Memory::Memory(std::vector<Texture>& textures, const std::vector<DepthImage>& de
 	bind_buffers(measurements.buffer_offsets, buffers);
 
 	buffer_addresses = address_buffers(buffers);
+	buffer_maps = map_buffers(memory, measurements.buffer_offsets, buffers);
 
-	for(Texture& text : textures) {
-		Texture::copy(text.get_image(), text.get_ktx_texture());
+	for(Texture& texture : textures) {
+		Texture::copy(texture.get_image(), texture.get_ktx_texture());
 	}
 
-	for(DescriptorSet& set : descriptor_sets) {
-		set.bind();
+	fill_buffers(buffer_maps, buffers);
+
+	for(DescriptorSet& descriptor_set : descriptor_sets) {
+		descriptor_set.write();
 	}
 }
 
-Memory::~Memory() {
-	//vkFreeMemory(g_device, memory, nullptr);
+void Memory::destroy() noexcept {
+	vkFreeMemory(g_device, memory, nullptr);
 }
 
 void Memory::bind_textures(const std::vector<VkDeviceSize>& OFFSETS, const std::vector<Texture>& TEXTURES) {
@@ -134,6 +137,6 @@ std::vector<void*> Memory::map_buffers(VkDeviceMemory memory, const std::vector<
 
 void Memory::fill_buffers(const std::vector<void*>& buffer_maps, std::vector<Buffer>& buffers) {
 	for(int i = 0; i < buffers.size(); ++i) {
-		std::memcpy(buffer_maps[i], buffers[i].get_datra(), buffers[i].get_size());
+		std::memcpy(buffer_maps[i], buffers[i].get_data(), buffers[i].get_size());
 	}
 }
