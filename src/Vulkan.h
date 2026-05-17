@@ -26,4 +26,10 @@ namespace Vulkan {
 	VkPipelineLayout create_pipeline_layout(const std::vector<VkDescriptorSetLayout>& descriptor_set_layouts, const std::vector<VkPushConstantRange>& push_constant_ranges);
 
 	VkShaderModule create_shader_module(const std::string& file_path);
+
+	VkSurfaceKHR create_surface();
+
+	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain);
+
+	std::vector<VkImageView> get_image_views(const std::vector<VkImage>& images, VkImageViewType view_type, VkImageAspectFlags image_aspect, VkFormat format);
 }

@@ -12,36 +12,16 @@
 #include "Pipelines.h"
 #include "PipelineLayouts.h"
 #include "OldResources.h"
-#include "ImageViewHotspot.h"
 #include "Utility.h"
 #include "TransformMatrices.hpp"
 #include "Camera.hpp"
 #include "Vulkan.h"
 
 namespace Engine {
-	void record_draw_model(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index) {
-		VkImageView sc_image_view = ImageViewHotspot::newView(
-			VkImageViewCreateInfo{
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = Swapchain::gImages[sc_image_index],
-				.viewType = VK_IMAGE_VIEW_TYPE_2D,
-				.format = Swapchain::gIMAGE_FORMAT,
-				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
-			}
-		);
-		VkImageView depth_image_view = ImageViewHotspot::newView(
-			VkImageViewCreateInfo{
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = Memory::Device::gImages[1].image,
-				.viewType = VK_IMAGE_VIEW_TYPE_2D,
-				.format = VK_FORMAT_D32_SFLOAT,
-				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1)
-			}
-		);
-		
+	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {		
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = sc_image_view,
+			.imageView = Swapchain::g_image_views[sc_image_index],
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -50,7 +30,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = depth_image_view,
+			.imageView = Memory::Device::g_depth_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -59,7 +39,7 @@ namespace Engine {
 		};
 		VkRenderingInfo rendering_info{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gStatus.imageExtent),
+			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::g_status.imageExtent),
 			.layerCount = 1,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &sc_image_attachment,
@@ -82,7 +62,7 @@ namespace Engine {
 		std::vector<VkDeviceAddress> push_constant{ p_transform_matrices };
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
 		
-		Vulkan::insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
@@ -182,14 +162,14 @@ namespace Engine {
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,
-			.width = static_cast<float>(Swapchain::gStatus.imageExtent.width),
-			.height = static_cast<float>(Swapchain::gStatus.imageExtent.height),
+			.width = static_cast<float>(Swapchain::g_status.imageExtent.width),
+			.height = static_cast<float>(Swapchain::g_status.imageExtent.height),
 			.minDepth = 0.0f,
 			.maxDepth = 1.0f,
 		};
 		VkRect2D scissor{
 			.offset = VkOffset2D(0, 0),
-			.extent = Swapchain::gStatus.imageExtent
+			.extent = Swapchain::g_status.imageExtent
 		};
 		vkCmdSetViewport(cmd_buf, 0, 1, &viewport);
 		vkCmdSetScissor(cmd_buf, 0, 1, &scissor);

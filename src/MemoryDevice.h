@@ -29,6 +29,9 @@ namespace Memory {
 		inline std::vector<std::vector<VkDescriptorSetLayoutBinding>> gDescriptorSetLayoutCreateBindings{};
 		inline std::vector<VkDescriptorSetAllocateInfo> gDescriptorSetAllocates{};
 
+		inline VkImageView g_depth_image_view{};
+		inline VkImageView g_texture_image_view{};
+
 		void init();
 		void destroy();
 
@@ -49,6 +52,8 @@ namespace Memory {
 		void bindImages();
 		void initializeBufferData();
 		void initializeImageData();
+
+		void create_depth_image_view();
 
 		void populateDescriptorSetLayoutCreates();
 		void populateDescriptorPoolCreate();

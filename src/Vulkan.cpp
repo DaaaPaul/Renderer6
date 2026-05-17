@@ -2,6 +2,7 @@
 #include "Utility.h"
 #include "LogicalDevice.h"
 #include "PhysicalDevice.h"
+#include "Instance.h"
 
 namespace Vulkan {
 	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, VkImageSubresourceRange subresource_range, VkPipelineStageFlags2 stage1, VkAccessFlags2 access1, VkPipelineStageFlags2 stage2, VkAccessFlags2 access2, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t graphics_queue_family_index) {
@@ -183,5 +184,41 @@ namespace Vulkan {
 		VK_CHECK(vkCreateShaderModule(g_device, &create, nullptr, &shader_module), "create_shader_module: failed")
 
 		return shader_module;
+	}
+
+	VkSurfaceKHR create_surface() {
+		VkSurfaceKHR surface{};
+
+		glfwInit();
+		VK_CHECK(glfwCreateWindowSurface(Instance::g_instance, Window::g_glfw_window, nullptr, &surface), "create_surface: failed")
+
+		return surface;
+	}
+
+	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain) {
+		uint32_t image_count{};
+		VK_CHECK(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, nullptr), "get_swapchain_images: failed")
+		std::vector<VkImage> swapchain_images(image_count);
+		VK_CHECK(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, swapchain_images.data()), "get_swapchain_images: failed")
+
+		return swapchain_images;
+	}
+
+	std::vector<VkImageView> get_image_views(const std::vector<VkImage>& images, VkImageViewType view_type, VkImageAspectFlags image_aspect, VkFormat format) {
+		std::vector<VkImageView> image_views(images.size());
+		
+		VkImageViewCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = VK_NULL_HANDLE,
+			.viewType = view_type,
+			.format = format,
+			.subresourceRange = VkImageSubresourceRange{image_aspect, 0, 1, 0, 1}
+		};
+		for(int i = 0; i < images.size(); i++) {
+			create.image = images[i];
+			VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &image_views[i]), "get_image_views: failed")
+		}
+
+		return image_views;
 	}
 }

@@ -23,9 +23,7 @@ BY THE HOUR:
 
 * YO GET THE GENERAL LAYOUTS IN *
 
-- clean the fk up (nested namespaces fk that, fk the util dynamic thing, etc)
-
-- AFTER THE _ underscore REFACTOR: get the image view hotspot out, put create vulkan objects in util and specializations in independant namespaces
+- AFTER THE _ underscore REFACTOR: get the image view hotspot out
 
 - HIT BINDLESS DESCRIPTORS
 

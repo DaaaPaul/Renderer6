@@ -3,7 +3,6 @@
 #include "PhysicalDevice.h"
 #include "Swapchain.h"
 #include "MemoryHost.h"
-#include "ImageViewHotspot.h"
 #include "Engine.h"
 #include "LogicalDevice.h"
 
@@ -14,13 +13,30 @@ namespace Memory {
 
 			populateSamplerCreates();
 			createSamplers();
+			create_depth_image_view();
 
 			initDescriptorResources();
+		}
+
+		void create_depth_image_view() {
+			VkImageViewCreateInfo create{
+				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+				.image = gImages[1].image,
+				.viewType = VK_IMAGE_VIEW_TYPE_2D,
+				.format = VK_FORMAT_D32_SFLOAT,
+				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1)
+			};
+
+			VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &g_depth_image_view), "create_depth_image_view: failed")
 		}
 
 		void destroy() {
 			deInitMemoryResources();
 			destroySamplers();
+
+			vkDestroyImageView(g_device, g_depth_image_view, nullptr);
+			vkDestroyImageView(g_device, g_texture_image_view, nullptr);
+
 			deInitDescriptorResources();
 		}
 
@@ -112,7 +128,7 @@ namespace Memory {
 					.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 					.imageType = VK_IMAGE_TYPE_2D,
 					.format = VK_FORMAT_D32_SFLOAT,
-					.extent = VkExtent3D(Swapchain::gStatus.imageExtent.width, Swapchain::gStatus.imageExtent.height, 1),
+					.extent = VkExtent3D(Swapchain::g_status.imageExtent.width, Swapchain::g_status.imageExtent.height, 1),
 					.mipLevels = 1,
 					.arrayLayers = 1,
 					.samples = VK_SAMPLE_COUNT_1_BIT,
@@ -369,14 +385,19 @@ namespace Memory {
 			}
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {
+				VkImageView image_view{};
+				VkImageViewCreateInfo image_view_create{
+					.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+					.image = gImages[IMAGE_INDEX].image,
+					.viewType = VK_IMAGE_VIEW_TYPE_2D,
+					.format = gImageCreates[IMAGE_INDEX].format,
+					.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
+				};
+				VK_CHECK(vkCreateImageView(g_device, &image_view_create, nullptr, &image_view), "bindSampledImage: failed to create image view")
+				g_texture_image_view = image_view;
+
 				VkDescriptorImageInfo image_info{
-					.imageView = ImageViewHotspot::newView(VkImageViewCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-						.image = gImages[IMAGE_INDEX].image,
-						.viewType = VK_IMAGE_VIEW_TYPE_2D,
-						.format = gImageCreates[IMAGE_INDEX].format,
-						.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
-					}),
+					.imageView = image_view,
 					.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 				};
 

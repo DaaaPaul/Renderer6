@@ -11,7 +11,7 @@ namespace Engine {
 		VkResult result{};
 	};
 
-	void record_draw_model(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index);
+	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
 	void render_next();
 	void run();
 

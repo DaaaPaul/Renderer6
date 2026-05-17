@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdexcept>
 
 struct RuntimeError : public std::runtime_error {

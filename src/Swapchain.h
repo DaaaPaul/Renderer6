@@ -2,31 +2,28 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
+#include "RuntimeError.hpp"
 
 namespace Swapchain {
 	inline VkSwapchainKHR g_swapchain{};
-	inline std::vector<VkImage> gImages{};
-	inline VkSurfaceKHR gSurface{};
-	inline VkSwapchainCreateInfoKHR gStatus{};
+	inline std::vector<VkImage> g_images{};
+	inline std::vector<VkImageView> g_image_views{};
+	inline VkSurfaceKHR g_surface{};
+	inline VkSwapchainCreateInfoKHR g_status{};
 
-	inline VkExtent2D gImageSize{};
+	inline VkExtent2D g_image_extent{};
 	inline constexpr uint32_t g_IMAGE_COUNT = 4;
-	inline constexpr VkFormat gIMAGE_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
-	inline constexpr VkColorSpaceKHR gIMAGE_COLOR_SPACE = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-	inline constexpr VkPresentModeKHR gPRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+	inline constexpr VkFormat g_IMAGE_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
+	inline constexpr VkColorSpaceKHR g_IMAGE_COLOR_SPACE = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
+	inline constexpr VkPresentModeKHR g_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
 	void init();
 	void destroy();
 	void recreate();
 
-	void createSurface();
-	void populateCurrentSwapchainStatus();
-	void createSwapchain();
-	void populateImages();
-	void destroySurface();
-	void destroySwapchain();
+	VkSwapchainKHR create_swapchain();
 
-	void populateImageSize();
-	void checkImageFormatAndColorspaceSupported();
-	void checkPresentModeSupported();
+	VkExtent2D get_image_extent();
+	RuntimeError check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace);
+	RuntimeError check_present_mode(VkPresentModeKHR present_mode);
 }
