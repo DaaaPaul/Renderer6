@@ -19,12 +19,13 @@ namespace LogicalDevice {
 	};
 
 	inline std::vector<const char*> g_extensions{
-		"VK_KHR_swapchain",
-		"VK_KHR_synchronization2",
-		"VK_KHR_spirv_1_4",
-		"VK_EXT_host_image_copy",
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+		VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+		VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
+		VK_KHR_UNIFIED_IMAGE_LAYOUTS_EXTENSION_NAME,
 		#ifdef __APPLE__
-		"VK_KHR_portability_subset"
+		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 		#endif
 	};
 	inline FeatureChain<VkPhysicalDeviceFeatures2, 
@@ -33,7 +34,8 @@ namespace LogicalDevice {
 	VkPhysicalDeviceSynchronization2Features, 
 	VkPhysicalDeviceDynamicRenderingFeatures, 
 	VkPhysicalDeviceExtendedDynamicState2FeaturesEXT,
-	VkPhysicalDeviceHostImageCopyFeatures> g_features(
+	VkPhysicalDeviceHostImageCopyFeatures,
+	VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR> g_features(
 		VkPhysicalDeviceFeatures2{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
 			.features = {
@@ -64,6 +66,10 @@ namespace LogicalDevice {
 		VkPhysicalDeviceHostImageCopyFeaturesEXT{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_IMAGE_COPY_FEATURES_EXT,
 			.hostImageCopy = VK_TRUE
+		},
+		VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
+			.unifiedImageLayouts = VK_TRUE
 		}
 	);
 

@@ -22,7 +22,7 @@ namespace Engine {
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Swapchain::g_image_views[sc_image_index],
-			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -31,7 +31,7 @@ namespace Engine {
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Memory::Device::g_depth_image_view,
-			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
@@ -63,18 +63,23 @@ namespace Engine {
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
 		
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
+		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		Vulkan::insert_image_barrier(cmd_buf, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
+		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
-		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		vkCmdBeginRendering(cmd_buf, &rendering_info);
 		vkCmdDrawIndexed(cmd_buf, Resources::g_model_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
+
+		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
+		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
 	};

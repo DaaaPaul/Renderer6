@@ -371,16 +371,10 @@ namespace Memory {
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
 				VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
+				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-				vkCmdCopyBufferToImage(tempCommandBuffer, source, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
+				vkCmdCopyBufferToImage(tempCommandBuffer, source, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_GENERAL, UINT32(REGIONS.size()), REGIONS.data());
 		
-				Vulkan::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
-				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
-				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
-				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
-
 				Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), tempCmdPool, tempCommandBuffer);
 			}
 
@@ -398,7 +392,7 @@ namespace Memory {
 
 				VkDescriptorImageInfo image_info{
 					.imageView = image_view,
-					.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
 				};
 
 				VkWriteDescriptorSet write{

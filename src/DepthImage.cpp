@@ -28,7 +28,7 @@ VkImage DepthImage::create_image(VkExtent3D extent) {
 		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 		.queueFamilyIndexCount = 1,
 		.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT),
-		.initialLayout = VK_IMAGE_LAYOUT_GENERAL,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
 	VK_CHECK(vkCreateImage(g_device, &create, nullptr, &image), "create_image: failed")

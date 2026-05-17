@@ -13,21 +13,16 @@ ALL IN AN HONEST DAY:
 - Load mipmaps from texture itself (and implement mipmaps)
 
 BY THE HOUR:
-- Use unified image layout and ask about it
 - Consider multisampling
 
-- texture resource thing
-- shader resource thing
+- use shader objects instead
+
 - asynchronus resource loading
 - hot reloading
 
-* YO GET THE GENERAL LAYOUTS IN *
-
-- AFTER THE _ underscore REFACTOR: get the image view hotspot out
-
 - HIT BINDLESS DESCRIPTORS
 
-- remove host local memory
+- move to using new memory setup
 
 5-MINUTE CRAFTS:
 
@@ -95,3 +90,9 @@ BY THE HOUR:
 
 - make float comparison relative
 - See if making small functions inline does anything
+
+
+- AFTER THE _ underscore REFACTOR: get the image view hotspot out
+- Use unified image layout and ask about it
+- texture resource thing
+* YO GET THE GENERAL LAYOUTS IN *
