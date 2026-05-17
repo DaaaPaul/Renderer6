@@ -38,10 +38,8 @@ namespace FrameKits {
 		for(int i = 0; i < g_FRAMES_IN_FLIGHT; ++i) {
 			VkSemaphore shared_semaphore = Vulkan::create_semaphore(VK_SEMAPHORE_TYPE_TIMELINE);
 
-			SubmitKit compute_shader_submit(shared_semaphore, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
 			SubmitKit model_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
-			SubmitKit particles_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
-			std::vector<SubmitKit> submit_kits{ compute_shader_submit, model_draw_submit, particles_draw_submit };
+			std::vector<SubmitKit> submit_kits{ model_draw_submit };
 
 			frame_kits.emplace_back(
 				SyncKit(Vulkan::create_fence(VK_NO_FLAGS), shared_semaphore), 

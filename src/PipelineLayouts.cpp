@@ -14,7 +14,7 @@ namespace PipelineLayouts {
 				.size = POINTER_SIZE(1)
 			}
 		};
-		Vulkan::create_pipeline_layout(descriptor_set_layouts, push_constant_ranges);
+		g_layouts.push_back(Vulkan::create_pipeline_layout(descriptor_set_layouts, push_constant_ranges));
 	}
 
 	void clear() {

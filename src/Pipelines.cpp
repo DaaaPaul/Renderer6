@@ -52,7 +52,9 @@ namespace Pipelines {
 		};
 
 		VkPipelineViewportStateCreateInfo empty_viewport{
-			.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+			.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+			.viewportCount = 1,
+			.scissorCount = 1
 		};
 
 		VkPipelineRasterizationStateCreateInfo rasterization{

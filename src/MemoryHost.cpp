@@ -71,30 +71,6 @@ namespace Memory {
 					}
 				);
 			}
-			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-				gBufferCreates.push_back(
-					VkBufferCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-						.size = Resources::gPARTICLES_BUFFER_SIZE,
-						.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
-					}
-				);
-			}
-			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-				gBufferCreates.push_back(
-					VkBufferCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-						.size = sizeof(float),
-						.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
-					}
-				);
-			}
 		}
 
 		void createBuffers() {
@@ -154,10 +130,6 @@ namespace Memory {
 			Mutate::writeToBuffer(0, Resources::g_model_vertices.data(), Resources::g_vertex_buffer_size);
 			Mutate::writeToBuffer(1, Resources::g_model_indices.data(), Resources::g_index_buffer_size);
 			Mutate::writeToBuffer(2, Resources::g_texture->pData, Resources::g_texture->dataSize);
-
-			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-				Mutate::writeToBuffer(Swapchain::g_IMAGE_COUNT + 3 + i, Resources::gParticles.data(), Resources::gPARTICLES_BUFFER_SIZE);
-			}
 		}
 
 		namespace Mutate {

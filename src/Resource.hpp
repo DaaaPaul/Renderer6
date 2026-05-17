@@ -12,9 +12,10 @@ class Resource {
 
 	protected:
 	explicit Resource(uint32_t name_index) : name_index{ name_index }, user_count{ 1 } {}
-	virtual ~Resource() = default;
 
 	public:
+	virtual ~Resource() = default;
+
 	void set_name_index(uint32_t name_index) { name_index = name_index; }
 	uint32_t get_name_index() const { return name_index; }
 

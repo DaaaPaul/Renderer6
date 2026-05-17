@@ -13,7 +13,7 @@ Memory::Memory(std::vector<Texture>& textures, const std::vector<DepthImage>& de
 	buffer_addresses = address_buffers(buffers);
 
 	for(Texture& text : textures) {
-		text.copyToImage();
+		Texture::copy(text.get_image(), text.get_ktx_texture());
 	}
 
 	for(DescriptorSet& set : descriptor_sets) {

@@ -70,18 +70,6 @@ namespace Memory {
 					.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
 				}
 			);
-			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-				gBufferCreates.push_back(
-					VkBufferCreateInfo{
-						.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-						.size = Resources::gPARTICLES_BUFFER_SIZE,
-						.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-						.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-						.queueFamilyIndexCount = 1,
-						.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
-					}
-				);
-			}
 		}
 
 		void createBuffers() {
@@ -205,10 +193,6 @@ namespace Memory {
 		void initializeBufferData() {
 			Mutate::copyToBuffer(0, Host::gBuffers[0].buffer, {VkBufferCopy(0, 0, Resources::g_vertex_buffer_size)});
 			Mutate::copyToBuffer(1, Host::gBuffers[1].buffer, {VkBufferCopy(0, 0, Resources::g_index_buffer_size)});
-
-			for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-				Mutate::copyToBuffer(2 + i, Host::gBuffers[3 + Swapchain::g_IMAGE_COUNT + i].buffer, {VkBufferCopy(0, 0, Resources::gPARTICLES_BUFFER_SIZE)});
-			}
 		}
 
 		void initializeImageData() {
@@ -367,7 +351,7 @@ namespace Memory {
 
 				Vulkan::begin_one_time_cmd_buffer(tempCmdPool, tempCommandBuffer, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 		
-				Engine::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				Vulkan::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
 				VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
@@ -375,7 +359,7 @@ namespace Memory {
 
 				vkCmdCopyBufferToImage(tempCommandBuffer, source, gImages[INDEX_OF_IMAGE].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, UINT32(REGIONS.size()), REGIONS.data());
 		
-				Engine::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
+				Vulkan::insert_image_barrier(tempCommandBuffer, gImages[INDEX_OF_IMAGE].image,
 				VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1),
 				VK_PIPELINE_STAGE_2_COPY_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT, 
 				VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT,
@@ -386,7 +370,7 @@ namespace Memory {
 
 			void bindSampledImage(uint32_t const& SET_INDEX, uint32_t const& BINDING, uint32_t const& IMAGE_INDEX) {
 				VkDescriptorImageInfo image_info{
-					.image_view = ImageViewHotspot::newView(VkImageViewCreateInfo{
+					.imageView = ImageViewHotspot::newView(VkImageViewCreateInfo{
 						.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
 						.image = gImages[IMAGE_INDEX].image,
 						.viewType = VK_IMAGE_VIEW_TYPE_2D,

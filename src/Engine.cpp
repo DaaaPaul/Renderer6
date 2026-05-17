@@ -19,47 +19,6 @@
 #include "Vulkan.h"
 
 namespace Engine {
-	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, const VkImageSubresourceRange& subresource_range, const VkPipelineStageFlags2& stage1, const VkAccessFlags2& access1, const VkPipelineStageFlags2& stage2, const VkAccessFlags2& access2, const VkImageLayout& old_layout, const VkImageLayout& new_layout, const uint32_t& graphics_queue_family_index) {
-		VkImageMemoryBarrier2 insert_image_barrier{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-			.srcStageMask = stage1,
-			.srcAccessMask = access1,
-			.dstStageMask = stage2,
-			.dstAccessMask = access2,
-			.oldLayout = old_layout,
-			.newLayout = new_layout,
-			.srcQueueFamilyIndex = graphics_queue_family_index,
-			.dstQueueFamilyIndex = graphics_queue_family_index,
-			.image = image,
-			.subresourceRange = subresource_range,
-		};
-
-		VkDependencyInfo deps{
-			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-			.imageMemoryBarrierCount = 1,
-			.pImageMemoryBarriers = &insert_image_barrier,
-		};
-
-		vkCmdPipelineBarrier2(cmd_buf, &deps);
-	}
-
-	void record_compute(VkCommandBuffer cmd_buf) {
-		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
-		
-		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, Pipelines::g_pipelines[2]);
-		
-		VkDeviceAddress p_delta_time = Memory::Host::gBuffers[3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index].address;
-		VkDeviceAddress p_input_particles = Memory::Device::gBuffers[2 + FrameKits::g_frame_index].address;
-		VkDeviceAddress p_output_particles = Memory::Device::gBuffers[2 + ((FrameKits::g_frame_index + 1) % FrameKits::g_FRAMES_IN_FLIGHT)].address;
-
-		std::vector<VkDeviceAddress> push_constant{ p_delta_time, p_input_particles, p_output_particles };
-
-		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[2], VK_SHADER_STAGE_COMPUTE_BIT, 0, POINTER_SIZE(3), push_constant.data());
-		vkCmdDispatch(cmd_buf, Resources::gPARTICLES_COUNT / 256, 1, 1);
-
-		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Failed to end compute command buffer")
-	}
-
 	void record_draw_model(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index) {
 		VkImageView sc_image_view = ImageViewHotspot::newView(
 			VkImageViewCreateInfo{
@@ -82,7 +41,7 @@ namespace Engine {
 		
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.image_view = sc_image_view,
+			.imageView = sc_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -91,7 +50,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.image_view = depth_image_view,
+			.imageView = depth_image_view,
 			.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -123,12 +82,12 @@ namespace Engine {
 		std::vector<VkDeviceAddress> push_constant{ p_transform_matrices };
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
 		
-		insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		insert_image_barrier(cmd_buf, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
@@ -140,74 +99,26 @@ namespace Engine {
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
 	};
 
-	void record_draw_particles(VkCommandBuffer cmd_buf, const uint32_t& sc_image_index) {
-		VkImageView sc_image_view = ImageViewHotspot::newView(
-			VkImageViewCreateInfo{
-				.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-				.image = Swapchain::gImages[sc_image_index],
-				.viewType = VK_IMAGE_VIEW_TYPE_2D,
-				.format = Swapchain::gIMAGE_FORMAT,
-				.subresourceRange = VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1)
-			}
-		);
-		VkRenderingAttachmentInfo sc_image_attachment{
-			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.image_view = sc_image_view,
-			.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-		};
-		VkRenderingInfo rendering_info{
-			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::gStatus.imageExtent),
-			.layerCount = 1,
-			.colorAttachmentCount = 1,
-			.pColorAttachments = &sc_image_attachment,
-		};
-
-		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
-
-		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[1]);
-		set_viewport_and_scissor(cmd_buf);
-
-		constexpr VkDeviceSize zero = 0;
-		VkBuffer vertex_buffer = Memory::Device::gBuffers[2 + ((FrameKits::g_frame_index + 1) % FrameKits::g_FRAMES_IN_FLIGHT)].buffer;
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, &zero);
-
-		vkCmdBeginRendering(cmd_buf, &rendering_info);
-		vkCmdDraw(cmd_buf, Resources::gPARTICLES_COUNT, 1, 0, 0);
-		vkCmdEndRendering(cmd_buf);
-
-		insert_image_barrier(cmd_buf, Swapchain::gImages[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-		VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, VK_ACCESS_2_NONE, 
-		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
-
-		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
-	}
-
 	void render_next() {
 		FrameKits::FrameKit& frame_kit = FrameKits::g_frame_kits[FrameKits::g_frame_index];
 		frame_kit.progress_sync();
 
-		uint32_t sc_image_index = UINT32_MAX;
-		if(acquire_sc_image(sc_image_index, frame_kit.sync_kit.guard)) {
+		AcquireStatus acquire = acquire_sc_image(frame_kit.sync_kit.guard);
+		if(acquire.result == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized) {
 			resize();
 			return;
 		}
 		wait_fence(frame_kit.sync_kit.guard);
 
-		record_compute(frame_kit.submit_kits[0].cmd_info.commandBuffer);
-		record_draw_model(frame_kit.submit_kits[1].cmd_info.commandBuffer, sc_image_index);
-		record_draw_particles(frame_kit.submit_kits[2].cmd_info.commandBuffer, sc_image_index);
+		record_draw_model(frame_kit.submit_kits[0].cmd_info.commandBuffer, acquire.sc_image_index);
 
-		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info, frame_kit.submit_kits[1].submit_info, frame_kit.submit_kits[2].submit_info };
+		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info };
 		
-		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), 3, submits.data(), VK_NULL_HANDLE);
+		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), UINT32(submits.size()), submits.data(), VK_NULL_HANDLE);
 
-		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[2].signal_val);
+		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[0].signal_val);
 		
-		if(present_sc_image(sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT))) {
+		if(present_sc_image(acquire.sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT)) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized) {
 			resize();
 			return;
 		}
@@ -229,17 +140,19 @@ namespace Engine {
 			render_next();
 			delta_time = get_delta_time(std::chrono::high_resolution_clock::now(), before);
 			PRINTLN(delta_time);
-			Memory::Host::Mutate::writeToBuffer(3 + 2 * Swapchain::g_IMAGE_COUNT + FrameKits::g_frame_index, &delta_time, sizeof(delta_time));
 		}
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
 
-	bool acquire_sc_image(uint32_t& index, VkFence fence_to_signal) {
-		return vkAcquireNextImageKHR(g_device, Swapchain::g_swapchain, UINT64_MAX, VK_NULL_HANDLE, fence_to_signal, &index) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized;
+	AcquireStatus acquire_sc_image(VkFence fence_to_signal) {
+		uint32_t sc_image_index{};
+		VkResult result = vkAcquireNextImageKHR(g_device, Swapchain::g_swapchain, UINT64_MAX, VK_NULL_HANDLE, fence_to_signal, &sc_image_index);
+
+		return { sc_image_index, result };
 	}
 
-	bool present_sc_image(const uint32_t& index, VkQueue queue) {
+	VkResult present_sc_image(uint32_t index, VkQueue queue) {
 		VkPresentInfoKHR present_info{
 			.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
 			.swapchainCount = 1,
@@ -247,10 +160,10 @@ namespace Engine {
 			.pImageIndices = &index
 		};
 
-		return vkQueuePresentKHR(queue, &present_info) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized;
+		return vkQueuePresentKHR(queue, &present_info);
 	}
 
-	void wait_timeline_semaphore(VkSemaphore timeline, const uint64_t& wait_val) {
+	void wait_timeline_semaphore(VkSemaphore timeline, uint64_t wait_val) {
 		VkSemaphoreWaitInfo wait{
 			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
 			.semaphoreCount = 1,
@@ -297,8 +210,8 @@ namespace Engine {
 		}
 	}
 
-	void update(const float& DELTA) {
-		g_camera.update_position(DELTA);
+	void update(float delta_time) {
+		g_camera.update_position(delta_time);
 
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 

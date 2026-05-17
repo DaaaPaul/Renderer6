@@ -4,6 +4,30 @@
 #include "PhysicalDevice.h"
 
 namespace Vulkan {
+	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, VkImageSubresourceRange subresource_range, VkPipelineStageFlags2 stage1, VkAccessFlags2 access1, VkPipelineStageFlags2 stage2, VkAccessFlags2 access2, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t graphics_queue_family_index) {
+		VkImageMemoryBarrier2 insert_image_barrier{
+			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+			.srcStageMask = stage1,
+			.srcAccessMask = access1,
+			.dstStageMask = stage2,
+			.dstAccessMask = access2,
+			.oldLayout = old_layout,
+			.newLayout = new_layout,
+			.srcQueueFamilyIndex = graphics_queue_family_index,
+			.dstQueueFamilyIndex = graphics_queue_family_index,
+			.image = image,
+			.subresourceRange = subresource_range,
+		};
+
+		VkDependencyInfo deps{
+			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+			.imageMemoryBarrierCount = 1,
+			.pImageMemoryBarriers = &insert_image_barrier,
+		};
+
+		vkCmdPipelineBarrier2(cmd_buf, &deps);
+	}
+
 	VkResult begin_one_time_cmd_buffer(VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf, uint32_t queue_family_index) {
 		cmd_pool = create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queue_family_index);
 		cmd_buf = create_cmd_buffer(cmd_pool);
@@ -28,7 +52,7 @@ namespace Vulkan {
 		vkDestroyCommandPool(g_device, cmd_pool, nullptr);
 	}
 
-	VkCommandPool create_cmd_pool(VkCommandPoolCreateFlags const& flags, uint32_t const& qf_index) {
+	VkCommandPool create_cmd_pool(VkCommandPoolCreateFlags flags, uint32_t qf_index) {
 		VkCommandPool cmd_pool{};
 
 		VkCommandPoolCreateInfo cmd_pool_create{
@@ -66,7 +90,7 @@ namespace Vulkan {
 		return vkBeginCommandBuffer(cmd_buf, &begin);
 	}
 
-	VkFence create_fence(VkFenceCreateFlags const& flags) {
+	VkFence create_fence(VkFenceCreateFlags flags) {
 		VkFence fence{};
 
 		VkFenceCreateInfo fence_create{
@@ -79,7 +103,7 @@ namespace Vulkan {
 		return fence;
 	}
 
-	VkSemaphore create_semaphore(VkSemaphoreType const& semaphore_type) {
+	VkSemaphore create_semaphore(VkSemaphoreType semaphore_type) {
 		VkSemaphore semaphore{};
 
 		VkSemaphoreTypeCreateInfo type_info{
