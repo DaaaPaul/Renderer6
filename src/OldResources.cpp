@@ -1,9 +1,9 @@
 #include <cstdint>
 #include <cmath>
-#include "Vertex.hpp"
+#include "Geometry/Vertex.hpp"
 #include "OldResources.h"
-#include "Utility.h"
-#include "Window.h"
+#include "Utility/Utility.h"
+#include "Backend/Window.h"
 
 namespace Resources {
 	void load_model() {

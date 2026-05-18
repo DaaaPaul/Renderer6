@@ -3,7 +3,7 @@
 #include <ktx.h>
 #include <cstdint>
 #include <vector>
-#include "Vertex.hpp"
+#include "Geometry/Vertex.hpp"
 
 namespace Resources {
 	inline std::vector<Vertex> g_model_vertices{};
