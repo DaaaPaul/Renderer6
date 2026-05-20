@@ -46,7 +46,7 @@ namespace Utility {
 
 	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
 
-	ktxTexture2* load_ktx_image(const char* const& file_path); // TODO: must go soon
+	ktxTexture2* get_ktx_texture(const char* ktx_path);
 
 	std::vector<char> get_file_bytes(const std::string& file_path);
 

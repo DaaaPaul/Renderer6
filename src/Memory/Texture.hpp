@@ -3,31 +3,24 @@
 #include <vulkan/vulkan.h>
 #include <ktx.h>
 #include "Resource.hpp"
+#include "Image.hpp"
 
-class Texture : public Resource {
+class Texture : public Resource, public Image {
 	private:
 	ktxTexture2* p_ktx_texture{};
 
-	VkImage image{};
-	VkImageView image_view{};
-	VkSampler sampler{};
-
-	VkMemoryRequirements memory_requirements{};
-
 	public:
-	explicit Texture(uint32_t name_index, const char* texturePath);
-	void destroy() noexcept;
+	explicit Texture(uint32_t name_index, 
+					 const char* ktx_path,
+					 VkFormat format,
+					 uint32_t width,
+					 uint32_t height,
+					 uint32_t mip_level_count, 
+					 uint32_t array_layer_count, 
+					 VkSampleCountFlagBits sample_count, 
+					 VkSharingMode sharing_mode,
+					 const std::vector<uint32_t>& queue_family_indices);
+	void destroy() noexcept override;
 
-	ktxTexture2* get_ktx_texture() const { return p_ktx_texture; }
-	VkImage get_image() const { return image; }
-	VkImageView get_image_view() const { return image_view; }
-	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
-
-	static VkResult copy(VkImage image, const ktxTexture2* p_ktx_texture);
-
-	private:
-	static ktxTexture2* get_ktx_texture(const char* ktxPath);
-	static VkImage create_image(ktxTexture2* ktxTexture);
-	static VkImageView create_image_view(VkImage image, VkFormat format);
-	static VkSampler create_sampler();
+	static VkResult copy_into_image(VkImage image, const ktxTexture2* p_ktx_texture);
 };

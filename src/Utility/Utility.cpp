@@ -128,23 +128,23 @@ namespace Utility {
 		}
 	}
 
-	ktxTexture2* load_ktx_image(const char* const& PATH) {
-		ktxTexture2* pKtxTexture{};
-		ktx_error_code_e error{};
+	ktxTexture2* get_ktx_texture(const char* ktx_path) {
+		ktxTexture2* p_ktx_texture{};
+		KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktx_texture);
 
-		if((error = ktxTexture_CreateFromNamedFile(PATH, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, reinterpret_cast<ktxTexture**>(&pKtxTexture))) != KTX_SUCCESS) {
-			throw std::runtime_error("Failed to load ktx p_ktx_texture from " + std::string(PATH) + ". Error code is " + std::to_string(error));
-		}
+		if(error != KTX_SUCCESS) {
+			throw std::runtime_error("get_ktx_texture: load failure");
+		} else {
+			if(ktxTexture2_NeedsTranscoding(p_ktx_texture)) {
+				constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
 
-		if(ktxTexture2_NeedsTranscoding(pKtxTexture)) {
-			constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
-
-			if(ktxTexture2_TranscodeBasis(pKtxTexture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
-				throw std::runtime_error("Failed to transcode ktx p_ktx_texture to ktx_transcode_fmt " + std::to_string(TARGET_FORMAT));
+				if(ktxTexture2_TranscodeBasis(p_ktx_texture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
+					throw std::runtime_error("get_ktx_texture: compress failure");
+				}
 			}
 		}
 
-		return pKtxTexture;
+		return p_ktx_texture;
 	}
 
 	std::vector<char> get_file_bytes(const std::string& file_path) {

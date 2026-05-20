@@ -1,29 +1,31 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <utility>
+#include <vector>
 
 class Buffer {
 	private:
 	VkBuffer buffer{};
-	void* data{};
-	uint32_t size{};
-
-	VkMemoryRequirements memory_requirements{};
-	VkBufferUsageFlags usage_flags{};
-
+	
 	public:
-	explicit Buffer(void* data, uint32_t size, VkBufferUsageFlags usage);
-	void destroy() noexcept;
+	virtual ~Buffer() = default;
+	explicit Buffer(VkBufferCreateFlags create_flags, 
+					VkDeviceSize size,
+					VkBufferUsageFlags usage_flags, 
+					VkSharingMode sharing_mode,
+					const std::vector<uint32_t>& queue_family_indices);
+	virtual void destroy() noexcept;
 
-	VkBuffer get_buffer() const { return buffer; }
-	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
-	VkBufferUsageFlags get_usage_flags() const { return usage_flags; }
-	void* get_data() const { return data; }
-	uint32_t get_size() const { return size; } 
+	VkBuffer get_buffer() const { 
+		return buffer; 
+	}
 
-	static void copy(Buffer& dst, const Buffer& src);
+	VkMemoryRequirements get_memory_requirements() const { 
+		VkMemoryRequirements memory_requirements{};
+		vkGetBufferMemoryRequirements(g_device, buffer, &memory_requirements);
 
-	private:
-	VkBufferCopy get_full_region() const { return VkBufferCopy{0, 0, this->size}; }
+		return memory_requirements; 
+	}
+
+	static void copy_buffer(const Buffer& src, Buffer& dst, VkBufferCopy region);
 };

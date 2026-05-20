@@ -1,23 +1,12 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "Image.hpp"
 
-class DepthImage {
-	private:
-	VkImage image{};
-	VkImageView image_view{};
-
-	VkMemoryRequirements memory_requirements{};
-
+class DepthImage : public Image{
 	public:
-	explicit DepthImage(VkExtent3D extent);
-	void destroy() noexcept;
-
-	VkImage get_image() const { return image; }
-	VkImageView get_image_view() const { return image_view; }
-	VkMemoryRequirements get_memory_requirements() const { return memory_requirements; }
-
-	private:
-	static VkImage create_image(VkExtent3D extent);
-	static VkImageView create_image_view(VkImage image);
+	explicit DepthImage(VkFormat format, 
+						uint32_t width,
+						uint32_t height,
+						VkSharingMode sharing_mode, 
+						const std::vector<uint32_t>& queue_family_indices);
 };

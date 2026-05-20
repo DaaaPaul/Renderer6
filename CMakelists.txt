@@ -44,6 +44,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DepthImage.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/IndexBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/IndexBuffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryDevice.cpp
@@ -55,6 +59,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Resource.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/Vertex.hpp
