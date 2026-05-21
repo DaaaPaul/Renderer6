@@ -50,6 +50,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/IndexBuffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DeviceMemory.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DeviceMemory.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryHost.cpp

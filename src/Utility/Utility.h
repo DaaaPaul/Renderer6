@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <memory>
 #include "Geometry/Vertex.hpp"
 #include "Backend/Window.h"
 #include "Utility/Vulkan.h"
@@ -49,6 +50,17 @@ namespace Utility {
 	ktxTexture2* get_ktx_texture(const char* ktx_path);
 
 	std::vector<char> get_file_bytes(const std::string& file_path);
+
+	template<class T>
+	std::vector<T*> to_pointers(std::vector<T>& objects) {
+		std::vector<T*> pointers(objects.size());
+
+		for(int i = 0; i < objects.size(); i++) {
+			pointers[i] = &objects[i];
+		}
+
+		return pointers;
+	}
 
 	namespace Memory { // TODO: must go soon
 		struct BufferBundle {

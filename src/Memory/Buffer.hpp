@@ -28,4 +28,14 @@ class Buffer {
 	}
 
 	static void copy_buffer(const Buffer& src, Buffer& dst, VkBufferCopy region);
+
+	static std::vector<VkBuffer> get_vk_buffers(const std::vector<Buffer*>& p_buffers) {
+		std::vector<VkBuffer> vk_buffers(p_buffers.size());
+
+		for(int i = 0; i < p_buffers.size(); i++) {
+			vk_buffers[i] = p_buffers[i]->get_buffer();
+		}
+
+		return vk_buffers;
+	}
 };
