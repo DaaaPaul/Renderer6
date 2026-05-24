@@ -1,13 +1,10 @@
 #include <iostream>
 #include <stdexcept>
-#include "OldResources.h"
 #include "Backend/Window.h"
 #include "Backend/Instance.h"
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
 #include "Backend/Swapchain.h"
-#include "Memory/MemoryDevice.h"
-#include "Memory/MemoryHost.h"
 #include "Backend/PipelineLayouts.h"
 #include "Backend/ShaderModule.h"
 #include "Backend/Pipelines.h"

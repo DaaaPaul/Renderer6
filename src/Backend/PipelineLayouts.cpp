@@ -1,6 +1,5 @@
 #include "Backend/PipelineLayouts.h"
 #include "Backend/LogicalDevice.h"
-#include "Memory/MemoryDevice.h"
 
 namespace PipelineLayouts {
 	void init() {

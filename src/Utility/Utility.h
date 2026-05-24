@@ -61,32 +61,4 @@ namespace Utility {
 
 		return pointers;
 	}
-
-	namespace Memory { // TODO: must go soon
-		struct BufferBundle {
-			VkBuffer buffer{};
-			VkDeviceSize offset{};
-			VkDeviceAddress address{};
-		};
-
-		struct ImageBundle {
-			VkImage image{};
-			VkDeviceSize offset{};
-		};
-
-		struct DescriptorSetBundle {
-			VkDescriptorSet set{};
-			VkDescriptorSetLayout layout{};
-		};
-
-		enum class ItemType : uint32_t {
-			LINEAR = 0,
-			NON_LINEAR = 1
-		};
-
-		VkImageView create_image_view(VkImageViewCreateInfo const&);
-		VkDeviceSize alignNextHighest(VkDeviceSize const&, VkDeviceSize const&);
-		std::pair<VkDeviceSize, std::vector<VkDeviceSize>> doMemoryCalculations(std::vector<VkMemoryRequirements> const&, std::vector<ItemType> const&, VkDeviceSize const&);
-		uint32_t getMemoryTypeIndex(std::vector<VkMemoryRequirements> const&, VkMemoryPropertyFlags const&);
-	}
 }
