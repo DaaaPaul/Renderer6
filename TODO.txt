@@ -12,9 +12,6 @@ A WEEK'S LOAD:
 ALL IN AN HONEST DAY:
 - Load mipmaps from texture itself (and implement mipmaps)
 
-- idea: have a buffer system like the resources system
-- HIT BINDLESS DESCRIPTORS
-	- get rid of the descriptor set class, have a namespace like the other stuff
 - for the depth images, just have them in Swapchain::
 - merge MemoryManager and Memory
 
@@ -99,3 +96,5 @@ BY THE HOUR:
 - texture resource thing
 - move to using new memory setup
 * YO GET THE GENERAL LAYOUTS IN *
+- HIT BINDLESS DESCRIPTORS
+	- get rid of the descriptor set class, have a namespace like the other stuff

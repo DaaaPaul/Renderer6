@@ -7,19 +7,17 @@
 
 Texture::Texture(uint32_t name_index,
 				 const char* ktx_path,
-				 VkFormat format,
-				 uint32_t width,
-				 uint32_t height,
 				 uint32_t mip_level_count,
 				 uint32_t array_layer_count,
 				 VkSampleCountFlagBits sample_count,
 				 VkSharingMode sharing_mode,
 				 const std::vector<uint32_t>& queue_family_indices) : 
+	KtxTexture(Utility::load_ktx_texture(ktx_path)),
 	Resource(name_index), 
 	Image(VK_NO_FLAGS,
 		  VK_IMAGE_TYPE_2D,
-		  format,
-		  VkExtent3D{ width, height, 1 },
+		  static_cast<VkFormat>(p_ktx_texture->vkFormat),
+		  VkExtent3D{ p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, 1 },
 		  mip_level_count,
 		  array_layer_count,
 		  sample_count,
@@ -27,8 +25,7 @@ Texture::Texture(uint32_t name_index,
 		  sharing_mode,
 		  queue_family_indices,
 		  VK_NO_FLAGS,
-		  VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }), 
-	p_ktx_texture{ Utility::get_ktx_texture(ktx_path) } {
+		  VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }) {
 
 }
 
@@ -38,7 +35,7 @@ void Texture::destroy() noexcept {
 	ktxTexture_Destroy(ktxTexture(p_ktx_texture));
 }
 
-VkResult Texture::copy_into_image(VkImage image, const ktxTexture2* p_ktx_texture) {
+VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_ktx_texture) {
 	VkHostImageLayoutTransitionInfo transition{
 		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
 		.image = image,

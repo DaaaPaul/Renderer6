@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <string>
@@ -28,6 +30,12 @@ namespace Vulkan {
 	VkShaderModule create_shader_module(const std::string& file_path);
 
 	VkSurfaceKHR create_surface();
+
+	VkDescriptorSetLayout create_descriptor_set_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const std::vector<VkDescriptorBindingFlags>& binding_flags = {});
+
+	VkDescriptorPool create_one_set_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+
+	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool);
 
 	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain);
 

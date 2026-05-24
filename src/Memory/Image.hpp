@@ -11,6 +11,8 @@ class Image {
 
 	public:
 	virtual ~Image() = default;
+	Image() = default;
+
 	explicit Image(VkImageCreateFlags create_flags, 
 				   VkImageType image_type,    
 				   VkFormat format, 
@@ -43,7 +45,7 @@ class Image {
 	static std::vector<VkImage> get_vk_images(const std::vector<Image*>& p_images) {
 		std::vector<VkImage> vk_images(p_images.size());
 
-		for(int i = 0; i < p_images.size(); i++) {
+		for(int i = 0; i < p_images.size(); ++i) {
 			vk_images[i] = p_images[i]->get_image();
 		}
 

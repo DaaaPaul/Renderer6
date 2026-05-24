@@ -101,7 +101,6 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
-	${CMAKE_CURRENT_SOURCE_DIR}/shaders/testInput.spirv
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${RENDERER6_SOURCES})

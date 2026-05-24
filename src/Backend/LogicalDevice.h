@@ -24,6 +24,7 @@ namespace LogicalDevice {
 		VK_KHR_SPIRV_1_4_EXTENSION_NAME,
 		VK_EXT_HOST_IMAGE_COPY_EXTENSION_NAME,
 		VK_KHR_UNIFIED_IMAGE_LAYOUTS_EXTENSION_NAME,
+		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 		#ifdef __APPLE__
 		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 		#endif
@@ -35,7 +36,8 @@ namespace LogicalDevice {
 	VkPhysicalDeviceDynamicRenderingFeatures, 
 	VkPhysicalDeviceExtendedDynamicState2FeaturesEXT,
 	VkPhysicalDeviceHostImageCopyFeatures,
-	VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR> g_features(
+	VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR,
+	VkPhysicalDeviceDescriptorIndexingFeatures> g_features(
 		VkPhysicalDeviceFeatures2{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
 			.features = {
@@ -70,6 +72,12 @@ namespace LogicalDevice {
 		VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR{
 			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFIED_IMAGE_LAYOUTS_FEATURES_KHR,
 			.unifiedImageLayouts = VK_TRUE
+		},
+		VkPhysicalDeviceDescriptorIndexingFeatures{
+			.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
+			.shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
+			.descriptorBindingVariableDescriptorCount = VK_TRUE,
+			.runtimeDescriptorArray = VK_TRUE
 		}
 	);
 

@@ -47,7 +47,7 @@ namespace Utility {
 
 	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
 
-	ktxTexture2* get_ktx_texture(const char* ktx_path);
+	ktxTexture2* load_ktx_texture(const char* ktx_path);
 
 	std::vector<char> get_file_bytes(const std::string& file_path);
 
@@ -55,7 +55,7 @@ namespace Utility {
 	std::vector<T*> to_pointers(std::vector<T>& objects) {
 		std::vector<T*> pointers(objects.size());
 
-		for(int i = 0; i < objects.size(); i++) {
+		for(int i = 0; i < objects.size(); ++i) {
 			pointers[i] = &objects[i];
 		}
 

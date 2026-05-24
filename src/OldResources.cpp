@@ -11,6 +11,6 @@ namespace Resources {
 		g_vertex_buffer_size = g_model_vertices.size() * sizeof(Vertex);
 		g_index_buffer_size = g_model_indices.size() * sizeof(uint32_t);
 
-		g_texture = Utility::load_ktx_image(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
+		g_texture = Utility::load_ktx_texture(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)");
 	}
 }

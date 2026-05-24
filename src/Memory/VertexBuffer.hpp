@@ -2,7 +2,10 @@
 
 #include "Memory/Buffer.hpp"
 
-class VertexBuffer : Buffer {
+class VertexBuffer : public Buffer {
 	public:
-	explicit VertexBuffer(VkDeviceSize size, VkSharingMode sharing_mode, const std::vector<uint32_t>& queue_family_indices);
+	explicit VertexBuffer(uint32_t name_index, 
+						  VkDeviceSize size, 
+						  VkSharingMode sharing_mode, 
+						  const std::vector<uint32_t>& queue_family_indices);
 };

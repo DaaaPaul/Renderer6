@@ -112,7 +112,7 @@ namespace PhysicalDevice {
 	uint32_t& get_queue_family_index(VkQueueFlags queue_family_capabilities) {
 		size_t queue_family_array_index = UINT64_MAX;
 		
-		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && queue_family_array_index == UINT64_MAX; i++) {
+		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && queue_family_array_index == UINT64_MAX; ++i) {
 			if ((LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i] & queue_family_capabilities) == queue_family_capabilities) {
 				queue_family_array_index = i;
 			}

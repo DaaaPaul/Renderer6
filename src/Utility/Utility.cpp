@@ -128,18 +128,18 @@ namespace Utility {
 		}
 	}
 
-	ktxTexture2* get_ktx_texture(const char* ktx_path) {
+	ktxTexture2* load_ktx_texture(const char* ktx_path) {
 		ktxTexture2* p_ktx_texture{};
 		KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktx_texture);
 
 		if(error != KTX_SUCCESS) {
-			throw std::runtime_error("get_ktx_texture: load failure");
+			throw std::runtime_error("load_ktx_texture: load failure");
 		} else {
 			if(ktxTexture2_NeedsTranscoding(p_ktx_texture)) {
 				constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
 
 				if(ktxTexture2_TranscodeBasis(p_ktx_texture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
-					throw std::runtime_error("get_ktx_texture: compress failure");
+					throw std::runtime_error("load_ktx_texture: compress failure");
 				}
 			}
 		}

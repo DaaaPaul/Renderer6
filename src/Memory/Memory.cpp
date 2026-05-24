@@ -3,24 +3,32 @@
 #include "Memory.hpp"
 #include "Backend/PhysicalDevice.h"
 
-Memory::Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags) :
+Memory::Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
 	properties{ get_properties(buffers, images, memory_property_flags) }, p_buffers(Utility::to_pointers(buffers)), p_images(Utility::to_pointers(images)) {
 	
-	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, &memory_address_bit);
+	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, memory_create_p_next);
+	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), Image::get_vk_images(p_images), properties.buffer_offsets, properties.image_offsets);
+}
+
+Memory::Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags) :
+	properties{ get_properties(buffers, {}, memory_property_flags) }, p_buffers(Utility::to_pointers(buffers)), p_images{} {
+
+	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, nullptr);
+	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), {}, properties.buffer_offsets, {});
 }
 
 void Memory::destroy() noexcept {
 	vkFreeMemory(g_device, memory, nullptr);
 }
 
-void Memory::bind_memory(VkDeviceMemory memory, std::vector<VkBuffer>& buffers, std::vector<VkImage>& images, const std::vector<VkDeviceSize>& buffer_offsets, const std::vector<VkDeviceSize>& image_offsets) {
+void Memory::bind_memory(VkDeviceMemory memory, const std::vector<VkBuffer>& buffers, const std::vector<VkImage>& images, const std::vector<VkDeviceSize>& buffer_offsets, const std::vector<VkDeviceSize>& image_offsets) {
 	assert(buffers.size() == buffer_offsets.size());
 	assert(images.size() == image_offsets.size());
 
-	for(int i = 0; i < buffers.size(); i++) {
+	for(int i = 0; i < buffers.size(); ++i) {
 		vkBindImageMemory(g_device, images[i], memory, image_offsets[i]);
 	}
-	for(int i = 0; i < images.size(); i++) {
+	for(int i = 0; i < images.size(); ++i) {
 		vkBindBufferMemory(g_device, buffers[i], memory, buffer_offsets[i]);
 	}
 }

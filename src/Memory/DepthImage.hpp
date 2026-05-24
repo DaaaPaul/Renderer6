@@ -4,6 +4,7 @@
 
 class DepthImage : public Image{
 	public:
+	DepthImage() = default;
 	explicit DepthImage(VkFormat format, 
 						uint32_t width,
 						uint32_t height,

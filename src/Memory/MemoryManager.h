@@ -1,22 +1,20 @@
 #include "Geometry/Vertex.hpp"
-#include "Memory.hpp"
+#include "HostMemory.hpp"
+#include "DeviceMemory.hpp"
+#include "Resource.hpp"
+#include "Buffer.hpp"
+#include "DepthImage.hpp"
 
 namespace MemoryManager {
-	inline std::vector<Texture> g_textures{};
-	inline std::vector<DepthImage> g_depth_images{};
-	inline std::vector<Buffer> g_device_host_buffers{};
-	inline std::vector<Buffer> g_device_buffers{};
-	inline std::vector<DescriptorSet> g_descriptor_sets{};
+	inline Resources g_resources;
+	inline Buffers g_buffers;
+	inline DepthImage g_depth_image;
 
-	inline std::vector<Vertex> g_vertices{};
-	inline std::vector<uint32_t> g_indices{};
+	inline std::vector<Vertex> g_vertices;
+	inline std::vector<uint32_t> g_indices;
 
-	inline Memory g_device_host_memory{};
-	inline Memory g_device_memory{};
+	inline HostMemory g_host_memory;
+	inline DeviceMemory g_device_memory;
 
 	void init();
-
-	std::vector<Texture> get_textures();
-	std::vector<DepthImage> get_depth_images();
-	std::vector<Buffer> get_device_host_buffers();
 }

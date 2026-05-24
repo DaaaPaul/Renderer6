@@ -195,6 +195,73 @@ namespace Vulkan {
 		return surface;
 	}
 
+	VkDescriptorSetLayout create_descriptor_set_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const std::vector<VkDescriptorBindingFlags>& binding_flags) {
+		void* p_next = nullptr;
+		VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags_info{};
+
+		if(!binding_flags.empty()) {
+			assert(bindings.size() == binding_flags.size());
+		
+			binding_flags_info = {
+				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+				.bindingCount = UINT32(binding_flags.size()),
+				.pBindingFlags = binding_flags.data()
+			};
+
+			p_next = &binding_flags_info;
+		}
+		
+		VkDescriptorSetLayout layout{};
+
+		VkDescriptorSetLayoutCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+			.pNext = p_next,
+			.bindingCount = UINT32(bindings.size()),
+			.pBindings = bindings.data()
+		};
+
+		VK_CHECK(vkCreateDescriptorSetLayout(g_device, &create, nullptr, &layout), "create_layout: failed")
+
+		return layout;
+	}
+
+	VkDescriptorPool create_one_set_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
+		VkDescriptorPool pool{};
+		std::vector<VkDescriptorPoolSize> poolSizes(bindings.size());
+
+		for(int i = 0; i < bindings.size(); ++i) {
+			poolSizes[i] = VkDescriptorPoolSize{
+				.type = bindings[i].descriptorType, 
+				.descriptorCount = bindings[i].descriptorCount
+			};
+		}
+		VkDescriptorPoolCreateInfo create{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+			.maxSets = 1,
+			.poolSizeCount = UINT32(poolSizes.size()),
+			.pPoolSizes = poolSizes.data()
+		};
+		
+		VK_CHECK(vkCreateDescriptorPool(g_device, &create, nullptr, &pool), "create_pool: failed")
+
+		return pool;
+	}
+
+	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool) {
+		VkDescriptorSet set{};
+
+		VkDescriptorSetAllocateInfo create{
+			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+			.descriptorPool = pool,
+			.descriptorSetCount = 1,
+			.pSetLayouts = &layout,
+		};
+
+		VK_CHECK(vkAllocateDescriptorSets(g_device, nullptr, &set), "create_descriptor_set: failed")
+
+		return set;
+	}
+
 	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain) {
 		uint32_t image_count{};
 		VK_CHECK(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, nullptr), "get_swapchain_images: failed")
@@ -214,7 +281,7 @@ namespace Vulkan {
 			.format = format,
 			.subresourceRange = VkImageSubresourceRange{image_aspect, 0, 1, 0, 1}
 		};
-		for(int i = 0; i < images.size(); i++) {
+		for(int i = 0; i < images.size(); ++i) {
 			create.image = images[i];
 			VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &image_views[i]), "get_image_views: failed")
 		}

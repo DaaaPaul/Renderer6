@@ -6,7 +6,7 @@
 #include "Buffer.hpp"
 
 class Memory {
-	public:
+	protected:
 	struct Properties {
 		VkDeviceSize size{};
 		uint32_t memory_type_index{};
@@ -14,7 +14,6 @@ class Memory {
 		std::vector<VkDeviceSize> buffer_offsets{};
 	};
 
-	private:
 	VkDeviceMemory memory{};
 	Properties properties{};
 
@@ -24,11 +23,13 @@ class Memory {
 	public:
 	virtual ~Memory() = default;
 	Memory() = default;
-	explicit Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags);
+
+	explicit Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);
+	explicit Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags);
 	virtual void destroy() noexcept;
 
 	private:
-	static void bind_memory(VkDeviceMemory memory, std::vector<VkBuffer>& buffers, std::vector<VkImage>& images, const std::vector<VkDeviceSize>& buffer_offsets, const std::vector<VkDeviceSize>& image_offsets);
+	static void bind_memory(VkDeviceMemory memory, const std::vector<VkBuffer>& buffers, const std::vector<VkImage>& images, const std::vector<VkDeviceSize>& buffer_offsets, const std::vector<VkDeviceSize>& image_offsets);
 
 	static Properties get_properties(const std::vector<Buffer>& buffers, const std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags);	
 
@@ -39,11 +40,11 @@ class Memory {
 	static std::vector<VkMemoryRequirements> get_memory_requirements(const std::vector<Buffer>& buffers, const std::vector<Image>& images) {
 		std::vector<VkMemoryRequirements> requirements(buffers.size() + images.size());
 
-		for(int i = 0; i < buffers.size(); i++) {
+		for(int i = 0; i < buffers.size(); ++i) {
 			requirements[i] = buffers[i].get_memory_requirements();
 		}
 
-		for(int i = buffers.size(); i < images.size(); i++) {
+		for(int i = buffers.size(); i < images.size(); ++i) {
 			requirements[i] = images[i].get_memory_requirements();
 		}
 

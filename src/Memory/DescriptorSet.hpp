@@ -17,18 +17,12 @@ class DescriptorSet {
 
 	private:
 	VkDescriptorPool pool{};
-	VkDescriptorSet descriptor_set{};
 	VkDescriptorSetLayout layout{};
-	std::vector<Write> writes{};
+	VkDescriptorSet descriptor_set{};
 
 	public:
-	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const std::vector<Write>& writes);
+	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
 	void destroy() noexcept;
 
-	void write();
-
-	private:
-	static VkDescriptorSetLayout create_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-	static VkDescriptorPool create_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-	static VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool);
+	void write(Write write_info);
 };
