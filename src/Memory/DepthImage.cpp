@@ -15,8 +15,6 @@ DepthImage::DepthImage(VkFormat format,
 		  VK_SAMPLE_COUNT_1_BIT, 
 		  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 		  sharing_mode, 
-		  queue_family_indices,
-		  VK_NO_FLAGS,
-		  VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }) {
+		  queue_family_indices) {
 		
 }

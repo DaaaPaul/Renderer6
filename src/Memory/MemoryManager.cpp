@@ -71,24 +71,48 @@ namespace MemoryManager {
 
 		std::vector<Buffer> host_buffers;
 		host_buffers.reserve(2 + Swapchain::g_IMAGE_COUNT);
-		host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe vertices")));
-		host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe indices")));
+		host_buffers.push_back(*g_buffers.get<VertexBuffer>(NameTable::get_index("host sion axe vertices")));
+		host_buffers.push_back(*g_buffers.get<IndexBuffer>(NameTable::get_index("host sion axe indices")));
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; i++) {
-			host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", i))));
+			host_buffers.push_back(*g_buffers.get<UniformBuffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", i))));
 		}
 
 		g_host_memory = HostMemory(host_buffers);
 
 		std::vector<Buffer> device_buffers;
 		device_buffers.reserve(2);
-		device_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("device sion axe vertices")));
-		device_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("device sion axe indices")));
+		device_buffers.push_back(*g_buffers.get<VertexBuffer>(NameTable::get_index("device sion axe vertices")));
+		device_buffers.push_back(*g_buffers.get<IndexBuffer>(NameTable::get_index("device sion axe indices")));
 
 		std::vector<Image> device_images;
-		device_images.reserve(1);
+		device_images.reserve(2);
 		device_images.push_back(*g_resources.get<Texture>(NameTable::get_index("sion axe texture")));
+		device_images.push_back(g_depth_image);
 
 		g_device_memory = DeviceMemory(device_buffers, device_images);
+
+		g_texture_image_view = ImageView(
+			VK_NO_FLAGS,
+			g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_image(),
+			VK_IMAGE_VIEW_TYPE_2D,
+			static_cast<VkFormat>(g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_p_ktx_texture()->vkFormat),
+			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+		);
+		g_depth_image_view = ImageView(
+			VK_NO_FLAGS,
+			g_depth_image.get_image(),
+			VK_IMAGE_VIEW_TYPE_2D,
+			VK_FORMAT_D32_SFLOAT,
+			VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }
+		);
+
+		Buffer::copy_data_to_buffer(g_host_memory.get_buffer_map(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe vertices"))), g_vertices.data(), vertex_buffer_size);
+		Buffer::copy_data_to_buffer(g_host_memory.get_buffer_map(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe indices"))), g_indices.data(), index_buffer_size);
+
+		Buffer::copy_buffer(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe vertices")), *g_buffers.get<Buffer>(NameTable::get_index("device sion axe vertices")), VkBufferCopy{0, 0, vertex_buffer_size});
+		Buffer::copy_buffer(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe indices")), *g_buffers.get<Buffer>(NameTable::get_index("device sion axe indices")), VkBufferCopy{0, 0, index_buffer_size});
+
+		Texture::copy_ktx_texture_to_image(g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_image(), g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_p_ktx_texture());
 
 		VkSamplerCreateInfo sampler_create{
 			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -125,7 +149,7 @@ namespace MemoryManager {
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.image_view = g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_image_view(),
+				.image_view = g_texture_image_view.get_image_view(),
 				.image_layout = VK_IMAGE_LAYOUT_GENERAL
 			}
 		);

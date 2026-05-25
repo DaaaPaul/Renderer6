@@ -23,14 +23,11 @@ Texture::Texture(uint32_t name_index,
 		  sample_count,
 		  VK_IMAGE_USAGE_SAMPLED_BIT,
 		  sharing_mode,
-		  queue_family_indices,
-		  VK_NO_FLAGS,
-		  VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }) {
+		  queue_family_indices) {
 
 }
 
 void Texture::destroy() noexcept {
-	vkDestroyImageView(g_device, get_image_view(), nullptr);
 	vkDestroyImage(g_device, get_image(), nullptr);
 	ktxTexture_Destroy(ktxTexture(p_ktx_texture));
 }

@@ -5,11 +5,14 @@
 #include "Buffer.hpp"
 #include "DepthImage.hpp"
 #include "DescriptorSet.hpp"
+#include "ImageView.hpp"
 
 namespace MemoryManager {
 	inline Resources g_resources;
+	inline ImageView g_texture_image_view;
 	inline Buffers g_buffers;
 	inline DepthImage g_depth_image;
+	inline ImageView g_depth_image_view;
 	inline DescriptorSet g_descriptor_set;
 	inline VkSampler g_sampler{};
 

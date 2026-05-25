@@ -7,7 +7,6 @@
 class Image {
 	private:
 	VkImage image{};
-	VkImageView image_view{};
 
 	public:
 	virtual ~Image() = default;
@@ -22,17 +21,11 @@ class Image {
 				   VkSampleCountFlagBits sample_count,
 				   VkImageUsageFlags usage,
 				   VkSharingMode sharing_mode, 
-				   const std::vector<uint32_t>& queue_family_indices,
-				   VkImageViewCreateFlags image_view_create_flags = VK_IMAGE_VIEW_CREATE_FLAG_BITS_MAX_ENUM,
-				   VkImageSubresourceRange image_view_subresource_range = VkImageSubresourceRange{ .aspectMask = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM});
+				   const std::vector<uint32_t>& queue_family_indices);
 	virtual void destroy() noexcept;
 
 	VkImage get_image() const { 
 		return image; 
-	}
-
-	VkImageView get_image_view() const { 
-		return image_view; 
 	}
 
 	VkMemoryRequirements get_memory_requirements() const { 

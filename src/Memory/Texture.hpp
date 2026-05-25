@@ -24,5 +24,9 @@ class Texture : public KtxTexture, public Resource, public Image {
 					 const std::vector<uint32_t>& queue_family_indices);
 	void destroy() noexcept override;
 
+	ktxTexture2* get_p_ktx_texture() const {
+		return p_ktx_texture;
+	}
+
 	static VkResult copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_ktx_texture);
 };
