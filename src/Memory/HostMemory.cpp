@@ -1,8 +1,7 @@
 #include "HostMemory.hpp"
 
-HostMemory::HostMemory(std::vector<Buffer>& buffers) :
-	Memory(buffers, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memory_allocate_address),
-	buffer_maps(map_buffers(memory, properties.buffer_offsets, Buffer::get_buffer_sizes(p_buffers), Buffer::get_vk_buffers(p_buffers))) {
+HostMemory::HostMemory(const std::vector<Buffer*>& p_buffers) :
+	Memory(p_buffers, {}, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &memory_allocate_address) {
 
 }
 
@@ -11,21 +10,7 @@ void HostMemory::destroy() noexcept {
 	vkFreeMemory(g_device, memory, nullptr);
 }
 
-std::vector<void*> HostMemory::map_buffers(VkDeviceMemory memory, 
-	const std::vector<VkDeviceSize>& buffer_offsets, 
-	const std::vector<VkDeviceSize>& buffer_sizes,
-	const std::vector<VkBuffer>& buffers) {
 
-	assert(buffer_offsets.size() == buffer_sizes.size() && buffer_sizes.size() == buffers.size());
-
-	std::vector<void*> maps(buffers.size());
-		
-	for(int i = 0; i < buffers.size(); ++i) {
-		VK_CHECK(vkMapMemory(g_device, memory, buffer_offsets[i], buffer_sizes[i], VK_NO_FLAGS, &maps[i]), "map_buffers: failed")
-	}
-
-	return maps;
-}
 
 VkDeviceAddress HostMemory::get_buffer_address(VkBuffer buffer) {
 	VkDeviceAddress address = UINT64_MAX;
@@ -39,14 +24,21 @@ VkDeviceAddress HostMemory::get_buffer_address(VkBuffer buffer) {
 	return address;
 }
 
-void* HostMemory::get_buffer_map(const Buffer& buffer) const {
-	void* map = nullptr;
+void HostMemory::copy_data_to_buffer(const Buffer* p_buffer, const void* src, VkDeviceSize size) {
+	void* p_buffer_data = nullptr;
+	size_t buffer_index = UINT64_MAX;
 
-	for(int i = 0; i < p_buffers.size() && !map; ++i) {
-		if(p_buffers[i] == &buffer) {
-			map = buffer_maps[i];
+	for(int i = 0; i < p_buffers.size() && buffer_index == UINT64_MAX; ++i) {
+		if(p_buffers[i] == p_buffer) {
+			buffer_index = i;
 		}
 	}
 
-	return map;
+	assert(buffer_index != UINT64_MAX);
+
+	vkMapMemory(g_device, memory, properties.buffer_offsets[buffer_index], size, VK_NO_FLAGS, &p_buffer_data);
+	
+	std::memcpy(p_buffer_data, src, size);
+
+	vkUnmapMemory(g_device, memory);
 }

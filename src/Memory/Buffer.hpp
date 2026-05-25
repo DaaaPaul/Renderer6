@@ -35,10 +35,7 @@ class Buffer {
 		return memory_requirements; 
 	}
 
-	static void copy_buffer(const Buffer& src, Buffer& dst, VkBufferCopy region);
-	static void copy_data_to_buffer(void* buffer_map, const void* src, VkDeviceSize size) {
-		std::memcpy(buffer_map, src, size);
-	}
+	static void copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region);
 
 	static std::vector<VkBuffer> get_vk_buffers(const std::vector<Buffer*>& p_buffers) {
 		std::vector<VkBuffer> vk_buffers(p_buffers.size());

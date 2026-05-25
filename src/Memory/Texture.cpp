@@ -21,7 +21,7 @@ Texture::Texture(uint32_t name_index,
 		  mip_level_count,
 		  array_layer_count,
 		  sample_count,
-		  VK_IMAGE_USAGE_SAMPLED_BIT,
+		  VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT,
 		  sharing_mode,
 		  queue_family_indices) {
 

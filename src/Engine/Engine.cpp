@@ -14,6 +14,7 @@
 #include "Engine/Camera.hpp"
 #include "Utility/Vulkan.h"
 #include "Memory/MemoryManager.h"
+#include "Memory/UniformBuffer.hpp"
 #include "Utility/NameTable.h"
 
 namespace Engine {
@@ -199,7 +200,7 @@ namespace Engine {
 
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
-		Buffer::copy_data_to_buffer(MemoryManager::g_host_memory.get_buffer_map(*MemoryManager::g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", FrameKits::g_frame_index)))), &transformation, sizeof(transformation));
+		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(NameTable::get_index(MemoryManager::transform_matrices[FrameKits::g_frame_index])), &transformation, sizeof(transformation));
 	}
 
 	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1) {

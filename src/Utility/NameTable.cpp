@@ -2,15 +2,15 @@
 
 namespace NameTable {
 	uint32_t push_name(const char* name) {
-		assert(next_index < NAME_COUNT);
+		assert(g_next_index < g_NAME_COUNT);
 
-		uint32_t index = next_index;
+		uint32_t index = g_next_index;
 
-		names[index] = name;
+		g_names[index] = name;
 
-		lookup[name] = index;
+		g_lookup[name] = index;
 
-		next_index++;
+		g_next_index++;
 
 		return index;
 	}
@@ -18,9 +18,9 @@ namespace NameTable {
 	uint32_t get_index(const char* name) {
 		uint32_t index = UINT32_MAX;
 
-		auto i = lookup.find(name);
+		auto i = g_lookup.find(name);
 
-		if(i != lookup.end()) {
+		if(i != g_lookup.end()) {
 			index = i->second;
 		}
 

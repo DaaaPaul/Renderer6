@@ -55,6 +55,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Resource.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/StagingBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/StagingBuffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.cpp

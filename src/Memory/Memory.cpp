@@ -3,18 +3,11 @@
 #include "Memory.hpp"
 #include "Backend/PhysicalDevice.h"
 
-Memory::Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
-	properties{ get_properties(buffers, images, memory_property_flags) }, p_buffers(Utility::to_pointers(buffers)), p_images(Utility::to_pointers(images)) {
+Memory::Memory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
+	properties{ get_properties(p_buffers, p_images, memory_property_flags) }, p_buffers(p_buffers), p_images(p_images) {
 	
 	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, memory_create_p_next);
 	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), Image::get_vk_images(p_images), properties.buffer_offsets, properties.image_offsets);
-}
-
-Memory::Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
-	properties{ get_properties(buffers, {}, memory_property_flags) }, p_buffers(Utility::to_pointers(buffers)), p_images{} {
-
-	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, memory_create_p_next);
-	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), {}, properties.buffer_offsets, {});
 }
 
 void Memory::destroy() noexcept {
@@ -26,29 +19,35 @@ void Memory::bind_memory(VkDeviceMemory memory, const std::vector<VkBuffer>& buf
 	assert(images.size() == image_offsets.size());
 
 	for(int i = 0; i < buffers.size(); ++i) {
-		vkBindImageMemory(g_device, images[i], memory, image_offsets[i]);
+		vkBindBufferMemory(g_device, buffers[i], memory, buffer_offsets[i]);
 	}
 	for(int i = 0; i < images.size(); ++i) {
-		vkBindBufferMemory(g_device, buffers[i], memory, buffer_offsets[i]);
+		vkBindImageMemory(g_device, images[i], memory, image_offsets[i]);
 	}
 }
 
-Memory::Properties Memory::get_properties(const std::vector<Buffer>& buffers, const std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags) {
+Memory::Properties Memory::get_properties(const std::vector<Buffer*>& buffers, const std::vector<Image*>& images, VkMemoryPropertyFlags memory_property_flags) {
 	Properties properties{};
 	VkDeviceSize running = 0;
 
-	for(const Buffer& buffer : buffers) {
-		running = align_pow_2(running, buffer.get_memory_requirements().alignment);
+	VkMemoryRequirements buffer_requirements{};
+	for(Buffer* buffer : buffers) {
+		buffer_requirements = buffer->get_memory_requirements();
+
+		running = align_pow_2(running, buffer_requirements.alignment);
 		properties.buffer_offsets.push_back(running);
-		running += buffer.get_memory_requirements().size;
+		running += buffer_requirements.size;
 	}
 
-	align_pow_2(running, PhysicalDevice::g_limits.bufferImageGranularity);
+	running = align_pow_2(running, PhysicalDevice::g_limits.bufferImageGranularity);
 
-	for(const Image& image : images) {
-		running = align_pow_2(running, image.get_memory_requirements().alignment);
+	VkMemoryRequirements image_requirements{};
+	for(Image* image : images) {
+		image_requirements = image->get_memory_requirements();
+
+		running = align_pow_2(running, image_requirements.alignment);
 		properties.image_offsets.push_back(running);
-		running += image.get_memory_requirements().size;
+		running += image_requirements.size;
 	}
 
 	properties.size = running;

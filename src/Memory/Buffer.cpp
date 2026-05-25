@@ -25,11 +25,11 @@ void Buffer::destroy() noexcept {
 	vkDestroyBuffer(g_device, buffer, nullptr);
 }
 
-void Buffer::copy_buffer(const Buffer& src, Buffer& dst, VkBufferCopy region) {
+void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {
 	VkCommandPool pool{};
 	VkCommandBuffer one_time_cmds{};
 
 	Vulkan::begin_one_time_cmd_buffer(pool, one_time_cmds, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
-	vkCmdCopyBuffer(one_time_cmds, src.buffer, dst.buffer, 1, &region);
+	vkCmdCopyBuffer(one_time_cmds, src->buffer, dst->buffer, 1, &region);
 	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), pool, one_time_cmds);
 }
