@@ -1,10 +1,11 @@
 #include "Backend/PipelineLayouts.h"
 #include "Backend/LogicalDevice.h"
+#include "Memory/MemoryManager.h"
 
 namespace PipelineLayouts {
 	void init() {
 		std::vector<VkDescriptorSetLayout> descriptor_set_layouts{
-			Memory::Device::gDescriptorSets[0].layout // p_ktx_texture image and sampler
+			MemoryManager::g_descriptor_set.get_layout() // p_ktx_texture image and sampler
 		};
 		std::vector<VkPushConstantRange> push_constant_ranges{
 			VkPushConstantRange{

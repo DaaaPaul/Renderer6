@@ -25,7 +25,7 @@ class Memory {
 	Memory() = default;
 
 	explicit Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);
-	explicit Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags);
+	explicit Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);
 	virtual void destroy() noexcept;
 
 	private:

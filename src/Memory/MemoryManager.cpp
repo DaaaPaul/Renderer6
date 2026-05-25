@@ -52,11 +52,9 @@ namespace MemoryManager {
 			gfx_queue_family_index
 		);
 
-		std::string name = "transform matrices ";
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-			std::string num = std::to_string(i + 1);
 			g_buffers.add<UniformBuffer>(
-				NameTable::push_name((name + num).c_str()),
+				NameTable::push_name(Utility::c_str_with_uint("transform matrices ", i)),
 				sizeof(TransformMatrices),
 				VK_SHARING_MODE_EXCLUSIVE,
 				gfx_queue_family_index
@@ -76,8 +74,7 @@ namespace MemoryManager {
 		host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe vertices")));
 		host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index("host sion axe indices")));
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; i++) {
-			std::string num = std::to_string(i + 1);
-			host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index((name + num).c_str())));
+			host_buffers.push_back(*g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", i))));
 		}
 
 		g_host_memory = HostMemory(host_buffers);
@@ -92,5 +89,54 @@ namespace MemoryManager {
 		device_images.push_back(*g_resources.get<Texture>(NameTable::get_index("sion axe texture")));
 
 		g_device_memory = DeviceMemory(device_buffers, device_images);
+
+		VkSamplerCreateInfo sampler_create{
+			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+			.magFilter = VK_FILTER_LINEAR,
+			.minFilter = VK_FILTER_LINEAR,
+			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			.anisotropyEnable = VK_TRUE,
+			.maxAnisotropy = PhysicalDevice::g_limits.maxSamplerAnisotropy,
+			.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+			.unnormalizedCoordinates = VK_FALSE
+		};
+		VK_CHECK(vkCreateSampler(g_device, &sampler_create, nullptr, &g_sampler), "MemoryManager::init(): failed to create sampler")
+
+		g_descriptor_set = DescriptorSet({
+			VkDescriptorSetLayoutBinding{
+				.binding = 0,
+				.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+				.descriptorCount = 1,
+				.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+			},
+			VkDescriptorSetLayoutBinding{
+				.binding = 1,
+				.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+				.descriptorCount = 1,
+				.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+			}
+		});
+		g_descriptor_set.write(
+			DescriptorSet::Write{
+				.binding_num = 0,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+				.image_view = g_resources.get<Texture>(NameTable::get_index("sion axe texture"))->get_image_view(),
+				.image_layout = VK_IMAGE_LAYOUT_GENERAL
+			}
+		);
+		g_descriptor_set.write(
+			DescriptorSet::Write{
+				.binding_num = 1,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
+				.sampler = g_sampler
+			}
+		);
 	}
 }

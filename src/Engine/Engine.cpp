@@ -13,6 +13,8 @@
 #include "Geometry/TransformMatrices.hpp"
 #include "Engine/Camera.hpp"
 #include "Utility/Vulkan.h"
+#include "Memory/MemoryManager.h"
+#include "Utility/NameTable.h"
 
 namespace Engine {
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {		
@@ -27,7 +29,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = Memory::Device::g_depth_image_view,
+			.imageView = MemoryManager::g_depth_image.get_image_view(),
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -48,29 +50,29 @@ namespace Engine {
 		set_viewport_and_scissor(cmd_buf);
 
 		constexpr VkDeviceSize zero = 0;
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &Memory::Device::gBuffers[0].buffer, &zero);
-		vkCmdBindIndexBuffer(cmd_buf, Memory::Device::gBuffers[1].buffer, 0, VK_INDEX_TYPE_UINT32);
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<Buffer>(NameTable::get_index("device sion axe vertices"))->get_buffer();
+		VkBuffer index_buffer = MemoryManager::g_buffers.get<Buffer>(NameTable::get_index("device sion axe indices"))->get_buffer();
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, &zero);
+		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-		VkDescriptorSet textureDescriptors = Memory::Device::gDescriptorSets[0].set;
-		std::vector<VkDescriptorSet> drawDescriptorSets{ textureDescriptors };
-		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, drawDescriptorSets.data(), 0, nullptr);
+		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_set.get_descriptor_set();
+		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, &descriptor_set, 0, nullptr);
 		
-		VkDeviceAddress p_transform_matrices = Memory::Host::gBuffers[3 + FrameKits::g_frame_index].address;
-		std::vector<VkDeviceAddress> push_constant{ p_transform_matrices };
-		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, POINTER_SIZE(1), push_constant.data()); 
+		VkDeviceAddress push_constant = HostMemory::get_buffer_address(MemoryManager::g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", FrameKits::g_frame_index)))->get_buffer());
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push_constant), &push_constant); 
 		
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::insert_image_barrier(cmd_buf, Memory::Device::gImages[1].image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_depth_image.get_image(), VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		vkCmdBeginRendering(cmd_buf, &rendering_info);
-		vkCmdDrawIndexed(cmd_buf, Resources::g_model_indices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -197,7 +199,7 @@ namespace Engine {
 
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
-		Memory::Host::Mutate::writeToBuffer(3 + FrameKits::g_frame_index, &transformation, sizeof(transformation));
+		Buffer::copy_data_to_buffer(MemoryManager::g_host_memory.get_buffer_map(*MemoryManager::g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", FrameKits::g_frame_index)))), &transformation, sizeof(transformation));
 	}
 
 	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1) {

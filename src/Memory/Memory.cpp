@@ -10,10 +10,10 @@ Memory::Memory(std::vector<Buffer>& buffers, std::vector<Image>& images, VkMemor
 	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), Image::get_vk_images(p_images), properties.buffer_offsets, properties.image_offsets);
 }
 
-Memory::Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags) :
+Memory::Memory(std::vector<Buffer>& buffers, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
 	properties{ get_properties(buffers, {}, memory_property_flags) }, p_buffers(Utility::to_pointers(buffers)), p_images{} {
 
-	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, nullptr);
+	memory = Vulkan::create_memory(properties.size, properties.memory_type_index, memory_create_p_next);
 	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), {}, properties.buffer_offsets, {});
 }
 

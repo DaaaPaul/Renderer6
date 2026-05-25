@@ -21,8 +21,18 @@ class DescriptorSet {
 	VkDescriptorSet descriptor_set{};
 
 	public:
+	DescriptorSet() = default;
+
 	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
 	void destroy() noexcept;
+
+	VkDescriptorSetLayout get_layout() const {
+		return layout;
+	}
+
+	VkDescriptorSet get_descriptor_set() const {
+		return descriptor_set;
+	}
 
 	void write(Write write_info);
 };

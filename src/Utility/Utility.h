@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <memory>
+#include <charconv>
 #include "Geometry/Vertex.hpp"
 #include "Backend/Window.h"
 #include "Utility/Vulkan.h"
@@ -32,6 +33,18 @@ using VkLogicalDevice = VkDevice;
 
 namespace Utility {
 	std::vector<std::string> to_string(const std::vector<const char*>& c_strings);
+
+	inline const char* c_str_with_uint(const char* str, uint32_t num) {
+		static char characters[128];
+
+		size_t str_len = std::strlen(str);
+		std::memcpy(characters, str, str_len);
+
+		std::to_chars_result result = std::to_chars(characters + str_len, characters + sizeof(characters) - 1, num);
+		*result.ptr = '\0';
+
+		return characters;
+	}
 
 	bool contains_all(std::vector<std::string> these_strings, std::vector<std::string> contain_these);
 

@@ -8,20 +8,19 @@
 #include "Backend/PipelineLayouts.h"
 #include "Backend/ShaderModule.h"
 #include "Backend/Pipelines.h"
+#include "Memory/MemoryManager.h"
 #include "Engine/Engine.h"
 #include "Engine/FrameKits.h"
 
 int main() {
     try {
-		Resources::load_model();
 		Window::init();
 		Instance::init();
 		PhysicalDevice::init();
 		LogicalDevice::init();
 		Swapchain::init();
 
-		Memory::Host::init();
-		Memory::Device::init();
+		MemoryManager::init();
 
 		PipelineLayouts::init();
 		ShaderModule::init();
@@ -37,9 +36,6 @@ int main() {
 		ShaderModule::clear();
 		PipelineLayouts::clear();
 		Swapchain::destroy();
-
-		Memory::Device::destroy();
-		Memory::Host::destroy();
 
 		LogicalDevice::destroy();
 		Instance::destroy();
