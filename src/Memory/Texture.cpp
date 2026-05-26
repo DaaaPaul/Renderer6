@@ -5,7 +5,7 @@
 #include "Utility/Utility.h"
 #include "Utility/Load.h"
 
-Texture::Texture(uint32_t name_index,
+Texture::Texture(uint32_t id,
 				 const char* ktx_path,
 				 uint32_t mip_level_count,
 				 uint32_t array_layer_count,
@@ -13,7 +13,7 @@ Texture::Texture(uint32_t name_index,
 				 VkSharingMode sharing_mode,
 				 const std::vector<uint32_t>& queue_family_indices) : 
 	KtxTexture(Utility::load_ktx_texture(ktx_path)),
-	Resource(name_index), 
+	Resource(id), 
 	Image(VK_NO_FLAGS,
 		  VK_IMAGE_TYPE_2D,
 		  static_cast<VkFormat>(p_ktx_texture->vkFormat),

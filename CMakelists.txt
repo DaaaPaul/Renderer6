@@ -24,8 +24,7 @@ set(RENDERER6_SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Load.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/NameTable.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/NameTable.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Ids.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/RuntimeError.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.h

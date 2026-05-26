@@ -7,17 +7,17 @@
 
 class Resource {
 	private:
-	uint32_t name_index{};
+	uint32_t id{};
 	uint32_t user_count{};
 
 	protected:
-	explicit Resource(uint32_t name_index) : name_index{ name_index }, user_count{ 1 } {}
+	explicit Resource(uint32_t id) : id{ id }, user_count{ 1 } {}
 
 	public:
 	virtual ~Resource() = default;
 
 	uint32_t get_name_index() const { 
-		return name_index; 
+		return id; 
 	}
 
 	void inc_user_count() { 
@@ -39,30 +39,30 @@ class Resources {
 
 	public:
 	template<class ResourceType, class... Args>
-	ResourceType* add(uint32_t name_index, Args&&... args) {
+	ResourceType* add(uint32_t id, Args&&... args) {
 		static_assert(std::is_base_of<Resource, ResourceType>::value, "ResourceType needs to inherit Resource");
 		ResourceType* p_resource = nullptr;
 
-		auto i = resource_map.find(name_index);
+		auto i = resource_map.find(id);
 
 		if(i != resource_map.end()) {
 			i->second->inc_user_count();
 			p_resource = static_cast<ResourceType*>(i->second.get());
 		} else {
-			resource_map[name_index] = std::make_unique<ResourceType>(name_index, std::forward<Args>(args)...);
-			p_resource = static_cast<ResourceType*>(resource_map.at(name_index).get());
+			resource_map[id] = std::make_unique<ResourceType>(id, std::forward<Args>(args)...);
+			p_resource = static_cast<ResourceType*>(resource_map.at(id).get());
 		}
 
 		return p_resource;
 	}
 
 	template<class ResourceType>
-	ResourceType* get(uint32_t name_index) {
+	ResourceType* get(uint32_t id) {
 		static_assert(std::is_base_of<Resource, ResourceType>::value, "ResourceType needs to inherit Resource");
 
 		ResourceType* p_resource = nullptr;
 
-		auto i = resource_map.find(name_index);
+		auto i = resource_map.find(id);
 
 		if(i != resource_map.end()) {
 			p_resource = static_cast<ResourceType*>(i->second.get());
@@ -71,9 +71,9 @@ class Resources {
 		return p_resource;
 	}
 
-	bool remove(uint32_t name_index) {
+	bool remove(uint32_t id) {
 		bool remove_success = false;
-		auto i = resource_map.find(name_index);
+		auto i = resource_map.find(id);
 
 		if(i != resource_map.end()) {
 			i->second->dec_user_count();

@@ -15,7 +15,7 @@ struct KtxTexture {
 
 class Texture : public KtxTexture, public Resource, public Image {
 	public:
-	explicit Texture(uint32_t name_index, 
+	explicit Texture(uint32_t id, 
 					 const char* ktx_path,
 					 uint32_t mip_level_count, 
 					 uint32_t array_layer_count, 
