@@ -15,7 +15,7 @@ namespace MemoryManager {
 		std::vector<uint32_t> gfx_queue_family_index{ PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT) };
 
 		g_resources.add<Texture>(
-			NameTable::push_name(texture_name),
+			NameTable::g_SION_TEXTURE,
 			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)",
 			1,
 			1,
@@ -29,25 +29,25 @@ namespace MemoryManager {
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 
 		g_buffers.add<StagingBuffer>(
-			NameTable::push_name(host_vertices_name),
-			VERTEX_BUFFER_SIZE,
-			VK_SHARING_MODE_EXCLUSIVE,
-			gfx_queue_family_index
-		);
-		g_buffers.add<VertexBuffer>(
-			NameTable::push_name(device_vertices_name),
+			NameTable::g_VERTEX_STAGE,
 			VERTEX_BUFFER_SIZE,
 			VK_SHARING_MODE_EXCLUSIVE,
 			gfx_queue_family_index
 		);
 		g_buffers.add<StagingBuffer>(
-			NameTable::push_name(host_indices_name),
+			NameTable::g_INDEX_STAGE,
 			INDEX_BUFFER_SIZE,
 			VK_SHARING_MODE_EXCLUSIVE,
 			gfx_queue_family_index
 		);
+		g_buffers.add<VertexBuffer>(
+			NameTable::g_VERTEX_BUFFER,
+			VERTEX_BUFFER_SIZE,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
 		g_buffers.add<IndexBuffer>(
-			NameTable::push_name(device_indices_name),
+			NameTable::g_INDEX_BUFFER,
 			INDEX_BUFFER_SIZE,
 			VK_SHARING_MODE_EXCLUSIVE,
 			gfx_queue_family_index
@@ -55,7 +55,7 @@ namespace MemoryManager {
 
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			g_buffers.add<UniformBuffer>(
-				NameTable::push_name(transform_matrices[i]),
+				NameTable::g_TRANSFORM_MATRICES[i],
 				sizeof(TransformMatrices),
 				VK_SHARING_MODE_EXCLUSIVE,
 				gfx_queue_family_index
@@ -71,30 +71,32 @@ namespace MemoryManager {
 		);
 
 		std::vector<Buffer*> p_host_buffers{
-			g_buffers.get<StagingBuffer>(NameTable::get_index(host_vertices_name)),
-			g_buffers.get<StagingBuffer>(NameTable::get_index(host_indices_name))
+			g_buffers.get<StagingBuffer>(NameTable::g_VERTEX_STAGE),
+			g_buffers.get<StagingBuffer>(NameTable::g_INDEX_STAGE)
 		};
 		p_host_buffers.reserve(2 + Swapchain::g_IMAGE_COUNT);
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(NameTable::get_index(transform_matrices[i])));
+			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(NameTable::g_TRANSFORM_MATRICES[i]));
 		}
 		g_host_memory = HostMemory(p_host_buffers);
 
 		std::vector<Buffer*> p_device_buffers{
-			g_buffers.get<VertexBuffer>(NameTable::get_index(device_vertices_name)),
-			g_buffers.get<IndexBuffer>(NameTable::get_index(device_indices_name))
+			g_buffers.get<VertexBuffer>(NameTable::g_VERTEX_BUFFER),
+			g_buffers.get<IndexBuffer>(NameTable::g_INDEX_BUFFER)
 		};
 		std::vector<Image*> p_device_images{
-			g_resources.get<Texture>(NameTable::get_index(texture_name)),
-			&g_depth_image
+			g_resources.get<Texture>(NameTable::g_SION_TEXTURE),
 		};
-		g_device_memory = DeviceMemory(p_device_buffers, p_device_images);
+
+		g_device_memory_1 = DeviceMemory(p_device_buffers, p_device_images);
+
+		g_device_memory_2 = DeviceMemory({}, { &g_depth_image });
 
 		g_texture_image_view = ImageView(
 			VK_NO_FLAGS,
-			g_resources.get<Texture>(NameTable::get_index(texture_name))->get_image(),
+			g_resources.get<Texture>(NameTable::g_SION_TEXTURE)->get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_resources.get<Texture>(NameTable::get_index(texture_name))->get_p_ktx_texture()->vkFormat),
+			static_cast<VkFormat>(g_resources.get<Texture>(NameTable::g_SION_TEXTURE)->get_p_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
 		g_depth_image_view = ImageView(
@@ -105,13 +107,13 @@ namespace MemoryManager {
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }
 		);
 
-		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(NameTable::get_index(host_vertices_name)), g_vertices.data(), VERTEX_BUFFER_SIZE);
-		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(NameTable::get_index(host_indices_name)), g_indices.data(), INDEX_BUFFER_SIZE);
+		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(NameTable::g_VERTEX_STAGE), g_vertices.data(), VERTEX_BUFFER_SIZE);
+		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(NameTable::g_INDEX_STAGE), g_indices.data(), INDEX_BUFFER_SIZE);
 
-		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(NameTable::get_index(host_vertices_name)), g_buffers.get<VertexBuffer>(NameTable::get_index(device_vertices_name)), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(NameTable::get_index(host_indices_name)), g_buffers.get<IndexBuffer>(NameTable::get_index(device_indices_name)), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(NameTable::g_VERTEX_STAGE), g_buffers.get<VertexBuffer>(NameTable::g_VERTEX_BUFFER), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(NameTable::g_INDEX_STAGE), g_buffers.get<IndexBuffer>(NameTable::g_INDEX_BUFFER), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
 
-		Texture::copy_ktx_texture_to_image(g_resources.get<Texture>(NameTable::get_index(texture_name))->get_image(), g_resources.get<Texture>(NameTable::get_index(texture_name))->get_p_ktx_texture());
+		VK_CHECK(Texture::copy_ktx_texture_to_image(g_resources.get<Texture>(NameTable::g_SION_TEXTURE)->get_image(), g_resources.get<Texture>(NameTable::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
 
 		VkSamplerCreateInfo sampler_create{
 			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -162,4 +164,8 @@ namespace MemoryManager {
 			}
 		);
 	}
+}
+
+void destroy() {
+	
 }

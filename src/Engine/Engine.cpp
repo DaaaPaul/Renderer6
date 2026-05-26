@@ -14,6 +14,8 @@
 #include "Engine/Camera.hpp"
 #include "Utility/Vulkan.h"
 #include "Memory/MemoryManager.h"
+#include "Memory/VertexBuffer.hpp"
+#include "Memory/IndexBuffer.hpp"
 #include "Memory/UniformBuffer.hpp"
 #include "Utility/NameTable.h"
 
@@ -51,15 +53,15 @@ namespace Engine {
 		set_viewport_and_scissor(cmd_buf);
 
 		constexpr VkDeviceSize zero = 0;
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<Buffer>(NameTable::get_index("device sion axe vertices"))->get_buffer();
-		VkBuffer index_buffer = MemoryManager::g_buffers.get<Buffer>(NameTable::get_index("device sion axe indices"))->get_buffer();
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<VertexBuffer>(NameTable::g_VERTEX_BUFFER)->get_buffer();
+		VkBuffer index_buffer = MemoryManager::g_buffers.get<IndexBuffer>(NameTable::g_INDEX_BUFFER)->get_buffer();
 		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, &zero);
 		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
 		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_set.get_descriptor_set();
 		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, &descriptor_set, 0, nullptr);
 		
-		VkDeviceAddress push_constant = HostMemory::get_buffer_address(MemoryManager::g_buffers.get<Buffer>(NameTable::get_index(Utility::c_str_with_uint("transform matrices ", FrameKits::g_frame_index)))->get_buffer());
+		VkDeviceAddress push_constant = HostMemory::get_buffer_address(MemoryManager::g_buffers.get<Buffer>(NameTable::g_TRANSFORM_MATRICES[FrameKits::g_frame_index])->get_buffer());
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push_constant), &push_constant); 
 		
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
@@ -124,8 +126,12 @@ namespace Engine {
 			before = std::chrono::high_resolution_clock::now();
 			render_next();
 			delta_time = get_delta_time(std::chrono::high_resolution_clock::now(), before);
+			total_delta_time += delta_time;
+			++total_loops;
 			PRINTLN(delta_time);
 		}
+
+		PRINTLN("AVERAGE: " << (total_delta_time / total_loops));
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
@@ -200,7 +206,7 @@ namespace Engine {
 
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
-		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(NameTable::get_index(MemoryManager::transform_matrices[FrameKits::g_frame_index])), &transformation, sizeof(transformation));
+		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(NameTable::g_TRANSFORM_MATRICES[FrameKits::g_frame_index]), &transformation, sizeof(transformation));
 	}
 
 	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1) {

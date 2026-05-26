@@ -11,6 +11,9 @@ namespace Engine {
 		VkResult result{};
 	};
 
+	inline float total_delta_time = 0.0f;
+	inline uint32_t total_loops = 0;
+
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
 	void render_next();
 	void run();

@@ -49,7 +49,7 @@ VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_
 		.imageExtent = VkExtent3D{p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, p_ktx_texture->baseDepth}
 	};
 
-	VkCopyMemoryToImageInfoEXT copy{
+	VkCopyMemoryToImageInfo copy{
 		.sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT,
 		.dstImage = image,
 		.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
@@ -57,5 +57,5 @@ VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_
 		.pRegions = &region,
 	};
 
-	return vkCopyMemoryToImage(g_device, &copy);
+	return Load::vkCopyMemoryToImageEXT(g_device, &copy);
 }

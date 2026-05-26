@@ -3,19 +3,25 @@
 #include <array>
 #include <unordered_map>
 #include <cassert>
+#include "Backend/Swapchain.h"
 
 namespace NameTable {
-	inline constexpr uint32_t g_NAME_COUNT = 1024;
+	inline constexpr uint16_t g_SION_TEXTURE = 0;
+	inline constexpr uint16_t g_VERTEX_STAGE = 1;
+	inline constexpr uint16_t g_INDEX_STAGE = 2;
+	inline constexpr uint16_t g_VERTEX_BUFFER = 3;
+	inline constexpr uint16_t g_INDEX_BUFFER = 4;
 
-	inline std::array<const char*, g_NAME_COUNT> g_names{};
-	inline std::unordered_map<const char*, uint32_t> g_lookup{};
-	inline uint32_t g_next_index = 0;
+	inline constexpr std::array<uint16_t, Swapchain::g_IMAGE_COUNT> g_TRANSFORM_MATRICES{
+		5, 6, 7, 8
+	};
 
-	uint32_t push_name(const char* name);
-	uint32_t get_index(const char* name);
-
-	inline const char* get_name(uint32_t index) {
-		assert(index < g_next_index);
-		return g_names[index];
-	}
+	inline constexpr std::array<uint16_t, UINT16_MAX> g_NAMES{
+		g_SION_TEXTURE,
+		g_VERTEX_STAGE,
+		g_INDEX_STAGE,
+		g_VERTEX_BUFFER,
+		g_INDEX_BUFFER,
+		g_TRANSFORM_MATRICES[0], g_TRANSFORM_MATRICES[1], g_TRANSFORM_MATRICES[2], g_TRANSFORM_MATRICES[3]
+	};
 }

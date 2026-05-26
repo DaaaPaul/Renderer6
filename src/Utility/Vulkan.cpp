@@ -257,7 +257,7 @@ namespace Vulkan {
 			.pSetLayouts = &layout,
 		};
 
-		VK_CHECK(vkAllocateDescriptorSets(g_device, nullptr, &set), "create_descriptor_set: failed")
+		VK_CHECK(vkAllocateDescriptorSets(g_device, &create, &set), "create_descriptor_set: failed")
 
 		return set;
 	}
