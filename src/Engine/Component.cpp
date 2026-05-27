@@ -1,3 +1,3 @@
 #include "Component.hpp"
 
-uint32_t Component::next_type_id = 0;
+id ComponentTypeId::next_type_id = 0;

@@ -1,14 +1,12 @@
 #include "Geometry/Vertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
-#include "Resource.hpp"
 #include "Buffer.hpp"
 #include "DepthImage.hpp"
 #include "DescriptorSet.hpp"
 #include "ImageView.hpp"
 
 namespace MemoryManager {
-	inline Resources g_resources;
 	inline ImageView g_texture_image_view;
 	inline Buffers g_buffers;
 	inline DepthImage g_depth_image;

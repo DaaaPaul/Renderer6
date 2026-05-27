@@ -10,20 +10,34 @@ $$ |      $$ |  $$ |$$ |  $$ |$$\   $$ |$$\   $$ |$$ |  $$ |      $$ |     $$  _
 A WEEK'S LOAD:
 
 ALL IN AN HONEST DAY:
-- Load mipmaps from texture itself (and implement mipmaps)
-
-- for the depth images, just have them in Swapchain::
-- merge MemoryManager and Memory
 
 BY THE HOUR:
-- Consider multisampling
-
-- use shader objects instead
-
 - asynchronus resource loading
 - hot reloading
 
 5-MINUTE CRAFTS:
+
+
+
+***IN ANOTHER LIFE***
+- use shader objects instead
+- Consider multisampling
+- Load mipmaps from texture itself (and implement mipmaps)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   ______   ______   ______   ______   ______  
@@ -98,3 +112,6 @@ BY THE HOUR:
 * YO GET THE GENERAL LAYOUTS IN *
 - HIT BINDLESS DESCRIPTORS
 	- get rid of the descriptor set class, have a namespace like the other stuff
+
+- merge MemoryManager and Memory
+- for the depth images, just have them in Swapchain::

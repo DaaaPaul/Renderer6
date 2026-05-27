@@ -8,12 +8,10 @@
 class Buffer {
 	private:
 	VkBuffer buffer{};
-	uint32_t id{};
 	
 	public:
 	virtual ~Buffer() = default;
-	explicit Buffer(uint32_t id,
-					VkBufferCreateFlags create_flags, 
+	explicit Buffer(VkBufferCreateFlags create_flags, 
 					VkDeviceSize size,
 					VkBufferUsageFlags usage_flags, 
 					VkSharingMode sharing_mode,
@@ -22,10 +20,6 @@ class Buffer {
 
 	VkBuffer get_buffer() const { 
 		return buffer; 
-	}
-
-	uint32_t get_name_index() const { 
-		return id; 
 	}
 
 	VkMemoryRequirements get_memory_requirements() const { 
@@ -55,55 +49,5 @@ class Buffer {
 		}
 
 		return buffer_sizes;
-	}
-};
-
-class Buffers {
-	private:
-	std::unordered_map<uint32_t, std::unique_ptr<Buffer>> buffer_map{};
-
-	public:
-	template<class BufferType, class... Args>
-	BufferType* add(uint32_t id, Args&&... args) {
-		static_assert(std::is_base_of<Buffer, BufferType>::value, "BufferType needs to inherit Buffer");
-		BufferType* p_buffer = nullptr;
-
-		auto i = buffer_map.find(id);
-
-		if(i != buffer_map.end()) {
-			p_buffer = static_cast<BufferType*>(i->second.get());
-		} else {
-			buffer_map[id] = std::make_unique<BufferType>(id, std::forward<Args>(args)...);
-			p_buffer = static_cast<BufferType*>(buffer_map.at(id).get());
-		}
-
-		return p_buffer;
-	}
-
-	template<class BufferType>
-	BufferType* get(uint32_t id) {
-		static_assert(std::is_base_of<Buffer, BufferType>::value, "BufferType needs to inherit Buffer");
-
-		BufferType* p_buffer = nullptr;
-
-		auto i = buffer_map.find(id);
-
-		if(i != buffer_map.end()) {
-			p_buffer = static_cast<BufferType*>(i->second.get());
-		}
-
-		return p_buffer;
-	}
-
-	bool remove(uint32_t id) {
-		bool remove_success = false;
-		auto i = buffer_map.find(id);
-
-		if(i != buffer_map.end()) {
-			buffer_map.erase(i);
-			remove_success = true;
-		}
-
-		return remove_success;
 	}
 };

@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan.h>
 #include <ktx.h>
-#include "Resource.hpp"
 #include "Image.hpp"
 
 struct KtxTexture {
@@ -13,10 +12,9 @@ struct KtxTexture {
 	}
 };
 
-class Texture : public KtxTexture, public Resource, public Image {
+class Texture : public KtxTexture, public Image {
 	public:
-	explicit Texture(uint32_t id, 
-					 const char* ktx_path,
+	explicit Texture(const char* ktx_path,
 					 uint32_t mip_level_count, 
 					 uint32_t array_layer_count, 
 					 VkSampleCountFlagBits sample_count, 

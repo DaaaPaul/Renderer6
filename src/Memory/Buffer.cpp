@@ -2,12 +2,11 @@
 #include "Buffer.hpp"
 #include "Utility/Vulkan.h"
 
-Buffer::Buffer(uint32_t id,
-			   VkBufferCreateFlags create_flags, 
+Buffer::Buffer(VkBufferCreateFlags create_flags, 
 			   VkDeviceSize size, 
 			   VkBufferUsageFlags usage_flags, 
 			   VkSharingMode sharing_mode,
-			   const std::vector<uint32_t>& queue_family_indices) : id{ id } {
+			   const std::vector<uint32_t>& queue_family_indices) {
 	VkBufferCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.flags = create_flags,
