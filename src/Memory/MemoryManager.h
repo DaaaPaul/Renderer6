@@ -5,12 +5,13 @@
 #include "DepthImage.hpp"
 #include "DescriptorSet.hpp"
 #include "ImageView.hpp"
+#include "Utility/IdPool.hpp"
 
 namespace MemoryManager {
-	inline ImageView g_texture_image_view;
-	inline Buffers g_buffers;
-	inline DepthImage g_depth_image;
-	inline ImageView g_depth_image_view;
+	inline IdPool<uint32_t, Buffer> g_buffers{};
+	inline IdPool<uint32_t, Image> g_images{};
+	inline IdPool<uint32_t, ImageView> g_image_views{};
+	
 	inline DescriptorSet g_descriptor_set;
 	inline VkSampler g_sampler{};
 

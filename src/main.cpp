@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>
+#include <chrono>
 #include "Backend/Window.h"
 #include "Backend/Instance.h"
 #include "Backend/LogicalDevice.h"
@@ -15,6 +16,8 @@
 
 int main() {
     try {
+		std::chrono::steady_clock::time_point startup(std::chrono::high_resolution_clock::now());
+
 		Window::init();
 		Instance::init();
 		PhysicalDevice::init();
@@ -29,6 +32,9 @@ int main() {
 		Pipelines::init();
 
 		FrameKits::init();
+
+		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
+		std::cout << "LOAD TIME: " << std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count() << '\n';
 		
 		Engine::run();
 

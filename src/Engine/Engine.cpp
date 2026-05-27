@@ -1,5 +1,6 @@
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan_core.h>
+#include <chrono>
 #include <vector>
 #include "Engine/Engine.h"
 #include "Engine/FrameKits.h"
@@ -32,7 +33,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = MemoryManager::g_depth_image_view.get_image_view(),
+			.imageView = MemoryManager::g_image_views.get<ImageView>(Ids::g_DEPTH_VIEW)->get_image_view(),
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -69,7 +70,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_depth_image.get_image(), VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE)->get_image(), VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
@@ -115,6 +116,7 @@ namespace Engine {
 
 	void run() {
 		std::chrono::steady_clock::time_point before{};
+		std::chrono::steady_clock::time_point after{};
 		float delta_time{};
 
 		while(!glfwWindowShouldClose(Window::g_glfw_window)) {
@@ -125,9 +127,12 @@ namespace Engine {
 
 			before = std::chrono::high_resolution_clock::now();
 			render_next();
-			delta_time = get_delta_time(std::chrono::high_resolution_clock::now(), before);
+			after = std::chrono::high_resolution_clock::now();
+
+			float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
 			total_delta_time += delta_time;
 			++total_loops;
+
 			PRINTLN(delta_time);
 		}
 
@@ -207,9 +212,5 @@ namespace Engine {
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
 		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[FrameKits::g_frame_index]), &transformation, sizeof(transformation));
-	}
-
-	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1) {
-		return std::chrono::duration<float, std::chrono::seconds::period>(time2 - time1).count();
 	}
 }

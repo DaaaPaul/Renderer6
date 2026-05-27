@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include <chrono>
 #include "Engine/Camera.hpp"
 
 namespace Engine {	
@@ -26,5 +25,4 @@ namespace Engine {
 	void resize();
 	void check_close();
 	void update(float delta_time);
-	float get_delta_time(const std::chrono::steady_clock::time_point& time2, const std::chrono::steady_clock::time_point& time1);
 }

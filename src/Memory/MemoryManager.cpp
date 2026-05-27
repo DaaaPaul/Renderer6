@@ -14,16 +14,6 @@ namespace MemoryManager {
 	void init() {
 		std::vector<uint32_t> gfx_queue_family_index{ PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT) };
 
-		g_resources.add<Texture>(
-			Ids::g_SION_TEXTURE,
-			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)",
-			1,
-			1,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			gfx_queue_family_index
-		);
-
 		Utility::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", g_vertices, g_indices);
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(Vertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
@@ -62,7 +52,17 @@ namespace MemoryManager {
 			);
 		}
 
-		g_depth_image = DepthImage(
+		g_images.add<Texture>(
+			Ids::g_SION_TEXTURE,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
+		g_images.add<DepthImage>(
+			Ids::g_DEPTH_IMAGE,
 			VK_FORMAT_D32_SFLOAT,
 			Swapchain::g_status.imageExtent.width,
 			Swapchain::g_status.imageExtent.height,
@@ -78,30 +78,40 @@ namespace MemoryManager {
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[i]));
 		}
-		g_host_memory = HostMemory(p_host_buffers);
+		std::vector<Image*> p_host_images{
+
+		};
+		g_host_memory = HostMemory(p_host_buffers, p_host_images);
 
 		std::vector<Buffer*> p_device_buffers{
 			g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER),
 			g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER)
 		};
 		std::vector<Image*> p_device_images{
-			g_resources.get<Texture>(Ids::g_SION_TEXTURE),
+			g_images.get<Texture>(Ids::g_SION_TEXTURE),
 		};
-
 		g_device_memory_1 = DeviceMemory(p_device_buffers, p_device_images);
 
-		g_device_memory_2 = DeviceMemory({}, { &g_depth_image });
+		std::vector<Buffer*> p_device_2_buffers{
 
-		g_texture_image_view = ImageView(
+		};
+		std::vector<Image*> p_device_2_images{
+			g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE)
+		};
+		g_device_memory_2 = DeviceMemory(p_device_2_buffers, p_device_2_images);
+
+		g_image_views.add<ImageView>(
+			Ids::g_SION_TEXTURE_VIEW,
 			VK_NO_FLAGS,
-			g_resources.get<Texture>(Ids::g_SION_TEXTURE)->get_image(),
+			g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_resources.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()->vkFormat),
+			static_cast<VkFormat>(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
-		g_depth_image_view = ImageView(
+		g_image_views.add<ImageView>(
+			Ids::g_DEPTH_VIEW,
 			VK_NO_FLAGS,
-			g_depth_image.get_image(),
+			g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE)->get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
 			VK_FORMAT_D32_SFLOAT,
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }
@@ -113,7 +123,7 @@ namespace MemoryManager {
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE), g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE), g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
 
-		VK_CHECK(Texture::copy_ktx_texture_to_image(g_resources.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_resources.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
+		VK_CHECK(Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
 
 		VkSamplerCreateInfo sampler_create{
 			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -150,7 +160,7 @@ namespace MemoryManager {
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.image_view = g_texture_image_view.get_image_view(),
+				.image_view = g_image_views.get<ImageView>(Ids::g_SION_TEXTURE_VIEW)->get_image_view(),
 				.image_layout = VK_IMAGE_LAYOUT_GENERAL
 			}
 		);
