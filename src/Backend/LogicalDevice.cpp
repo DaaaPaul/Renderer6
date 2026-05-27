@@ -1,5 +1,6 @@
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
+#include "Utility/Vulkan.h"
 
 namespace LogicalDevice {
 	void init() {
@@ -16,14 +17,14 @@ namespace LogicalDevice {
 		vkDestroyDevice(g_device, nullptr);
 	}
 
-	VkLogicalDevice create_logical_device(VkPhysicalDevice physical_device,
+	VkDevice create_logical_device(VkPhysicalDevice physical_device,
 		const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_indices,
 		const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_queues,
 		const std::array<std::vector<float>, g_QUEUE_FAMILY_COUNT>& queue_priorities,
 		void* p_features,
 		const std::vector<const char*>& extensions) {
 
-		VkLogicalDevice logical_device{};
+		VkDevice logical_device{};
 
 		std::vector<VkDeviceQueueCreateInfo> queue_creates(g_QUEUE_FAMILY_COUNT);
 		for(int i = 0; i < g_QUEUE_FAMILY_COUNT; ++i) {

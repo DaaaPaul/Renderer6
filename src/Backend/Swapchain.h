@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "Utility/RuntimeError.hpp"
 
 namespace Swapchain {
 	inline VkSwapchainKHR g_swapchain{};
@@ -24,6 +23,6 @@ namespace Swapchain {
 	VkSwapchainKHR create_swapchain();
 
 	VkExtent2D get_image_extent();
-	RuntimeError check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace);
-	RuntimeError check_present_mode(VkPresentModeKHR present_mode);
+	void check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace);
+	void check_present_mode(VkPresentModeKHR present_mode);
 }

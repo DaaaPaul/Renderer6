@@ -1,6 +1,7 @@
 #include "Backend/PipelineLayouts.h"
 #include "Backend/LogicalDevice.h"
 #include "Memory/MemoryManager.h"
+#include "Utility/Vulkan.h"
 
 namespace PipelineLayouts {
 	void init() {
@@ -11,7 +12,7 @@ namespace PipelineLayouts {
 			VkPushConstantRange{
 				.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
 				.offset = 0,
-				.size = POINTER_SIZE(1)
+				.size = 8
 			}
 		};
 		g_layouts.push_back(Vulkan::create_pipeline_layout(descriptor_set_layouts, push_constant_ranges));

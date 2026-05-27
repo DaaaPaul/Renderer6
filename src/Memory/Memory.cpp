@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include "Memory.hpp"
 #include "Backend/PhysicalDevice.h"
+#include "Utility/Vulkan.h"
 
 Memory::Memory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
 	properties{ get_properties(p_buffers, p_images, memory_property_flags) }, p_buffers(p_buffers), p_images(p_images) {

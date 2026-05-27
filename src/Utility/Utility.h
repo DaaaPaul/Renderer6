@@ -1,65 +1,28 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <ktx.h>
 #include <string>
 #include <vector>
-#include <stdexcept>
 #include <iostream>
-#include <memory>
-#include <algorithm>
-#include "Geometry/Vertex.hpp"
-#include "Backend/Window.h"
-#include "Utility/Vulkan.h"
+#include <glm/glm.hpp>
 
 #define PRINTLN(x) std::cout << x << '\n'
 
-#define UINT32(vector_size) static_cast<uint32_t>(vector_size)
-
-#define POINTER_SIZE(num) (8 * num)
-
 #define DA_PI 3.14159274f
 
-#define GLFW_PRESSED(glfw_key) glfwGetKey(Window::g_glfw_window, glfw_key) == GLFW_PRESS
-
-#define VK_CHECK(create_command, error_message) \
-	if(create_command != VK_SUCCESS) { \
-        throw std::runtime_error(error_message); \
+namespace Utility {
+	inline bool equal(float float1, float float2, float epsilon = 0.001f) {
+		return fabs(float1 - float2) <= (((float1 > float2) ? float1 : float2) * epsilon + epsilon);
 	}
 
-#define VK_NO_FLAGS 0U
+	inline bool equal(glm::vec3 v1, glm::vec3 v2, float epsilon = 0.001f) {
+		return equal(v1.x, v2.x, epsilon) && equal(v1.y, v2.y, epsilon) && equal(v1.z, v2.z, epsilon);
+	}
 
-using VkLogicalDevice = VkDevice;
-
-namespace Utility {
 	std::vector<std::string> to_string(const std::vector<const char*>& c_strings);
 
 	bool contains_all(std::vector<std::string> these_strings, std::vector<std::string> contain_these);
 
 	float random();
 
-	inline bool equal(float float1, float float2, float epsilon = 0.001f) {
-		return fabs(float1 - float2) <= (((float1 > float2) ? float1 : float2) * epsilon + epsilon);
-	}
-
-	inline bool equal(glm::vec3 vec3_1, glm::vec3 vec3_2, float epsilon = 0.001f) {
-		return equal(vec3_1.x, vec3_2.x, epsilon) && equal(vec3_1.y, vec3_2.y, epsilon) && equal(vec3_1.z, vec3_2.z, epsilon);
-	}
-
-	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
-
-	ktxTexture2* load_ktx_texture(const char* ktx_path);
-
 	std::vector<char> get_file_bytes(const std::string& file_path);
-
-	template<class T>
-	std::vector<T*> to_pointers(std::vector<T>& objects) {
-		std::vector<T*> pointers(objects.size());
-
-		for(int i = 0; i < objects.size(); ++i) {
-			pointers[i] = &objects[i];
-		}
-
-		return pointers;
-	}
 }

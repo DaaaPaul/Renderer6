@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include "Engine/Camera.hpp"
+#include "Engine/CameraComponent.hpp"
 
 namespace Engine {	
 	struct AcquireStatus {

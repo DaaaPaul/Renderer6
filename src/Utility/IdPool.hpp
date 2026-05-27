@@ -1,5 +1,8 @@
 #pragma once
 
+#include <unordered_map>
+#include <memory>
+#include <type_traits>
 #include "Engine/ComponentTypeId.hpp"
 
 template<class Id, class T>

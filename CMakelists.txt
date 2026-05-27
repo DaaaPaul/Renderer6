@@ -23,10 +23,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/FeatureChain.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Load.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/IdPool.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Ids.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/RuntimeError.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Vulkan.cpp
@@ -64,8 +62,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/Vertex.hpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Camera.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Camera.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/ComponentTypeId.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/ComponentTypeId.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Component.hpp

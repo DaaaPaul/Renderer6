@@ -9,7 +9,7 @@
 #include "Backend/PipelineLayouts.h"
 #include "Backend/ShaderModule.h"
 #include "Backend/Pipelines.h"
-#include "Utility/Load.h"
+#include "Utility/Vulkan.h"
 #include "Memory/MemoryManager.h"
 #include "Engine/Engine.h"
 #include "Engine/FrameKits.h"
@@ -24,7 +24,7 @@ int main() {
 		LogicalDevice::init();
 		Swapchain::init();
 
-		Load::load();
+		Vulkan::load();
 		MemoryManager::init();
 
 		PipelineLayouts::init();

@@ -2,6 +2,7 @@
 #include "Utility/Ids.h"
 #include "Backend/Swapchain.h"
 #include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 #include "Geometry/TransformMatrices.hpp"
 #include "Backend/PhysicalDevice.h"
 #include "Texture.hpp"
@@ -14,7 +15,7 @@ namespace MemoryManager {
 	void init() {
 		std::vector<uint32_t> gfx_queue_family_index{ PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT) };
 
-		Utility::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", g_vertices, g_indices);
+		Vulkan::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", g_vertices, g_indices);
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(Vertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 

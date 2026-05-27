@@ -1,5 +1,5 @@
 #include "ImageView.hpp"
-#include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 #include "Backend/LogicalDevice.h"
 
 ImageView::ImageView(VkImageViewCreateFlags create_flags,

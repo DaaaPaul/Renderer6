@@ -12,7 +12,7 @@
 #include "Backend/PipelineLayouts.h"
 #include "Utility/Utility.h"
 #include "Geometry/TransformMatrices.hpp"
-#include "Engine/Camera.hpp"
+#include "Engine/CameraComponent.hpp"
 #include "Utility/Vulkan.h"
 #include "Memory/MemoryManager.h"
 #include "Memory/VertexBuffer.hpp"

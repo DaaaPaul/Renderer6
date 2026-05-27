@@ -1,10 +1,35 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <ktx.h>
 #include <vector>
 #include <string>
+#include <stdexcept>
+#include "Backend/Instance.h"
+#include "Geometry/Vertex.hpp"
+
+#define UINT32(vector_size) static_cast<uint32_t>(vector_size)
+
+#define VK_CHECK(create_command, error_message) \
+	if(create_command != VK_SUCCESS) { \
+        throw std::runtime_error(error_message); \
+	}
+
+#define VK_NO_FLAGS 0U
 
 namespace Vulkan {
+	inline PFN_vkTransitionImageLayoutEXT vkTransitionImageLayoutEXT{};
+	inline PFN_vkCopyMemoryToImageEXT vkCopyMemoryToImageEXT{};
+
+	inline void load() {
+		vkTransitionImageLayoutEXT = reinterpret_cast<PFN_vkTransitionImageLayoutEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkTransitionImageLayoutEXT"));
+		vkCopyMemoryToImageEXT = reinterpret_cast<PFN_vkCopyMemoryToImageEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkCopyMemoryToImageEXT"));
+	}
+
+	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+
+	ktxTexture2* load_ktx_texture(const char* ktx_path);
+
 	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, VkImageSubresourceRange subresource_range, VkPipelineStageFlags2 stage1, VkAccessFlags2 access1, VkPipelineStageFlags2 stage2, VkAccessFlags2 access2, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t graphics_queue_family_index);
 
 	VkResult begin_one_time_cmd_buffer(VkCommandPool& cmdPool, VkCommandBuffer& cmdBuffer, uint32_t qfIndex);

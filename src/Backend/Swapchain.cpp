@@ -5,14 +5,15 @@
 #include "Backend/PhysicalDevice.h"
 #include "Backend/Instance.h"
 #include "Backend/Window.h"
+#include "Utility/Vulkan.h"
 
 namespace Swapchain {
 	void init() {
 		g_surface = Vulkan::create_surface();
 
 		g_image_extent = get_image_extent();
-		check_format_colorspace(g_IMAGE_FORMAT, g_IMAGE_COLOR_SPACE).throw_if_error();
-		check_present_mode(g_PRESENT_MODE).throw_if_error();
+		check_format_colorspace(g_IMAGE_FORMAT, g_IMAGE_COLOR_SPACE);
+		check_present_mode(g_PRESENT_MODE);
 
 		g_swapchain = create_swapchain();
 		g_images = Vulkan::get_swapchain_images(g_swapchain);
@@ -79,7 +80,7 @@ namespace Swapchain {
 		return image_extent;
 	}
 
-	RuntimeError check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace) {
+	void check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace) {
 		uint32_t format_colorspace_count{};
 		vkGetPhysicalDeviceSurfaceFormatsKHR(PhysicalDevice::g_physical_device, g_surface, &format_colorspace_count, nullptr);
 		std::vector<VkSurfaceFormatKHR> format_colorspace_pairs(format_colorspace_count);
@@ -94,13 +95,11 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			return RuntimeError("check_format_colorspace: requested format colorspace pair not supported");
-		} else {
-			return RuntimeError{};
+			throw std::runtime_error("check_format_colorspace: requested format colorspace pair not supported");
 		}
 	}
 
-	RuntimeError check_present_mode(VkPresentModeKHR present_mode) {
+	void check_present_mode(VkPresentModeKHR present_mode) {
 		uint32_t present_mode_count{};
 		vkGetPhysicalDeviceSurfacePresentModesKHR(PhysicalDevice::g_physical_device, g_surface, &present_mode_count, nullptr);
 		std::vector<VkPresentModeKHR> present_modes(present_mode_count);
@@ -115,9 +114,7 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			return RuntimeError("check_present_mode: requested present mode not supported");
-		} else {
-			return RuntimeError{};
+			throw std::runtime_error("check_present_mode: requested present mode not supported");
 		}
 	}
 }

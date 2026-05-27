@@ -7,7 +7,7 @@
 #include "Backend/PhysicalDevice.h"
 #include "Backend/LogicalDevice.h"
 #include "Backend/Instance.h"
-#include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 
 namespace PhysicalDevice {
 	void init() {

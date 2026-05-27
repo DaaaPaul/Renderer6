@@ -2,7 +2,6 @@
 
 #include <vulkan/vulkan_core.h>
 #include <vector>
-#include "Utility/RuntimeError.hpp"
 
 namespace Instance {
 	inline VkInstance g_instance{};
@@ -16,8 +15,8 @@ namespace Instance {
 	void init();
 	void destroy();
 
-	RuntimeError check_have_layers(const std::vector<const char*>& needed_layers);
-	RuntimeError check_have_extensions(const std::vector<const char*>& needed_extensions);
+	void check_have_layers(const std::vector<const char*>& needed_layers);
+	void check_have_extensions(const std::vector<const char*>& needed_extensions);
 
 	VkInstance create_instance();
 }

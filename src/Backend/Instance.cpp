@@ -4,7 +4,9 @@
 #include <stdexcept>
 #include <cstdint>
 #include "Backend/Instance.h"
+#include "Backend/Window.h"
 #include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 
 namespace Instance {
 	std::vector<const char*> init_extensions() {
@@ -19,8 +21,8 @@ namespace Instance {
 	}
 	
 	void init() {
-		check_have_layers(g_layers).throw_if_error();
-		check_have_extensions(g_extensions).throw_if_error();
+		check_have_layers(g_layers);
+		check_have_extensions(g_extensions);
 		g_instance = create_instance();
 	}
 
@@ -28,7 +30,7 @@ namespace Instance {
 		vkDestroyInstance(g_instance, nullptr);
 	}
 
-	RuntimeError check_have_extensions(const std::vector<const char*>& needed_extensions) {
+	void check_have_extensions(const std::vector<const char*>& needed_extensions) {
 		uint32_t have_count{};
 		vkEnumerateInstanceExtensionProperties(nullptr, &have_count, nullptr);
 		std::vector<VkExtensionProperties> extensions(have_count);
@@ -39,14 +41,12 @@ namespace Instance {
 			extension_names.emplace_back(extension.extensionName);
 		}
 
-		if(Utility::contains_all(extension_names, Utility::to_string(needed_extensions))) {
-			return RuntimeError{};
-		} else {
-			return RuntimeError("Your GPU does not have the required VkInstance extensions");
+		if(!Utility::contains_all(extension_names, Utility::to_string(needed_extensions))) {
+			throw std::runtime_error("check_have_extensions: does not have the required VkInstance extensions");
 		}
 	}
 
-	RuntimeError check_have_layers(const std::vector<const char*>& needed_layers) {
+	void check_have_layers(const std::vector<const char*>& needed_layers) {
 		uint32_t have_count{};
 		vkEnumerateInstanceLayerProperties(&have_count, nullptr);
 		std::vector<VkLayerProperties> layers(have_count);
@@ -57,10 +57,8 @@ namespace Instance {
 			layer_names.emplace_back(layer.layerName);
 		}
 
-		if(Utility::contains_all(layer_names, Utility::to_string(needed_layers))) {
-			return RuntimeError{};
-		} else {
-			return RuntimeError("Your GPU does not have the required Vulkan layers");
+		if(!Utility::contains_all(layer_names, Utility::to_string(needed_layers))) {
+			throw std::runtime_error("check_have_layers: does not have the required VkInstance layers");
 		}
 	}
 

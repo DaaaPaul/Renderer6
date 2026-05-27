@@ -1,5 +1,8 @@
-#include "Engine/Camera.hpp"
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/gtc/matrix_transform.hpp>
+#include "Engine/CameraComponent.hpp"
 #include "Backend/Swapchain.h"
+#include "Backend/Window.h"
 
 bool Basis::is_normalized(const glm::vec3& vec3) {
 	return Utility::equal(glm::normalize(vec3), vec3);
@@ -53,21 +56,21 @@ Camera::Camera(const glm::vec3& pos, const Angles& starting_rotation, const floa
 void Camera::update_position(const float& delta_time) {
 	const float MOVE = SPEED * delta_time;
 
-	if(GLFW_PRESSED(GLFW_KEY_W)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_W) == GLFW_PRESS) {
 		pos += -(MOVE * basis.z);
 	}
-	if(GLFW_PRESSED(GLFW_KEY_S)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_S) == GLFW_PRESS) {
 		pos += MOVE * basis.z;
 	}
-	if(GLFW_PRESSED(GLFW_KEY_A)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_A) == GLFW_PRESS) {
 		pos += -(MOVE * basis.x);
 	}
-	if(GLFW_PRESSED(GLFW_KEY_D)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_D) == GLFW_PRESS) {
 		pos += MOVE * basis.x;
 	}
-	if(GLFW_PRESSED(GLFW_KEY_SPACE) && GLFW_PRESSED(GLFW_KEY_LEFT_SHIFT)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE) == GLFW_PRESS && glfwGetKey(Window::g_glfw_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		pos += -(MOVE * basis.y);
-	} else if(GLFW_PRESSED(GLFW_KEY_SPACE)) {
+	} else if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE)) {
 		pos += MOVE * basis.y;
 	}
 }

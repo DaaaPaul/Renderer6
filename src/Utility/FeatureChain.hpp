@@ -1,7 +1,7 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include <cassert>
-#include "Utility/Utility.h"
 
 // variadic class template declaration
 // goal is just to give leeway for the existance of below 2 specializations

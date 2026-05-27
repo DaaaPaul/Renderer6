@@ -1,4 +1,5 @@
 #include "Image.hpp"
+#include "Utility/Vulkan.h"
 
 Image::Image(VkImageCreateFlags create_flags, 
 			 VkImageType image_type,    

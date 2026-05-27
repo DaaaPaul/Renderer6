@@ -5,7 +5,7 @@
 #include "Utility/FeatureChain.hpp"
 
 namespace LogicalDevice {
-	inline VkLogicalDevice g_device{};
+	inline VkDevice g_device{};
 	inline std::vector<VkQueue> g_queues{};
 	inline constexpr uint32_t g_QUEUE_FAMILY_COUNT = 1;
 	inline constexpr std::array<VkQueueFlags, g_QUEUE_FAMILY_COUNT> g_QUEUE_FAMILY_CAPABILITIES{
@@ -84,7 +84,7 @@ namespace LogicalDevice {
 	void init();
 	void destroy();
 
-	VkLogicalDevice create_logical_device(VkPhysicalDevice physical_device,
+	VkDevice create_logical_device(VkPhysicalDevice physical_device,
 		const std::array<uint32_t, LogicalDevice::g_QUEUE_FAMILY_COUNT>& queue_family_indices,
 		const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_counts,
 		const std::array<std::vector<float>, g_QUEUE_FAMILY_COUNT>& queue_priorities,

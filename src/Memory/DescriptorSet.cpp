@@ -1,6 +1,6 @@
 #include "DescriptorSet.hpp"
 #include "Backend/LogicalDevice.h"
-#include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 
 DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings) :
 	pool{ Vulkan::create_one_set_pool(bindings) }, 
