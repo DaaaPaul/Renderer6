@@ -1,24 +1,30 @@
-#include <GLFW/glfw3.h>
-#include <vulkan/vulkan_core.h>
-#include <chrono>
-#include <vector>
-#include "Engine/Engine.h"
-#include "Engine/FrameKits.h"
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
+#include "Backend/PipelineLayouts.h"
+#include "Backend/Pipelines.h"
 #include "Backend/Swapchain.h"
 #include "Backend/Window.h"
-#include "Backend/Pipelines.h"
-#include "Backend/PipelineLayouts.h"
-#include "Utility/Utility.h"
-#include "Geometry/TransformMatrices.hpp"
 #include "Engine/CameraComponent.hpp"
-#include "Utility/Vulkan.h"
-#include "Memory/MemoryManager.h"
-#include "Memory/VertexBuffer.hpp"
+#include "Engine/Engine.h"
+#include "Engine/FrameKits.h"
+#include "Geometry/TransformMatrices.hpp"
+#include "Memory/DepthImage.hpp"
+#include "Memory/HostMemory.hpp"
 #include "Memory/IndexBuffer.hpp"
+#include "Memory/MemoryManager.h"
 #include "Memory/UniformBuffer.hpp"
+#include "Memory/VertexBuffer.hpp"
+#include "Memory/Buffer.hpp"
+#include "Memory/ImageView.hpp"
 #include "Utility/Ids.h"
+#include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
+#include <chrono>
+#include <cstdint>
+#include <GLFW/glfw3.h>
+#include <glm/fwd.hpp>
+#include <vector>
+#include <vulkan/vulkan_core.h>
 
 namespace Engine {
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {		
@@ -132,8 +138,6 @@ namespace Engine {
 			float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
 			total_delta_time += delta_time;
 			++total_loops;
-
-			PRINTLN(delta_time);
 		}
 
 		PRINTLN("AVERAGE: " << (total_delta_time / total_loops));
@@ -208,9 +212,9 @@ namespace Engine {
 
 	void update(float delta_time) {
 		g_camera.update_position(delta_time);
-
 		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
 
+		/* YAYAYA */
 		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[FrameKits::g_frame_index]), &transformation, sizeof(transformation));
 	}
 }

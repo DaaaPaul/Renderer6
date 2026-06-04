@@ -1,19 +1,22 @@
+#include <cstdint>
+#include <vector>
+#include "Utility/IdPool.hpp"
 #include "Geometry/Vertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
 #include "Buffer.hpp"
-#include "DepthImage.hpp"
+#include "Image.hpp"
 #include "DescriptorSet.hpp"
 #include "ImageView.hpp"
-#include "Utility/IdPool.hpp"
+#include "Sampler.hpp"
 
 namespace MemoryManager {
-	inline IdPool<uint32_t, Buffer> g_buffers{};
-	inline IdPool<uint32_t, Image> g_images{};
-	inline IdPool<uint32_t, ImageView> g_image_views{};
+	inline IdPool<uint32_t, Buffer> g_buffers;
+	inline IdPool<uint32_t, Image> g_images;
+	inline IdPool<uint32_t, ImageView> g_image_views;
 	
 	inline DescriptorSet g_descriptor_set;
-	inline VkSampler g_sampler{};
+	inline Sampler g_sampler;
 
 	inline std::vector<Vertex> g_vertices;
 	inline std::vector<uint32_t> g_indices;

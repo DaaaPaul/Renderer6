@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <vector>
-#include <memory>
+#include <cstdint>
 #include "Backend/LogicalDevice.h"
 
 class Buffer {
@@ -10,13 +10,14 @@ class Buffer {
 	VkBuffer buffer{};
 	
 	public:
-	virtual ~Buffer() = default;
 	explicit Buffer(VkBufferCreateFlags create_flags, 
 					VkDeviceSize size,
 					VkBufferUsageFlags usage_flags, 
 					VkSharingMode sharing_mode,
 					const std::vector<uint32_t>& queue_family_indices);
-	virtual void destroy() noexcept;
+	virtual ~Buffer() {
+		vkDestroyBuffer(g_device, buffer, nullptr);
+	};
 
 	VkBuffer get_buffer() const { 
 		return buffer; 

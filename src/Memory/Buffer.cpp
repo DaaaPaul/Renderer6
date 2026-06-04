@@ -1,3 +1,7 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
+#include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
 #include "Buffer.hpp"
 #include "Utility/Vulkan.h"
@@ -18,10 +22,6 @@ Buffer::Buffer(VkBufferCreateFlags create_flags,
 	};
 
 	VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "Buffer: failed")
-}
-
-void Buffer::destroy() noexcept {
-	vkDestroyBuffer(g_device, buffer, nullptr);
 }
 
 void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {

@@ -1,5 +1,9 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
+#include "Image.hpp"
 #include "DepthImage.hpp"
-#include "Utility/Utility.h"
+#include "Utility/Vulkan.h"
 
 DepthImage::DepthImage(VkFormat format, 
 					   uint32_t width,

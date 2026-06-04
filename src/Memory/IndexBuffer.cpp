@@ -1,4 +1,8 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
 #include "IndexBuffer.hpp"
+#include "Buffer.hpp"
 #include "Utility/Vulkan.h"
 
 IndexBuffer::IndexBuffer(VkDeviceSize size, VkSharingMode sharing_mode, const std::vector<uint32_t>& queue_family_indices) :

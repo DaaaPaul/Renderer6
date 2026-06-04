@@ -1,10 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <ktx.h>
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <cstdint>
 #include "Backend/Instance.h"
 #include "Geometry/Vertex.hpp"
 
@@ -58,7 +59,7 @@ namespace Vulkan {
 
 	VkDescriptorSetLayout create_descriptor_set_layout(const std::vector<VkDescriptorSetLayoutBinding>& bindings, const std::vector<VkDescriptorBindingFlags>& binding_flags = {});
 
-	VkDescriptorPool create_one_set_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+	VkDescriptorPool create_descriptor_pool(const std::vector<std::vector<VkDescriptorSetLayoutBinding>>& all_bindings);
 
 	VkDescriptorSet create_descriptor_set(VkDescriptorSetLayout layout, VkDescriptorPool pool);
 

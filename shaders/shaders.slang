@@ -14,8 +14,8 @@ struct TransformMatrices {
     float4x4 projection_matrix;
 };
 
-[vk::binding(0, 0)] Texture2D textures[];
-[vk::binding(1, 0)] SamplerState samplers[];
+[vk::binding(0, 0)] Texture2D textures;
+[vk::binding(1, 0)] SamplerState samplers;
 [vk::push_constant] TransformMatrices* p_transform_matrices;
 
 [shader("vertex")]
@@ -32,5 +32,5 @@ VertexOut vertex_shader(VertexIn input) {
 
 [shader("fragment")]
 float4 fragment_shader(VertexOut interpolated_output) {
-    return textures[0].Sample(samplers[0], interpolated_output.tex_coord);
+    return textures.Sample(samplers, interpolated_output.tex_coord);
 }

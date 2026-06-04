@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Memory.hpp"
+#include "Utility/Utility.h"
 
 class HostMemory : public Memory {
 	private:

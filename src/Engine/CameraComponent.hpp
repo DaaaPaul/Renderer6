@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/fwd.hpp>
 #include <GLFW/glfw3.h>
 #include "Utility/Utility.h"
 

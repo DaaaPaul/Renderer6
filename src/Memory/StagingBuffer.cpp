@@ -1,3 +1,7 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
+#include "Buffer.hpp"
 #include "StagingBuffer.hpp"
 #include "Utility/Vulkan.h"
 

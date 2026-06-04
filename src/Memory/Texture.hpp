@@ -1,8 +1,11 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
 #include <ktx.h>
 #include "Image.hpp"
+#include "Backend/LogicalDevice.h"
 
 struct KtxTexture {
 	ktxTexture2* p_ktx_texture{};
@@ -20,7 +23,10 @@ class Texture : public KtxTexture, public Image {
 					 VkSampleCountFlagBits sample_count, 
 					 VkSharingMode sharing_mode,
 					 const std::vector<uint32_t>& queue_family_indices);
-	void destroy() noexcept override;
+	~Texture() noexcept override {
+		vkDestroyImage(g_device, get_image(), nullptr);
+		ktxTexture_Destroy(ktxTexture(p_ktx_texture));
+	}
 
 	ktxTexture2* get_p_ktx_texture() const {
 		return p_ktx_texture;

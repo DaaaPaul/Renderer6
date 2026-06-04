@@ -8,6 +8,7 @@
 #include "Backend/LogicalDevice.h"
 #include "Backend/Instance.h"
 #include "Utility/Vulkan.h"
+#include "Utility/Utility.h"
 
 namespace PhysicalDevice {
 	void init() {

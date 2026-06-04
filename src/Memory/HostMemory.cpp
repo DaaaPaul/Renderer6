@@ -1,4 +1,13 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
+#include <cassert>
+#include <cstring>
+#include "Buffer.hpp"
+#include "Image.hpp"
+#include "Memory.hpp"
 #include "HostMemory.hpp"
+#include "Backend/LogicalDevice.h"
 #include "Utility/Vulkan.h"
 
 HostMemory::HostMemory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images) :
@@ -7,7 +16,6 @@ HostMemory::HostMemory(const std::vector<Buffer*>& p_buffers, const std::vector<
 }
 
 void HostMemory::destroy() noexcept {
-	vkUnmapMemory(g_device, memory);
 	vkFreeMemory(g_device, memory, nullptr);
 }
 

@@ -1,15 +1,27 @@
+#include <vulkan/vulkan_core.h>
+#include <cstdint>
+#include <vector>
 #include "MemoryManager.h"
+#include "HostMemory.hpp"
+#include "DeviceMemory.hpp"
 #include "Utility/Ids.h"
-#include "Backend/Swapchain.h"
-#include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
+#include "Utility/Utility.h"
 #include "Geometry/TransformMatrices.hpp"
+#include "Geometry/Vertex.hpp"
 #include "Backend/PhysicalDevice.h"
+#include "Backend/Swapchain.h"
+#include "Image.hpp"
 #include "Texture.hpp"
+#include "DepthImage.hpp"
+#include "ImageView.hpp"
+#include "Buffer.hpp"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "UniformBuffer.hpp"
 #include "StagingBuffer.hpp"
+#include "DescriptorSet.hpp"
+#include "Sampler.hpp"
 
 namespace MemoryManager {
 	void init() {
@@ -126,20 +138,23 @@ namespace MemoryManager {
 
 		VK_CHECK(Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
 
-		VkSamplerCreateInfo sampler_create{
-			.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-			.magFilter = VK_FILTER_LINEAR,
-			.minFilter = VK_FILTER_LINEAR,
-			.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-			.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			.anisotropyEnable = VK_TRUE,
-			.maxAnisotropy = PhysicalDevice::g_limits.maxSamplerAnisotropy,
-			.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-			.unnormalizedCoordinates = VK_FALSE
-		};
-		VK_CHECK(vkCreateSampler(g_device, &sampler_create, nullptr, &g_sampler), "MemoryManager::init(): failed to create sampler")
+		g_sampler = Sampler(
+			VK_NO_FLAGS,
+			VK_FILTER_LINEAR,
+			VK_FILTER_LINEAR,
+			VK_SAMPLER_MIPMAP_MODE_LINEAR,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			0.0f,
+			VK_TRUE,
+			PhysicalDevice::g_limits.maxSamplerAnisotropy,
+			VK_FALSE,
+			VK_COMPARE_OP_NEVER,
+			0.0f,
+			0.0f,
+			VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
+		);
 
 		g_descriptor_set = DescriptorSet({
 			VkDescriptorSetLayoutBinding{
@@ -171,12 +186,37 @@ namespace MemoryManager {
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
-				.sampler = g_sampler
+				.sampler = g_sampler.get_sampler()
 			}
 		);
 	}
-}
 
-void destroy() {
-	
+	void destroy() {
+		g_descriptor_set.destroy();
+		g_sampler.destroy();
+
+		g_image_views.remove(Ids::g_DEPTH_VIEW);
+		g_image_views.remove(Ids::g_SION_TEXTURE_VIEW);
+
+		g_device_memory_2.destroy();
+		g_device_memory_1.destroy();
+		g_host_memory.destroy();
+
+		Image* p1 = g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE);
+		Image* p2 = g_images.get<Texture>(Ids::g_SION_TEXTURE);
+
+		PRINTLN(p1->get_image());
+		PRINTLN(p2->get_image());
+
+		g_images.remove(Ids::g_DEPTH_IMAGE);
+		g_images.remove(Ids::g_SION_TEXTURE);
+
+		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
+			g_buffers.remove(Ids::g_TRANSFORM_MATRICES[i]);
+		}
+		g_buffers.remove(Ids::g_VERTEX_BUFFER);
+		g_buffers.remove(Ids::g_INDEX_BUFFER);
+		g_buffers.remove(Ids::g_VERTEX_STAGE);
+		g_buffers.remove(Ids::g_INDEX_STAGE);
+	}
 }

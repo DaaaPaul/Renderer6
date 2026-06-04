@@ -21,7 +21,6 @@ class Memory {
 	std::vector<Image*> p_images{};
 
 	public:
-	virtual ~Memory() = default;
 	Memory() = default;
 
 	explicit Memory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);

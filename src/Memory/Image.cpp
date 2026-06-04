@@ -1,4 +1,8 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
 #include "Image.hpp"
+#include "Backend/LogicalDevice.h"
 #include "Utility/Vulkan.h"
 
 Image::Image(VkImageCreateFlags create_flags, 
@@ -28,8 +32,4 @@ Image::Image(VkImageCreateFlags create_flags,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 	VK_CHECK(vkCreateImage(g_device, &create, nullptr, &image), "Image: failed to create image")
-}
-
-void Image::destroy() noexcept {
-	vkDestroyImage(g_device, image, nullptr);
 }

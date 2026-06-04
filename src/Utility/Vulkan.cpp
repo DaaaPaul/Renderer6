@@ -2,13 +2,21 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "tiny_gltf.h"
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <ktx.h>
+#include <vector>
+#include <unordered_map>
+#include <stdexcept>
+#include <string>
+#include <cassert>
+#include <cstdint>
+#include "Geometry/Vertex.hpp"
 #include "Utility/Vulkan.h"
 #include "Utility/Utility.h"
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
 #include "Backend/Instance.h"
-#include "Geometry/Vertex.hpp"
 #include "Backend/Window.h"
 
 namespace Vulkan {
@@ -338,21 +346,23 @@ namespace Vulkan {
 		return layout;
 	}
 
-	VkDescriptorPool create_one_set_pool(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
+	VkDescriptorPool create_descriptor_pool(const std::vector<std::vector<VkDescriptorSetLayoutBinding>>& all_bindings) {
 		VkDescriptorPool pool{};
-		std::vector<VkDescriptorPoolSize> poolSizes(bindings.size());
 
-		for(int i = 0; i < bindings.size(); ++i) {
-			poolSizes[i] = VkDescriptorPoolSize{
-				.type = bindings[i].descriptorType, 
-				.descriptorCount = bindings[i].descriptorCount
-			};
+		std::vector<VkDescriptorPoolSize> pool_sizes;
+
+		for(const std::vector<VkDescriptorSetLayoutBinding>& set_bindings : all_bindings) {
+			for(const VkDescriptorSetLayoutBinding& binding : set_bindings) {
+				pool_sizes.emplace_back(binding.descriptorType, binding.descriptorCount);
+			}
 		}
+
 		VkDescriptorPoolCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-			.maxSets = 1,
-			.poolSizeCount = UINT32(poolSizes.size()),
-			.pPoolSizes = poolSizes.data()
+			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+			.maxSets = UINT32(all_bindings.size()),
+			.poolSizeCount = UINT32(pool_sizes.size()),
+			.pPoolSizes = pool_sizes.data()
 		};
 		
 		VK_CHECK(vkCreateDescriptorPool(g_device, &create, nullptr, &pool), "create_pool: failed")

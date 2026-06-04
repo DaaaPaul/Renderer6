@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vulkan/vulkan_core.h>
+#include <vector>
+#include <cstdint>
 #include "Memory/Buffer.hpp"
 
 class VertexBuffer : public Buffer {

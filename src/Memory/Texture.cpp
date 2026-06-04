@@ -1,8 +1,10 @@
-#include <stdexcept>
+#include <vulkan/vulkan_core.h>
+#include <ktx.h>
+#include <vector>
+#include <cstdint>
+#include "Image.hpp"
 #include "Texture.hpp"
-#include "Backend/PhysicalDevice.h"
 #include "Backend/LogicalDevice.h"
-#include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
 
 Texture::Texture(const char* ktx_path,
@@ -23,11 +25,6 @@ Texture::Texture(const char* ktx_path,
 		  sharing_mode,
 		  queue_family_indices) {
 
-}
-
-void Texture::destroy() noexcept {
-	vkDestroyImage(g_device, get_image(), nullptr);
-	ktxTexture_Destroy(ktxTexture(p_ktx_texture));
 }
 
 VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_ktx_texture) {

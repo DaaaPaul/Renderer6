@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cmath>
+#include <glm/detail/type_vec3.hpp>
+#include <glm/fwd.hpp>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <glm/glm.hpp>
 
 #define PRINTLN(x) std::cout << x << '\n'
 

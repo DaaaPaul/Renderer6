@@ -1,18 +1,14 @@
+#include <vulkan/vulkan_core.h>
+#include <vector>
 #include "DescriptorSet.hpp"
 #include "Backend/LogicalDevice.h"
 #include "Utility/Vulkan.h"
 
 DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings) :
-	pool{ Vulkan::create_one_set_pool(bindings) }, 
+	pool{ Vulkan::create_descriptor_pool({ bindings }) }, 
 	layout{ Vulkan::create_descriptor_set_layout(bindings) }, 
 	descriptor_set{ Vulkan::create_descriptor_set(layout, pool) } {
 
-}
-
-void DescriptorSet::destroy() noexcept {
-	vkFreeDescriptorSets(g_device, pool, 1, &descriptor_set);
-	vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
-	vkDestroyDescriptorPool(g_device, pool, nullptr);
 }
 
 void DescriptorSet::write(Write write_info) {

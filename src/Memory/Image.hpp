@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 #include <vector>
+#include <cstdint>
 #include "Backend/LogicalDevice.h"
 
 class Image {
@@ -9,9 +10,6 @@ class Image {
 	VkImage image{};
 
 	public:
-	virtual ~Image() = default;
-	Image() = default;
-
 	explicit Image(VkImageCreateFlags create_flags, 
 				   VkImageType image_type,    
 				   VkFormat format, 
@@ -22,7 +20,9 @@ class Image {
 				   VkImageUsageFlags usage,
 				   VkSharingMode sharing_mode, 
 				   const std::vector<uint32_t>& queue_family_indices);
-	virtual void destroy() noexcept;
+	virtual ~Image() noexcept {
+		vkDestroyImage(g_device, image, nullptr);
+	}
 
 	VkImage get_image() const { 
 		return image; 

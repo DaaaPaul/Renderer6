@@ -20,11 +20,11 @@ int main() {
 
 		Window::init();
 		Instance::init();
+		Vulkan::load();
 		PhysicalDevice::init();
 		LogicalDevice::init();
 		Swapchain::init();
 
-		Vulkan::load();
 		MemoryManager::init();
 
 		PipelineLayouts::init();
@@ -43,8 +43,10 @@ int main() {
 		Pipelines::clear();
 		ShaderModule::clear();
 		PipelineLayouts::clear();
-		Swapchain::destroy();
 
+		MemoryManager::destroy();
+
+		Swapchain::destroy();
 		LogicalDevice::destroy();
 		Instance::destroy();
 		Window::destroy();
