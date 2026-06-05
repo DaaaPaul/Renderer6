@@ -61,16 +61,17 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.hpp
 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/Vertex.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/ComponentTypeId.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/ComponentTypeId.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Component.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Engine.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Engine.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/EntityManager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/EntityManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Events.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Events.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FrameKits.cpp

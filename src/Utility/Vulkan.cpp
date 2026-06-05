@@ -19,6 +19,22 @@
 #include "Backend/Instance.h"
 #include "Backend/Window.h"
 
+std::ostream& operator<<(std::ostream& os, glm::vec3 const& vec3) {
+	return os << '[' << vec3.x << ", " << vec3.y << ", " << vec3.z << ']';
+}
+
+std::ostream& operator<<(std::ostream& os, glm::vec4 const& vec4) {
+	return os << '[' << vec4.x << ", " << vec4.y << ", " << vec4.z << ", " << vec4.w << ']';
+}
+
+std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4) {
+	return os << 
+		mat4[0] << '\n' <<
+		mat4[1] << '\n' <<
+		mat4[2] << '\n' <<
+		mat4[3];
+}
+
 namespace Vulkan {
 	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
 		tinygltf::Model model{};

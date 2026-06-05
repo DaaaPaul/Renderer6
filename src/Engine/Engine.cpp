@@ -4,9 +4,10 @@
 #include "Backend/Pipelines.h"
 #include "Backend/Swapchain.h"
 #include "Backend/Window.h"
-#include "Engine/CameraComponent.hpp"
-#include "Engine/Engine.h"
-#include "Engine/FrameKits.h"
+#include "CameraComponent.hpp"
+#include "Engine.h"
+#include "FrameKits.h"
+#include "EntityManager.h"
 #include "Geometry/TransformMatrices.hpp"
 #include "Memory/DepthImage.hpp"
 #include "Memory/HostMemory.hpp"
@@ -98,7 +99,7 @@ namespace Engine {
 		frame_kit.progress_sync();
 
 		AcquireStatus acquire = acquire_sc_image(frame_kit.sync_kit.guard);
-		if(acquire.result == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized) {
+		if(acquire.result == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
 			return;
 		}
@@ -112,7 +113,7 @@ namespace Engine {
 
 		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[0].signal_val);
 		
-		if(present_sc_image(acquire.sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT)) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_resized) {
+		if(present_sc_image(acquire.sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT)) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
 			return;
 		}
@@ -135,7 +136,7 @@ namespace Engine {
 			render_next();
 			after = std::chrono::high_resolution_clock::now();
 
-			float delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
+			delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
 			total_delta_time += delta_time;
 			++total_loops;
 		}
@@ -200,7 +201,7 @@ namespace Engine {
 
 		Swapchain::recreate();
 		// TODO: add functionality to recreate depth resources
-		Window::g_window_resized = false;
+		Window::g_window_user_pointer->window_resized = false;
 		FrameKits::recreate();
 	}
 
@@ -211,10 +212,11 @@ namespace Engine {
 	}
 
 	void update(float delta_time) {
-		g_camera.update_position(delta_time);
-		TransformMatrices transformation(glm::mat4(1.0f), Camera::to_view_matrix(g_camera), Camera::to_projection_matrix(g_camera));
+		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
+		camera_component->set_position(CameraComponent::process_position(camera_component->get_basis(), camera_component->get_position(), delta_time));
+		
+		TransformMatrices transformation(glm::mat4(1.0f), CameraComponent::to_view_matrix(*camera_component), CameraComponent::to_projection_matrix(*camera_component));
 
-		/* YAYAYA */
 		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[FrameKits::g_frame_index]), &transformation, sizeof(transformation));
 	}
 }

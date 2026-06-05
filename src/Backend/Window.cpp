@@ -35,7 +35,7 @@ namespace Window {
 		get_window_extent_independant();
 		#endif
 		
-		WindowCreated window_create = 
+		WindowInfo window_create = 
 		#ifdef WINDOW_MONITOR_MODE
 		create_glfw_window_monitor(window_extent);
 		#else
@@ -63,34 +63,29 @@ namespace Window {
 		return g_DEBUG_EXTENT;
 	}
 
-	WindowCreated create_glfw_window_monitor(const Extent& extent) {
+	WindowInfo create_glfw_window_monitor(const Extent& extent) {
 		return {
 			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, glfwGetPrimaryMonitor(), nullptr),
 			[]() -> void {
 				glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-				glfwSetWindowUserPointer(g_glfw_window, g_p_window_resized);
+				glfwSetWindowUserPointer(g_glfw_window, g_window_user_pointer);
 				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
-				glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
-				glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
+				glfwSetScrollCallback(g_glfw_window, CameraComponent::scroll_callback);
+				glfwSetCursorPosCallback(g_glfw_window, CameraComponent::mouse_moved_callback);
 			}
 		};
 	}
 
-	WindowCreated create_glfw_window_independant(const Extent& extent) {
+	WindowInfo create_glfw_window_independant(const Extent& extent) {
 		return {
 			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, nullptr, nullptr),
 			[]() -> void {
-				glfwSetWindowUserPointer(g_glfw_window, g_p_window_resized);
+				glfwSetWindowUserPointer(g_glfw_window, g_window_user_pointer);
 				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
-				glfwSetScrollCallback(g_glfw_window, Camera::scroll_callback);
-				glfwSetCursorPosCallback(g_glfw_window, Camera::mouse_moved_callback);
+				glfwSetScrollCallback(g_glfw_window, CameraComponent::scroll_callback);
+				glfwSetCursorPosCallback(g_glfw_window, CameraComponent::mouse_moved_callback);
 			}
 		};
-	}
-
-	void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
-		bool* resized = reinterpret_cast<bool*>(glfwGetWindowUserPointer(glfw_window));
-		*resized = true;
 	}
 }

@@ -11,9 +11,9 @@
 #include "Sampler.hpp"
 
 namespace MemoryManager {
-	inline IdPool<uint32_t, Buffer> g_buffers;
-	inline IdPool<uint32_t, Image> g_images;
-	inline IdPool<uint32_t, ImageView> g_image_views;
+	inline IdPool<Buffer> g_buffers;
+	inline IdPool<Image> g_images;
+	inline IdPool<ImageView> g_image_views;
 	
 	inline DescriptorSet g_descriptor_set;
 	inline Sampler g_sampler;

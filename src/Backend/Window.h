@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 #include "Utility/Utility.h"
+#include "Engine/CameraComponent.hpp"
 
 #undef WINDOW_MONITOR_MODE
 
@@ -13,9 +14,14 @@ namespace Window {
 		int height{};
 	};
 
-	struct WindowCreated {
+	struct WindowInfo {
 		GLFWwindow* window{};
 		std::function<void()> setup{};
+	};
+
+	struct WindowUser {
+		bool window_resized{};
+		CameraComponent* camera_component{};
 	};
 
 	inline GLFWwindow* g_glfw_window{};
@@ -23,8 +29,8 @@ namespace Window {
 	inline constexpr Extent g_DEBUG_EXTENT{800, 600};
 	inline constexpr const char* g_WINDOW_TITLE = "Renderer6";
 
-	inline bool g_window_resized = false;
-	inline bool* g_p_window_resized = &g_window_resized;
+	inline WindowUser g_window_user{};
+	inline WindowUser* g_window_user_pointer = &g_window_user;
 
 	std::vector<const char*> get_instance_window_extensions();
 
@@ -33,8 +39,8 @@ namespace Window {
 
 	Extent get_window_extent_monitor();
 	Extent get_window_extent_independant();
-	WindowCreated create_glfw_window_monitor(const Extent& extent);
-	WindowCreated create_glfw_window_independant(const Extent& extent);
+	WindowInfo create_glfw_window_monitor(const Extent& extent);
+	WindowInfo create_glfw_window_independant(const Extent& extent);
 
 	inline float get_aspect_ratio() {
 		Extent extent = 
@@ -48,5 +54,7 @@ namespace Window {
 		return static_cast<float>(extent.width) / extent.height;
 	}
 
-	void window_resize_callback(GLFWwindow* glfw_window, int width, int height);
+	inline void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
+		g_window_user_pointer->window_resized = true;
+	}
 }

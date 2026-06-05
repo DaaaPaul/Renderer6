@@ -12,6 +12,7 @@
 #include "Utility/Vulkan.h"
 #include "Memory/MemoryManager.h"
 #include "Engine/Engine.h"
+#include "Engine/EntityManager.h"
 #include "Engine/FrameKits.h"
 
 int main() {
@@ -32,12 +33,14 @@ int main() {
 		Pipelines::init();
 
 		FrameKits::init();
+		EntityManager::init();
 
 		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
 		std::cout << "LOAD TIME: " << std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count() << '\n';
 		
 		Engine::run();
 
+		EntityManager::destroy();
 		FrameKits::destroy();
 
 		Pipelines::clear();
