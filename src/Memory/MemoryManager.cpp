@@ -202,12 +202,6 @@ namespace MemoryManager {
 		g_device_memory_1.destroy();
 		g_host_memory.destroy();
 
-		Image* p1 = g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE);
-		Image* p2 = g_images.get<Texture>(Ids::g_SION_TEXTURE);
-
-		PRINTLN(p1->get_image());
-		PRINTLN(p2->get_image());
-
 		g_images.remove(Ids::g_DEPTH_IMAGE);
 		g_images.remove(Ids::g_SION_TEXTURE);
 

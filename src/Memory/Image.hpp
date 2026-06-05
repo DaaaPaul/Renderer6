@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include "Backend/LogicalDevice.h"
+#include "Utility/Utility.h"
 
 class Image {
 	private:

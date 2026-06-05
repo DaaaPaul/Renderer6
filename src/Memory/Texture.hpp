@@ -24,7 +24,6 @@ class Texture : public KtxTexture, public Image {
 					 VkSharingMode sharing_mode,
 					 const std::vector<uint32_t>& queue_family_indices);
 	~Texture() noexcept override {
-		vkDestroyImage(g_device, get_image(), nullptr);
 		ktxTexture_Destroy(ktxTexture(p_ktx_texture));
 	}
 
