@@ -9,6 +9,8 @@
 
 #define PRINTLN(x) std::cout << x << '\n'
 
+#define THROW_RUNTIME(x) throw std::runtime_error(x)
+
 #define DA_PI 3.14159274f
 
 #define CHECK_NULLPTR(p, error_msg) \

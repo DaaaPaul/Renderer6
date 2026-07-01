@@ -36,88 +36,88 @@ std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4) {
 }
 
 namespace Vulkan {
-	void load_gltf_model(const char* file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
+	void load_gltf_model(const std::string& file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
 		tinygltf::Model model{};
 		tinygltf::TinyGLTF loader{};
-		std::string error{};
-		std::string warning{};
+		std::string error_msg{};
+		std::string warning_msg{};
+		bool result{};
 
-		if(!loader.LoadASCIIFromFile(&model, &error, &warning, file_path)) {
-			throw std::runtime_error("load_gltf_model failed: " + error);
+		if(file_path.ends_with(".gltf")) {
+			result = loader.LoadASCIIFromFile(&model, &error_msg, &warning_msg, file_path);
+		} else if(file_path.ends_with(".glb")) {
+			result = loader.LoadBinaryFromFile(&model, &error_msg, &warning_msg, file_path);
+		} else {
+			THROW_RUNTIME("load_gltf_model: invalid file extension");
 		}
-		if(!warning.empty()) {
-			PRINTLN("load_gltf_model warning: " << warning);
+
+		if(!error_msg.empty()) {
+			PRINTLN("load_gltf_model (error): " << error_msg);
+		}
+		if(!warning_msg.empty()) {
+			PRINTLN("load_gltf_model (warning): " << warning_msg);
+		}
+		if(!result) {
+			THROW_RUNTIME("load_gltf_model: !result");
 		}
 
-		// process all meshes in the model
-		std::unordered_map<Vertex, uint32_t> unique_vertices{};
+		vertices.clear();
+		indices.clear();
 
-		for (const tinygltf::Mesh& mesh : model.meshes) {
-			for (const tinygltf::Primitive& primitive : mesh.primitives) {
-				// get indices
+		for(const tinygltf::Mesh& mesh : model.meshes) {
+			for(const tinygltf::Primitive& primitive : mesh.primitives) {
+				const tinygltf::Accessor& pos_accessor = model.accessors[primitive.attributes.at("POSITION")];
+				const tinygltf::BufferView& pos_buffer_view = model.bufferViews[pos_accessor.bufferView];
+				const tinygltf::Buffer& pos_buffer = model.buffers[pos_buffer_view.buffer];
+
+				const tinygltf::Accessor& tex_coord_accessor = model.accessors[primitive.attributes.at("TEXCOORD_0")];
+				const tinygltf::BufferView& tex_coord_buffer_view = model.bufferViews[tex_coord_accessor.bufferView];
+				const tinygltf::Buffer& tex_coord_buffer = model.buffers[tex_coord_buffer_view.buffer];
+
+				uint32_t base_vertex_index = static_cast<uint32_t>(vertices.size());
+				vertices.reserve(vertices.size() + pos_accessor.count);
+				
+				const float* p_positions = reinterpret_cast<const float*>(&pos_buffer.data[pos_buffer_view.byteOffset + pos_accessor.byteOffset]);
+				const float* p_tex_coords = reinterpret_cast<const float*>(&tex_coord_buffer.data[tex_coord_buffer_view.byteOffset + tex_coord_accessor.byteOffset]);
+
+				for(int i = 0; i < pos_accessor.count; ++i) {
+					vertices.emplace_back(
+						glm::vec4{p_positions[0 + i * 3], p_positions[1 + i * 3], p_positions[2 + i * 3], 1.0f},
+						glm::vec2{p_tex_coords[0 + i * 2], p_tex_coords[1 + i * 2]}
+					);
+				}
+
 				const tinygltf::Accessor& index_accessor = model.accessors[primitive.indices];
 				const tinygltf::BufferView& index_buffer_view = model.bufferViews[index_accessor.bufferView];
 				const tinygltf::Buffer& index_buffer = model.buffers[index_buffer_view.buffer];
 
-				// get vertex positions
-				const tinygltf::Accessor& position_accessor = model.accessors[primitive.attributes.at("POSITION")];
-				const tinygltf::BufferView& position_buffer_view = model.bufferViews[position_accessor.bufferView];
-				const tinygltf::Buffer& position_buffer = model.buffers[position_buffer_view.buffer];
+				const unsigned char* p_indices = &index_buffer.data[index_buffer_view.byteOffset + index_accessor.byteOffset];
+				indices.reserve(indices.size() + index_accessor.count);
 
-				// get texture coordinates if available
-				bool has_tex_coords = primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end();
-				const tinygltf::Accessor* p_texcoord_accessor = nullptr;
-				const tinygltf::BufferView* p_texcoord_buffer_view = nullptr;
-				const tinygltf::Buffer* p_texcoord_buffer = nullptr;
-
-				if (has_tex_coords) {
-					p_texcoord_accessor = &model.accessors[primitive.attributes.at("TEXCOORD_0")];
-					p_texcoord_buffer_view = &model.bufferViews[p_texcoord_accessor->bufferView];
-					p_texcoord_buffer = &model.buffers[p_texcoord_buffer_view->buffer];
-				}
-
-				// process vertices
-				for (int i = 0; i < position_accessor.count; ++i) {
-					Vertex vertex{};
-
-					// get position
-					const float* p_position = reinterpret_cast<const float*>(&position_buffer.data[position_buffer_view.byteOffset + position_accessor.byteOffset + i * 12]);
-					vertex.position = {p_position[0], p_position[1], p_position[2], 1.0f};
-
-					// get texture coordinates if available
-					if (has_tex_coords) {
-						const float* p_texcoord = reinterpret_cast<const float*>(&p_texcoord_buffer->data[p_texcoord_buffer_view->byteOffset + p_texcoord_accessor->byteOffset + i * 8]);
-						vertex.tex_coord = {p_texcoord[0], p_texcoord[1]};
-					} else {
-						vertex.tex_coord = {0.0f, 0.0f};
-					}
-
-					// add vertex if unique
-					if (!unique_vertices.contains(vertex)) {
-						unique_vertices[vertex] = UINT32(vertices.size());
-						vertices.push_back(vertex);
-					}
-				}
-
-				// process indices
-				const unsigned char* p_index_data = &index_buffer.data[index_buffer_view.byteOffset + index_accessor.byteOffset];
-
-				// handle different index component types
-				if (index_accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-					const uint16_t* p_indices = reinterpret_cast<const uint16_t*>(p_index_data);
-					for (size_t i = 0; i < index_accessor.count; ++i) {
-						indices.push_back(unique_vertices[vertices[p_indices[i]]]);
-					}
-				} else if (index_accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-					const uint32_t* p_indices = reinterpret_cast<const uint32_t*>(p_index_data);
-					for (size_t i = 0; i < index_accessor.count; ++i) {
-						indices.push_back(unique_vertices[vertices[p_indices[i]]]);
-					}
-				} else if (index_accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-					const uint8_t* p_indices = reinterpret_cast<const uint8_t*>(p_index_data);
-					for (size_t i = 0; i < index_accessor.count; ++i) {
-						indices.push_back(unique_vertices[vertices[p_indices[i]]]);
-					}
+				switch(index_accessor.componentType) {
+					case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+						for(int i = 0; i < index_accessor.count; ++i) {
+							indices.emplace_back(base_vertex_index + p_indices[i]);
+						}
+						break;
+					case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+						{
+							const uint16_t* accurate_p_indices = reinterpret_cast<const uint16_t*>(p_indices);
+							for(int i = 0; i < index_accessor.count; ++i) {
+								indices.emplace_back(base_vertex_index + accurate_p_indices[i]);
+							}
+						}
+						break;
+					case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+						{
+							const uint32_t* accurate_p_indices = reinterpret_cast<const uint32_t*>(p_indices);
+							for (int i = 0; i < index_accessor.count; ++i) {
+								indices.emplace_back(base_vertex_index + accurate_p_indices[i]);
+							}
+						}
+						break;
+					default:
+						THROW_RUNTIME("load_gltf_model: unsupported index type");
 				}
 			}
 		}
@@ -128,13 +128,13 @@ namespace Vulkan {
 		KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktx_texture);
 
 		if(error != KTX_SUCCESS) {
-			throw std::runtime_error("load_ktx_texture: load failure");
+			THROW_RUNTIME("load_ktx_texture: load failure");
 		} else {
 			if(ktxTexture2_NeedsTranscoding(p_ktx_texture)) {
 				constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
 
 				if(ktxTexture2_TranscodeBasis(p_ktx_texture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
-					throw std::runtime_error("load_ktx_texture: compress failure");
+					THROW_RUNTIME("load_ktx_texture: compress failure");
 				}
 			}
 		}

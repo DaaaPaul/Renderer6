@@ -36,17 +36,3 @@ struct Vertex {
 		};
 	}
 };
-
-inline bool operator==(const Vertex& vertex_1, const Vertex& vertex_2) {
-	return vertex_1.position == vertex_2.position && vertex_1.tex_coord == vertex_2.tex_coord;
-}
-
-template<> 
-struct std::hash<Vertex> {
-    std::size_t operator()(const Vertex& vertex) const {
-        std::size_t hash_1 = std::hash<float>{}(vertex.position[2]);
-        std::size_t hash_2 = std::hash<float>{}(vertex.tex_coord[1]);
-
-        return hash_1 ^ (hash_2 << 1);
-    }
-};

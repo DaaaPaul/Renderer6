@@ -10,6 +10,7 @@
 #include "Backend/ShaderModule.h"
 #include "Backend/Pipelines.h"
 #include "Utility/Vulkan.h"
+#include "Utility/Utility.h"
 #include "Memory/MemoryManager.h"
 #include "Engine/Engine.h"
 #include "Engine/EntityManager.h"

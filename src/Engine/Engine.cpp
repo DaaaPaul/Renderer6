@@ -141,7 +141,7 @@ namespace Engine {
 			++total_loops;
 		}
 
-		PRINTLN("AVERAGE: " << (total_delta_time / total_loops));
+		PRINTLN("AVERAGE FRAME TIME: " << (total_delta_time / total_loops) << "s");
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}

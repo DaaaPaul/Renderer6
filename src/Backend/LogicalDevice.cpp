@@ -1,5 +1,6 @@
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
+#include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
 
 namespace LogicalDevice {
@@ -70,7 +71,7 @@ namespace LogicalDevice {
 
 		size_t linear_queue_index = calculate_queue_index(queue_family_array_index, queue_index);
 		if(linear_queue_index >= g_queues.size()) {
-			throw std::runtime_error("Attempted to retrieve queue that doesn't exist");
+			THROW_RUNTIME("Attempted to retrieve queue that doesn't exist");
 		} else {
 			return g_queues[linear_queue_index];
 		}

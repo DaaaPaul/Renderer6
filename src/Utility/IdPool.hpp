@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <typeindex>
 #include <stdexcept>
+#include "Utility.h"
 
 template<class T>
 class IdPool {
@@ -67,7 +68,7 @@ class IdPool<Component> {
 		if(i != component_map.end()) {
 			return static_cast<ComponentType*>(i->second.get());
 		} else {
-			throw std::runtime_error("get: failed to get ComponentType");
+			THROW_RUNTIME("get: failed to get ComponentType");
 		}
 	}
 

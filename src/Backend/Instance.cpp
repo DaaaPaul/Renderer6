@@ -42,7 +42,7 @@ namespace Instance {
 		}
 
 		if(!Utility::contains_all(extension_names, Utility::to_string(needed_extensions))) {
-			throw std::runtime_error("check_have_extensions: does not have the required VkInstance extensions");
+			THROW_RUNTIME("check_have_extensions: does not have the required VkInstance extensions");
 		}
 	}
 
@@ -58,7 +58,7 @@ namespace Instance {
 		}
 
 		if(!Utility::contains_all(layer_names, Utility::to_string(needed_layers))) {
-			throw std::runtime_error("check_have_layers: does not have the required VkInstance layers");
+			THROW_RUNTIME("check_have_layers: does not have the required VkInstance layers");
 		}
 	}
 
