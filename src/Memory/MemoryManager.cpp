@@ -9,6 +9,7 @@
 #include "Utility/Vulkan.h"
 #include "Utility/Utility.h"
 #include "ShaderStructs/TransformMatrices.hpp"
+#include "ShaderStructs/UniformBufferBlock.hpp"
 #include "ShaderStructs/Vertex.hpp"
 #include "Backend/PhysicalDevice.h"
 #include "Backend/Swapchain.h"
@@ -60,8 +61,8 @@ namespace MemoryManager {
 
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			g_buffers.add<UniformBuffer>(
-				Ids::g_TRANSFORM_MATRICES[i],
-				sizeof(TransformMatrices),
+				Ids::g_UNIFORM_BUFFERS[i],
+				sizeof(UniformBufferBlock),
 				VK_SHARING_MODE_EXCLUSIVE,
 				gfx_queue_family_index
 			);
@@ -140,7 +141,7 @@ namespace MemoryManager {
 
 		VK_CHECK(Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
 
-		g_sampler = Sampler(
+		g_samplers.add<Sampler>(Ids::g_SAMPLER, 
 			VK_NO_FLAGS,
 			VK_FILTER_LINEAR,
 			VK_FILTER_LINEAR,
@@ -158,21 +159,54 @@ namespace MemoryManager {
 			VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
 		);
 
-		g_descriptor_set = DescriptorSet({
-			VkDescriptorSetLayoutBinding{
-				.binding = 0,
-				.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.descriptorCount = 1,
-				.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-			},
-			VkDescriptorSetLayoutBinding{
-				.binding = 1,
-				.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
-				.descriptorCount = 1,
-				.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+		g_descriptor_sets.add<DescriptorSet>(Ids::g_DESCRIPTOR_SET,
+			std::vector<VkDescriptorSetLayoutBinding>{
+				VkDescriptorSetLayoutBinding{
+					.binding = 0,
+					.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 1,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 2,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 3,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 4,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 5,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 6,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				}
 			}
-		});
-		g_descriptor_set.write(
+		);
+		DescriptorSet* p_descriptor_set = g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET);
+		p_descriptor_set->write(
 			DescriptorSet::Write{
 				.binding_num = 0,
 				.descriptor_num = 0,

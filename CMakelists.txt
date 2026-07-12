@@ -62,8 +62,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/Vertex.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp

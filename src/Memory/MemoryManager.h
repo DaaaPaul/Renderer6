@@ -14,9 +14,8 @@ namespace MemoryManager {
 	inline IdPool<Buffer> g_buffers;
 	inline IdPool<Image> g_images;
 	inline IdPool<ImageView> g_image_views;
-	
-	inline DescriptorSet g_descriptor_set;
-	inline Sampler g_sampler;
+	inline IdPool<DescriptorSet> g_descriptor_sets;
+	inline IdPool<Sampler> g_samplers;
 
 	inline std::vector<Vertex> g_vertices;
 	inline std::vector<uint32_t> g_indices;

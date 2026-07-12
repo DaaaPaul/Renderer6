@@ -31,27 +31,21 @@ struct PushConstants {
     float metallicFactor;
     float roughnessFactor;
     int baseColorTextureSet;
-    int physicalDescriptorTextureSet;
+    int metallicRoughnessTextureSet;
     int normalTextureSet;
     int occlusionTextureSet;
     int emissiveTextureSet;
-    float alphaMask;
-    float alphaMaskCutoff;
 };
 
 static const float DA_PI = 3.14159265359;
 
 [[vk::binding(0, 0)]] ConstantBuffer<UniformBuffer> ubo;
-[[vk::binding(1, 0)]] Texture2D baseColorMap;
-[[vk::binding(1, 0)]] SamplerState baseColorSampler;
-[[vk::binding(2, 0)]] Texture2D metallicRoughnessMap;
-[[vk::binding(2, 0)]] SamplerState metallicRoughnessSampler;
-[[vk::binding(3, 0)]] Texture2D normalMap;
-[[vk::binding(3, 0)]] SamplerState normalSampler;
-[[vk::binding(4, 0)]] Texture2D occlusionMap;
-[[vk::binding(4, 0)]] SamplerState occlusionSampler;
-[[vk::binding(5, 0)]] Texture2D emissiveMap;
-[[vk::binding(5, 0)]] SamplerState emissiveSampler;
+[[vk::binding(1, 0)]] SamplerState sampler;
+[[vk::binding(2, 0)]] Texture2D baseColor;
+[[vk::binding(3, 0)]] Texture2D metallicRoughness;
+[[vk::binding(4, 0)]] Texture2D normal;
+[[vk::binding(5, 0)]] Texture2D occlusion;
+[[vk::binding(6, 0)]] Texture2D emissive;
 
 [[vk::push_constant]] PushConstants push_constants;
 
@@ -105,20 +99,20 @@ VSOutput vertex_main(VSInput input) {
 
 [[shader("fragment")]]
 float4 fragment_main(VSOutput input) : SV_Target {
-	float4 base_color = baseColorMap.Sample(baseColorSampler, input.uv) * push_constants.baseColorFactor;
+	float4 base_color = baseColor.Sample(sampler, input.uv) * push_constants.baseColorFactor;
 
-	float2 metallic_roughness = metallicRoughnessMap.Sample(metallicRoughnessSampler, input.uv).bg;
+	float2 metallic_roughness = metallicRoughness.Sample(sampler, input.uv).bg;
 	float metallic = metallic_roughness.x * push_constants.metallicFactor;
 	float roughness = metallic_roughness.y * push_constants.roughnessFactor;
 
-	float ambient_occlusion = occlusionMap.Sample(occlusionSampler, input.uv).r;
+	float ambient_occlusion = occlusion.Sample(sampler, input.uv).r;
 
-    float3 emissive = emissiveMap.Sample(emissiveSampler, input.uv).rgb;
+    float3 emissive = emissive.Sample(sampler, input.uv).rgb;
 
 	float3 N = normalize(input.normal);
 
 	if(push_constants.normalTextureSet > 0) {
-		float3 tangentNormal = normalMap.Sample(normalSampler, input.uv).xyz * 2.0 - 1.0;
+		float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
 
         float3 T = normalize(input.tangent.xyz);
         float3 B = normalize(cross(N, T)) * input.tangent.w;
