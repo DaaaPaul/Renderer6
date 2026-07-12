@@ -21,14 +21,14 @@ A WEEK'S LOAD:
 ALL IN AN HONEST DAY:
 
 BY THE HOUR:
-- asynchronus resource loading
-- hot reloading
 
 5-MINUTE CRAFTS:
 
 
 
 ***IN ANOTHER LIFE***
+- asynchronus resource loading
+- hot reloading
 - use shader objects instead
 - Consider multisampling
 - Load mipmaps from texture itself (and implement mipmaps)

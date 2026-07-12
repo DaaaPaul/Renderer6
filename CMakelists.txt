@@ -61,9 +61,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.hpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/TransformMatrices.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Geometry/Vertex.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/Vertex.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.hpp
@@ -95,6 +96,7 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/pbr.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${RENDERER6_SOURCES})

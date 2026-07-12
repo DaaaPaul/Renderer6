@@ -11,7 +11,7 @@
 #include <string>
 #include <cassert>
 #include <cstdint>
-#include "Geometry/Vertex.hpp"
+#include "ShaderStructs/Vertex.hpp"
 #include "Utility/Vulkan.h"
 #include "Utility/Utility.h"
 #include "Backend/LogicalDevice.h"

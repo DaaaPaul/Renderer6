@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <vector>
 #include "Utility/IdPool.hpp"
-#include "Geometry/Vertex.hpp"
+#include "ShaderStructs/Vertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
 #include "Buffer.hpp"

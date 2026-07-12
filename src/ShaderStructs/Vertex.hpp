@@ -1,6 +1,5 @@
 #pragma once
 
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <vulkan/vulkan_core.h>
@@ -12,14 +11,14 @@ struct Vertex {
 	glm::vec4 position{};
 	glm::vec2 tex_coord{};
 
-	static constexpr VkVertexInputBindingDescription get_vertex_input_binding_description(const uint32_t& binding_num)  {
+	static constexpr VkVertexInputBindingDescription get_vertex_input_binding_description(uint32_t binding_num)  {
 		return {
 			.binding = binding_num,
 			.stride = sizeof(Vertex),
 			.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 		};
 	}
-	static constexpr std::vector<VkVertexInputAttributeDescription> get_vertex_input_attributes(const uint32_t& binding_num)  {
+	static constexpr std::vector<VkVertexInputAttributeDescription> get_vertex_input_attributes(uint32_t binding_num)  {
 		return { 
 			VkVertexInputAttributeDescription{
 				.location = 0,

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include "Backend/Instance.h"
-#include "Geometry/Vertex.hpp"
+#include "ShaderStructs/Vertex.hpp"
 
 #define UINT32(vector_size) static_cast<uint32_t>(vector_size)
 

@@ -8,7 +8,7 @@
 #include "Engine.h"
 #include "FrameKits.h"
 #include "EntityManager.h"
-#include "Geometry/TransformMatrices.hpp"
+#include "ShaderStructs/TransformMatrices.hpp"
 #include "Memory/DepthImage.hpp"
 #include "Memory/HostMemory.hpp"
 #include "Memory/IndexBuffer.hpp"
