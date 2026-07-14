@@ -12,9 +12,8 @@ class DescriptorSet {
 		uint32_t descriptor_num{};
 		uint32_t descriptor_count{};
 		VkDescriptorType descriptor_type{};
-		VkSampler sampler{};
-		VkImageView image_view{};
-		VkImageLayout image_layout{};
+		VkDescriptorBufferInfo buffer_info{};
+		VkDescriptorImageInfo image_info{};
 	};
 
 	private:

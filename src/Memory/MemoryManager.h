@@ -2,6 +2,7 @@
 #include <vector>
 #include "Utility/IdPool.hpp"
 #include "ShaderStructs/Vertex.hpp"
+#include "ShaderStructs/PBRVertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
 #include "Buffer.hpp"
@@ -17,7 +18,7 @@ namespace MemoryManager {
 	inline IdPool<DescriptorSet> g_descriptor_sets;
 	inline IdPool<Sampler> g_samplers;
 
-	inline std::vector<Vertex> g_vertices;
+	inline std::vector<PBRVertex> g_vertices;
 	inline std::vector<uint32_t> g_indices;
 
 	inline HostMemory g_host_memory;

@@ -36,7 +36,7 @@ std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4) {
 }
 
 namespace Vulkan {
-	void load_gltf_model(const std::string& file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
+	void load_gltf_model(const std::string& file_path, std::vector<PBRVertex>& vertices, std::vector<uint32_t>& indices) {
 		tinygltf::Model model{};
 		tinygltf::TinyGLTF loader{};
 		std::string error_msg{};
@@ -70,20 +70,32 @@ namespace Vulkan {
 				const tinygltf::BufferView& pos_buffer_view = model.bufferViews[pos_accessor.bufferView];
 				const tinygltf::Buffer& pos_buffer = model.buffers[pos_buffer_view.buffer];
 
-				const tinygltf::Accessor& tex_coord_accessor = model.accessors[primitive.attributes.at("TEXCOORD_0")];
-				const tinygltf::BufferView& tex_coord_buffer_view = model.bufferViews[tex_coord_accessor.bufferView];
-				const tinygltf::Buffer& tex_coord_buffer = model.buffers[tex_coord_buffer_view.buffer];
+				const tinygltf::Accessor& normal_accessor = model.accessors[primitive.attributes.at("NORMAL")];
+				const tinygltf::BufferView& normal_buffer_view = model.bufferViews[normal_accessor.bufferView];
+				const tinygltf::Buffer& normal_buffer = model.buffers[normal_buffer_view.buffer];
+
+				const tinygltf::Accessor& uv_accessor = model.accessors[primitive.attributes.at("TEXCOORD_0")];
+				const tinygltf::BufferView& uv_buffer_view = model.bufferViews[uv_accessor.bufferView];
+				const tinygltf::Buffer& uv_buffer = model.buffers[uv_buffer_view.buffer];
+
+				const tinygltf::Accessor& tangent_accessor = model.accessors[primitive.attributes.at("TANGENT")];
+				const tinygltf::BufferView& tangent_buffer_view = model.bufferViews[tangent_accessor.bufferView];
+				const tinygltf::Buffer& tangent_buffer = model.buffers[tangent_buffer_view.buffer];
 
 				uint32_t base_vertex_index = static_cast<uint32_t>(vertices.size());
 				vertices.reserve(vertices.size() + pos_accessor.count);
 				
 				const float* p_positions = reinterpret_cast<const float*>(&pos_buffer.data[pos_buffer_view.byteOffset + pos_accessor.byteOffset]);
-				const float* p_tex_coords = reinterpret_cast<const float*>(&tex_coord_buffer.data[tex_coord_buffer_view.byteOffset + tex_coord_accessor.byteOffset]);
+				const float* p_normals = reinterpret_cast<const float*>(&normal_buffer.data[normal_buffer_view.byteOffset + normal_accessor.byteOffset]);
+				const float* p_uv = reinterpret_cast<const float*>(&uv_buffer.data[uv_buffer_view.byteOffset + uv_accessor.byteOffset]);
+				const float* p_tangents = reinterpret_cast<const float*>(&tangent_buffer.data[tangent_buffer_view.byteOffset + tangent_accessor.byteOffset]);
 
 				for(int i = 0; i < pos_accessor.count; ++i) {
 					vertices.emplace_back(
-						glm::vec4{p_positions[0 + i * 3], p_positions[1 + i * 3], p_positions[2 + i * 3], 1.0f},
-						glm::vec2{p_tex_coords[0 + i * 2], p_tex_coords[1 + i * 2]}
+						glm::vec3(p_positions[i * 3], p_positions[i * 3 + 1], p_positions[i * 3 + 2]),
+						glm::vec3(p_normals[i * 3], p_normals[i * 3 + 1], p_normals[i * 3 + 2]),
+						glm::vec2(p_uv[i * 2], p_uv[i * 2 + 1]),
+						glm::vec4(p_tangents[i * 4], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3])
 					);
 				}
 

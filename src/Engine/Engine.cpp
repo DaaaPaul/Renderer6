@@ -77,8 +77,6 @@ namespace Engine {
 			.baseColorTextureSet = true,
 			.physicalDescriptorTextureSet = true,
 			.normalTextureSet = true,
-			.occlusionTextureSet = false,
-			.emissiveTextureSet = false
 		};
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantBlock), &push_constants); 
 		
@@ -227,6 +225,6 @@ namespace Engine {
 		
 		UniformBufferBlock ubo_data(*camera_component);
 
-		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[FrameKits::g_frame_index]), &ubo_data, sizeof(UniformBufferBlock));
+		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[0]), &ubo_data, sizeof(UniformBufferBlock));
 	}
 }

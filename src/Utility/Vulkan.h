@@ -8,6 +8,7 @@
 #include <cstdint>
 #include "Backend/Instance.h"
 #include "ShaderStructs/Vertex.hpp"
+#include "ShaderStructs/PBRVertex.hpp"
 
 #define UINT32(vector_size) static_cast<uint32_t>(vector_size)
 
@@ -41,7 +42,7 @@ namespace Vulkan {
 		vkCopyMemoryToImageEXT = reinterpret_cast<PFN_vkCopyMemoryToImageEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkCopyMemoryToImageEXT"));
 	}
 
-	void load_gltf_model(const std::string& file_path, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+	void load_gltf_model(const std::string& file_path, std::vector<PBRVertex>& vertices, std::vector<uint32_t>& indices);
 
 	ktxTexture2* load_ktx_texture(const char* ktx_path);
 

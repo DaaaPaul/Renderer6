@@ -33,8 +33,6 @@ struct PushConstants {
     int baseColorTextureSet;
     int metallicRoughnessTextureSet;
     int normalTextureSet;
-    int occlusionTextureSet;
-    int emissiveTextureSet;
 };
 
 static const float DA_PI = 3.14159265359;
@@ -44,8 +42,6 @@ static const float DA_PI = 3.14159265359;
 [[vk::binding(2, 0)]] Texture2D baseColor;
 [[vk::binding(3, 0)]] Texture2D metallicRoughness;
 [[vk::binding(4, 0)]] Texture2D normal;
-[[vk::binding(5, 0)]] Texture2D occlusion;
-[[vk::binding(6, 0)]] Texture2D emissive;
 
 [[vk::push_constant]] PushConstants push_constants;
 
@@ -92,7 +88,9 @@ VSOutput vertex_main(VSInput input) {
     output.world_pos = world_pos.xyz;
 	output.normal = mul((float3x3) ubo.model, input.normal);
 	output.uv = input.uv;
-	output.tangent = input.tangent;
+    output.tangent = input.tangent;
+    //output.tangent.xyz = mul((float3x3)ubo.model, input.tangent.xyz);
+    //output.tangent.w = input.tangent.w;
 
 	return output;
 }
@@ -104,10 +102,6 @@ float4 fragment_main(VSOutput input) : SV_Target {
 	float2 metallic_roughness = metallicRoughness.Sample(sampler, input.uv).bg;
 	float metallic = metallic_roughness.x * push_constants.metallicFactor;
 	float roughness = metallic_roughness.y * push_constants.roughnessFactor;
-
-	float ambient_occlusion = occlusion.Sample(sampler, input.uv).r;
-
-    float3 emissive = emissive.Sample(sampler, input.uv).rgb;
 
 	float3 N = normalize(input.normal);
 
@@ -182,19 +176,12 @@ float4 fragment_main(VSOutput input) : SV_Target {
         Lo += (kD * base_color.rgb / DA_PI + specular) * radiance * NdotL;
     }
 
-    // === AMBIENT AND EMISSIVE ===
-    // Add simple ambient lighting (should be replaced with IBL in production)
-    float3 ambient = float3(0.03, 0.03, 0.03) * base_color.rgb * ambient_occlusion;
-
     // Combine all lighting contributions
-    float3 color = ambient + Lo + emissive;
+    float3 color = Lo;
 
     // === HDR TONE MAPPING AND GAMMA CORRECTION ===
     // Apply Reinhard tone mapping to compress HDR values to [0,1] range
     color = color / (color + float3(1.0, 1.0, 1.0));
-
-    // Apply gamma correction for sRGB display (inverse gamma)
-    color = pow(color, float3(1.0 / ubo.gamma, 1.0 / ubo.gamma, 1.0 / ubo.gamma));
 
     // Output final color with original alpha
     return float4(color, base_color.a);

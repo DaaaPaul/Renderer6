@@ -12,12 +12,6 @@ DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bi
 }
 
 void DescriptorSet::write(Write write_info) {
-	VkDescriptorImageInfo descriptor_image_info{
-		.sampler = write_info.sampler,
-		.imageView = write_info.image_view,
-		.imageLayout = write_info.image_layout
-	};
-
 	VkWriteDescriptorSet write_descriptor_set{
 		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
 		.dstSet = descriptor_set,
@@ -25,8 +19,13 @@ void DescriptorSet::write(Write write_info) {
 		.dstArrayElement = write_info.descriptor_num,
 		.descriptorCount = write_info.descriptor_count,
 		.descriptorType = write_info.descriptor_type,
-		.pImageInfo = &descriptor_image_info
 	};
+
+	if(write_info.buffer_info.buffer == VK_NULL_HANDLE) {
+		write_descriptor_set.pImageInfo = &write_info.image_info;
+	} else {
+		write_descriptor_set.pBufferInfo = &write_info.buffer_info;
+	}
 
 	vkUpdateDescriptorSets(g_device, 1, &write_descriptor_set, 0, nullptr);
 }

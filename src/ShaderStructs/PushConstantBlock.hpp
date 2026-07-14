@@ -9,6 +9,4 @@ struct PushConstantBlock {
     int baseColorTextureSet{};
     int physicalDescriptorTextureSet{};
     int normalTextureSet{};
-    int occlusionTextureSet{};
-    int emissiveTextureSet{};
 };

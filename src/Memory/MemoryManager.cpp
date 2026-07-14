@@ -237,11 +237,26 @@ namespace MemoryManager {
 		DescriptorSet* p_descriptor_set = g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET);
 		p_descriptor_set->write(
 			DescriptorSet::Write{
+				.binding_num = 0,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+				.buffer_info = VkDescriptorBufferInfo{
+					.buffer = g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[0])->get_buffer(),
+					.offset = 0,
+					.range = VK_WHOLE_SIZE
+				}
+			}
+		);
+		p_descriptor_set->write(
+			DescriptorSet::Write{
 				.binding_num = 1,
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
-				.sampler = p_sampler->get_sampler()
+				.image_info = VkDescriptorImageInfo{
+					.sampler = p_sampler->get_sampler()
+				}
 			}
 		);
 		p_descriptor_set->write(
@@ -250,28 +265,34 @@ namespace MemoryManager {
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.image_view = g_image_views.get<ImageView>(Ids::g_SION_TEXTURE_VIEW)->get_image_view(),
-				.image_layout = VK_IMAGE_LAYOUT_GENERAL
+				.image_info = VkDescriptorImageInfo{
+					.imageView = g_image_views.get<ImageView>(Ids::g_SION_TEXTURE_VIEW)->get_image_view(),
+					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+				}
 			}
 		);
 		p_descriptor_set->write(
 			DescriptorSet::Write{
-				.binding_num = 2,
+				.binding_num = 3,
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.image_view = g_image_views.get<ImageView>(Ids::g_SION_METALLIC_ROUGHNESS_VIEW)->get_image_view(),
-				.image_layout = VK_IMAGE_LAYOUT_GENERAL
+				.image_info = VkDescriptorImageInfo{
+					.imageView = g_image_views.get<ImageView>(Ids::g_SION_METALLIC_ROUGHNESS_VIEW)->get_image_view(),
+					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+				}
 			}
 		);
 		p_descriptor_set->write(
 			DescriptorSet::Write{
-				.binding_num = 2,
+				.binding_num = 4,
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-				.image_view = g_image_views.get<ImageView>(Ids::g_SION_NORMALS_VIEW)->get_image_view(),
-				.image_layout = VK_IMAGE_LAYOUT_GENERAL
+				.image_info = VkDescriptorImageInfo{
+					.imageView = g_image_views.get<ImageView>(Ids::g_SION_NORMALS_VIEW)->get_image_view(),
+					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+				}
 			}
 		);
 	}
@@ -283,6 +304,8 @@ namespace MemoryManager {
 		g_descriptor_sets.remove(Ids::g_SAMPLER);
 
 		g_image_views.remove(Ids::g_DEPTH_VIEW);
+		g_image_views.remove(Ids::g_SION_NORMALS_VIEW);
+		g_image_views.remove(Ids::g_SION_METALLIC_ROUGHNESS_VIEW);
 		g_image_views.remove(Ids::g_SION_TEXTURE_VIEW);
 
 		g_device_memory_2.destroy();
@@ -290,6 +313,8 @@ namespace MemoryManager {
 		g_host_memory.destroy();
 
 		g_images.remove(Ids::g_DEPTH_IMAGE);
+		g_images.remove(Ids::g_SION_NORMALS);
+		g_images.remove(Ids::g_SION_METALLIC_ROUGHNESS);
 		g_images.remove(Ids::g_SION_TEXTURE);
 
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
