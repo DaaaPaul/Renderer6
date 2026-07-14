@@ -79,3 +79,5 @@ class IdPool<Component> {
 		return component_map.erase(typeid(ComponentType)) > 0;
 	}
 };
+
+using Entity = IdPool<Component>;

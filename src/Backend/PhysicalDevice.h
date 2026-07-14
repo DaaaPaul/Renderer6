@@ -24,5 +24,5 @@ namespace PhysicalDevice {
 	bool check_features(VkPhysicalDevice physical_device);
 	bool check_queues(VkPhysicalDevice physical_device);
 
-	uint32_t& get_queue_family_index(VkQueueFlags queue_family_capabilities);
+	uint32_t get_queue_family_index(VkQueueFlags queue_family_capabilities);
 }

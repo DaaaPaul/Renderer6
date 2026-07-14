@@ -22,4 +22,9 @@ namespace Ids {
 
 	inline constexpr uint32_t g_DESCRIPTOR_SET = 12;
 	inline constexpr uint32_t g_SAMPLER = 13;
+
+	inline constexpr uint32_t g_SION_METALLIC_ROUGHNESS = 14;
+	inline constexpr uint32_t g_SION_NORMALS = 15;
+	inline constexpr uint32_t g_SION_METALLIC_ROUGHNESS_VIEW = 16;
+	inline constexpr uint32_t g_SION_NORMALS_VIEW = 17;
 }

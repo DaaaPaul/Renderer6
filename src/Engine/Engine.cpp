@@ -9,6 +9,8 @@
 #include "FrameKits.h"
 #include "EntityManager.h"
 #include "ShaderStructs/TransformMatrices.hpp"
+#include "ShaderStructs/PushConstantBlock.hpp"
+#include "ShaderStructs/UniformBufferBlock.hpp"
 #include "Memory/DepthImage.hpp"
 #include "Memory/HostMemory.hpp"
 #include "Memory/IndexBuffer.hpp"
@@ -33,7 +35,6 @@ namespace Engine {
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Swapchain::g_image_views[sc_image_index],
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 			.clearValue = VkClearColorValue({0.4f, 0.2f, 0.2f, 1.0f}),
@@ -60,17 +61,26 @@ namespace Engine {
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[0]);
 		set_viewport_and_scissor(cmd_buf);
 
-		constexpr VkDeviceSize zero = 0;
+		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
 		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER)->get_buffer();
 		VkBuffer index_buffer = MemoryManager::g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER)->get_buffer();
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, &zero);
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
 		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_set.get_descriptor_set();
+		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET)->get_descriptor_set();
 		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, &descriptor_set, 0, nullptr);
 		
-		VkDeviceAddress push_constant = HostMemory::get_buffer_address(MemoryManager::g_buffers.get<Buffer>(Ids::g_TRANSFORM_MATRICES[FrameKits::g_frame_index])->get_buffer());
-		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push_constant), &push_constant); 
+		PushConstantBlock push_constants{
+			.base_color_factor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+			.metallicFactor = 1.0f,
+			.roughnessFactor = 1.0f,
+			.baseColorTextureSet = true,
+			.physicalDescriptorTextureSet = true,
+			.normalTextureSet = true,
+			.occlusionTextureSet = false,
+			.emissiveTextureSet = false
+		};
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantBlock), &push_constants); 
 		
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
@@ -98,7 +108,7 @@ namespace Engine {
 		FrameKits::FrameKit& frame_kit = FrameKits::g_frame_kits[FrameKits::g_frame_index];
 		frame_kit.progress_sync();
 
-		AcquireStatus acquire = acquire_sc_image(frame_kit.sync_kit.guard);
+		Acquire acquire = acquire_sc_image(frame_kit.sync_kit.guard);
 		if(acquire.result == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
 			return;
@@ -146,7 +156,7 @@ namespace Engine {
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
 
-	AcquireStatus acquire_sc_image(VkFence fence_to_signal) {
+	Acquire acquire_sc_image(VkFence fence_to_signal) {
 		uint32_t sc_image_index{};
 		VkResult result = vkAcquireNextImageKHR(g_device, Swapchain::g_swapchain, UINT64_MAX, VK_NULL_HANDLE, fence_to_signal, &sc_image_index);
 
@@ -215,8 +225,8 @@ namespace Engine {
 		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
 		camera_component->set_position(CameraComponent::process_position(camera_component->get_basis(), camera_component->get_position(), delta_time));
 		
-		TransformMatrices transformation(glm::mat4(1.0f), CameraComponent::to_view_matrix(*camera_component), CameraComponent::to_projection_matrix(*camera_component));
+		UniformBufferBlock ubo_data(*camera_component);
 
-		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[FrameKits::g_frame_index]), &transformation, sizeof(transformation));
+		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[FrameKits::g_frame_index]), &ubo_data, sizeof(UniformBufferBlock));
 	}
 }

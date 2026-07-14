@@ -70,13 +70,32 @@ namespace MemoryManager {
 
 		g_images.add<Texture>(
 			Ids::g_SION_TEXTURE,
-			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\Sion_Axe_baseColor.ktx2)",
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\base_color.ktx2)",
 			1,
 			1,
 			VK_SAMPLE_COUNT_1_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
 			gfx_queue_family_index
 		);
+		g_images.add<Texture>(
+			Ids::g_SION_METALLIC_ROUGHNESS,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\metallic_roughness.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index		
+		);
+		g_images.add<Texture>(
+			Ids::g_SION_NORMALS,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\normal.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index		
+		);
+
 		g_images.add<DepthImage>(
 			Ids::g_DEPTH_IMAGE,
 			VK_FORMAT_D32_SFLOAT,
@@ -90,9 +109,9 @@ namespace MemoryManager {
 			g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE),
 			g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE)
 		};
-		p_host_buffers.reserve(2 + Swapchain::g_IMAGE_COUNT);
+		p_host_buffers.reserve(p_host_buffers.size() + Swapchain::g_IMAGE_COUNT);
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(Ids::g_TRANSFORM_MATRICES[i]));
+			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[i]));
 		}
 		std::vector<Image*> p_host_images{
 
@@ -105,6 +124,8 @@ namespace MemoryManager {
 		};
 		std::vector<Image*> p_device_images{
 			g_images.get<Texture>(Ids::g_SION_TEXTURE),
+			g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS),
+			g_images.get<Texture>(Ids::g_SION_NORMALS)
 		};
 		g_device_memory_1 = DeviceMemory(p_device_buffers, p_device_images);
 
@@ -121,7 +142,23 @@ namespace MemoryManager {
 			VK_NO_FLAGS,
 			g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()->vkFormat),
+			static_cast<VkFormat>(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_ktx_texture()->vkFormat),
+			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+		);
+		g_image_views.add<ImageView>(
+			Ids::g_SION_METALLIC_ROUGHNESS_VIEW,
+			VK_NO_FLAGS,
+			g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_image(),
+			VK_IMAGE_VIEW_TYPE_2D,
+			static_cast<VkFormat>(g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_ktx_texture()->vkFormat),
+			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
+		);
+		g_image_views.add<ImageView>(
+			Ids::g_SION_NORMALS_VIEW,
+			VK_NO_FLAGS,
+			g_images.get<Texture>(Ids::g_SION_NORMALS)->get_image(),
+			VK_IMAGE_VIEW_TYPE_2D,
+			static_cast<VkFormat>(g_images.get<Texture>(Ids::g_SION_NORMALS)->get_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
 		g_image_views.add<ImageView>(
@@ -139,7 +176,9 @@ namespace MemoryManager {
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE), g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE), g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
 
-		VK_CHECK(Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_p_ktx_texture()), "copy_ktx_texture_to_image: failed");
+		Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_ktx_texture());
+		Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_image(), g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_ktx_texture());
+		Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_NORMALS)->get_image(), g_images.get<Texture>(Ids::g_SION_NORMALS)->get_ktx_texture());
 
 		g_samplers.add<Sampler>(Ids::g_SAMPLER, 
 			VK_NO_FLAGS,
@@ -158,6 +197,7 @@ namespace MemoryManager {
 			0.0f,
 			VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE
 		);
+		Sampler* p_sampler = g_samplers.get<Sampler>(Ids::g_SAMPLER);
 
 		g_descriptor_sets.add<DescriptorSet>(Ids::g_DESCRIPTOR_SET,
 			std::vector<VkDescriptorSetLayoutBinding>{
@@ -190,25 +230,23 @@ namespace MemoryManager {
 					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
 					.descriptorCount = 1,
 					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-				},
-				VkDescriptorSetLayoutBinding{
-					.binding = 5,
-					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-					.descriptorCount = 1,
-					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
-				},
-				VkDescriptorSetLayoutBinding{
-					.binding = 6,
-					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-					.descriptorCount = 1,
-					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
 				}
 			}
 		);
+
 		DescriptorSet* p_descriptor_set = g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET);
 		p_descriptor_set->write(
 			DescriptorSet::Write{
-				.binding_num = 0,
+				.binding_num = 1,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
+				.sampler = p_sampler->get_sampler()
+			}
+		);
+		p_descriptor_set->write(
+			DescriptorSet::Write{
+				.binding_num = 2,
 				.descriptor_num = 0,
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
@@ -216,20 +254,33 @@ namespace MemoryManager {
 				.image_layout = VK_IMAGE_LAYOUT_GENERAL
 			}
 		);
-		g_descriptor_set.write(
+		p_descriptor_set->write(
 			DescriptorSet::Write{
-				.binding_num = 1,
+				.binding_num = 2,
 				.descriptor_num = 0,
 				.descriptor_count = 1,
-				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
-				.sampler = g_sampler.get_sampler()
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+				.image_view = g_image_views.get<ImageView>(Ids::g_SION_METALLIC_ROUGHNESS_VIEW)->get_image_view(),
+				.image_layout = VK_IMAGE_LAYOUT_GENERAL
+			}
+		);
+		p_descriptor_set->write(
+			DescriptorSet::Write{
+				.binding_num = 2,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+				.image_view = g_image_views.get<ImageView>(Ids::g_SION_NORMALS_VIEW)->get_image_view(),
+				.image_layout = VK_IMAGE_LAYOUT_GENERAL
 			}
 		);
 	}
 
 	void destroy() {
-		g_descriptor_set.destroy();
-		g_sampler.destroy();
+		g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET)->destroy();
+		g_samplers.get<Sampler>(Ids::g_SAMPLER)->destroy();
+		g_descriptor_sets.remove(Ids::g_DESCRIPTOR_SET);
+		g_descriptor_sets.remove(Ids::g_SAMPLER);
 
 		g_image_views.remove(Ids::g_DEPTH_VIEW);
 		g_image_views.remove(Ids::g_SION_TEXTURE_VIEW);
@@ -242,7 +293,7 @@ namespace MemoryManager {
 		g_images.remove(Ids::g_SION_TEXTURE);
 
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
-			g_buffers.remove(Ids::g_TRANSFORM_MATRICES[i]);
+			g_buffers.remove(Ids::g_UNIFORM_BUFFERS[i]);
 		}
 		g_buffers.remove(Ids::g_VERTEX_BUFFER);
 		g_buffers.remove(Ids::g_INDEX_BUFFER);

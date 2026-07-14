@@ -18,7 +18,7 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-set(DEBUG_MODE ON)
+set(DEBUG_MODE OFF)
 set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
@@ -65,6 +65,7 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/Vertex.hpp
 

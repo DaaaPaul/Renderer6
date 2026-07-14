@@ -4,7 +4,7 @@
 #include "Utility/IdPool.hpp"
 
 namespace EntityManager {
-	inline IdPool<Component> g_camera;
+	inline Entity g_camera;
 
 	void init();
 	void destroy() noexcept;

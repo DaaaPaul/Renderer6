@@ -1,6 +1,8 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "Engine/CameraComponent.hpp"
+#include "Memory/UniformBuffer.hpp"
 
 struct UniformBufferBlock {
 	glm::mat4 model{};
@@ -13,4 +15,6 @@ struct UniformBufferBlock {
     float gamma{};
     float prefilteredCubeMipLevels{};
     float scaleIBLAmbient{};
+
+	explicit UniformBufferBlock(const CameraComponent& camera);
 };

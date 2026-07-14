@@ -11,6 +11,4 @@ struct PushConstantBlock {
     int normalTextureSet{};
     int occlusionTextureSet{};
     int emissiveTextureSet{};
-    float alphaMask{};
-    float alphaMaskCutoff{};
 };

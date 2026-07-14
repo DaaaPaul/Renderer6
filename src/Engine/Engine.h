@@ -5,7 +5,7 @@
 #include "Engine/CameraComponent.hpp"
 
 namespace Engine {	
-	struct AcquireStatus {
+	struct Acquire {
 		uint32_t sc_image_index{};
 		VkResult result{};
 	};
@@ -17,7 +17,7 @@ namespace Engine {
 	void render_next();
 	void run();
 
-	AcquireStatus acquire_sc_image(VkFence fence_to_signal);
+	Acquire acquire_sc_image(VkFence fence_to_signal);
 	VkResult present_sc_image(uint32_t sc_image_index, VkQueue queue);
 	void wait_timeline_semaphore(VkSemaphore semaphore, uint64_t wait_val);
 	void wait_fence(VkFence fence);

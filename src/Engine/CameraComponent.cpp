@@ -52,7 +52,7 @@ Basis Basis::apply_rotation(const Basis& basis, const Angles& euler_angles) {
 	return moved;
 }
 
-CameraComponent::CameraComponent(IdPool<Component>* entity, const glm::vec3& position, const Angles& rotation, float zoom) :
+CameraComponent::CameraComponent(Entity* entity, const glm::vec3& position, const Angles& rotation, float zoom) :
 	Component{ entity },
 	position(DEFAULT_POSITION + position), 
 	basis(Basis::apply_rotation(DEFAULT_BASIS, rotation)), 

@@ -13,11 +13,11 @@ Texture::Texture(const char* ktx_path,
 				 VkSampleCountFlagBits sample_count,
 				 VkSharingMode sharing_mode,
 				 const std::vector<uint32_t>& queue_family_indices) : 
-	KtxTexture(Vulkan::load_ktx_texture(ktx_path)),
+	KtxTexture(Vulkan::load_ktx_texture(ktx_path), KTX_TTF_BC7_RGBA),
 	Image(VK_NO_FLAGS,
 		  VK_IMAGE_TYPE_2D,
-		  static_cast<VkFormat>(p_ktx_texture->vkFormat),
-		  VkExtent3D{ p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, 1 },
+		  static_cast<VkFormat>(ktx_texture->vkFormat),
+		  VkExtent3D{ ktx_texture->baseWidth, ktx_texture->baseHeight, 1 },
 		  mip_level_count,
 		  array_layer_count,
 		  sample_count,
@@ -27,7 +27,7 @@ Texture::Texture(const char* ktx_path,
 
 }
 
-VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_ktx_texture) {
+void Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* ktx_texture) {
 	VkHostImageLayoutTransitionInfo transition{
 		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
 		.image = image,
@@ -35,13 +35,13 @@ VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_
 		.newLayout = VK_IMAGE_LAYOUT_GENERAL,
 		.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
 	};
-	VK_CHECK(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "copyToImage: transition error")
+	VK_CHECK(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "copy_ktx_texture_to_image: transition failed")
 
 	VkMemoryToImageCopyEXT region{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
-		.pHostPointer = p_ktx_texture->pData,
+		.pHostPointer = ktx_texture->pData,
 		.imageSubresource = VkImageSubresourceLayers{VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-		.imageExtent = VkExtent3D{p_ktx_texture->baseWidth, p_ktx_texture->baseHeight, p_ktx_texture->baseDepth}
+		.imageExtent = VkExtent3D{ktx_texture->baseWidth, ktx_texture->baseHeight, ktx_texture->baseDepth}
 	};
 
 	VkCopyMemoryToImageInfo copy{
@@ -52,5 +52,5 @@ VkResult Texture::copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_
 		.pRegions = &region,
 	};
 
-	return Vulkan::vkCopyMemoryToImageEXT(g_device, &copy);
+	VK_CHECK(Vulkan::vkCopyMemoryToImageEXT(g_device, &copy), "copy_ktx_texture_to_image: copy failed")
 }

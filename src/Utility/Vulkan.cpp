@@ -124,22 +124,21 @@ namespace Vulkan {
 	}
 
 	ktxTexture2* load_ktx_texture(const char* ktx_path) {
-		ktxTexture2* p_ktx_texture{};
-		KTX_error_code error = ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &p_ktx_texture);
+		ktxTexture2* ktx_texture{};
 
-		if(error != KTX_SUCCESS) {
+		if(ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktx_texture) != KTX_SUCCESS) {
 			THROW_RUNTIME("load_ktx_texture: load failure");
-		} else {
-			if(ktxTexture2_NeedsTranscoding(p_ktx_texture)) {
-				constexpr ktx_transcode_fmt_e TARGET_FORMAT = KTX_TTF_BC7_RGBA;
-
-				if(ktxTexture2_TranscodeBasis(p_ktx_texture, TARGET_FORMAT, 0) != KTX_SUCCESS) {
-					THROW_RUNTIME("load_ktx_texture: compress failure");
-				}
-			}
 		}
 
-		return p_ktx_texture;
+		return ktx_texture;
+	}
+
+	void transcode_ktx_texture(ktxTexture2* ktx_texture, ktx_transcode_fmt_e target_format) {
+		if(ktxTexture2_NeedsTranscoding(ktx_texture)) {
+			if(ktxTexture2_TranscodeBasis(ktx_texture, target_format, VK_NO_FLAGS) != KTX_SUCCESS) {
+				THROW_RUNTIME("transcode_ktx_texture: compress failure");
+			}
+		}
 	}
 
 	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, VkImageSubresourceRange subresource_range, VkPipelineStageFlags2 stage1, VkAccessFlags2 access1, VkPipelineStageFlags2 stage2, VkAccessFlags2 access2, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t graphics_queue_family_index) {
@@ -276,14 +275,15 @@ namespace Vulkan {
 
 	VkBuffer create_buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
 		VkBuffer buffer{};
-
+		
+		uint32_t gfx_queue_family_index = PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT);
 		VkBufferCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.size = size,
 			.usage = usage,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = 1,
-			.pQueueFamilyIndices = &PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT)
+			.pQueueFamilyIndices = &gfx_queue_family_index
 		};
 
 		VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "create_buffer: failed")

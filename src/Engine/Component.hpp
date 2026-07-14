@@ -5,19 +5,19 @@
 
 class Component {
 	protected:
-	explicit Component(IdPool<Component>* entity) : entity{ entity } {
+	explicit Component(Entity* entity) : entity{ entity } {
 	
 	}
-	IdPool<Component>* entity{};
+	Entity* entity{};
 
 	public:
 	virtual ~Component() = default;
 
-	void set_entity(IdPool<Component>* entity) { 
+	void set_entity(Entity* entity) { 
 		this->entity = entity; 
 	}
 
-	IdPool<Component>* get_entity() const { 
+	Entity* get_entity() const { 
 		return entity; 
 	}
 };

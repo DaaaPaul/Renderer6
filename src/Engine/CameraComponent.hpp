@@ -41,7 +41,7 @@ class CameraComponent : public Component {
 	float zoom{};
 
 	public:
-	explicit CameraComponent(IdPool<Component>* entity, const glm::vec3& position, const Angles& rotation, float zoom);
+	explicit CameraComponent(Entity* entity, const glm::vec3& position, const Angles& rotation, float zoom);
 
 	glm::vec3 get_position() const {
 		return position;

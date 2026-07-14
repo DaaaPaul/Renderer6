@@ -5,13 +5,13 @@
 #include <cstdint>
 #include <ktx.h>
 #include "Image.hpp"
-#include "Backend/LogicalDevice.h"
+#include "Utility/Vulkan.h"
 
 struct KtxTexture {
-	ktxTexture2* p_ktx_texture{};
-	explicit KtxTexture(ktxTexture2* p_ktx_texture) :
-		p_ktx_texture{ p_ktx_texture } {
-		
+	ktxTexture2* ktx_texture{};
+	explicit KtxTexture(ktxTexture2* ktx_texture, ktx_transcode_fmt_e target_format) :
+		ktx_texture{ ktx_texture } {
+		Vulkan::transcode_ktx_texture(this->ktx_texture, target_format);
 	}
 };
 
@@ -24,12 +24,12 @@ class Texture : public KtxTexture, public Image {
 					 VkSharingMode sharing_mode,
 					 const std::vector<uint32_t>& queue_family_indices);
 	~Texture() noexcept override {
-		ktxTexture_Destroy(ktxTexture(p_ktx_texture));
+		ktxTexture_Destroy(ktxTexture(KtxTexture::ktx_texture));
 	}
 
-	ktxTexture2* get_p_ktx_texture() const {
-		return p_ktx_texture;
+	ktxTexture2* get_ktx_texture() const {
+		return KtxTexture::ktx_texture;
 	}
 
-	static VkResult copy_ktx_texture_to_image(VkImage image, const ktxTexture2* p_ktx_texture);
+	static void copy_ktx_texture_to_image(VkImage image, const ktxTexture2* ktx_texture);
 };
