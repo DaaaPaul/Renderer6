@@ -3,6 +3,7 @@
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
 #include "Engine/CameraComponent.hpp"
+#include "ShaderStructs/UniformBufferBlock.hpp"
 
 namespace Engine {	
 	struct Acquire {
@@ -12,6 +13,7 @@ namespace Engine {
 
 	inline float total_delta_time = 0.0f;
 	inline uint32_t total_loops = 0;
+	inline UniformBufferBlock ubo_data;
 
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
 	void render_next();

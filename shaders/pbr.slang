@@ -20,10 +20,6 @@ struct UniformBuffer {
     float4 lightPositions[4];
     float4 lightColors[4];
     float4 camPos;
-    float exposure;
-    float gamma;
-    float prefilteredCubeMipLevels;
-    float scaleIBLAmbient;
 };
 
 struct PushConstants {
@@ -105,15 +101,18 @@ float4 fragment_main(VSOutput input) : SV_Target {
 
 	float3 N = normalize(input.normal);
 
-	if(push_constants.normalTextureSet > 0) {
-		float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
+    if (push_constants.normalTextureSet > 0) {
+        float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
 
+        // 1. Re-orthogonalize T with respect to N (Gram-Schmidt)
         float3 T = normalize(input.tangent.xyz);
-        float3 B = normalize(cross(N, T)) * input.tangent.w;
-        float3x3 TBN = float3x3(T, B, N);
+        T = normalize(T - dot(T, N) * N);
 
-        // Transform normal from tangent space to world space
-        N = normalize(mul(tangentNormal, TBN));
+        // 2. Calculate B (no need to normalize the cross product if T and N are orthonormal)
+        float3 B = cross(N, T) * input.tangent.w;
+
+        // 3. Explicitly transform the tangent normal into world space
+        N = normalize(T * tangentNormal.x + B * tangentNormal.y + N * tangentNormal.z);
     }
 
     // === LIGHTING SETUP ===

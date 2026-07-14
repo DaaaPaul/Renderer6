@@ -4,7 +4,7 @@
 
 namespace EntityManager {
 	void init() {
-		g_camera.add<CameraComponent>(&g_camera, glm::vec3(0.0f, 0.0f, 10.0f), Angles{}, 0.0f);
+		g_camera.add<CameraComponent>(&g_camera, glm::vec3(0.0f, 0.0f, -10.0f), Angles{0.0f, DA_PI, 0.0f}, 0.0f);
 
 		Window::g_window_user_pointer->camera_component = g_camera.get<CameraComponent>();
 	}

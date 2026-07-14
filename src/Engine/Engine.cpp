@@ -133,6 +133,7 @@ namespace Engine {
 		std::chrono::steady_clock::time_point before{};
 		std::chrono::steady_clock::time_point after{};
 		float delta_time{};
+		ubo_data = UniformBufferBlock(*EntityManager::g_camera.get<CameraComponent>());
 
 		while(!glfwWindowShouldClose(Window::g_glfw_window)) {
 			glfwPollEvents();
@@ -223,7 +224,14 @@ namespace Engine {
 		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
 		camera_component->set_position(CameraComponent::process_position(camera_component->get_basis(), camera_component->get_position(), delta_time));
 		
-		UniformBufferBlock ubo_data(*camera_component);
+		ubo_data.update(*camera_component);
+
+		if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_L) == GLFW_PRESS) {
+			ubo_data.light_positions[0].z -= 0.01f;
+		}
+		if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SEMICOLON) == GLFW_PRESS) {
+			ubo_data.light_positions[0].z += 0.01f;
+		}
 
 		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[0]), &ubo_data, sizeof(UniformBufferBlock));
 	}

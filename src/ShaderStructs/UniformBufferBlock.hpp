@@ -1,5 +1,7 @@
 #pragma once
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <glm/glm.hpp>
 #include "Engine/CameraComponent.hpp"
 #include "Memory/UniformBuffer.hpp"
@@ -11,10 +13,9 @@ struct UniformBufferBlock {
 	glm::vec4 light_positions[4]{};
 	glm::vec4 light_colors[4]{};
 	glm::vec4 camera_pos{};
-    float exposure{};
-    float gamma{};
-    float prefilteredCubeMipLevels{};
-    float scaleIBLAmbient{};
 
+	void update(const CameraComponent& camera);
+
+	UniformBufferBlock() = default;
 	explicit UniformBufferBlock(const CameraComponent& camera);
 };

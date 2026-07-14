@@ -64,21 +64,21 @@ glm::vec3 CameraComponent::process_position(const Basis& basis, const glm::vec3&
 	float move_amount = SPEED * delta_time;
 	glm::vec3 change{};
 
-	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_W)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_W) == GLFW_PRESS) {
 		change -= move_amount * basis.z;
 	}
-	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_S)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_S) == GLFW_PRESS) {
 		change += move_amount * basis.z;
 	}
-	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_A)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_A) == GLFW_PRESS) {
 		change -= move_amount * basis.x;
 	}
-	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_D)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_D) == GLFW_PRESS) {
 		change += move_amount * basis.x;
 	}
-	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE) && glfwGetKey(Window::g_glfw_window, GLFW_KEY_LEFT_SHIFT)) {
+	if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE) == GLFW_PRESS && glfwGetKey(Window::g_glfw_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		change -= move_amount * basis.y;
-	} else if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE)) {
+	} else if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		change += move_amount * basis.y;
 	}
 
@@ -132,5 +132,8 @@ glm::mat4 CameraComponent::to_view_matrix(const CameraComponent& cam) {
 }
 
 glm::mat4 CameraComponent::to_projection_matrix(const CameraComponent& cam) {
-	return glm::perspective(cam.zoom, Window::get_aspect_ratio(), 0.1f, 100.0f);
+	glm::mat4 proj_matrix(glm::perspective(cam.zoom, Window::get_aspect_ratio(), 0.1f, 100.0f));
+	proj_matrix[1][1] *= -1.0f;
+
+	return proj_matrix;
 }
