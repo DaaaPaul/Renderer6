@@ -6,7 +6,7 @@
 #include "Utility/Utility.h"
 #include "Engine/CameraComponent.hpp"
 
-#undef WINDOW_MONITOR_MODE
+#define WINDOW_MONITOR_MODE
 
 namespace Window {
 	struct Extent {
