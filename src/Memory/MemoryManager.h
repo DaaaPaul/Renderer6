@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <vector>
 #include "Utility/IdPool.hpp"
-#include "ShaderStructs/Vertex.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"

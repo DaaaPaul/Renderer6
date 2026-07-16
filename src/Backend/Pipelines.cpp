@@ -4,7 +4,6 @@
 #include "ShaderModule.h"
 #include "Swapchain.h"
 #include "Utility/Vulkan.h"
-#include "ShaderStructs/Vertex.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
 
 namespace Pipelines {
@@ -148,13 +147,13 @@ namespace Pipelines {
 				VkPipelineShaderStageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 					.stage = VK_SHADER_STAGE_VERTEX_BIT,
-					.module = ShaderModule::g_shader_modules[1],
+					.module = ShaderModule::g_shader_modules[0],
 					.pName = "vertex_main"
 				},
 				VkPipelineShaderStageCreateInfo{
 					.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 					.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-					.module = ShaderModule::g_shader_modules[1],
+					.module = ShaderModule::g_shader_modules[0],
 					.pName = "fragment_main"
 				}
 			};

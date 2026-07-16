@@ -7,7 +7,6 @@
 #include <stdexcept>
 #include <cstdint>
 #include "Backend/Instance.h"
-#include "ShaderStructs/Vertex.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
 
 #define UINT32(vector_size) static_cast<uint32_t>(vector_size)

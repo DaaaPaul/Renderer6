@@ -28,64 +28,24 @@ namespace Window {
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-		Extent window_extent = 
-		#ifdef WINDOW_MONITOR_MODE
-		get_window_extent_monitor();
-		#else
-		get_window_extent_independant();
-		#endif
-		
-		WindowInfo window_create = 
-		#ifdef WINDOW_MONITOR_MODE
-		create_glfw_window_monitor(window_extent);
-		#else
-		create_glfw_window_independant(window_extent);
-		#endif
+		if(g_MONITOR_MODE) {
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* video_mode = glfwGetVideoMode(monitor);
 
-		g_glfw_window = window_create.window;
-		window_create.setup();
+			g_glfw_window = glfwCreateWindow(video_mode->width, video_mode->height, g_WINDOW_TITLE, monitor, nullptr);
+			glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		} else {
+			g_glfw_window = glfwCreateWindow(g_WIDTH, g_HEIGHT, g_WINDOW_TITLE, nullptr, nullptr);
+		}
+
+		glfwSetWindowUserPointer(g_glfw_window, g_window_user_pointer);
+		glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
+		glfwSetScrollCallback(g_glfw_window, CameraComponent::scroll_callback);
+		glfwSetCursorPosCallback(g_glfw_window, CameraComponent::mouse_moved_callback);
 	}
+
 	void destroy() {
 		glfwDestroyWindow(g_glfw_window);
 		glfwTerminate();
-	}
-
-	Extent get_window_extent_monitor() {
-		const GLFWvidmode* video_mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-		return {
-			video_mode->width,
-			video_mode->height
-		};
-	}
-
-	Extent get_window_extent_independant() {
-		return g_DEBUG_EXTENT;
-	}
-
-	WindowInfo create_glfw_window_monitor(const Extent& extent) {
-		return {
-			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, glfwGetPrimaryMonitor(), nullptr),
-			[]() -> void {
-				glfwSetInputMode(g_glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-				glfwSetWindowUserPointer(g_glfw_window, g_window_user_pointer);
-				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
-				glfwSetScrollCallback(g_glfw_window, CameraComponent::scroll_callback);
-				glfwSetCursorPosCallback(g_glfw_window, CameraComponent::mouse_moved_callback);
-			}
-		};
-	}
-
-	WindowInfo create_glfw_window_independant(const Extent& extent) {
-		return {
-			glfwCreateWindow(extent.width, extent.height, g_WINDOW_TITLE, nullptr, nullptr),
-			[]() -> void {
-				glfwSetWindowUserPointer(g_glfw_window, g_window_user_pointer);
-				glfwSetFramebufferSizeCallback(g_glfw_window, window_resize_callback);
-				glfwSetScrollCallback(g_glfw_window, CameraComponent::scroll_callback);
-				glfwSetCursorPosCallback(g_glfw_window, CameraComponent::mouse_moved_callback);
-			}
-		};
 	}
 }

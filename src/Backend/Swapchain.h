@@ -25,4 +25,8 @@ namespace Swapchain {
 	VkExtent2D get_image_extent();
 	void check_format_colorspace(VkFormat format, VkColorSpaceKHR colorspace);
 	void check_present_mode(VkPresentModeKHR present_mode);
+
+	inline float get_aspect_ratio() noexcept {
+		return static_cast<float>(g_image_extent.width) / g_image_extent.height;
+	}
 }

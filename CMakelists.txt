@@ -18,7 +18,6 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-set(DEBUG_MODE ON)
 set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
@@ -63,11 +62,8 @@ set(RENDERER6_SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/TransformMatrices.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/Vertex.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.hpp
@@ -98,7 +94,6 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shaders.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/pbr.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
 )
@@ -108,8 +103,13 @@ add_executable(Renderer6)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Renderer6)
 
-if(DEBUG_MODE)
-	target_compile_options(Renderer6 PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4> $<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address /Zi>)
+set(SANITIZE OFF)
+if(SANITIZE)
+	target_compile_options(Renderer6 PRIVATE 
+		$<$<CXX_COMPILER_ID:MSVC>:/W4> 
+		$<$<CXX_COMPILER_ID:MSVC>:/fsanitize=address /Zi>
+		$<$<CXX_COMPILER_ID:MSVC>:/fsanitize=fuzzer>
+	)
 endif()
 target_sources(Renderer6 PRIVATE
 	${RENDERER6_SOURCES}

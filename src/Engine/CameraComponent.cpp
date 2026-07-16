@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include "Utility/Vulkan.h"
+#include "Backend/Swapchain.h"
 #include "Backend/Window.h"
 #include "Engine/CameraComponent.hpp"
 
@@ -132,7 +133,7 @@ glm::mat4 CameraComponent::to_view_matrix(const CameraComponent& cam) {
 }
 
 glm::mat4 CameraComponent::to_projection_matrix(const CameraComponent& cam) {
-	glm::mat4 proj_matrix(glm::perspective(cam.zoom, Window::get_aspect_ratio(), 0.1f, 100.0f));
+	glm::mat4 proj_matrix(glm::perspective(cam.zoom, Swapchain::get_aspect_ratio(), 0.1f, 100.0f));
 	proj_matrix[1][1] *= -1.0f;
 
 	return proj_matrix;
