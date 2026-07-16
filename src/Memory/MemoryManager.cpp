@@ -29,9 +29,9 @@ namespace MemoryManager {
 	void init() {
 		std::vector<uint32_t> gfx_queue_family_index{ PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT) };
 
-		Vulkan::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\sion_axe.glb)", g_vertices, g_indices);
+		Vulkan::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)", g_vertices, g_indices);
 
-		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(Vertex);
+		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(PBRVertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 
 		g_buffers.add<StagingBuffer>(

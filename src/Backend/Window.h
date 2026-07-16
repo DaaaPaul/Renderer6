@@ -51,6 +51,11 @@ namespace Window {
 		get_window_extent_independant();
 		#endif
 
+		PRINTLN("W" << extent.width);
+		PRINTLN(extent.height);
+
+		PRINTLN(static_cast<float>(extent.width) / extent.height);
+
 		return static_cast<float>(extent.width) / extent.height;
 	}
 

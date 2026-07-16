@@ -18,7 +18,7 @@ find_library(CORE_FOUNDATION CoreFoundation)
 endif()
 find_package(GLM REQUIRED)
 
-set(DEBUG_MODE OFF)
+set(DEBUG_MODE ON)
 set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
