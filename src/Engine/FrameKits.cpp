@@ -39,7 +39,8 @@ namespace FrameKits {
 			VkSemaphore shared_semaphore = Vulkan::create_semaphore(VK_SEMAPHORE_TYPE_TIMELINE);
 
 			SubmitKit model_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
-			std::vector<SubmitKit> submit_kits{ model_draw_submit };
+			SubmitKit simple_draw_submit(shared_semaphore, VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, Vulkan::create_cmd_buffer(g_cmd_pool));
+			std::vector<SubmitKit> submit_kits{ model_draw_submit, simple_draw_submit };
 
 			frame_kits.emplace_back(
 				SyncKit(Vulkan::create_fence(VK_NO_FLAGS), shared_semaphore), 

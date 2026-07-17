@@ -4,6 +4,7 @@
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
 #include "Buffer.hpp"
+#include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
 
 Buffer::Buffer(VkBufferCreateFlags create_flags, 

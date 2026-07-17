@@ -7,13 +7,7 @@
 #include "Backend/Window.h"
 #include "Engine/CameraComponent.hpp"
 
-bool Basis::is_normalized(const glm::vec3& vec3) {
-	return glm::normalize(vec3) == vec3;
-}
-
 glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
-	//assert(is_normalized(axis));
-
 	const float COS = std::cos(angle_cc);
 	const float SIN = std::sin(angle_cc);
 	const float ONE_MINUS_COS = 1.0f - std::cos(angle_cc);
@@ -34,8 +28,6 @@ glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
 }
 
 Basis Basis::apply_rotation(const Basis& basis, const Angles& euler_angles) {
-	//assert(is_normalized(basis.x) && is_normalized(basis.y) && is_normalized(basis.z));
-		
 	Basis moved(basis);
 		
 	glm::mat3 about_x = rotate(moved.x, euler_angles.x);

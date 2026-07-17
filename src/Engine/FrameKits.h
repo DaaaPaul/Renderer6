@@ -8,6 +8,8 @@
 #include "Backend/LogicalDevice.h"
 
 namespace FrameKits {
+	inline VkCommandPool g_cmd_pool{};
+
 	struct SyncKit {
 		VkFence guard{};
 		VkSemaphore timeline_semaphore{};
@@ -22,7 +24,10 @@ namespace FrameKits {
 		}
 	};
 
-	inline VkCommandPool g_cmd_pool{};
+	struct SyncPair {
+		uint64_t wait_val{};
+		uint64_t signal_val{};
+	};
 
 	struct SubmitKit {
 		VkSemaphoreSubmitInfo wait_info{};
@@ -30,10 +35,10 @@ namespace FrameKits {
 		VkSemaphoreSubmitInfo signal_info{};
 		VkSubmitInfo2 submit_info{};
 
-		explicit SubmitKit(VkSemaphore semaphore, VkPipelineStageFlags2 sync_scope_1, VkPipelineStageFlags2 sync_scope_2, VkCommandBuffer cmd_buf) :
-			wait_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_1 },
+		explicit SubmitKit(VkSemaphore semaphore, VkPipelineStageFlags2 sync_scope_2, VkPipelineStageFlags2 sync_scope_1, VkCommandBuffer cmd_buf) :
+			wait_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_2 },
 			cmd_info{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO, .commandBuffer = cmd_buf },
-			signal_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_2 },
+			signal_info{ .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO, .semaphore = semaphore, .stageMask = sync_scope_1 },
 			submit_info{ .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2, .waitSemaphoreInfoCount = 1, .commandBufferInfoCount = 1, .signalSemaphoreInfoCount = 1 } {
 			
 			self_refer();
@@ -48,11 +53,6 @@ namespace FrameKits {
 		void destroy() noexcept {
 			vkFreeCommandBuffers(g_device, g_cmd_pool, 1, &cmd_info.commandBuffer);
 		}
-	};
-
-	struct SyncPair {
-		uint64_t wait_val{};
-		uint64_t signal_val{};
 	};
 
 	struct FrameKit {

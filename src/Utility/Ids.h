@@ -27,4 +27,9 @@ namespace Ids {
 	inline constexpr uint32_t g_SION_NORMALS = 15;
 	inline constexpr uint32_t g_SION_METALLIC_ROUGHNESS_VIEW = 16;
 	inline constexpr uint32_t g_SION_NORMALS_VIEW = 17;
+
+	inline constexpr uint32_t g_SIMPLE_VERTEX_STAGE = 18;
+	inline constexpr uint32_t g_SIMPLE_INDEX_STAGE = 19;
+	inline constexpr uint32_t g_SIMPLE_VERTEX_BUFFER = 20;
+	inline constexpr uint32_t g_SIMPLE_INDEX_BUFFER = 21;
 }

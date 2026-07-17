@@ -29,18 +29,6 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Vulkan.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Vulkan.h
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Buffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DepthImage.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DepthImage.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/ImageView.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/ImageView.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/IndexBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/IndexBuffer.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DeviceMemory.cpp
@@ -49,16 +37,28 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/StagingBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/StagingBuffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/UniformBuffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/VertexBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Buffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DepthImage.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DepthImage.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DescriptorSet.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DescriptorSet.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Image.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Image.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/ImageView.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/ImageView.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/IndexBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/IndexBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Sampler.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Sampler.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/StagingBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/StagingBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Texture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Texture.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/UniformBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/UniformBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/VertexBuffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/VertexBuffer.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp
@@ -77,25 +77,29 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FrameKits.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FrameKits.h
 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.h
+
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Instance.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/LogicalDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/LogicalDevice.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/PhysicalDevice.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/PhysicalDevice.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/PipelineLayouts.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/PipelineLayouts.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Pipelines.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Pipelines.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/ShaderModule.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/ShaderModule.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Swapchain.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Window.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/pbr.slang
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/simple.slang
+
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/REVIEW.txt
 )
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${RENDERER6_SOURCES})
 

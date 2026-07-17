@@ -11,9 +11,11 @@ $$ |      $$ |  $$ |$$ |  $$ |$$\   $$ |$$\   $$ |$$ |  $$ |      $$ |     $$  _
 
 
 
+ organise memory manager init
+ add destructors to pooled things
 
-
-
+ function generator thing for rendering thing?
+ redo framekits
 
 
 A WEEK'S LOAD:

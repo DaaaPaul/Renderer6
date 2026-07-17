@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 #include "Engine/CameraComponent.hpp"
-#include "Memory/UniformBuffer.hpp"
+#include "Memory/Wrappers/UniformBuffer.hpp"
 
 struct UniformBufferBlock {
 	glm::mat4 model{};

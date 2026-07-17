@@ -9,28 +9,12 @@
 #include "Backend/Instance.h"
 #include "ShaderStructs/PBRVertex.hpp"
 
-#define UINT32(vector_size) static_cast<uint32_t>(vector_size)
-
 #define VK_CHECK(create_command, error_message) \
 	if(create_command != VK_SUCCESS) { \
         throw std::runtime_error(error_message); \
 	}
 
 #define VK_NO_FLAGS 0U
-
-inline bool equal(float float1, float float2, float epsilon = 0.001f) {
-	return fabs(float1 - float2) <= (((float1 > float2) ? float1 : float2) * epsilon + epsilon);
-}
-
-inline bool operator==(glm::vec3 v1, glm::vec3 v2) {
-	return equal(v1.x, v2.x) && equal(v1.y, v2.y) && equal(v1.z, v2.z);
-}
-
-std::ostream& operator<<(std::ostream& os, glm::vec3 const& vec3);
-
-std::ostream& operator<<(std::ostream& os, glm::vec4 const& vec4);
-	
-std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4);
 
 namespace Vulkan {
 	inline PFN_vkTransitionImageLayoutEXT vkTransitionImageLayoutEXT{};

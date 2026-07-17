@@ -3,7 +3,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <cstdint>
-#include "Memory/Buffer.hpp"
+#include "Memory/Wrappers/Buffer.hpp"
 
 class UniformBuffer : public Buffer {
 	public:

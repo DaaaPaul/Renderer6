@@ -11,17 +11,14 @@
 #include "ShaderStructs/UniformBufferBlock.hpp"
 #include "Backend/PhysicalDevice.h"
 #include "Backend/Swapchain.h"
-#include "Image.hpp"
-#include "Texture.hpp"
-#include "DepthImage.hpp"
-#include "ImageView.hpp"
-#include "Buffer.hpp"
-#include "VertexBuffer.hpp"
-#include "IndexBuffer.hpp"
-#include "UniformBuffer.hpp"
-#include "StagingBuffer.hpp"
-#include "DescriptorSet.hpp"
-#include "Sampler.hpp"
+#include "Wrappers/Image.hpp"
+#include "Wrappers/Texture.hpp"
+#include "Wrappers/DepthImage.hpp"
+#include "Wrappers/Buffer.hpp"
+#include "Wrappers/VertexBuffer.hpp"
+#include "Wrappers/IndexBuffer.hpp"
+#include "Wrappers/UniformBuffer.hpp"
+#include "Wrappers/StagingBuffer.hpp"
 
 namespace MemoryManager {
 	void init() {
@@ -31,6 +28,11 @@ namespace MemoryManager {
 
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(PBRVertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
+
+		Utility::generate_sphere(g_simple_vertices, g_simple_indices, 0.1f, 15, 15);
+
+		const uint32_t SIMPLE_VERTEX_BUFFER_SIZE = g_simple_vertices.size() * sizeof(glm::vec3);
+		const uint32_t SIMPLE_INDEX_BUFFER_SIZE = g_simple_indices.size() * sizeof(uint32_t);
 
 		g_buffers.add<StagingBuffer>(
 			Ids::g_VERTEX_STAGE,
@@ -53,6 +55,31 @@ namespace MemoryManager {
 		g_buffers.add<IndexBuffer>(
 			Ids::g_INDEX_BUFFER,
 			INDEX_BUFFER_SIZE,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
+
+		g_buffers.add<StagingBuffer>(
+			Ids::g_SIMPLE_VERTEX_STAGE,
+			SIMPLE_VERTEX_BUFFER_SIZE,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
+		g_buffers.add<StagingBuffer>(
+			Ids::g_SIMPLE_INDEX_STAGE,
+			SIMPLE_INDEX_BUFFER_SIZE,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
+		g_buffers.add<VertexBuffer>(
+			Ids::g_SIMPLE_VERTEX_BUFFER,
+			SIMPLE_VERTEX_BUFFER_SIZE,
+			VK_SHARING_MODE_EXCLUSIVE,
+			gfx_queue_family_index
+		);
+		g_buffers.add<IndexBuffer>(
+			Ids::g_SIMPLE_INDEX_BUFFER,
+			SIMPLE_INDEX_BUFFER_SIZE,
 			VK_SHARING_MODE_EXCLUSIVE,
 			gfx_queue_family_index
 		);
@@ -105,20 +132,21 @@ namespace MemoryManager {
 
 		std::vector<Buffer*> p_host_buffers{
 			g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE),
-			g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE)
+			g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE),
+			g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_VERTEX_STAGE),
+			g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_INDEX_STAGE)
 		};
 		p_host_buffers.reserve(p_host_buffers.size() + Swapchain::g_IMAGE_COUNT);
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			p_host_buffers.push_back(g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[i]));
 		}
-		std::vector<Image*> p_host_images{
-
-		};
-		g_host_memory = HostMemory(p_host_buffers, p_host_images);
+		g_host_memory = HostMemory(p_host_buffers, {});
 
 		std::vector<Buffer*> p_device_buffers{
 			g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER),
-			g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER)
+			g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER),
+			g_buffers.get<VertexBuffer>(Ids::g_SIMPLE_VERTEX_BUFFER),
+			g_buffers.get<IndexBuffer>(Ids::g_SIMPLE_INDEX_BUFFER),
 		};
 		std::vector<Image*> p_device_images{
 			g_images.get<Texture>(Ids::g_SION_TEXTURE),
@@ -127,13 +155,10 @@ namespace MemoryManager {
 		};
 		g_device_memory_1 = DeviceMemory(p_device_buffers, p_device_images);
 
-		std::vector<Buffer*> p_device_2_buffers{
-
-		};
 		std::vector<Image*> p_device_2_images{
 			g_images.get<DepthImage>(Ids::g_DEPTH_IMAGE)
 		};
-		g_device_memory_2 = DeviceMemory(p_device_2_buffers, p_device_2_images);
+		g_device_memory_2 = DeviceMemory({}, p_device_2_images);
 
 		g_image_views.add<ImageView>(
 			Ids::g_SION_TEXTURE_VIEW,
@@ -170,9 +195,13 @@ namespace MemoryManager {
 
 		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE), g_vertices.data(), VERTEX_BUFFER_SIZE);
 		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE), g_indices.data(), INDEX_BUFFER_SIZE);
+		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_VERTEX_STAGE), g_simple_vertices.data(), SIMPLE_VERTEX_BUFFER_SIZE);
+		g_host_memory.copy_data_to_buffer(g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_INDEX_STAGE), g_simple_indices.data(), SIMPLE_INDEX_BUFFER_SIZE);
 
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_VERTEX_STAGE), g_buffers.get<VertexBuffer>(Ids::g_VERTEX_BUFFER), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
 		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_INDEX_STAGE), g_buffers.get<IndexBuffer>(Ids::g_INDEX_BUFFER), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_VERTEX_STAGE), g_buffers.get<VertexBuffer>(Ids::g_SIMPLE_VERTEX_BUFFER), VkBufferCopy{0, 0, SIMPLE_VERTEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get<StagingBuffer>(Ids::g_SIMPLE_INDEX_STAGE), g_buffers.get<IndexBuffer>(Ids::g_SIMPLE_INDEX_BUFFER), VkBufferCopy{0, 0, SIMPLE_INDEX_BUFFER_SIZE});
 
 		Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_image(), g_images.get<Texture>(Ids::g_SION_TEXTURE)->get_ktx_texture());
 		Texture::copy_ktx_texture_to_image(g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_image(), g_images.get<Texture>(Ids::g_SION_METALLIC_ROUGHNESS)->get_ktx_texture());
@@ -318,6 +347,10 @@ namespace MemoryManager {
 		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
 			g_buffers.remove(Ids::g_UNIFORM_BUFFERS[i]);
 		}
+		g_buffers.remove(Ids::g_SIMPLE_VERTEX_BUFFER);
+		g_buffers.remove(Ids::g_SIMPLE_INDEX_BUFFER);
+		g_buffers.remove(Ids::g_SIMPLE_VERTEX_STAGE);
+		g_buffers.remove(Ids::g_SIMPLE_INDEX_STAGE);
 		g_buffers.remove(Ids::g_VERTEX_BUFFER);
 		g_buffers.remove(Ids::g_INDEX_BUFFER);
 		g_buffers.remove(Ids::g_VERTEX_STAGE);

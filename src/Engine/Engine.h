@@ -11,11 +11,13 @@ namespace Engine {
 		VkResult result{};
 	};
 
-	inline float total_delta_time = 0.0f;
-	inline uint32_t total_loops = 0;
-	inline UniformBufferBlock ubo_data;
+	inline float g_total_delta_time = 0.0f;
+	inline uint32_t g_total_loops = 0;
+	inline UniformBufferBlock g_ubo_data;
+	inline glm::vec2 g_lazy{};
 
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
+	void record_draw_simple(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
 	void render_next();
 	void run();
 

@@ -1,7 +1,7 @@
 #include "Backend/LogicalDevice.h"
 #include "Backend/PhysicalDevice.h"
-#include "Backend/PipelineLayouts.h"
-#include "Backend/Pipelines.h"
+#include "Pipeline/PipelineLayouts.h"
+#include "Pipeline/Pipelines.h"
 #include "Backend/Swapchain.h"
 #include "Backend/Window.h"
 #include "CameraComponent.hpp"
@@ -10,14 +10,14 @@
 #include "EntityManager.h"
 #include "ShaderStructs/PushConstantBlock.hpp"
 #include "ShaderStructs/UniformBufferBlock.hpp"
-#include "Memory/DepthImage.hpp"
 #include "Memory/HostMemory.hpp"
-#include "Memory/IndexBuffer.hpp"
 #include "Memory/MemoryManager.h"
-#include "Memory/UniformBuffer.hpp"
-#include "Memory/VertexBuffer.hpp"
-#include "Memory/Buffer.hpp"
-#include "Memory/ImageView.hpp"
+#include "Memory/Wrappers/DepthImage.hpp"
+#include "Memory/Wrappers/IndexBuffer.hpp"
+#include "Memory/Wrappers/UniformBuffer.hpp"
+#include "Memory/Wrappers/VertexBuffer.hpp"
+#include "Memory/Wrappers/Buffer.hpp"
+#include "Memory/Wrappers/ImageView.hpp"
 #include "Utility/Ids.h"
 #include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
@@ -44,7 +44,7 @@ namespace Engine {
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 			.clearValue = { .depthStencil = VkClearDepthStencilValue(1.0f, 0) },
 		};
 		VkRenderingInfo rendering_info{
@@ -93,13 +93,70 @@ namespace Engine {
 		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
+		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
+	};
+
+	void record_draw_simple(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {
+		VkRenderingAttachmentInfo sc_image_attachment{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+			.imageView = Swapchain::g_image_views[sc_image_index],
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		};
+		VkRenderingAttachmentInfo depth_image_attachment{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+			.imageView = MemoryManager::g_image_views.get<ImageView>(Ids::g_DEPTH_VIEW)->get_image_view(),
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.resolveMode = VK_RESOLVE_MODE_NONE,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		};
+		VkRenderingInfo rendering_info{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::g_status.imageExtent),
+			.layerCount = 1,
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &sc_image_attachment,
+			.pDepthAttachment = &depth_image_attachment
+		};
+		Vulkan::begin_cmd_buffer(cmd_buf, VK_NO_FLAGS);
+
+		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[1]);
+		set_viewport_and_scissor(cmd_buf);
+
+		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<VertexBuffer>(Ids::g_SIMPLE_VERTEX_BUFFER)->get_buffer();
+		VkBuffer index_buffer = MemoryManager::g_buffers.get<IndexBuffer>(Ids::g_SIMPLE_INDEX_BUFFER)->get_buffer();
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
+		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
+
+		struct SimplePushConstantBlock {
+			glm::mat4 model{};
+			glm::mat4 view{};
+			glm::mat4 proj{};
+		};
+		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
+		SimplePushConstantBlock block{
+			.model = glm::mat4(1.0f),
+			.view = CameraComponent::to_view_matrix(*camera_component),
+			.proj = CameraComponent::to_projection_matrix(*camera_component),
+		};
+		block.model = glm::translate(block.model, glm::vec3(g_lazy.x, 0.0f, g_lazy.y));
+
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[1], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(SimplePushConstantBlock), &block); 
+
+		vkCmdBeginRendering(cmd_buf, &rendering_info);
+		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_simple_indices.size(), 1, 0, 0, 0);
+		vkCmdEndRendering(cmd_buf);
+
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
-	};
+	}
 
 	void render_next() {
 		FrameKits::FrameKit& frame_kit = FrameKits::g_frame_kits[FrameKits::g_frame_index];
@@ -113,12 +170,13 @@ namespace Engine {
 		wait_fence(frame_kit.sync_kit.guard);
 
 		record_draw_model(frame_kit.submit_kits[0].cmd_info.commandBuffer, acquire.sc_image_index);
+		record_draw_simple(frame_kit.submit_kits[1].cmd_info.commandBuffer, acquire.sc_image_index);
 
-		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info };
+		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info, frame_kit.submit_kits[1].submit_info };
 		
 		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), UINT32(submits.size()), submits.data(), VK_NULL_HANDLE);
 
-		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[0].signal_val);
+		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[1].signal_val);
 		
 		if(present_sc_image(acquire.sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT)) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
@@ -132,7 +190,7 @@ namespace Engine {
 		std::chrono::steady_clock::time_point before{};
 		std::chrono::steady_clock::time_point after{};
 		float delta_time{};
-		ubo_data = UniformBufferBlock(*EntityManager::g_camera.get<CameraComponent>());
+		g_ubo_data = UniformBufferBlock(*EntityManager::g_camera.get<CameraComponent>());
 
 		while(!glfwWindowShouldClose(Window::g_glfw_window)) {
 			glfwPollEvents();
@@ -145,11 +203,11 @@ namespace Engine {
 			after = std::chrono::high_resolution_clock::now();
 
 			delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
-			total_delta_time += delta_time;
-			++total_loops;
+			g_total_delta_time += delta_time;
+			++g_total_loops;
 		}
 
-		PRINTLN("AVERAGE FRAME TIME: " << (total_delta_time / total_loops) << "s");
+		PRINTLN("AVERAGE FRAME TIME: " << (g_total_delta_time / g_total_loops) << "s");
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
@@ -223,15 +281,14 @@ namespace Engine {
 		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
 		camera_component->set_position(CameraComponent::process_position(camera_component->get_basis(), camera_component->get_position(), delta_time));
 		
-		ubo_data.update(*camera_component);
+		g_ubo_data.update(*camera_component);
 
-		if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_L) == GLFW_PRESS) {
-			ubo_data.light_positions[0].z -= 0.01f;
-		}
-		if(glfwGetKey(Window::g_glfw_window, GLFW_KEY_SEMICOLON) == GLFW_PRESS) {
-			ubo_data.light_positions[0].z += 0.01f;
-		}
+		glm::vec2 circle_position(Utility::get_circle_position(g_total_delta_time, 3.0f));
+		g_ubo_data.light_positions[0].x = circle_position.x;
+		g_ubo_data.light_positions[0].z = circle_position.y;
 
-		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[0]), &ubo_data, sizeof(UniformBufferBlock));
+		g_lazy = circle_position;
+
+		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<UniformBuffer>(Ids::g_UNIFORM_BUFFERS[0]), &g_ubo_data, sizeof(UniformBufferBlock));
 	}
 }

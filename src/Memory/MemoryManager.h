@@ -4,11 +4,11 @@
 #include "ShaderStructs/PBRVertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
-#include "Buffer.hpp"
-#include "Image.hpp"
-#include "DescriptorSet.hpp"
-#include "ImageView.hpp"
-#include "Sampler.hpp"
+#include "Wrappers/Buffer.hpp"
+#include "Wrappers/Image.hpp"
+#include "Wrappers/DescriptorSet.hpp"
+#include "Wrappers/ImageView.hpp"
+#include "Wrappers/Sampler.hpp"
 
 namespace MemoryManager {
 	inline IdPool<Buffer> g_buffers;
@@ -19,6 +19,9 @@ namespace MemoryManager {
 
 	inline std::vector<PBRVertex> g_vertices;
 	inline std::vector<uint32_t> g_indices;
+
+	inline std::vector<glm::vec3> g_simple_vertices;
+	inline std::vector<uint32_t> g_simple_indices;
 
 	inline HostMemory g_host_memory;
 	inline DeviceMemory g_device_memory_1;

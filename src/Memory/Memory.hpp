@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan.h>
 #include <memory>
-#include "Image.hpp"
-#include "Buffer.hpp"
+#include "Wrappers/Image.hpp"
+#include "Wrappers/Buffer.hpp"
 
 class Memory {
 	protected:

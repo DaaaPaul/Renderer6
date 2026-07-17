@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cassert>
 #include <cstring>
-#include "Buffer.hpp"
-#include "Image.hpp"
+#include "Wrappers/Buffer.hpp"
+#include "Wrappers/Image.hpp"
 #include "Memory.hpp"
 #include "HostMemory.hpp"
 #include "Backend/LogicalDevice.h"

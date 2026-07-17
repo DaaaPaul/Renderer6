@@ -17,7 +17,6 @@ struct Basis {
 	glm::vec3 y{0.0f, 1.0f, 0.0f};
 	glm::vec3 z{0.0f, 0.0f, 1.0f};
 	
-	static bool is_normalized(const glm::vec3& vec3);
 	static glm::mat3 rotate(const glm::vec3& axis, const float& angle_cc);
 	static Basis apply_rotation(const Basis& basis, const Angles& euler_angles);
 };
