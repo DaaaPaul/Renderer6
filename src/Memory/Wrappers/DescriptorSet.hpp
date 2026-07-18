@@ -25,11 +25,7 @@ class DescriptorSet {
 	DescriptorSet() = default;
 
 	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-	void destroy() noexcept {
-		vkFreeDescriptorSets(g_device, pool, 1, &descriptor_set);
-		vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
-		vkDestroyDescriptorPool(g_device, pool, nullptr);
-	}
+	~DescriptorSet() noexcept;
 
 	VkDescriptorSetLayout get_layout() const {
 		return layout;

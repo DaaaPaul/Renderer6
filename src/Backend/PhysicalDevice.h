@@ -10,7 +10,7 @@ namespace PhysicalDevice {
 	inline VkPhysicalDevice g_physical_device{};
 
 	inline std::array<uint32_t, LogicalDevice::g_QUEUE_FAMILY_COUNT> g_queue_family_indices{};
-
+	inline std::vector<uint32_t> g_graphics_family_index{};
 	inline VkPhysicalDeviceLimits g_limits{};
 
 	void init();

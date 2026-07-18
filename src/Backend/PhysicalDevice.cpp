@@ -21,6 +21,8 @@ namespace PhysicalDevice {
 			VkPhysicalDeviceProperties selected_properties{};
 			vkGetPhysicalDeviceProperties(g_physical_device, &selected_properties);
 			g_limits = selected_properties.limits;
+
+			g_graphics_family_index.push_back(get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 		}
 	}
 	

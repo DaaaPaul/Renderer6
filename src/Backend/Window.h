@@ -12,7 +12,7 @@ namespace Window {
 		CameraComponent* camera_component{};
 	};
 
-	inline constexpr bool g_MONITOR_MODE = true;
+	inline constexpr bool g_MONITOR_MODE = false;
 
 	inline GLFWwindow* g_glfw_window{};
 	inline constexpr const char* g_WINDOW_TITLE = "Renderer6";

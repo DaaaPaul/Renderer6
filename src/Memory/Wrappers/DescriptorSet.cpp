@@ -11,6 +11,12 @@ DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bi
 
 }
 
+DescriptorSet::~DescriptorSet() noexcept {
+	vkFreeDescriptorSets(g_device, pool, 1, &descriptor_set);
+	vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
+	vkDestroyDescriptorPool(g_device, pool, nullptr);
+}
+
 void DescriptorSet::write(Write write_info) {
 	VkWriteDescriptorSet write_descriptor_set{
 		.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,

@@ -25,7 +25,7 @@ class Sampler {
 					 float min_lod,
 					 float max_lod,
 					 VkBorderColor border_color);
-	void destroy() noexcept {
+	~Sampler() noexcept {
 		vkDestroySampler(g_device, sampler, nullptr);
 	}
 

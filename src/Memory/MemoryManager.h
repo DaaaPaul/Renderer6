@@ -29,4 +29,14 @@ namespace MemoryManager {
 
 	void init();
 	void destroy();
+
+	void load_vertices_and_indices();
+	void init_buffers();
+	void init_images();
+	void init_memory();
+	void populate_memory();
+	void init_image_views();
+	void init_samplers();
+	void init_descriptor_sets();
+	void write_descriptor_sets();
 }
