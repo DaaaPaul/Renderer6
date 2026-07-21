@@ -3,3 +3,4 @@ PBR ROTATION:
 - generate sphere math (understand direction cosines)
 - general review current codeflow
 std::vector<float>().swap(texCoords);
+inline functions real difference

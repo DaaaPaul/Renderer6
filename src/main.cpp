@@ -16,7 +16,7 @@
 #include "Memory/MemoryManager.h"
 #include "Engine/Engine.h"
 #include "Engine/EntityManager.h"
-#include "Engine/FrameKits.h"
+#include "Engine/Frame.hpp"
 
 int main() {
     try {
@@ -35,7 +35,6 @@ int main() {
 		ShaderModule::init();
 		Pipelines::init();
 
-		FrameKits::init();
 		EntityManager::init();
 
 		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
@@ -44,7 +43,6 @@ int main() {
 		Engine::run();
 
 		EntityManager::destroy();
-		FrameKits::destroy();
 
 		Pipelines::clear();
 		ShaderModule::clear();
@@ -57,6 +55,6 @@ int main() {
 		Instance::destroy();
 		Window::destroy();
 	} catch(const std::runtime_error& runtime_error) {
-        PRINTLN("ERROR: " << runtime_error.what());
+        PRINTLN("ERROR: " << runtime_error.what())
     }
 }

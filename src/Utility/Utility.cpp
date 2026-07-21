@@ -35,7 +35,7 @@ namespace Utility {
 		std::ifstream file_stream_in(file_path, std::ios::binary | std::ios::ate);
 
 		if(!file_stream_in.good()) {
-			THROW_RUNTIME("get_file_bytes: Failure reading file at " + file_path);
+			THROW_RUNTIME("get_file_bytes: Failure reading file at " + file_path)
 		}
 
 		uint32_t file_size = file_stream_in.tellg();

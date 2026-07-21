@@ -31,17 +31,17 @@ namespace Vulkan {
 		} else if(file_path.ends_with(".glb")) {
 			result = loader.LoadBinaryFromFile(&model, &error_msg, &warning_msg, file_path);
 		} else {
-			THROW_RUNTIME("load_gltf_model: invalid file extension");
+			THROW_RUNTIME("load_gltf_model: invalid file extension")
 		}
 
 		if(!error_msg.empty()) {
-			PRINTLN("load_gltf_model (error): " << error_msg);
+			PRINTLN("load_gltf_model (error): " << error_msg)
 		}
 		if(!warning_msg.empty()) {
-			PRINTLN("load_gltf_model (warning): " << warning_msg);
+			PRINTLN("load_gltf_model (warning): " << warning_msg)
 		}
 		if(!result) {
-			THROW_RUNTIME("load_gltf_model: !result");
+			THROW_RUNTIME("load_gltf_model: !result")
 		}
 
 		vertices.clear();
@@ -112,7 +112,7 @@ namespace Vulkan {
 						}
 						break;
 					default:
-						THROW_RUNTIME("load_gltf_model: unsupported index type");
+						THROW_RUNTIME("load_gltf_model: unsupported index type")
 				}
 			}
 		}
@@ -122,7 +122,7 @@ namespace Vulkan {
 		ktxTexture2* ktx_texture{};
 
 		if(ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktx_texture) != KTX_SUCCESS) {
-			THROW_RUNTIME("load_ktx_texture: load failure");
+			THROW_RUNTIME("load_ktx_texture: load failure")
 		}
 
 		return ktx_texture;
@@ -131,7 +131,7 @@ namespace Vulkan {
 	void transcode_ktx_texture(ktxTexture2* ktx_texture, ktx_transcode_fmt_e target_format) {
 		if(ktxTexture2_NeedsTranscoding(ktx_texture)) {
 			if(ktxTexture2_TranscodeBasis(ktx_texture, target_format, VK_NO_FLAGS) != KTX_SUCCESS) {
-				THROW_RUNTIME("transcode_ktx_texture: compress failure");
+				THROW_RUNTIME("transcode_ktx_texture: compress failure")
 			}
 		}
 	}

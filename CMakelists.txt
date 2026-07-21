@@ -74,8 +74,10 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/EntityManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Events.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Events.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FrameKits.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FrameKits.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Frame.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Frame.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.h

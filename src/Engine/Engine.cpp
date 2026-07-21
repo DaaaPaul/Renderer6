@@ -6,7 +6,7 @@
 #include "Backend/Window.h"
 #include "CameraComponent.hpp"
 #include "Engine.h"
-#include "FrameKits.h"
+#include "Frame.hpp"
 #include "EntityManager.h"
 #include "ShaderStructs/PushConstantBlock.hpp"
 #include "ShaderStructs/UniformBufferBlock.hpp"
@@ -158,35 +158,34 @@ namespace Engine {
 		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure")
 	}
 
-	void render_next() {
-		FrameKits::FrameKit& frame_kit = FrameKits::g_frame_kits[FrameKits::g_frame_index];
-		frame_kit.progress_sync();
+	void render_next(Frame& frame) {
+		frame.progress_timeline();
 
-		Acquire acquire = acquire_sc_image(frame_kit.sync_kit.guard);
+		ScAcquire acquire = acquire_sc_image(frame.fence);
 		if(acquire.result == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
 			return;
 		}
-		wait_fence(frame_kit.sync_kit.guard);
+		wait_fence(frame.fence);
 
-		record_draw_model(frame_kit.submit_kits[0].cmd_info.commandBuffer, acquire.sc_image_index);
-		record_draw_simple(frame_kit.submit_kits[1].cmd_info.commandBuffer, acquire.sc_image_index);
+		record_draw_model(frame.submits[0].cmd.commandBuffer, acquire.sc_image_index);
+		record_draw_simple(frame.submits[1].cmd.commandBuffer, acquire.sc_image_index);
 
-		std::vector<VkSubmitInfo2> submits{ frame_kit.submit_kits[0].submit_info, frame_kit.submit_kits[1].submit_info };
+		std::vector<VkSubmitInfo2> submits{ frame.submits[0].submit, frame.submits[1].submit };
 		
 		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), UINT32(submits.size()), submits.data(), VK_NULL_HANDLE);
 
-		wait_timeline_semaphore(frame_kit.sync_kit.timeline_semaphore, frame_kit.sync_pairs[1].signal_val);
+		wait_timeline_semaphore(frame.timeline, frame.timeline_val);
 		
 		if(present_sc_image(acquire.sc_image_index, LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT)) == VK_ERROR_OUT_OF_DATE_KHR || Window::g_window_user_pointer->window_resized) {
 			resize();
 			return;
 		}
-
-		FrameKits::increment_frame_index();
 	}
 
 	void run() {
+		FramesInFlight frames_in_flight(Swapchain::g_IMAGE_COUNT, 2);
+
 		std::chrono::steady_clock::time_point before{};
 		std::chrono::steady_clock::time_point after{};
 		float delta_time{};
@@ -199,7 +198,8 @@ namespace Engine {
 			update(delta_time);
 
 			before = std::chrono::high_resolution_clock::now();
-			render_next();
+			render_next(frames_in_flight.frames[frames_in_flight.frame_index.val]);
+			++frames_in_flight.frame_index;
 			after = std::chrono::high_resolution_clock::now();
 
 			delta_time = std::chrono::duration<float, std::chrono::seconds::period>(after - before).count();
@@ -207,12 +207,12 @@ namespace Engine {
 			++g_total_loops;
 		}
 
-		PRINTLN("AVERAGE FRAME TIME: " << (g_total_delta_time / g_total_loops) << "s");
+		PRINTLN("AVERAGE FRAME TIME: " << (g_total_delta_time / g_total_loops) << "s")
 
 		VK_CHECK(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
 
-	Acquire acquire_sc_image(VkFence fence_to_signal) {
+	ScAcquire acquire_sc_image(VkFence fence_to_signal) {
 		uint32_t sc_image_index{};
 		VkResult result = vkAcquireNextImageKHR(g_device, Swapchain::g_swapchain, UINT64_MAX, VK_NULL_HANDLE, fence_to_signal, &sc_image_index);
 
@@ -268,7 +268,7 @@ namespace Engine {
 		Swapchain::recreate();
 		// TODO: add functionality to recreate depth resources
 		Window::g_window_user_pointer->window_resized = false;
-		FrameKits::recreate();
+		//Frame::recreate();
 	}
 
 	void check_close() {

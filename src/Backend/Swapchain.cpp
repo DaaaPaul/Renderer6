@@ -95,7 +95,7 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			THROW_RUNTIME("check_format_colorspace: requested format colorspace pair not supported");
+			THROW_RUNTIME("check_format_colorspace: requested format colorspace pair not supported")
 		}
 	}
 
@@ -114,7 +114,7 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			THROW_RUNTIME("check_present_mode: requested present mode not supported");
+			THROW_RUNTIME("check_present_mode: requested present mode not supported")
 		}
 	}
 }

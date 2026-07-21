@@ -2,11 +2,12 @@
 
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include "Engine/CameraComponent.hpp"
+#include "FramesInFlight.hpp"
+#include "Backend/Swapchain.h"
 #include "ShaderStructs/UniformBufferBlock.hpp"
 
 namespace Engine {	
-	struct Acquire {
+	struct ScAcquire {
 		uint32_t sc_image_index{};
 		VkResult result{};
 	};
@@ -18,10 +19,10 @@ namespace Engine {
 
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
 	void record_draw_simple(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
-	void render_next();
+	void render_next(Frame& frame);
 	void run();
 
-	Acquire acquire_sc_image(VkFence fence_to_signal);
+	ScAcquire acquire_sc_image(VkFence fence_to_signal);
 	VkResult present_sc_image(uint32_t sc_image_index, VkQueue queue);
 	void wait_timeline_semaphore(VkSemaphore semaphore, uint64_t wait_val);
 	void wait_fence(VkFence fence);

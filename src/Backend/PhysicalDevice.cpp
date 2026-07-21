@@ -16,7 +16,7 @@ namespace PhysicalDevice {
 		g_physical_device = select_physical_device(physical_devices, get_physical_device_properties(physical_devices));
 
 		if(!g_physical_device) {
-			THROW_RUNTIME("Failed to select a GPU on your system");
+			THROW_RUNTIME("Failed to select a GPU on your system")
 		} else {
 			VkPhysicalDeviceProperties selected_properties{};
 			vkGetPhysicalDeviceProperties(g_physical_device, &selected_properties);

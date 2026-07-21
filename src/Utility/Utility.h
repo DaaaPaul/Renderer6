@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#define PRINTLN(x) std::cout << x << '\n'
+#define PRINTLN(x) std::cout << x << '\n';
 
-#define THROW_RUNTIME(x) throw std::runtime_error(x)
+#define THROW_RUNTIME(x) throw std::runtime_error(x);
 
 #define UINT32(x) static_cast<uint32_t>(x)
 
@@ -18,6 +18,30 @@
 	if(!p) { \
 		throw std::runtime_error(error_msg); \
 	}
+
+#define DELETE_COPY_CTOR(x) \
+	x(const x&) = delete;
+
+#define DELETE_COPY_ASSIGN(x) \
+	x& operator=(const x&) = delete;
+
+#define DELETE_MOVE_CTOR(x) \
+	x(x&&) = delete;
+
+#define DELETE_MOVE_ASSIGN(x) \
+	x& operator=(x&&) = delete;
+
+#define DELETE_COPYING(x) \
+	DELETE_COPY_CTOR(x) \
+	DELETE_COPY_ASSIGN(x)
+
+#define DELETE_MOVING(x) \
+	DELETE_MOVE_CTOR(x) \
+	DELETE_MOVE_ASSIGN(x)
+
+#define DELETE_COPYING_MOVING(x) \
+	DELETE_COPYING(x) \
+	DELETE_MOVING(x)
 
 inline std::ostream& operator<<(std::ostream& os, glm::vec2 const& vec2) {
 	return os << '[' << vec2.x << ", " << vec2.y << ']';

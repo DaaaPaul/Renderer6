@@ -71,7 +71,7 @@ namespace LogicalDevice {
 
 		size_t linear_queue_index = calculate_queue_index(queue_family_array_index, queue_index);
 		if(linear_queue_index >= g_queues.size()) {
-			THROW_RUNTIME("Attempted to retrieve queue that doesn't exist");
+			THROW_RUNTIME("Attempted to retrieve queue that doesn't exist")
 		} else {
 			return g_queues[linear_queue_index];
 		}
