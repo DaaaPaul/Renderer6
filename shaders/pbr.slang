@@ -31,7 +31,7 @@ struct PushConstants {
     int normalTextureSet;
 };
 
-static const float DA_PI = 3.14159265359;
+static const float Utility::PI = 3.14159265359;
 
 [[vk::binding(0, 0)]] ConstantBuffer<UniformBuffer> ubo;
 [[vk::binding(1, 0)]] SamplerState sampler;
@@ -50,7 +50,7 @@ float DistributionGGX(float NdotH, float roughness) {
 
     float nom = a2; // Numerator: concentration factor
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    denom = DA_PI * denom * denom; // Normalization factor
+    denom = Utility::PI * denom * denom; // Normalization factor
 
     return nom / denom; // Normalized distribution
 }
@@ -172,7 +172,7 @@ float4 fragment_main(VSOutput input) : SV_Target {
         // === RADIANCE ACCUMULATION ===
         // Combine diffuse (Lambertian) and specular (Cook-Torrance) terms
         // Multiply by incident radiance and cosine foreshortening
-        Lo += (kD * base_color.rgb / DA_PI + specular) * radiance * NdotL;
+        Lo += (kD * base_color.rgb / Utility::PI + specular) * radiance * NdotL;
     }
 
     // Combine all lighting contributions

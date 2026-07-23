@@ -1,18 +1,22 @@
+#pragma once
+
 #include <cstdint>
 #include <vector>
 #include "Utility/IdPool.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
 #include "HostMemory.hpp"
 #include "DeviceMemory.hpp"
-#include "Wrappers/Buffer.hpp"
-#include "Wrappers/Image.hpp"
-#include "Wrappers/DescriptorSet.hpp"
-#include "Wrappers/ImageView.hpp"
-#include "Wrappers/Sampler.hpp"
+#include "Buffer.hpp"
+#include "Image.hpp"
+#include "DescriptorSet.hpp"
+#include "ImageView.hpp"
+#include "Sampler.hpp"
+#include "Texture.hpp"
 
 namespace MemoryManager {
 	inline IdPool<Buffer> g_buffers;
 	inline IdPool<Image> g_images;
+	inline IdPool<Texture> g_textures;
 	inline IdPool<ImageView> g_image_views;
 	inline IdPool<DescriptorSet> g_descriptor_sets;
 	inline IdPool<Sampler> g_samplers;
@@ -33,6 +37,7 @@ namespace MemoryManager {
 	void load_vertices_and_indices();
 	void init_buffers();
 	void init_images();
+	void init_textures();
 	void init_memory();
 	void populate_memory();
 	void init_image_views();

@@ -91,16 +91,7 @@ namespace LogicalDevice {
 		void* p_features,
 		const std::vector<const char*>& extensions);
 	std::vector<VkQueue> create_queues(const std::array<uint32_t, g_QUEUE_FAMILY_COUNT>& queue_family_indices);
-	inline uint32_t calculate_queue_index(uint32_t queue_family_array_index, uint32_t queue_index) {
-		uint32_t tally = 0;
-
-		for(int i = 0; i < queue_family_array_index; ++i) {
-			tally += g_QUEUE_FAMILY_QUEUES[i];
-		}
-
-		return tally + queue_index;
-	}
-
+	uint32_t calculate_queue_index(uint32_t queue_family_array_index, uint32_t queue_index);
 	VkQueue get_queue(VkQueueFlags queue_family_capabilities, uint32_t queue_index = 0);
 }
 

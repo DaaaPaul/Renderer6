@@ -62,18 +62,18 @@ namespace Swapchain {
 			.clipped = VK_TRUE,
 		};
 
-		VK_CHECK(vkCreateSwapchainKHR(g_device, &g_status, nullptr, &swapchain), "Failed to create swapchain")
+		Vulkan::check(vkCreateSwapchainKHR(g_device, &g_status, nullptr, &swapchain), "Failed to create swapchain");
 
 		return swapchain;
 	}
 
 	VkExtent2D get_image_extent() {
 		VkSurfaceCapabilitiesKHR surface_capabilities{};
-		VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &surface_capabilities), "get_image_extent: failed to get surface capabilities")
+		Vulkan::check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &surface_capabilities), "get_image_extent: failed to get surface capabilities");
 		
 		VkExtent2D image_extent{ surface_capabilities.currentExtent.width, surface_capabilities.currentExtent.height };
 
-		if(g_image_extent.width == UINT32_MAX) {
+		if(g_image_extent.width == 0xFFFFFFFF) {
 			glfwGetFramebufferSize(Window::g_glfw_window, reinterpret_cast<int*>(&g_image_extent.width), reinterpret_cast<int*>(&g_image_extent.height));
 		}
 
@@ -95,7 +95,7 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			THROW_RUNTIME("check_format_colorspace: requested format colorspace pair not supported")
+			throw std::runtime_error("check_format_colorspace: requested format colorspace pair not supported");
 		}
 	}
 
@@ -114,7 +114,7 @@ namespace Swapchain {
 		}
 
 		if(!supported) {
-			THROW_RUNTIME("check_present_mode: requested present mode not supported")
+			throw std::runtime_error("check_present_mode: requested present mode not supported");
 		}
 	}
 }

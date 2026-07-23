@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cassert>
 #include <cstring>
-#include "Wrappers/Buffer.hpp"
-#include "Wrappers/Image.hpp"
+#include "Buffer.hpp"
+#include "Image.hpp"
 #include "Memory.hpp"
 #include "HostMemory.hpp"
 #include "Backend/LogicalDevice.h"
@@ -43,7 +43,7 @@ void HostMemory::copy_data_to_buffer(const Buffer* p_buffer, const void* src, Vk
 
 	assert(buffer_index != UINT64_MAX);
 
-	vkMapMemory(g_device, memory, properties.buffer_offsets[buffer_index], size, VK_NO_FLAGS, &p_buffer_data);
+	vkMapMemory(g_device, memory, properties.buffer_offsets[buffer_index], size, Vulkan::NO_FLAGS, &p_buffer_data);
 	
 	std::memcpy(p_buffer_data, src, size);
 

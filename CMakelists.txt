@@ -19,6 +19,12 @@ endif()
 find_package(GLM REQUIRED)
 
 set(RENDERER6_SOURCES
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGui/imgui.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGui/imgui_demo.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGui/imgui_draw.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGui/imgui_tables.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/ImGui/imgui_widgets.cpp
+
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/FeatureChain.hpp
@@ -37,33 +43,30 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Buffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Buffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DepthImage.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DepthImage.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DescriptorSet.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/DescriptorSet.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Image.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Image.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/ImageView.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/ImageView.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/IndexBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/IndexBuffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Sampler.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Sampler.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/StagingBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/StagingBuffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Texture.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/Texture.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/UniformBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/UniformBuffer.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/VertexBuffer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Wrappers/VertexBuffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Buffer.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Buffer.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DescriptorSet.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Image.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/ImageView.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/ImageView.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/UniformBufferBlock.hpp
+
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/CameraComponent.hpp
@@ -79,12 +82,7 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.hpp
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/PipelineLayouts.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/Pipelines.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Pipeline/ShaderModule.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Gui/Gui.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Instance.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Instance.h

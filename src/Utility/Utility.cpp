@@ -2,6 +2,26 @@
 #include <random>	
 #include "Utility/Utility.h"
 
+std::ostream& operator<<(std::ostream& os, glm::vec2 const& vec2) {
+	return os << '[' << vec2.x << ", " << vec2.y << ']';
+}
+
+std::ostream& operator<<(std::ostream& os, glm::vec3 const& vec3) {
+	return os << '[' << vec3.x << ", " << vec3.y << ", " << vec3.z << ']';
+}
+
+std::ostream& operator<<(std::ostream& os, glm::vec4 const& vec4) {
+	return os << '[' << vec4.x << ", " << vec4.y << ", " << vec4.z << ", " << vec4.w << ']';
+}
+
+std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4) {
+	return os << 
+		mat4[0] << '\n' <<
+		mat4[1] << '\n' <<
+		mat4[2] << '\n' <<
+		mat4[3];
+}
+
 namespace Utility {
 	std::vector<std::string> to_string(const std::vector<const char*>& c_strings) {
 		std::vector<std::string> strings;
@@ -35,7 +55,7 @@ namespace Utility {
 		std::ifstream file_stream_in(file_path, std::ios::binary | std::ios::ate);
 
 		if(!file_stream_in.good()) {
-			THROW_RUNTIME("get_file_bytes: Failure reading file at " + file_path)
+			throw std::runtime_error("get_file_bytes: Failure reading file at " + file_path);
 		}
 
 		uint32_t file_size = file_stream_in.tellg();
@@ -48,20 +68,24 @@ namespace Utility {
 		return file_bytes;
 	}
 
-	void generate_sphere(std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices, const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) noexcept {
-		const float SECTOR_STEP = 2 * DA_PI / SECTOR_COUNT;
-		const float STACK_STEP = DA_PI / STACK_COUNT;
+	glm::vec2 get_circle_position(float angle, float radius) noexcept {
+		return glm::vec2(std::cos(angle) * radius, std::sin(angle) * radius);
+	}
+
+	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) noexcept {
+		const float SECTOR_STEP = 2 * Utility::PI / SECTOR_COUNT;
+		const float STACK_STEP = Utility::PI / STACK_COUNT;
 
 		float sector_angle{}, stack_angle{};
 		float xy{}, x{}, y{}, z{};
 
 		uint32_t k1{}, k2{};
 
-		vertices.clear();
-		indices.clear();
+		std::vector<glm::vec3> vertices;
+		std::vector<uint32_t> indices;
 
 		for(int i = 0; i <= STACK_COUNT; ++i) {
-			stack_angle = DA_PI / 2 - i * STACK_STEP;
+			stack_angle = Utility::PI / 2 - i * STACK_STEP;
 			xy = RADIUS * std::cos(stack_angle);
 			z = RADIUS * std::sin(stack_angle);
 
@@ -93,5 +117,7 @@ namespace Utility {
 				}
 			}
 		}
+
+		return { std::move(vertices), std::move(indices) };
 	}
 }

@@ -9,25 +9,23 @@
 #include "Backend/Instance.h"
 #include "ShaderStructs/PBRVertex.hpp"
 
-#define VK_CHECK(create_command, error_message) \
-	if(create_command != VK_SUCCESS) { \
-        throw std::runtime_error(error_message); \
+namespace Vulkan {
+	inline constexpr VkFlags NO_FLAGS = 0U;
+
+	inline void check(VkResult result, const char* error_msg = "Vulkan::check: failed") {
+		if(result != VK_SUCCESS) {
+			throw std::runtime_error(error_msg);
+		}
 	}
 
-#define VK_NO_FLAGS 0U
-
-namespace Vulkan {
 	inline PFN_vkTransitionImageLayoutEXT vkTransitionImageLayoutEXT{};
 	inline PFN_vkCopyMemoryToImageEXT vkCopyMemoryToImageEXT{};
 
-	inline void load() {
-		vkTransitionImageLayoutEXT = reinterpret_cast<PFN_vkTransitionImageLayoutEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkTransitionImageLayoutEXT"));
-		vkCopyMemoryToImageEXT = reinterpret_cast<PFN_vkCopyMemoryToImageEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkCopyMemoryToImageEXT"));
-	}
+	void load();
 
-	void load_gltf_model(const std::string& file_path, std::vector<PBRVertex>& vertices, std::vector<uint32_t>& indices);
+	std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> load_gltf_model(const std::string& file_path);
 
-	ktxTexture2* load_ktx_texture(const char* ktx_path);
+	ktxTexture2* load_ktx_texture(const char* ktx_path, ktx_transcode_fmt_e transcode_format);
 
 	void transcode_ktx_texture(ktxTexture2* ktx_texture, ktx_transcode_fmt_e target_format);
 

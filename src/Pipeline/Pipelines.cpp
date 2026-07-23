@@ -14,7 +14,7 @@ namespace Pipelines {
 			std::vector<VkFormat> color_attachment_formats{ Swapchain::g_IMAGE_FORMAT };
 			VkPipelineRenderingCreateInfo rendering_info{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
-				.colorAttachmentCount = UINT32(color_attachment_formats.size()),
+				.colorAttachmentCount = static_cast<uint32_t>(color_attachment_formats.size()),
 				.pColorAttachmentFormats = color_attachment_formats.data(),
 				.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT
 			};
@@ -38,9 +38,9 @@ namespace Pipelines {
 			std::vector<VkVertexInputAttributeDescription> vertex_attribute_descriptions{ PBRVertex::get_vertex_input_attributes(0) };
 			VkPipelineVertexInputStateCreateInfo vertex_input_state{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-				.vertexBindingDescriptionCount = UINT32(vertex_binding_descriptions.size()),
+				.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_binding_descriptions.size()),
 				.pVertexBindingDescriptions = vertex_binding_descriptions.data(),
-				.vertexAttributeDescriptionCount = UINT32(vertex_attribute_descriptions.size()),
+				.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attribute_descriptions.size()),
 				.pVertexAttributeDescriptions = vertex_attribute_descriptions.data()
 			};
 
@@ -105,21 +105,21 @@ namespace Pipelines {
 			VkPipelineColorBlendStateCreateInfo color_blend{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 				.logicOpEnable = VK_FALSE,
-				.attachmentCount = UINT32(color_blend_attachment_states.size()),
+				.attachmentCount = static_cast<uint32_t>(color_blend_attachment_states.size()),
 				.pAttachments = color_blend_attachment_states.data()
 			};
 
 			std::vector<VkDynamicState> dynamic_state_flags{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			VkPipelineDynamicStateCreateInfo dynamic_state{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-				.dynamicStateCount = UINT32(dynamic_state_flags.size()),
+				.dynamicStateCount = static_cast<uint32_t>(dynamic_state_flags.size()),
 				.pDynamicStates = dynamic_state_flags.data()
 			};
 
 			VkGraphicsPipelineCreateInfo create{
 				.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 				.pNext = &rendering_info,
-				.stageCount = UINT32(shader_stages.size()),
+				.stageCount = static_cast<uint32_t>(shader_stages.size()),
 				.pStages = shader_stages.data(),
 				.pVertexInputState = &vertex_input_state,
 				.pInputAssemblyState = &input_assembly,
@@ -133,7 +133,7 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[0],
 			};
 
-			VK_CHECK(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &pbr_pipeline), "Pipelines::init: failed")
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &pbr_pipeline), "Pipelines::init: failed");
 
 			g_pipelines.push_back(pbr_pipeline);
 		}
@@ -144,7 +144,7 @@ namespace Pipelines {
 			std::vector<VkFormat> color_attachment_formats{ Swapchain::g_IMAGE_FORMAT };
 			VkPipelineRenderingCreateInfo rendering_info{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO,
-				.colorAttachmentCount = UINT32(color_attachment_formats.size()),
+				.colorAttachmentCount = static_cast<uint32_t>(color_attachment_formats.size()),
 				.pColorAttachmentFormats = color_attachment_formats.data(),
 				.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT
 			};
@@ -181,9 +181,9 @@ namespace Pipelines {
 			};
 			VkPipelineVertexInputStateCreateInfo vertex_input_state{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-				.vertexBindingDescriptionCount = UINT32(vertex_binding_descriptions.size()),
+				.vertexBindingDescriptionCount = static_cast<uint32_t>(vertex_binding_descriptions.size()),
 				.pVertexBindingDescriptions = vertex_binding_descriptions.data(),
-				.vertexAttributeDescriptionCount = UINT32(vertex_attribute_descriptions.size()),
+				.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertex_attribute_descriptions.size()),
 				.pVertexAttributeDescriptions = vertex_attribute_descriptions.data()
 			};
 
@@ -248,21 +248,21 @@ namespace Pipelines {
 			VkPipelineColorBlendStateCreateInfo color_blend{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
 				.logicOpEnable = VK_FALSE,
-				.attachmentCount = UINT32(color_blend_attachment_states.size()),
+				.attachmentCount = static_cast<uint32_t>(color_blend_attachment_states.size()),
 				.pAttachments = color_blend_attachment_states.data()
 			};
 
 			std::vector<VkDynamicState> dynamic_state_flags{ VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 			VkPipelineDynamicStateCreateInfo dynamic_state{
 				.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-				.dynamicStateCount = UINT32(dynamic_state_flags.size()),
+				.dynamicStateCount = static_cast<uint32_t>(dynamic_state_flags.size()),
 				.pDynamicStates = dynamic_state_flags.data()
 			};
 
 			VkGraphicsPipelineCreateInfo create{
 				.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
 				.pNext = &rendering_info,
-				.stageCount = UINT32(shader_stages.size()),
+				.stageCount = static_cast<uint32_t>(shader_stages.size()),
 				.pStages = shader_stages.data(),
 				.pVertexInputState = &vertex_input_state,
 				.pInputAssemblyState = &input_assembly,
@@ -276,7 +276,7 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[1],
 			};
 
-			VK_CHECK(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &simple_pipeline), "Pipelines::init: failed")
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &simple_pipeline), "Pipelines::init: failed");
 
 			g_pipelines.push_back(simple_pipeline);
 		}

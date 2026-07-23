@@ -88,7 +88,7 @@ float CameraComponent::process_zoom(const float& zoom, float y_offset) {
 
 void CameraComponent::mouse_moved_callback(GLFWwindow* glfw_window, double x, double y) {
 	CameraComponent* camera_component = Window::g_window_user_pointer->camera_component;
-	CHECK_NULLPTR(camera_component, "mouse_moved_callback: camera_component is a nullptr")
+	Utility::check_nullptr(camera_component, "mouse_moved_callback: camera_component is a nullptr");
 
 	static bool first_callback = true;
 	static float previous_x{};
@@ -110,7 +110,7 @@ void CameraComponent::mouse_moved_callback(GLFWwindow* glfw_window, double x, do
 
 void CameraComponent::scroll_callback(GLFWwindow* glfw_window, double x_offset, double y_offset) {
 	CameraComponent* camera_component = Window::g_window_user_pointer->camera_component;
-	CHECK_NULLPTR(camera_component, "scroll_callback: camera_component is a nullptr")
+	Utility::check_nullptr(camera_component, "scroll_callback: camera_component is a nullptr");
 	
 	camera_component->zoom = process_zoom(camera_component->zoom, y_offset);
 }

@@ -16,7 +16,7 @@ namespace PhysicalDevice {
 		g_physical_device = select_physical_device(physical_devices, get_physical_device_properties(physical_devices));
 
 		if(!g_physical_device) {
-			THROW_RUNTIME("Failed to select a GPU on your system")
+			throw std::runtime_error("Failed to select a GPU on your system");
 		} else {
 			VkPhysicalDeviceProperties selected_properties{};
 			vkGetPhysicalDeviceProperties(g_physical_device, &selected_properties);
@@ -41,9 +41,9 @@ namespace PhysicalDevice {
 
 	std::vector<VkPhysicalDevice> get_physical_devices() {
 		uint32_t physical_device_count{};
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, nullptr), "get_physical_devices: failed to enumerate physical devices");
+		Vulkan::check(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, nullptr), "get_physical_devices: failed to enumerate physical devices");
 		std::vector<VkPhysicalDevice> physical_devices(physical_device_count);
-		VK_CHECK(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, physical_devices.data()), "get_physical_devices: failed to enumerate physical devices");
+		Vulkan::check(vkEnumeratePhysicalDevices(Instance::g_instance, &physical_device_count, physical_devices.data()), "get_physical_devices: failed to enumerate physical devices");
 			
 		return physical_devices;
 	}
@@ -90,21 +90,21 @@ namespace PhysicalDevice {
 	bool check_queues(VkPhysicalDevice physical_device) {
 		bool has_queues = true;
 
-		uint32_t queue_family_count = UINT32_MAX;
+		uint32_t queue_family_count = 0xFFFFFFFF;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
 		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
 
-		g_queue_family_indices.fill(UINT32_MAX);
+		g_queue_family_indices.fill(0xFFFFFFFF);
 		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && has_queues; ++i) {
-			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] == UINT32_MAX; ++j) {
+			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] == 0xFFFFFFFF; ++j) {
 				if ((queue_families[j].queueFlags & LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i]) && 
 					(queue_families[j].queueCount >= LogicalDevice::g_QUEUE_FAMILY_QUEUES[i])) {
 					g_queue_family_indices[i] = j;
 				}
 			}
 
-			if(g_queue_family_indices[i] == UINT32_MAX) {
+			if(g_queue_family_indices[i] == 0xFFFFFFFF) {
 				has_queues = false;
 			}
 		}

@@ -17,5 +17,7 @@ FramesInFlight::FramesInFlight(uint32_t frames_in_flight, uint32_t frame_submit_
 }
 
 FramesInFlight::~FramesInFlight() noexcept {
+	frames.clear();
+
 	vkDestroyCommandPool(g_device, cmd_pool, nullptr);
 }

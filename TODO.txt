@@ -1,6 +1,3 @@
- redo framekits
- get g_lazy outta here
-
 A WEEK'S LOAD:
 
 ALL IN AN HONEST DAY:

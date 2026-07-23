@@ -28,7 +28,7 @@ class CameraComponent : public Component {
 
 	static constexpr glm::vec3 DEFAULT_POSITION{0.0f, 0.0f, 0.0f};
 	static constexpr Basis DEFAULT_BASIS = Basis{};
-	static constexpr float DEFAULT_ZOOM = DA_PI / 4.0f;
+	static constexpr float DEFAULT_ZOOM = Utility::PI / 4.0f;
 
 	public:
 	static void mouse_moved_callback(GLFWwindow* window, double x, double y);

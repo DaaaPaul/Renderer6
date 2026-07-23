@@ -37,6 +37,6 @@ Sampler::Sampler(VkSamplerCreateFlags create_flags,
 		.unnormalizedCoordinates = VK_FALSE,
 	};
 
-	VK_CHECK(vkCreateSampler(g_device, &create, nullptr, &sampler), "Sampler: failed")
+	Vulkan::check(vkCreateSampler(g_device, &create, nullptr, &sampler), "Sampler: failed");
 }
 	

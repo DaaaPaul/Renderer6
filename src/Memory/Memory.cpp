@@ -62,8 +62,8 @@ uint32_t Memory::get_memory_type_index(uint32_t index_mask, VkMemoryPropertyFlag
 	VkPhysicalDeviceMemoryProperties memory_information{};
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::g_physical_device, &memory_information);
 
-	uint32_t memory_index = UINT32_MAX;
-	for (int i = 0; i < memory_information.memoryTypeCount && memory_index == UINT32_MAX; ++i) {
+	uint32_t memory_index = 0xFFFFFFFF;
+	for (int i = 0; i < memory_information.memoryTypeCount && memory_index == 0xFFFFFFFF; ++i) {
 		if ((index_mask & (1 << i)) && ((memory_information.memoryTypes[i].propertyFlags & property_mask) == property_mask)) {
 			memory_index = i;
 		}

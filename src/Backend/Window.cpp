@@ -48,4 +48,8 @@ namespace Window {
 		glfwDestroyWindow(g_glfw_window);
 		glfwTerminate();
 	}
+
+	void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
+		g_window_user_pointer->window_resized = true;
+	}
 }

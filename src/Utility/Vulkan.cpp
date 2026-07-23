@@ -19,7 +19,12 @@
 #include "Backend/Window.h"
 
 namespace Vulkan {
-	void load_gltf_model(const std::string& file_path, std::vector<PBRVertex>& vertices, std::vector<uint32_t>& indices) {
+	void load() {
+		vkTransitionImageLayoutEXT = reinterpret_cast<PFN_vkTransitionImageLayoutEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkTransitionImageLayoutEXT"));
+		vkCopyMemoryToImageEXT = reinterpret_cast<PFN_vkCopyMemoryToImageEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkCopyMemoryToImageEXT"));
+	}
+
+	std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> load_gltf_model(const std::string& file_path) {
 		tinygltf::Model model{};
 		tinygltf::TinyGLTF loader{};
 		std::string error_msg{};
@@ -31,21 +36,21 @@ namespace Vulkan {
 		} else if(file_path.ends_with(".glb")) {
 			result = loader.LoadBinaryFromFile(&model, &error_msg, &warning_msg, file_path);
 		} else {
-			THROW_RUNTIME("load_gltf_model: invalid file extension")
+			throw std::runtime_error("load_gltf_model: invalid file extension");
 		}
 
 		if(!error_msg.empty()) {
-			PRINTLN("load_gltf_model (error): " << error_msg)
+			Utility::println(error_msg);
 		}
 		if(!warning_msg.empty()) {
-			PRINTLN("load_gltf_model (warning): " << warning_msg)
+			Utility::println(warning_msg);
 		}
 		if(!result) {
-			THROW_RUNTIME("load_gltf_model: !result")
+			throw std::runtime_error("load_gltf_model: !result");
 		}
 
-		vertices.clear();
-		indices.clear();
+		std::vector<PBRVertex> vertices;
+		std::vector<uint32_t> indices;
 
 		for(const tinygltf::Mesh& mesh : model.meshes) {
 			for(const tinygltf::Primitive& primitive : mesh.primitives) {
@@ -112,17 +117,23 @@ namespace Vulkan {
 						}
 						break;
 					default:
-						THROW_RUNTIME("load_gltf_model: unsupported index type")
+						throw std::runtime_error("load_gltf_model: unsupported index type");
 				}
 			}
 		}
+
+		return { std::move(vertices), std::move(indices) };
 	}
 
-	ktxTexture2* load_ktx_texture(const char* ktx_path) {
+	ktxTexture2* load_ktx_texture(const char* ktx_path, ktx_transcode_fmt_e transcode_format = KTX_TTF_NOSELECTION) {
 		ktxTexture2* ktx_texture{};
 
 		if(ktxTexture2_CreateFromNamedFile(ktx_path, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktx_texture) != KTX_SUCCESS) {
-			THROW_RUNTIME("load_ktx_texture: load failure")
+			throw std::runtime_error("load_ktx_texture: load failure");
+		}
+
+		if(transcode_format != KTX_TTF_NOSELECTION) {
+			transcode_ktx_texture(ktx_texture, transcode_format);
 		}
 
 		return ktx_texture;
@@ -130,8 +141,8 @@ namespace Vulkan {
 
 	void transcode_ktx_texture(ktxTexture2* ktx_texture, ktx_transcode_fmt_e target_format) {
 		if(ktxTexture2_NeedsTranscoding(ktx_texture)) {
-			if(ktxTexture2_TranscodeBasis(ktx_texture, target_format, VK_NO_FLAGS) != KTX_SUCCESS) {
-				THROW_RUNTIME("transcode_ktx_texture: compress failure")
+			if(ktxTexture2_TranscodeBasis(ktx_texture, target_format, Vulkan::NO_FLAGS) != KTX_SUCCESS) {
+				throw std::runtime_error("transcode_ktx_texture: compress failure");
 			}
 		}
 	}
@@ -167,17 +178,17 @@ namespace Vulkan {
 	}
 
 	void end_one_time_cmd_buffer(VkQueue queue, VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf) {
-		VK_CHECK(vkEndCommandBuffer(cmd_buf), "Failed to end temporary command buffer recording")
+		Vulkan::check(vkEndCommandBuffer(cmd_buf), "Failed to end temporary command buffer recording");
 
-		VkFence cmds_done = create_fence(VK_NO_FLAGS);
+		VkFence cmds_done = create_fence(Vulkan::NO_FLAGS);
 
 		VkSubmitInfo commandBufferSubmit{
 			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
 			.commandBufferCount = 1,
 			.pCommandBuffers = &cmd_buf,
 		};
-		VK_CHECK(vkQueueSubmit(queue, 1, &commandBufferSubmit, cmds_done), "Failed to submit temporary command buffer")
-		VK_CHECK(vkWaitForFences(g_device, 1, &cmds_done, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence")
+		Vulkan::check(vkQueueSubmit(queue, 1, &commandBufferSubmit, cmds_done), "Failed to submit temporary command buffer");
+		Vulkan::check(vkWaitForFences(g_device, 1, &cmds_done, VK_TRUE, UINT64_MAX), "Failed to wait for copy command done fence");
 
 		vkDestroyFence(g_device, cmds_done, nullptr);
 		vkFreeCommandBuffers(g_device, cmd_pool, 1, &cmd_buf);
@@ -193,7 +204,7 @@ namespace Vulkan {
 			.queueFamilyIndex = qf_index
 		};
 
-		VK_CHECK(vkCreateCommandPool(g_device, &cmd_pool_create, nullptr, &cmd_pool), "Failed to create command pool")
+		Vulkan::check(vkCreateCommandPool(g_device, &cmd_pool_create, nullptr, &cmd_pool), "Failed to create command pool");
 
 		return cmd_pool;
 	}
@@ -208,14 +219,14 @@ namespace Vulkan {
 			.commandBufferCount = 1
 		};
 
-		VK_CHECK(vkAllocateCommandBuffers(g_device, &cmd_buffer_create, &cmd_buffer), "Failed to create command buffer")
+		Vulkan::check(vkAllocateCommandBuffers(g_device, &cmd_buffer_create, &cmd_buffer), "Failed to create command buffer");
 
 		return cmd_buffer;
 	}
 
 	VkResult begin_cmd_buffer(VkCommandBuffer cmd_buf, VkCommandBufferUsageFlags flags) {
 		if(flags != VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) {
-			VK_CHECK(vkResetCommandBuffer(cmd_buf, VK_NO_FLAGS), "begin_cmd_buf: failed to reset command buffer")
+			Vulkan::check(vkResetCommandBuffer(cmd_buf, Vulkan::NO_FLAGS), "begin_cmd_buf: failed to reset command buffer");
 		}
 		
 		VkCommandBufferBeginInfo begin{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = flags };
@@ -230,7 +241,7 @@ namespace Vulkan {
 			.flags = flags
 		};
 
-		VK_CHECK(vkCreateFence(g_device, &fence_create, nullptr, &fence), "Failed to create fence")
+		Vulkan::check(vkCreateFence(g_device, &fence_create, nullptr, &fence), "Failed to create fence");
 
 		return fence;
 	}
@@ -249,7 +260,7 @@ namespace Vulkan {
 			.pNext = &type_info
 		};
 
-		VK_CHECK(vkCreateSemaphore(g_device, &semaphore_create, nullptr, &semaphore), "Failed to create semaphore")
+		Vulkan::check(vkCreateSemaphore(g_device, &semaphore_create, nullptr, &semaphore), "Failed to create semaphore");
 
 		return semaphore;
 	}
@@ -263,7 +274,7 @@ namespace Vulkan {
 			.allocationSize = size,
 			.memoryTypeIndex = type_index
 		};
-		VK_CHECK(vkAllocateMemory(g_device, &allocate, nullptr, &memory), "create_memory: failed")
+		Vulkan::check(vkAllocateMemory(g_device, &allocate, nullptr, &memory), "create_memory: failed");
 		
 		return memory;
 	}
@@ -281,7 +292,7 @@ namespace Vulkan {
 			.pQueueFamilyIndices = &gfx_queue_family_index
 		};
 
-		VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "create_buffer: failed")
+		Vulkan::check(vkCreateBuffer(g_device, &create, nullptr, &buffer), "create_buffer: failed");
 
 		return buffer;
 	}
@@ -291,13 +302,13 @@ namespace Vulkan {
 
 		VkPipelineLayoutCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-			.setLayoutCount = UINT32(descriptor_set_layouts.size()),
+			.setLayoutCount = static_cast<uint32_t>(descriptor_set_layouts.size()),
 			.pSetLayouts = descriptor_set_layouts.data(),
-			.pushConstantRangeCount = UINT32(push_constant_ranges.size()),
+			.pushConstantRangeCount = static_cast<uint32_t>(push_constant_ranges.size()),
 			.pPushConstantRanges = push_constant_ranges.data()
 		};
 
-		VK_CHECK(vkCreatePipelineLayout(g_device, &create, nullptr, &pipeline_layout), "create_pipeline_layout: failed")
+		Vulkan::check(vkCreatePipelineLayout(g_device, &create, nullptr, &pipeline_layout), "create_pipeline_layout: failed");
 
 		return pipeline_layout;
 	}
@@ -313,7 +324,7 @@ namespace Vulkan {
 			.pCode = reinterpret_cast<uint32_t*>(file_bytes.data())
 		};
 
-		VK_CHECK(vkCreateShaderModule(g_device, &create, nullptr, &shader_module), "create_shader_module: failed")
+		Vulkan::check(vkCreateShaderModule(g_device, &create, nullptr, &shader_module), "create_shader_module: failed");
 
 		return shader_module;
 	}
@@ -322,7 +333,7 @@ namespace Vulkan {
 		VkSurfaceKHR surface{};
 
 		glfwInit();
-		VK_CHECK(glfwCreateWindowSurface(Instance::g_instance, Window::g_glfw_window, nullptr, &surface), "create_surface: failed")
+		Vulkan::check(glfwCreateWindowSurface(Instance::g_instance, Window::g_glfw_window, nullptr, &surface), "create_surface: failed");
 
 		return surface;
 	}
@@ -336,7 +347,7 @@ namespace Vulkan {
 		
 			binding_flags_info = {
 				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
-				.bindingCount = UINT32(binding_flags.size()),
+				.bindingCount = static_cast<uint32_t>(binding_flags.size()),
 				.pBindingFlags = binding_flags.data()
 			};
 
@@ -348,11 +359,11 @@ namespace Vulkan {
 		VkDescriptorSetLayoutCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
 			.pNext = p_next,
-			.bindingCount = UINT32(bindings.size()),
+			.bindingCount = static_cast<uint32_t>(bindings.size()),
 			.pBindings = bindings.data()
 		};
 
-		VK_CHECK(vkCreateDescriptorSetLayout(g_device, &create, nullptr, &layout), "create_layout: failed")
+		Vulkan::check(vkCreateDescriptorSetLayout(g_device, &create, nullptr, &layout), "create_layout: failed");
 
 		return layout;
 	}
@@ -371,12 +382,12 @@ namespace Vulkan {
 		VkDescriptorPoolCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-			.maxSets = UINT32(all_bindings.size()),
-			.poolSizeCount = UINT32(pool_sizes.size()),
+			.maxSets = static_cast<uint32_t>(all_bindings.size()),
+			.poolSizeCount = static_cast<uint32_t>(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data()
 		};
 		
-		VK_CHECK(vkCreateDescriptorPool(g_device, &create, nullptr, &pool), "create_pool: failed")
+		Vulkan::check(vkCreateDescriptorPool(g_device, &create, nullptr, &pool), "create_pool: failed");
 
 		return pool;
 	}
@@ -391,16 +402,16 @@ namespace Vulkan {
 			.pSetLayouts = &layout,
 		};
 
-		VK_CHECK(vkAllocateDescriptorSets(g_device, &create, &set), "create_descriptor_set: failed")
+		Vulkan::check(vkAllocateDescriptorSets(g_device, &create, &set), "create_descriptor_set: failed");
 
 		return set;
 	}
 
 	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain) {
 		uint32_t image_count{};
-		VK_CHECK(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, nullptr), "get_swapchain_images: failed")
+		Vulkan::check(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, nullptr), "get_swapchain_images: failed");
 		std::vector<VkImage> swapchain_images(image_count);
-		VK_CHECK(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, swapchain_images.data()), "get_swapchain_images: failed")
+		Vulkan::check(vkGetSwapchainImagesKHR(g_device, swapchain, &image_count, swapchain_images.data()), "get_swapchain_images: failed");
 
 		return swapchain_images;
 	}
@@ -417,7 +428,7 @@ namespace Vulkan {
 		};
 		for(int i = 0; i < images.size(); ++i) {
 			create.image = images[i];
-			VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &image_views[i]), "get_image_views: failed")
+			Vulkan::check(vkCreateImageView(g_device, &create, nullptr, &image_views[i]), "get_image_views: failed");
 		}
 
 		return image_views;

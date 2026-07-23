@@ -18,11 +18,18 @@ Buffer::Buffer(VkBufferCreateFlags create_flags,
 		.size = size,
 		.usage = usage_flags,
 		.sharingMode = sharing_mode,
-		.queueFamilyIndexCount = UINT32(queue_family_indices.size()),
+		.queueFamilyIndexCount = static_cast<uint32_t>(queue_family_indices.size()),
 		.pQueueFamilyIndices = queue_family_indices.data()
 	};
 
-	VK_CHECK(vkCreateBuffer(g_device, &create, nullptr, &buffer), "Buffer: failed")
+	Vulkan::check(vkCreateBuffer(g_device, &create, nullptr, &buffer), "Buffer: failed");
+}
+
+VkMemoryRequirements Buffer::get_memory_requirements() const { 
+	VkMemoryRequirements memory_requirements{};
+	vkGetBufferMemoryRequirements(g_device, buffer, &memory_requirements);
+
+	return memory_requirements; 
 }
 
 void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {
@@ -33,3 +40,23 @@ void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {
 	vkCmdCopyBuffer(one_time_cmds, src->buffer, dst->buffer, 1, &region);
 	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), pool, one_time_cmds);
 }
+
+std::vector<VkBuffer> Buffer::get_vk_buffers(const std::vector<Buffer*>& p_buffers) {
+	std::vector<VkBuffer> vk_buffers(p_buffers.size());
+
+	for(int i = 0; i < p_buffers.size(); ++i) {
+		vk_buffers[i] = p_buffers[i]->buffer;
+	}
+
+	return vk_buffers;
+}
+
+std::vector<VkDeviceSize> Buffer::get_buffer_sizes(const std::vector<Buffer*>& p_buffers) {
+	std::vector<VkDeviceSize> buffer_sizes(p_buffers.size());
+
+	for(int i = 0; i < p_buffers.size(); ++i) {
+		buffer_sizes[i] = p_buffers[i]->get_memory_requirements().size;
+	}
+
+	return buffer_sizes;
+	}

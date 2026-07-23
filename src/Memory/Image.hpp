@@ -6,11 +6,9 @@
 #include "Backend/LogicalDevice.h"
 #include "Utility/Utility.h"
 
-class Image {
-	private:
+struct Image {
 	VkImage image{};
 
-	public:
 	explicit Image(VkImageCreateFlags create_flags, 
 				   VkImageType image_type,    
 				   VkFormat format, 
@@ -21,28 +19,11 @@ class Image {
 				   VkImageUsageFlags usage,
 				   VkSharingMode sharing_mode, 
 				   const std::vector<uint32_t>& queue_family_indices);
-	virtual ~Image() noexcept {
+	~Image() noexcept {
 		vkDestroyImage(g_device, image, nullptr);
 	}
 
-	VkImage get_image() const { 
-		return image; 
-	}
+	VkMemoryRequirements get_memory_requirements() const;
 
-	VkMemoryRequirements get_memory_requirements() const { 
-		VkMemoryRequirements memory_requirements{};
-		vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
-	
-		return memory_requirements; 
-	}
-
-	static std::vector<VkImage> get_vk_images(const std::vector<Image*>& p_images) {
-		std::vector<VkImage> vk_images(p_images.size());
-
-		for(int i = 0; i < p_images.size(); ++i) {
-			vk_images[i] = p_images[i]->get_image();
-		}
-
-		return vk_images;
-	}
+	static std::vector<VkImage> get_vk_images(const std::vector<Image*>& p_images);
 };

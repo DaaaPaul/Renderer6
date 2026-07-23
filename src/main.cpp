@@ -38,7 +38,7 @@ int main() {
 		EntityManager::init();
 
 		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
-		std::cout << "LOAD TIME: " << std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count() << '\n';
+		Utility::println(std::to_string(std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count()));
 		
 		Engine::run();
 
@@ -55,6 +55,6 @@ int main() {
 		Instance::destroy();
 		Window::destroy();
 	} catch(const std::runtime_error& runtime_error) {
-        PRINTLN("ERROR: " << runtime_error.what())
+        Utility::println(runtime_error.what());
     }
 }

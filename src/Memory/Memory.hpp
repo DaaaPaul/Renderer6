@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan.h>
 #include <memory>
-#include "Wrappers/Image.hpp"
-#include "Wrappers/Buffer.hpp"
+#include "Image.hpp"
+#include "Buffer.hpp"
 
 class Memory {
 	protected:
@@ -50,7 +50,7 @@ class Memory {
 	}
 
 	static uint32_t get_memory_index_mask(const std::vector<VkMemoryRequirements>& requirements) {
-		uint32_t mask = UINT32_MAX;
+		uint32_t mask = 0xFFFFFFFF;
 
 		for (const VkMemoryRequirements& requirement : requirements) {
 			mask &= requirement.memoryTypeBits;

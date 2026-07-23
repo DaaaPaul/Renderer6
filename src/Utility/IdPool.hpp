@@ -68,7 +68,7 @@ class IdPool<Component> {
 		if(i != component_map.end()) {
 			return static_cast<ComponentType*>(i->second.get());
 		} else {
-			THROW_RUNTIME("get: failed to get ComponentType")
+			throw std::runtime_error("get: failed to get ComponentType");
 		}
 	}
 

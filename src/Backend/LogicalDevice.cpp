@@ -40,11 +40,11 @@ namespace LogicalDevice {
 			.pNext = p_features,
 			.queueCreateInfoCount = g_QUEUE_FAMILY_COUNT,
 			.pQueueCreateInfos = queue_creates.data(),
-			.enabledExtensionCount = UINT32(extensions.size()),
+			.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
 			.ppEnabledExtensionNames = extensions.data(),
 		};
 
-		VK_CHECK(vkCreateDevice(physical_device, &logical_device_create, nullptr, &logical_device), "create_logical_device: failed")
+		Vulkan::check(vkCreateDevice(physical_device, &logical_device_create, nullptr, &logical_device), "create_logical_device: failed");
 
 		return logical_device;
 	}
@@ -61,6 +61,16 @@ namespace LogicalDevice {
 		return queues;
 	}
 
+	uint32_t calculate_queue_index(uint32_t queue_family_array_index, uint32_t queue_index) {
+		uint32_t tally = 0;
+
+		for(int i = 0; i < queue_family_array_index; ++i) {
+			tally += g_QUEUE_FAMILY_QUEUES[i];
+		}
+
+		return tally + queue_index;
+	}
+
 	VkQueue get_queue(VkQueueFlags queue_family_capabilities, uint32_t queue_index) {
 		size_t queue_family_array_index = UINT64_MAX;
 		for(int i = 0; i < g_QUEUE_FAMILY_COUNT && queue_family_array_index == UINT64_MAX; ++i) {
@@ -71,7 +81,7 @@ namespace LogicalDevice {
 
 		size_t linear_queue_index = calculate_queue_index(queue_family_array_index, queue_index);
 		if(linear_queue_index >= g_queues.size()) {
-			THROW_RUNTIME("Attempted to retrieve queue that doesn't exist")
+			throw std::runtime_error("Attempted to retrieve queue that doesn't exist");
 		} else {
 			return g_queues[linear_queue_index];
 		}

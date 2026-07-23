@@ -17,5 +17,5 @@ ImageView::ImageView(VkImageViewCreateFlags create_flags,
 		.format = format,
 		.subresourceRange = image_subresource_range
 	};
-	VK_CHECK(vkCreateImageView(g_device, &create, nullptr, &image_view), "ImageView: failed")
+	Vulkan::check(vkCreateImageView(g_device, &create, nullptr, &image_view), "ImageView: failed");
 }

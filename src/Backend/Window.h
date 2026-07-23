@@ -27,7 +27,5 @@ namespace Window {
 	void init();
 	void destroy();
 
-	inline void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
-		g_window_user_pointer->window_resized = true;
-	}
+	void window_resize_callback(GLFWwindow* glfw_window, int width, int height);
 }

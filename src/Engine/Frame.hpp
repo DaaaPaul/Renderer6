@@ -45,12 +45,7 @@ struct Frame {
 
 	explicit Frame(VkCommandPool cmd_pool, uint32_t submit_count);
 
-	void progress_timeline() {
-		for(Submit& submit : submits) {
-			submit.wait.value = timeline_val;
-			submit.signal.value = ++timeline_val;
-		}
-	}
+	void progress_timeline() noexcept;
 
 	~Frame() noexcept;
 

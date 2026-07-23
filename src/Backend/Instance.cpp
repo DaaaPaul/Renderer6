@@ -42,7 +42,7 @@ namespace Instance {
 		}
 
 		if(!Utility::contains_all(extension_names, Utility::to_string(needed_extensions))) {
-			THROW_RUNTIME("check_have_extensions: does not have the required VkInstance extensions")
+			throw std::runtime_error("check_have_extensions: does not have the required VkInstance extensions");
 		}
 	}
 
@@ -58,7 +58,7 @@ namespace Instance {
 		}
 
 		if(!Utility::contains_all(layer_names, Utility::to_string(needed_layers))) {
-			THROW_RUNTIME("check_have_layers: does not have the required VkInstance layers")
+			throw std::runtime_error("check_have_layers: does not have the required VkInstance layers");
 		}
 	}
 
@@ -69,7 +69,7 @@ namespace Instance {
 		#ifdef __APPLE__
 		VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 		#else
-		VK_NO_FLAGS;
+		Vulkan::NO_FLAGS;
 		#endif
 
 		VkApplicationInfo app_info{
@@ -81,13 +81,13 @@ namespace Instance {
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 			.flags = flags,
 			.pApplicationInfo = &app_info,
-			.enabledLayerCount = UINT32(g_layers.size()),
+			.enabledLayerCount = static_cast<uint32_t>(g_layers.size()),
 			.ppEnabledLayerNames = g_layers.data(),
-			.enabledExtensionCount = UINT32(g_extensions.size()),
+			.enabledExtensionCount = static_cast<uint32_t>(g_extensions.size()),
 			.ppEnabledExtensionNames = g_extensions.data(),
 		};
 
-		VK_CHECK(vkCreateInstance(&create, nullptr, &instance), "Failed to create instance")
+		Vulkan::check(vkCreateInstance(&create, nullptr, &instance), "Failed to create instance");
 
 		return instance;
 	}

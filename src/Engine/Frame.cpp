@@ -35,7 +35,7 @@ Submit::~Submit() noexcept {
 
 Frame::Frame(VkCommandPool cmd_pool, uint32_t submit_count) :
 	cmd_pool{ cmd_pool },
-	fence{ Vulkan::create_fence(VK_NO_FLAGS) },
+	fence{ Vulkan::create_fence(Vulkan::NO_FLAGS) },
 	timeline{ Vulkan::create_semaphore(VK_SEMAPHORE_TYPE_TIMELINE) },
 	timeline_val{ 0 },
 	args(submit_count, SubmitArgs{cmd_pool, timeline}),
@@ -43,7 +43,16 @@ Frame::Frame(VkCommandPool cmd_pool, uint32_t submit_count) :
 
 }
 
+void Frame::progress_timeline() noexcept {
+	for(Submit& submit : submits) {
+		submit.wait.value = timeline_val;
+		submit.signal.value = ++timeline_val;
+	}
+}
+
 Frame::~Frame() noexcept {
+	submits.clear();
+
 	vkDestroySemaphore(g_device, timeline, nullptr);
 	vkDestroyFence(g_device, fence, nullptr);
 }

@@ -27,9 +27,27 @@ Image::Image(VkImageCreateFlags create_flags,
 		.tiling = VK_IMAGE_TILING_OPTIMAL,
 		.usage = usage,
 		.sharingMode = sharing_mode,
-		.queueFamilyIndexCount = UINT32(queue_family_indices.size()),
+		.queueFamilyIndexCount = static_cast<uint32_t>(queue_family_indices.size()),
 		.pQueueFamilyIndices = queue_family_indices.data(),
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
-	VK_CHECK(vkCreateImage(g_device, &create, nullptr, &image), "Image: failed to create image")
+
+	Vulkan::check(vkCreateImage(g_device, &create, nullptr, &image), "Image: failed to create image");
+}
+
+VkMemoryRequirements Image::get_memory_requirements() const { 
+	VkMemoryRequirements memory_requirements{};
+	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
+	
+	return memory_requirements; 
+}
+
+std::vector<VkImage> Image::get_vk_images(const std::vector<Image*>& p_images) {
+	std::vector<VkImage> vk_images(p_images.size());
+
+	for(int i = 0; i < p_images.size(); ++i) {
+		vk_images[i] = p_images[i]->image;
+	}
+
+	return vk_images;
 }
