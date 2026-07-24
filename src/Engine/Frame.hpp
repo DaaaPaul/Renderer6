@@ -20,7 +20,7 @@ struct Submit {
 
 	explicit Submit(VkCommandPool cmd_pool, VkSemaphore timeline);
 
-	~Submit() noexcept;
+	~Submit();
 
 	DELETE_COPYING_MOVING(Submit)
 };
@@ -45,9 +45,9 @@ struct Frame {
 
 	explicit Frame(VkCommandPool cmd_pool, uint32_t submit_count);
 
-	void progress_timeline() noexcept;
+	void progress_timeline();
 
-	~Frame() noexcept;
+	~Frame();
 
 	DELETE_COPYING_MOVING(Frame)
 };

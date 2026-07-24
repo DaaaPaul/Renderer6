@@ -13,7 +13,7 @@ class ImageView {
 					   VkImageViewType view_type,
 					   VkFormat format,
 					   VkImageSubresourceRange image_subresource_range);
-	~ImageView() noexcept {
+	~ImageView() {
 		vkDestroyImageView(g_device, image_view, nullptr);
 	}
 

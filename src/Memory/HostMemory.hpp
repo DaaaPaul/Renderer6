@@ -14,7 +14,7 @@ class HostMemory : public Memory {
 	HostMemory() = default;
 
 	explicit HostMemory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images);
-	void destroy() noexcept override;
+	void destroy() override;
 
 	static VkDeviceAddress get_buffer_address(VkBuffer buffer);
 	void copy_data_to_buffer(const Buffer* buffer, const void* src, VkDeviceSize size);

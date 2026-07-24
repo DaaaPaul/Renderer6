@@ -19,7 +19,7 @@ struct Image {
 				   VkImageUsageFlags usage,
 				   VkSharingMode sharing_mode, 
 				   const std::vector<uint32_t>& queue_family_indices);
-	~Image() noexcept {
+	~Image() {
 		vkDestroyImage(g_device, image, nullptr);
 	}
 

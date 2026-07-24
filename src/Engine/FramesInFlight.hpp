@@ -21,7 +21,7 @@ struct FramesInFlight {
 
 	explicit FramesInFlight(uint32_t frames_in_flight, uint32_t frame_submit_count);
 
-	~FramesInFlight() noexcept;
+	~FramesInFlight();
 
 	DELETE_COPYING_MOVING(FramesInFlight)
 };

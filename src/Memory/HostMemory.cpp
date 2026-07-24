@@ -15,7 +15,7 @@ HostMemory::HostMemory(const std::vector<Buffer*>& p_buffers, const std::vector<
 
 }
 
-void HostMemory::destroy() noexcept {
+void HostMemory::destroy() {
 	vkFreeMemory(g_device, memory, nullptr);
 }
 

@@ -13,7 +13,7 @@ struct Buffer {
 					VkBufferUsageFlags usage_flags, 
 					VkSharingMode sharing_mode,
 					const std::vector<uint32_t>& queue_family_indices);
-	~Buffer() noexcept {
+	~Buffer() {
 		vkDestroyBuffer(g_device, buffer, nullptr);
 	};
 

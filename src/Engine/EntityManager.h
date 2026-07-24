@@ -7,5 +7,5 @@ namespace EntityManager {
 	inline Entity g_camera;
 
 	void init();
-	void destroy() noexcept;
+	void destroy();
 }

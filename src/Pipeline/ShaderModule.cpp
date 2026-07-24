@@ -7,6 +7,7 @@ namespace ShaderModule {
 	void init() {
 		g_shader_modules.push_back(Vulkan::create_shader_module(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\pbr.spv)"));
 		g_shader_modules.push_back(Vulkan::create_shader_module(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\simple.spv)"));
+		g_shader_modules.push_back(Vulkan::create_shader_module(R"(C:\Users\paulp\ComputerPrograms\Renderer6\shaders\gui.spv)"));
 	}
 
 	void clear() {

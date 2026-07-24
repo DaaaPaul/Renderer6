@@ -9,7 +9,7 @@ namespace EntityManager {
 		Window::g_window_user_pointer->camera_component = g_camera.get<CameraComponent>();
 	}
 
-	void destroy() noexcept {
+	void destroy() {
 		g_camera.remove<CameraComponent>();
 	}
 }

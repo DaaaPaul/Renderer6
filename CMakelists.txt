@@ -30,6 +30,7 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/FeatureChain.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/IdPool.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Ids.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/SlotMap.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Vulkan.cpp
@@ -82,6 +83,7 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/FramesInFlight.hpp
 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Gui/Gui.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Gui/Gui.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Backend/Instance.cpp
@@ -97,6 +99,7 @@ set(RENDERER6_SOURCES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/pbr.slang
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/simple.slang
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/gui.slang
 
     ${CMAKE_CURRENT_SOURCE_DIR}/TODO.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/REVIEW.txt

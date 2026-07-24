@@ -17,7 +17,7 @@ struct Texture {
 					 VkSampleCountFlagBits sample_count, 
 					 VkSharingMode sharing_mode,
 					 const std::vector<uint32_t>& queue_family_indices);
-	~Texture() noexcept {
+	~Texture() {
 		ktxTexture_Destroy(ktxTexture(ktx_texture));
 	}
 

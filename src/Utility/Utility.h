@@ -66,7 +66,7 @@ namespace Utility {
 
 	std::vector<char> get_file_bytes(const std::string& file_path);
 
-	glm::vec2 get_circle_position(float angle, float radius) noexcept;
+	glm::vec2 get_circle_position(float angle, float radius);
 
-	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) noexcept;
+	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT);
 }

@@ -29,7 +29,7 @@ Submit::Submit(VkCommandPool cmd_pool, VkSemaphore timeline) :
 	} {
 }
 
-Submit::~Submit() noexcept {
+Submit::~Submit() {
 	vkFreeCommandBuffers(g_device, cmd_pool, 1, &cmd.commandBuffer);
 }
 
@@ -43,14 +43,14 @@ Frame::Frame(VkCommandPool cmd_pool, uint32_t submit_count) :
 
 }
 
-void Frame::progress_timeline() noexcept {
+void Frame::progress_timeline() {
 	for(Submit& submit : submits) {
 		submit.wait.value = timeline_val;
 		submit.signal.value = ++timeline_val;
 	}
 }
 
-Frame::~Frame() noexcept {
+Frame::~Frame() {
 	submits.clear();
 
 	vkDestroySemaphore(g_device, timeline, nullptr);

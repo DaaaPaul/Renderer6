@@ -68,11 +68,11 @@ namespace Utility {
 		return file_bytes;
 	}
 
-	glm::vec2 get_circle_position(float angle, float radius) noexcept {
+	glm::vec2 get_circle_position(float angle, float radius) {
 		return glm::vec2(std::cos(angle) * radius, std::sin(angle) * radius);
 	}
 
-	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) noexcept {
+	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) {
 		const float SECTOR_STEP = 2 * Utility::PI / SECTOR_COUNT;
 		const float STACK_STEP = Utility::PI / STACK_COUNT;
 

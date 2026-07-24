@@ -11,7 +11,7 @@ DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bi
 
 }
 
-DescriptorSet::~DescriptorSet() noexcept {
+DescriptorSet::~DescriptorSet() {
 	vkFreeDescriptorSets(g_device, pool, 1, &descriptor_set);
 	vkDestroyDescriptorSetLayout(g_device, layout, nullptr);
 	vkDestroyDescriptorPool(g_device, pool, nullptr);

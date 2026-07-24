@@ -24,7 +24,7 @@ class Memory {
 	Memory() = default;
 
 	explicit Memory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>& p_images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);
-	virtual void destroy() noexcept;
+	virtual void destroy();
 
 	private:
 	static void bind_memory(VkDeviceMemory memory, const std::vector<VkBuffer>& buffers, const std::vector<VkImage>& images, const std::vector<VkDeviceSize>& buffer_offsets, const std::vector<VkDeviceSize>& image_offsets);

@@ -11,7 +11,7 @@ Memory::Memory(const std::vector<Buffer*>& p_buffers, const std::vector<Image*>&
 	bind_memory(memory, Buffer::get_vk_buffers(p_buffers), Image::get_vk_images(p_images), properties.buffer_offsets, properties.image_offsets);
 }
 
-void Memory::destroy() noexcept {
+void Memory::destroy() {
 	vkFreeMemory(g_device, memory, nullptr);
 }
 

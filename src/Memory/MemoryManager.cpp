@@ -301,6 +301,23 @@ namespace MemoryManager {
 				}
 			}
 		);
+
+		g_descriptor_sets.add<DescriptorSet>(Ids::g_GUI_DESCRIPTOR_SET,
+			std::vector<VkDescriptorSetLayoutBinding>{
+				VkDescriptorSetLayoutBinding{
+					.binding = 0,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+				VkDescriptorSetLayoutBinding{
+					.binding = 1,
+					.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+					.descriptorCount = 1,
+					.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT
+				},
+			}
+		);
 	}
 
 	void write_descriptor_sets() {
@@ -362,6 +379,19 @@ namespace MemoryManager {
 				.image_info = VkDescriptorImageInfo{
 					.imageView = g_image_views.get<ImageView>(Ids::g_SION_NORMALS_VIEW)->get_image_view(),
 					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+				}
+			}
+		);
+
+		DescriptorSet* p_gui_descriptor_set = g_descriptor_sets.get<DescriptorSet>(Ids::g_GUI_DESCRIPTOR_SET);
+		p_gui_descriptor_set->write(
+			DescriptorSet::Write{
+				.binding_num = 1,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLER,
+				.image_info = VkDescriptorImageInfo{
+					.sampler = g_samplers.get<Sampler>(Ids::g_SAMPLER)->get_sampler()
 				}
 			}
 		);
