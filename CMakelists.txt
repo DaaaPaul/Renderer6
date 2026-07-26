@@ -38,10 +38,6 @@ set(RENDERER6_SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Memory.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DeviceMemory.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/DeviceMemory.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/HostMemory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/MemoryManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Buffer.cpp
@@ -54,8 +50,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/ImageView.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Sampler.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/Texture.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/KtxTexture.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Memory/KtxTexture.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PBRVertex.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ShaderStructs/PushConstantBlock.hpp

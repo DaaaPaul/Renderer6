@@ -58,12 +58,12 @@ namespace PhysicalDevice {
 		return physical_device_properties;
 	}
 
-	bool physical_device_good(VkPhysicalDeviceProperties properties, VkPhysicalDevice physical_device) {
-		return check_api_version(properties) && check_extensions(physical_device) && check_features(physical_device) && check_queues(physical_device);
+	bool physical_device_good(VkPhysicalDeviceProperties specs, VkPhysicalDevice physical_device) {
+		return check_api_version(specs) && check_extensions(physical_device) && check_features(physical_device) && check_queues(physical_device);
 	}
 
-	bool check_api_version(VkPhysicalDeviceProperties properties) {
-		return properties.apiVersion >= VK_API_VERSION_1_3;
+	bool check_api_version(VkPhysicalDeviceProperties specs) {
+		return specs.apiVersion >= VK_API_VERSION_1_3;
 	}
 
 	bool check_extensions(VkPhysicalDevice physical_device) {

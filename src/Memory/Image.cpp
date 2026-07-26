@@ -42,12 +42,32 @@ VkMemoryRequirements Image::get_memory_requirements() const {
 	return memory_requirements; 
 }
 
-std::vector<VkImage> Image::get_vk_images(const std::vector<Image*>& p_images) {
-	std::vector<VkImage> vk_images(p_images.size());
+void Image::transition_image_layout(VkImage image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count) {
+	VkHostImageLayoutTransitionInfo transition{
+		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
+		.image = image,
+		.oldLayout = old_layout,
+		.newLayout = new_layout,
+		.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, mip_level_count, 0, array_layer_count}
+	};
+	Vulkan::check(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "transition_image_layout: transition failed");
+}
 
-	for(int i = 0; i < p_images.size(); ++i) {
-		vk_images[i] = p_images[i]->image;
-	}
+void Image::copy_to_image(VkImage image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level) {
+	VkMemoryToImageCopyEXT region{
+		.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
+		.pHostPointer = p_data,
+		.imageSubresource = VkImageSubresourceLayers{VK_IMAGE_ASPECT_COLOR_BIT, mip_level, 0, 1},
+		.imageExtent = extent
+	};
 
-	return vk_images;
+	VkCopyMemoryToImageInfo copy{
+		.sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT,
+		.dstImage = image,
+		.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
+		.regionCount = 1,
+		.pRegions = &region,
+	};
+
+	Vulkan::check(Vulkan::vkCopyMemoryToImageEXT(g_device, &copy), "copy_to_image: copy failed");
 }

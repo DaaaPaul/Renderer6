@@ -25,7 +25,7 @@ class DescriptorSet {
 	DescriptorSet() = default;
 
 	explicit DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-	~DescriptorSet();
+	void destroy();
 
 	VkDescriptorSetLayout get_layout() const {
 		return layout;

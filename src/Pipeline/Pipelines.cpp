@@ -310,7 +310,7 @@ namespace Pipelines {
 			std::vector<VkVertexInputBindingDescription> vertex_binding_descriptions{ 
 				VkVertexInputBindingDescription{
 					.binding = 0,
-					.stride = sizeof(ImDrawVert) - sizeof(uint32_t),
+					.stride = sizeof(ImDrawVert),
 					.inputRate = VK_VERTEX_INPUT_RATE_VERTEX
 				}
 			};
@@ -326,6 +326,12 @@ namespace Pipelines {
 					.binding = 0,
 					.format = VK_FORMAT_R32G32_SFLOAT,
 					.offset = offsetof(ImDrawVert, uv)
+				},
+				VkVertexInputAttributeDescription{
+					.location = 2,
+					.binding = 0,
+					.format = VK_FORMAT_R32_SFLOAT,
+					.offset = offsetof(ImDrawVert, col)
 				}
 			};
 			VkPipelineVertexInputStateCreateInfo vertex_input_state{

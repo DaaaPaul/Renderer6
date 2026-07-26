@@ -10,7 +10,6 @@
 #include "EntityManager.h"
 #include "ShaderStructs/PushConstantBlock.hpp"
 #include "ShaderStructs/UniformBufferBlock.hpp"
-#include "Memory/HostMemory.hpp"
 #include "Memory/MemoryManager.h"
 #include "Memory/Buffer.hpp"
 #include "Memory/ImageView.hpp"
@@ -282,6 +281,6 @@ namespace Engine {
 		g_ubo_data.light_positions[0].x = g_circle_position.x;
 		g_ubo_data.light_positions[0].z = g_circle_position.y;
 
-		MemoryManager::g_host_memory.copy_data_to_buffer(MemoryManager::g_buffers.get<Buffer>(Ids::g_UNIFORM_BUFFERS[0]), &g_ubo_data, sizeof(UniformBufferBlock));
+		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, sizeof(UniformBufferBlock), *MemoryManager::g_buffers.get<Buffer>(Ids::g_UNIFORM_BUFFERS[0]));
 	}
 }

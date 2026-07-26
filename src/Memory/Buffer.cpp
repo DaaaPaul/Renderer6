@@ -41,22 +41,12 @@ void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {
 	Vulkan::end_one_time_cmd_buffer(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), pool, one_time_cmds);
 }
 
-std::vector<VkBuffer> Buffer::get_vk_buffers(const std::vector<Buffer*>& p_buffers) {
-	std::vector<VkBuffer> vk_buffers(p_buffers.size());
+std::vector<VkDeviceSize> Buffer::get_buffer_sizes(const std::vector<Buffer*>& buffers) {
+	std::vector<VkDeviceSize> buffer_sizes(buffers.size());
 
-	for(int i = 0; i < p_buffers.size(); ++i) {
-		vk_buffers[i] = p_buffers[i]->buffer;
-	}
-
-	return vk_buffers;
-}
-
-std::vector<VkDeviceSize> Buffer::get_buffer_sizes(const std::vector<Buffer*>& p_buffers) {
-	std::vector<VkDeviceSize> buffer_sizes(p_buffers.size());
-
-	for(int i = 0; i < p_buffers.size(); ++i) {
-		buffer_sizes[i] = p_buffers[i]->get_memory_requirements().size;
+	for(int i = 0; i < buffers.size(); ++i) {
+		buffer_sizes[i] = buffers[i]->get_memory_requirements().size;
 	}
 
 	return buffer_sizes;
-	}
+}

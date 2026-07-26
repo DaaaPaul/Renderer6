@@ -54,7 +54,8 @@ int main() {
 		LogicalDevice::destroy();
 		Instance::destroy();
 		Window::destroy();
-	} catch(const std::runtime_error& runtime_error) {
+	} catch(const std::runtime_error& runtime_error) {\
+		Utility::println("------------------------------ERROR------------------------------");
         Utility::println(runtime_error.what());
     }
 }

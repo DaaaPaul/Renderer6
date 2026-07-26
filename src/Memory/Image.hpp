@@ -19,11 +19,12 @@ struct Image {
 				   VkImageUsageFlags usage,
 				   VkSharingMode sharing_mode, 
 				   const std::vector<uint32_t>& queue_family_indices);
-	~Image() {
+	void destroy() {
 		vkDestroyImage(g_device, image, nullptr);
 	}
 
 	VkMemoryRequirements get_memory_requirements() const;
 
-	static std::vector<VkImage> get_vk_images(const std::vector<Image*>& p_images);
+	static void transition_image_layout(VkImage image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count);
+	static void copy_to_image(VkImage image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level);
 };

@@ -4,19 +4,18 @@
 #include <vector>
 #include "Utility/IdPool.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
-#include "HostMemory.hpp"
-#include "DeviceMemory.hpp"
 #include "Buffer.hpp"
 #include "Image.hpp"
 #include "DescriptorSet.hpp"
 #include "ImageView.hpp"
 #include "Sampler.hpp"
-#include "Texture.hpp"
+#include "KtxTexture.hpp"
+#include "Memory.hpp"
 
 namespace MemoryManager {
 	inline IdPool<Buffer> g_buffers;
 	inline IdPool<Image> g_images;
-	inline IdPool<Texture> g_textures;
+	inline IdPool<KtxTexture> g_textures;
 	inline IdPool<ImageView> g_image_views;
 	inline IdPool<DescriptorSet> g_descriptor_sets;
 	inline IdPool<Sampler> g_samplers;
@@ -26,10 +25,10 @@ namespace MemoryManager {
 
 	inline std::vector<glm::vec3> g_simple_vertices;
 	inline std::vector<uint32_t> g_simple_indices;
-
-	inline HostMemory g_host_memory;
-	inline DeviceMemory g_device_memory_1;
-	inline DeviceMemory g_device_memory_2;
+	
+	inline Memory g_host_memory;
+	inline Memory g_device_memory;
+	inline Memory g_depth_image_memory;
 
 	void init();
 	void destroy();
