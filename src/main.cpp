@@ -57,5 +57,6 @@ int main() {
 	} catch(const std::runtime_error& runtime_error) {\
 		Utility::println("------------------------------ERROR------------------------------");
         Utility::println(runtime_error.what());
+		Utility::println("-----------------------------------------------------------------");
     }
 }

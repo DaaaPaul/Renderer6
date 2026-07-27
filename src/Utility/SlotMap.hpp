@@ -1,163 +1,94 @@
 #pragma once
 
-#include <cstdint>
-#include <unordered_map>
-#include <utility>
 #include <vector>
+#include <unordered_map>
+#include <stdexcept>
+#include <utility>
+#include "Utility.h"
 
 template<class T>
-class SlotMap {
-public:
-    SlotMap() = default;
-    explicit SlotMap(size_t reserveCount) { reserve(reserveCount); }
+class Slotmap {
+	public:
+	template<class... ArgTs>
+	void emplace_with_id(int id, ArgTs&&... args) {
+		if(id_to_slot.find(id) != id_to_slot.end()) {
+			throw std::runtime_error("emplace_with_id: id already exists in Slotmap");
+		}
 
-    void reserve(size_t n) {
-        dense.reserve(n);
-        dense_to_slot.reserve(n);
-        dense_to_id.reserve(n);
-        id_to_slot.reserve(n);
-    }
+		uint32_t new_slot_index = new_slot();
 
-    size_t size() const {
-		return dense.size(); 
+		object_to_slot.push_back(new_slot_index);
+		object_to_id.push_back(id);
+		slot_to_object[new_slot_index] = objects.size();
+		id_to_slot.emplace(id, new_slot_index);
+
+		objects.emplace_back(std::forward<ArgTs>(args)...);
 	}
 
-    bool empty() const { 
-		return dense.empty(); 
+	void erase(int id) {
+		uint32_t erase_slot = get_slot_index_with_id(id);
+		uint32_t erase_object_index = slot_to_object[erase_slot];
+		uint32_t back_index = objects.size() - 1;
+		uint32_t fresh_slot = object_to_slot[back_index];
+		int fresh_id = object_to_id[back_index];
+
+		if(erase_object_index != back_index) {
+			std::swap(objects[erase_object_index], objects[back_index]);
+
+			object_to_slot[erase_object_index] = fresh_slot;
+			object_to_id[erase_object_index] = fresh_id;
+			slot_to_object[fresh_slot] = erase_object_index;
+			id_to_slot[fresh_id] = fresh_slot;
+		}
+
+		objects.pop_back();
+		object_to_slot.pop_back();
+		object_to_id.pop_back();
+
+		id_to_slot.erase(id);
+		slot_to_object[erase_slot] = Utility::INVALID_UINT32; 
+		free.push_back(erase_slot);
 	}
 
-    void clear() {
-        dense.clear();
-        dense_to_slot.clear();
-        dense_to_id.clear();
-        id_to_slot.clear();
-        slot_to_dense.assign(slot_to_dense.size(), kInvalid);
-        free.clear();
-    }
+	T* get(int id) {
+		uint32_t slot_index = get_slot_index_with_id(id);
 
-    template<class... Args>
-    bool emplace_with_id(uint64_t id, Args&&... args) {
-        if (id_to_slot.find(id) != id_to_slot.end()) {
-			return false;
+		if(slot_index >= slot_to_object.size() || slot_to_object[slot_index] == Utility::INVALID_UINT32) {
+			throw std::runtime_error("get: invalid slot");
 		}
 
-        const uint32_t slot = alloc_slot();
-        const uint32_t dense_index = static_cast<uint32_t>(dense.size());
+		return &objects[slot_to_object[slot_index]];
+	}
 
-        dense.emplace_back(std::forward<Args>(args)...);
-        dense_to_slot.push_back(slot);
-        slot_to_dense[slot] = dense_index;
-
-        dense_to_id.push_back(id);
-        id_to_slot.emplace(id, slot);
-
-        return true;
-    }
-
-    T* get(uint64_t id) {
-        auto it = id_to_slot.find(id);
-
-        if (it == id_to_slot.end()) {
-			return nullptr;
+	private:
+	uint32_t get_slot_index_with_id(int id) {
+		auto p_id_to_slot_pair = id_to_slot.find(id);
+		
+		if(p_id_to_slot_pair == id_to_slot.end()) {
+			throw std::runtime_error("get_slot_index_with_id: id doesn't exist in Slotmap");
 		}
 
-        const uint32_t slot = it->second;
+		return p_id_to_slot_pair->second;
+	}
 
-        if (slot >= slot_to_dense.size()) {
-			return nullptr;
+	uint32_t new_slot() {
+		uint32_t slot = Utility::INVALID_UINT32;
+	
+		if(free.size() > 0) {
+			slot = free.back();
+			free.pop_back();
+		} else {
+			slot = slot_to_object.size();
+			slot_to_object.push_back(Utility::INVALID_UINT32);
 		}
 
-        const uint32_t dense_index = slot_to_dense[slot];
+		return slot;
+	}
 
-        if (dense_index == kInvalid) {
-			return nullptr;
-		}
-
-        return &dense[dense_index];
-    }
-
-    const T* get(uint64_t id) const { return const_cast<SlotMap*>(this)->get(id); }
-
-    bool contains(uint64_t id) const { return get(id) != nullptr; }
-
-    bool erase(uint64_t id) {
-        auto it = id_to_slot.find(id);
-        if (it == id_to_slot.end()) return false;
-
-        const uint32_t slot = it->second;
-        if (slot >= slot_to_dense.size()) { id_to_slot.erase(it); return false; }
-        const uint32_t dense_index = slot_to_dense[slot];
-        if (dense_index == kInvalid) { id_to_slot.erase(it); return false; }
-
-        const uint32_t back = (uint32_t)dense.size() - 1;
-
-        if (dense_index != back) {
-            std::swap(dense[dense_index], dense[back]);
-
-            const uint32_t movedSlot = dense_to_slot[back];
-            dense_to_slot[dense_index] = movedSlot;
-            slot_to_dense[movedSlot] = dense_index;
-
-            std::swap(dense_to_id[dense_index], dense_to_id[back]);
-            const uint64_t movedId = dense_to_id[dense_index];
-            id_to_slot[movedId] = movedSlot;
-        }
-
-        dense.pop_back();
-        dense_to_slot.pop_back();
-
-        const uint64_t backId = dense_to_id.back();
-        dense_to_id.pop_back();
-        id_to_slot.erase(backId);
-
-        slot_to_dense[slot] = kInvalid;
-        free.push_back(slot);
-        return true;
-    }
-
-    auto begin() { return dense.begin(); }
-    auto end() { return dense.end(); }
-    auto begin() const { return dense.begin(); }
-    auto end()   const { return dense.end(); }
-
-    T& operator[](size_t denseIndex) { return dense[denseIndex]; }
-    const T& operator[](size_t denseIndex) const { return dense[denseIndex]; }
-
-    T* data() { return dense.data(); }
-    const T* data() const { return dense.data(); }
-
-    uint64_t id_at(size_t denseIndex) const { return dense_to_id[denseIndex]; }
-
-    uint32_t dense_index_of(uint64_t id) const {
-        auto it = id_to_slot.find(id);
-        if (it == id_to_slot.end()) return kInvalid;
-        const uint32_t slot = it->second;
-        if (slot >= slot_to_dense.size()) return kInvalid;
-        return slot_to_dense[slot];
-    }
-
-    const std::vector<uint64_t>& ids() const { return dense_to_id; }
-
-private:
-    static constexpr uint32_t kInvalid = 0xFFFFFFFF;
-
-    std::vector<T>        dense;
-    std::vector<uint32_t> dense_to_slot;
-    std::vector<uint32_t> slot_to_dense;
-    std::vector<uint32_t> free;
-    std::vector<uint64_t> dense_to_id;
-    std::unordered_map<uint64_t, uint32_t> id_to_slot;
-
-    uint32_t alloc_slot() {
-        if (!free.empty()) {
-            const uint32_t s = free.back();
-            free.pop_back();
-            return s;
-        }
-
-        const uint32_t s = static_cast<uint32_t>(slot_to_dense.size());
-        slot_to_dense.push_back(kInvalid);
-
-        return s;
-    }
+	std::vector<T> objects;
+	std::vector<uint32_t> object_to_slot;
+	std::vector<int> object_to_id;
+	std::vector<uint32_t> slot_to_object;
+	std::vector<uint32_t> free;
+	std::unordered_map<int, uint32_t> id_to_slot;
 };

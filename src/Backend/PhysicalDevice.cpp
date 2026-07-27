@@ -90,21 +90,21 @@ namespace PhysicalDevice {
 	bool check_queues(VkPhysicalDevice physical_device) {
 		bool has_queues = true;
 
-		uint32_t queue_family_count = 0xFFFFFFFF;
+		uint32_t queue_family_count = Utility::INVALID_UINT32;
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
 		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
 		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, queue_families.data());
 
-		g_queue_family_indices.fill(0xFFFFFFFF);
+		g_queue_family_indices.fill(Utility::INVALID_UINT32);
 		for(int i = 0; i < LogicalDevice::g_QUEUE_FAMILY_COUNT && has_queues; ++i) {
-			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] == 0xFFFFFFFF; ++j) {
+			for(int j = 0; j < queue_family_count && g_queue_family_indices[i] == Utility::INVALID_UINT32; ++j) {
 				if ((queue_families[j].queueFlags & LogicalDevice::g_QUEUE_FAMILY_CAPABILITIES[i]) && 
 					(queue_families[j].queueCount >= LogicalDevice::g_QUEUE_FAMILY_QUEUES[i])) {
 					g_queue_family_indices[i] = j;
 				}
 			}
 
-			if(g_queue_family_indices[i] == 0xFFFFFFFF) {
+			if(g_queue_family_indices[i] == Utility::INVALID_UINT32) {
 				has_queues = false;
 			}
 		}

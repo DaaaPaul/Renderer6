@@ -16,15 +16,15 @@ void Memory::destroy() {
 }
 
 void Memory::copy_to_buffer(const void* p_data, uint32_t size, Buffer buffer) {
-	uint32_t buffer_index = 0xFFFFFFFF;
+	uint32_t buffer_index = Utility::INVALID_UINT32;
 	
-	for(int i = 0; i < buffers.size() && buffer_index == 0xFFFFFFFF; ++i) {
+	for(int i = 0; i < buffers.size() && buffer_index == Utility::INVALID_UINT32; ++i) {
 		if(buffers[i].buffer == buffer.buffer) {
 			buffer_index = i;
 		}
 	}
 
-	if(buffer_index == 0xFFFFFFFF) {
+	if(buffer_index == Utility::INVALID_UINT32) {
 		throw std::runtime_error("copy_to_buffer: could not find buffer");
 	}
 
@@ -102,15 +102,15 @@ uint32_t Memory::get_memory_type_index(uint32_t index_mask, VkMemoryPropertyFlag
 	VkPhysicalDeviceMemoryProperties memory_information{};
 	vkGetPhysicalDeviceMemoryProperties(PhysicalDevice::g_physical_device, &memory_information);
 
-	uint32_t memory_index = 0xFFFFFFFF;
+	uint32_t memory_index = Utility::INVALID_UINT32;
 
-	for (int i = 0; i < memory_information.memoryTypeCount && memory_index == 0xFFFFFFFF; ++i) {
+	for (int i = 0; i < memory_information.memoryTypeCount && memory_index == Utility::INVALID_UINT32; ++i) {
 		if ((index_mask & (1 << i)) && ((memory_information.memoryTypes[i].propertyFlags & property_mask) == property_mask)) {
 			memory_index = i;
 		}
 	};
 
-	if(memory_index == 0xFFFFFFFF) {
+	if(memory_index == Utility::INVALID_UINT32) {
 		throw std::runtime_error("get_memory_type_index: did not find index");
 	}
 

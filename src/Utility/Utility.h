@@ -37,6 +37,7 @@ std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4);
 
 namespace Utility {
 	inline constexpr float PI = 3.14159274f;
+	inline constexpr uint32_t INVALID_UINT32 = 0xFFFFFFFF;
 
 	inline void println(const char* msg) {
 		std::cout << msg << '\n';
