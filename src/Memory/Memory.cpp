@@ -15,7 +15,7 @@ void Memory::destroy() {
 	vkFreeMemory(g_device, memory, nullptr);
 }
 
-void Memory::copy_to_buffer(const void* p_data, uint32_t size, Buffer buffer) {
+void Memory::copy_to_buffer(const void* p_data, Buffer buffer, uint32_t offset, uint32_t size) {
 	uint32_t buffer_index = Utility::INVALID_UINT32;
 	
 	for(int i = 0; i < buffers.size() && buffer_index == Utility::INVALID_UINT32; ++i) {
@@ -30,7 +30,7 @@ void Memory::copy_to_buffer(const void* p_data, uint32_t size, Buffer buffer) {
 
 	void* p_buffer = nullptr;
 
-	vkMapMemory(g_device, memory, specs.buffer_offsets[buffer_index], size, Vulkan::NO_FLAGS, &p_buffer);
+	vkMapMemory(g_device, memory, specs.buffer_offsets[buffer_index] + offset, size, Vulkan::NO_FLAGS, &p_buffer);
 	memcpy(p_buffer, p_data, size);
 	vkUnmapMemory(g_device, memory);
 }

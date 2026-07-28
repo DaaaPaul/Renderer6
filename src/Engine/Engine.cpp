@@ -280,6 +280,6 @@ namespace Engine {
 		g_ubo_data.light_positions[0].x = g_circle_position.x;
 		g_ubo_data.light_positions[0].z = g_circle_position.y;
 
-		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, sizeof(UniformBufferBlock), *MemoryManager::g_buffers.get("uniform buffer 0"));
+		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, *MemoryManager::g_buffers.get("uniform buffer 0"), 0, sizeof(UniformBufferBlock));
 	}
 }

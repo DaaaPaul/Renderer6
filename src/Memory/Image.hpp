@@ -9,6 +9,7 @@
 struct Image {
 	VkImage image{};
 
+	Image() = default;
 	explicit Image(VkImageCreateFlags create_flags, 
 				   VkImageType image_type,    
 				   VkFormat format, 
@@ -25,6 +26,6 @@ struct Image {
 
 	VkMemoryRequirements get_memory_requirements() const;
 
-	static void transition_image_layout(VkImage image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count);
-	static void copy_to_image(VkImage image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level);
+	static void transition_image_layout(Image image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count);
+	static void copy_to_image(Image image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level);
 };

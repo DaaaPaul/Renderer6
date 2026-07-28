@@ -42,10 +42,10 @@ VkMemoryRequirements Image::get_memory_requirements() const {
 	return memory_requirements; 
 }
 
-void Image::transition_image_layout(VkImage image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count) {
+void Image::transition_image_layout(Image image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count) {
 	VkHostImageLayoutTransitionInfo transition{
 		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
-		.image = image,
+		.image = image.image,
 		.oldLayout = old_layout,
 		.newLayout = new_layout,
 		.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, mip_level_count, 0, array_layer_count}
@@ -53,7 +53,7 @@ void Image::transition_image_layout(VkImage image, VkImageLayout old_layout, VkI
 	Vulkan::check(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "transition_image_layout: transition failed");
 }
 
-void Image::copy_to_image(VkImage image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level) {
+void Image::copy_to_image(Image image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level) {
 	VkMemoryToImageCopyEXT region{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
 		.pHostPointer = p_data,
@@ -63,7 +63,7 @@ void Image::copy_to_image(VkImage image, const void* p_data, VkOffset3D offset, 
 
 	VkCopyMemoryToImageInfo copy{
 		.sType = VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT,
-		.dstImage = image,
+		.dstImage = image.image,
 		.dstImageLayout = VK_IMAGE_LAYOUT_GENERAL,
 		.regionCount = 1,
 		.pRegions = &region,

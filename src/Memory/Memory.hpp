@@ -12,7 +12,7 @@ class Memory {
 	explicit Memory(const std::vector<Buffer>& buffers, const std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next);
 	void destroy();
 
-	void copy_to_buffer(const void* p_data, uint32_t size, Buffer buffer);
+	void copy_to_buffer(const void* p_data, Buffer buffer, uint32_t offset, uint32_t size);
 
 	private:
 	struct Specs {

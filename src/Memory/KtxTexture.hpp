@@ -23,6 +23,6 @@ struct KtxTexture {
 	}
 
 	void copy_texture_data_to_image()  {
-		Image::copy_to_image(image.image, ktx_texture->pData, VkOffset3D{0, 0, 0}, VkExtent3D{ktx_texture->baseWidth, ktx_texture->baseHeight, 1}, 0);
+		Image::copy_to_image(image, ktx_texture->pData, VkOffset3D{0, 0, 0}, VkExtent3D{ktx_texture->baseWidth, ktx_texture->baseHeight, 1}, 0);
 	}
 };

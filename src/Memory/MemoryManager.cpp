@@ -213,22 +213,22 @@ namespace MemoryManager {
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(PBRVertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 
-		const uint32_t SIMPLE_VERTEX_BUFFER_SIZE = g_simple_vertices.size() * sizeof(glm::vec3);
-		const uint32_t SIMPLE_INDEX_BUFFER_SIZE = g_simple_indices.size() * sizeof(uint32_t);
+		const uint32_t SPHERE_VERTEX_BUFFER_SIZE = g_simple_vertices.size() * sizeof(glm::vec3);
+		const uint32_t SPHERE_INDEX_BUFFER_SIZE = g_simple_indices.size() * sizeof(uint32_t);
 
-		g_host_memory.copy_to_buffer(g_vertices.data(), VERTEX_BUFFER_SIZE, *g_buffers.get("vertex stage"));
-		g_host_memory.copy_to_buffer(g_indices.data(), INDEX_BUFFER_SIZE, *g_buffers.get("index stage"));
-		g_host_memory.copy_to_buffer(g_simple_vertices.data(), SIMPLE_VERTEX_BUFFER_SIZE, *g_buffers.get("sphere vertex stage"));
-		g_host_memory.copy_to_buffer(g_simple_indices.data(), SIMPLE_INDEX_BUFFER_SIZE, *g_buffers.get("sphere index stage"));
+		g_host_memory.copy_to_buffer(g_vertices.data(), *g_buffers.get("vertex stage"), 0, VERTEX_BUFFER_SIZE);
+		g_host_memory.copy_to_buffer(g_indices.data(), *g_buffers.get("index stage"), 0, INDEX_BUFFER_SIZE);
+		g_host_memory.copy_to_buffer(g_simple_vertices.data(), *g_buffers.get("sphere vertex stage"), 0, SPHERE_VERTEX_BUFFER_SIZE);
+		g_host_memory.copy_to_buffer(g_simple_indices.data(), *g_buffers.get("sphere index stage"), 0, SPHERE_INDEX_BUFFER_SIZE);
 
 		Buffer::copy_buffer(g_buffers.get("vertex stage"), g_buffers.get("vertex buffer"), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
 		Buffer::copy_buffer(g_buffers.get("index stage"), g_buffers.get("index buffer"), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get("sphere vertex stage"), g_buffers.get("sphere vertex buffer"), VkBufferCopy{0, 0, SIMPLE_VERTEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get("sphere index stage"), g_buffers.get("sphere index buffer"), VkBufferCopy{0, 0, SIMPLE_INDEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get("sphere vertex stage"), g_buffers.get("sphere vertex buffer"), VkBufferCopy{0, 0, SPHERE_VERTEX_BUFFER_SIZE});
+		Buffer::copy_buffer(g_buffers.get("sphere index stage"), g_buffers.get("sphere index buffer"), VkBufferCopy{0, 0, SPHERE_INDEX_BUFFER_SIZE});
 		
-		Image::transition_image_layout(g_textures.get("sion texture")->image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-		Image::transition_image_layout(g_textures.get("sion metallic roughness")->image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-		Image::transition_image_layout(g_textures.get("sion normals")->image.image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		Image::transition_image_layout(g_textures.get("sion texture")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		Image::transition_image_layout(g_textures.get("sion metallic roughness")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		Image::transition_image_layout(g_textures.get("sion normals")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
 		g_textures.get("sion texture")->copy_texture_data_to_image();
 		g_textures.get("sion metallic roughness")->copy_texture_data_to_image();
 		g_textures.get("sion normals")->copy_texture_data_to_image();
