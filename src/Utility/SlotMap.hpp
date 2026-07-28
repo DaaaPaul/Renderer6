@@ -9,6 +9,14 @@
 template<class T>
 class Slotmap {
 	public:
+	Slotmap() = default;
+	explicit Slotmap(uint32_t capacity) {
+		objects.reserve(capacity);
+		object_to_slot.reserve(capacity);
+		object_to_id.reserve(capacity);
+		slot_to_object.reserve(capacity);
+	}
+
 	template<class... ArgTs>
 	void emplace_with_id(int id, ArgTs&&... args) {
 		if(id_to_slot.find(id) != id_to_slot.end()) {

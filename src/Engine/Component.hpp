@@ -1,7 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "Utility/IdPool.hpp"
+
+class Entity;
 
 class Component {
 	protected:

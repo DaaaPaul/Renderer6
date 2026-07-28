@@ -27,10 +27,11 @@ set(RENDERER6_SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Addmap.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Entity.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/FeatureChain.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/IdPool.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Ids.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/SlotMap.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Id.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Slotmap.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Utility.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Utility/Vulkan.cpp

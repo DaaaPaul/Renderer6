@@ -13,7 +13,6 @@
 #include "Memory/MemoryManager.h"
 #include "Memory/Buffer.hpp"
 #include "Memory/ImageView.hpp"
-#include "Utility/Ids.h"
 #include "Utility/Utility.h"
 #include "Utility/Vulkan.h"
 #include <chrono>
@@ -35,7 +34,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = MemoryManager::g_image_views.get<ImageView>(Ids::g_DEPTH_VIEW)->get_image_view(),
+			.imageView = MemoryManager::g_image_views.get("depth view")->get_image_view(),
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -56,12 +55,12 @@ namespace Engine {
 		set_viewport_and_scissor(cmd_buf);
 
 		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<Buffer>(Ids::g_VERTEX_BUFFER)->buffer;
-		VkBuffer index_buffer = MemoryManager::g_buffers.get<Buffer>(Ids::g_INDEX_BUFFER)->buffer;
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("vertex buffer")->buffer;
+		VkBuffer index_buffer = MemoryManager::g_buffers.get("index buffer")->buffer;
 		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
 		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
-		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET)->get_descriptor_set();
+		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_sets.get("descriptor set")->get_descriptor_set();
 		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, &descriptor_set, 0, nullptr);
 		
 		PushConstantBlock push_constants{
@@ -79,7 +78,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_images.get<Image>(Ids::g_DEPTH_IMAGE)->image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_images.get("depth image")->image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
@@ -101,7 +100,7 @@ namespace Engine {
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
-			.imageView = MemoryManager::g_image_views.get<ImageView>(Ids::g_DEPTH_VIEW)->get_image_view(),
+			.imageView = MemoryManager::g_image_views.get("depth view")->get_image_view(),
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
@@ -121,8 +120,8 @@ namespace Engine {
 		set_viewport_and_scissor(cmd_buf);
 
 		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get<Buffer>(Ids::g_SIMPLE_VERTEX_BUFFER)->buffer;
-		VkBuffer index_buffer = MemoryManager::g_buffers.get<Buffer>(Ids::g_SIMPLE_INDEX_BUFFER)->buffer;
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("sphere vertex buffer")->buffer;
+		VkBuffer index_buffer = MemoryManager::g_buffers.get("sphere index buffer")->buffer;
 		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
 		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -281,6 +280,6 @@ namespace Engine {
 		g_ubo_data.light_positions[0].x = g_circle_position.x;
 		g_ubo_data.light_positions[0].z = g_circle_position.y;
 
-		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, sizeof(UniformBufferBlock), *MemoryManager::g_buffers.get<Buffer>(Ids::g_UNIFORM_BUFFERS[0]));
+		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, sizeof(UniformBufferBlock), *MemoryManager::g_buffers.get("uniform buffer 0"));
 	}
 }

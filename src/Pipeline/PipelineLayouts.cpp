@@ -2,7 +2,6 @@
 #include "Backend/LogicalDevice.h"
 #include "Memory/MemoryManager.h"
 #include "Utility/Vulkan.h"
-#include "Utility/Ids.h"
 #include "ShaderStructs/PushConstantBlock.hpp"
 #include "Gui/Gui.h"
 
@@ -10,7 +9,7 @@ namespace PipelineLayouts {
 	void init() {
 		{
 			std::vector<VkDescriptorSetLayout> descriptor_set_layouts{
-				MemoryManager::g_descriptor_sets.get<DescriptorSet>(Ids::g_DESCRIPTOR_SET)->get_layout()
+				MemoryManager::g_descriptor_sets.get("descriptor set")->get_layout()
 			};
 			std::vector<VkPushConstantRange> push_constant_ranges{
 				VkPushConstantRange{
@@ -37,7 +36,7 @@ namespace PipelineLayouts {
 
 		{
 			std::vector<VkDescriptorSetLayout> descriptor_set_layouts{
-				MemoryManager::g_descriptor_sets.get<DescriptorSet>(Ids::g_GUI_DESCRIPTOR_SET)->get_layout()
+				MemoryManager::g_descriptor_sets.get("gui descriptor set")->get_layout()
 			};
 			std::vector<VkPushConstantRange> push_constant_ranges{
 				VkPushConstantRange{

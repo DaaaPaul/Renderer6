@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <vector>
-#include "Utility/IdPool.hpp"
+#include "Utility/Addmap.hpp"
 #include "ShaderStructs/PBRVertex.hpp"
 #include "Buffer.hpp"
 #include "Image.hpp"
@@ -13,12 +13,12 @@
 #include "Memory.hpp"
 
 namespace MemoryManager {
-	inline IdPool<Buffer> g_buffers;
-	inline IdPool<Image> g_images;
-	inline IdPool<KtxTexture> g_textures;
-	inline IdPool<ImageView> g_image_views;
-	inline IdPool<DescriptorSet> g_descriptor_sets;
-	inline IdPool<Sampler> g_samplers;
+	inline Addmap<Buffer> g_buffers(12);
+	inline Addmap<Image> g_images(1);
+	inline Addmap<KtxTexture> g_textures(3);
+	inline Addmap<ImageView> g_image_views(4);
+	inline Addmap<DescriptorSet> g_descriptor_sets(2);
+	inline Addmap<Sampler> g_samplers(1);
 
 	inline std::vector<PBRVertex> g_vertices;
 	inline std::vector<uint32_t> g_indices;

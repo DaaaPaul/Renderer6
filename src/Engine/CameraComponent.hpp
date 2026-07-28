@@ -3,7 +3,7 @@
 #include <glm/fwd.hpp>
 #include <GLFW/glfw3.h>
 #include "Utility/Utility.h"
-#include "Utility/IdPool.hpp"
+#include "Utility/Entity.hpp"
 #include "Component.hpp"
 
 struct Angles {
