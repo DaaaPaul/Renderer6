@@ -8,6 +8,7 @@ class ImageView {
 	VkImageView image_view{};
 
 	public:
+	ImageView() = default;
 	explicit ImageView(VkImageViewCreateFlags create_flags,
 					   VkImage image,
 					   VkImageViewType view_type,

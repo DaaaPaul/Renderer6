@@ -13,6 +13,19 @@
 #include "Buffer.hpp"
 
 namespace MemoryManager {
+	void init() {
+		load_vertices_and_indices();
+		init_buffers();
+		init_images();
+		init_textures();
+		init_memory();
+		populate_memory();
+		init_image_views();
+		init_samplers();
+		init_descriptor_sets();
+		write_descriptor_sets();
+	}
+
 	void load_vertices_and_indices() {
 		std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> model = Vulkan::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)");
 		g_vertices = std::move(model.first);
@@ -418,19 +431,6 @@ namespace MemoryManager {
 				}
 			}
 		);
-	}
-
-	void init() {
-		load_vertices_and_indices();
-		init_buffers();
-		init_images();
-		init_textures();
-		init_memory();
-		populate_memory();
-		init_image_views();
-		init_samplers();
-		init_descriptor_sets();
-		write_descriptor_sets();
 	}
 
 	void destroy() {

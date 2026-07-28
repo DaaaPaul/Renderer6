@@ -20,7 +20,7 @@ BY THE HOUR:
 
 
 
-
+- link imgui as a static library dont include it in build
 
 
 

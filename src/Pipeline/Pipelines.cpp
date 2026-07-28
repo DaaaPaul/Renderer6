@@ -140,7 +140,7 @@ namespace Pipelines {
 		}
 
 		{
-			VkPipeline simple_pipeline{};
+			VkPipeline sphere_pipeline{};
 
 			std::vector<VkFormat> color_attachment_formats{ Swapchain::g_IMAGE_FORMAT };
 			VkPipelineRenderingCreateInfo rendering_info{
@@ -277,9 +277,9 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[1],
 			};
 
-			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &simple_pipeline), "pipelines::init: failed");
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &sphere_pipeline), "pipelines::init: failed");
 
-			g_pipelines.push_back(simple_pipeline);
+			g_pipelines.push_back(sphere_pipeline);
 		}
 
 		{

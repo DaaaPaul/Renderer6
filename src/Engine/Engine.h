@@ -5,6 +5,7 @@
 #include "FramesInFlight.hpp"
 #include "backend/Swapchain.h"
 #include "shader/UniformBufferBlock.hpp"
+#include "imgui.h"
 
 namespace Engine {	
 	struct ScAcquire {
@@ -18,7 +19,8 @@ namespace Engine {
 	inline glm::vec2 g_circle_position{};
 
 	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
-	void record_draw_simple(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
+	void record_draw_sphere(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
+	void record_draw_gui(VkCommandBuffer cmd_buf, uint32_t sc_image_index, ImDrawData* p_gui_data);
 	void render_next(Frame& frame);
 	void run();
 
@@ -26,7 +28,7 @@ namespace Engine {
 	VkResult present_sc_image(uint32_t sc_image_index, VkQueue queue);
 	void wait_timeline_semaphore(VkSemaphore semaphore, uint64_t wait_val);
 	void wait_fence(VkFence fence);
-	void set_viewport_and_scissor(VkCommandBuffer cmd_buf);
+	void fit_viewport(VkCommandBuffer cmd_buf);
 	void resize();
 	void check_close();
 	void update(float delta_time);

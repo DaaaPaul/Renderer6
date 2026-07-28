@@ -5,11 +5,12 @@
 #include "backend/Swapchain.h"
 #include "backend/Window.h"
 #include "CameraComponent.hpp"
-#include "engine.h"
+#include "Engine.h"
 #include "Frame.hpp"
 #include "EntityManager.h"
 #include "shader/PushConstantBlock.hpp"
 #include "shader/UniformBufferBlock.hpp"
+#include "gui/Gui.h"
 #include "memory/MemoryManager.h"
 #include "memory/Buffer.hpp"
 #include "memory/ImageView.hpp"
@@ -20,6 +21,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include <vector>
+#include <algorithm>
 #include <vulkan/vulkan_core.h>
 
 namespace Engine {
@@ -30,7 +32,7 @@ namespace Engine {
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = VkClearColorValue({0.4f, 0.2f, 0.2f, 1.0f}),
+			.clearValue = VkClearColorValue({0.4f, 0.2f, 0.2f, 1.0f})
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
@@ -39,7 +41,7 @@ namespace Engine {
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = { .depthStencil = VkClearDepthStencilValue(1.0f, 0) },
+			.clearValue = { .depthStencil = VkClearDepthStencilValue(1.0f, 0) }
 		};
 		VkRenderingInfo rendering_info{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
@@ -52,7 +54,7 @@ namespace Engine {
 		Vulkan::begin_cmd_buffer(cmd_buf, Vulkan::NO_FLAGS);
 
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[0]);
-		set_viewport_and_scissor(cmd_buf);
+		fit_viewport(cmd_buf);
 
 		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
 		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("vertex buffer")->buffer;
@@ -87,16 +89,16 @@ namespace Engine {
 		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
-		Vulkan::check(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure");
+		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_model: command buffer end recording failure");
 	};
 
-	void record_draw_simple(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {
+	void record_draw_sphere(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Swapchain::g_image_views[sc_image_index],
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE
 		};
 		VkRenderingAttachmentInfo depth_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
@@ -104,11 +106,11 @@ namespace Engine {
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
 			.resolveMode = VK_RESOLVE_MODE_NONE,
 			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-			.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE
 		};
 		VkRenderingInfo rendering_info{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
-			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::g_status.imageExtent),
+			.renderArea = VkRect2D{VkOffset2D{0, 0}, Swapchain::g_status.imageExtent},
 			.layerCount = 1,
 			.colorAttachmentCount = 1,
 			.pColorAttachments = &sc_image_attachment,
@@ -117,7 +119,7 @@ namespace Engine {
 		Vulkan::begin_cmd_buffer(cmd_buf, Vulkan::NO_FLAGS);
 
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[1]);
-		set_viewport_and_scissor(cmd_buf);
+		fit_viewport(cmd_buf);
 
 		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
 		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("sphere vertex buffer")->buffer;
@@ -143,12 +145,75 @@ namespace Engine {
 		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_simple_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
+		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_sphere: command buffer end recording failure");
+	}
+
+	void record_draw_gui(VkCommandBuffer cmd_buf, uint32_t sc_image_index, ImDrawData* p_gui_data) {
+		VkRenderingAttachmentInfo sc_image_attachment{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+			.imageView = Swapchain::g_image_views[sc_image_index],
+			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
+			.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		};
+		VkRenderingInfo rendering_info{
+			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
+			.renderArea = VkRect2D(VkOffset2D(0, 0), Swapchain::g_status.imageExtent),
+			.layerCount = 1,
+			.colorAttachmentCount = 1,
+			.pColorAttachments = &sc_image_attachment
+		};
+		Vulkan::begin_cmd_buffer(cmd_buf, Vulkan::NO_FLAGS);
+
+		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[2]);
+		VkViewport viewport{
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = p_gui_data->DisplaySize.x,
+			.height = p_gui_data->DisplaySize.y,
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f,
+		};
+		vkCmdSetViewport(cmd_buf, 0, 1, &viewport);
+
+		Gui::PushConstantBlock push_constants{
+			.scale = glm::vec2(2.0f / p_gui_data->DisplaySize.x, 2.0f / p_gui_data->DisplaySize.y),
+			.translate = glm::vec2(-1.0f)
+		};
+		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[2], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push_constants), &push_constants);
+
+		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
+		VkBuffer gui_vertex_buffer = Gui::g_vertex_buffer.buffer;
+		VkBuffer gui_index_buffer = Gui::g_index_buffer.buffer;
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &gui_vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
+		vkCmdBindIndexBuffer(cmd_buf, gui_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+
+		uint32_t vertex_offset = 0;
+		uint32_t index_offset = 0;
+		for(ImDrawList* p_draw_list : p_gui_data->CmdLists) {
+			for(const ImDrawCmd& cmds : p_draw_list->CmdBuffer) {
+				VkRect2D scissor{
+					.offset = VkOffset2D{std::max(static_cast<int>(cmds.ClipRect.x), 0), std::max(static_cast<int>(cmds.ClipRect.y), 0)},
+					.extent = VkExtent2D{static_cast<uint32_t>(cmds.ClipRect.z - cmds.ClipRect.x), static_cast<uint32_t>(cmds.ClipRect.w - cmds.ClipRect.y)}
+				};
+				vkCmdSetScissor(cmd_buf, 0, 1, &scissor);
+
+				vkCmdBeginRendering(cmd_buf, &rendering_info);
+				vkCmdDrawIndexed(cmd_buf, cmds.ElemCount, 1, index_offset, vertex_offset, 0);
+				vkCmdEndRendering(cmd_buf);
+
+				index_offset += cmds.ElemCount;
+			}
+
+			vertex_offset += p_draw_list->VtxBuffer.Size;
+		}
+
 		Vulkan::insert_image_barrier(cmd_buf, Swapchain::g_images[sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::check(vkEndCommandBuffer(cmd_buf), "Command buffer end recording failure");
+		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_gui: command buffer end recording failure");
 	}
 
 	void render_next(Frame& frame) {
@@ -162,10 +227,14 @@ namespace Engine {
 		wait_fence(frame.fence);
 
 		record_draw_model(frame.submits[0].cmd.commandBuffer, acquire.sc_image_index);
-		record_draw_simple(frame.submits[1].cmd.commandBuffer, acquire.sc_image_index);
+		record_draw_sphere(frame.submits[1].cmd.commandBuffer, acquire.sc_image_index);
 
-		std::vector<VkSubmitInfo2> submits{ frame.submits[0].submit, frame.submits[1].submit };
-		
+		ImDrawData* p_gui_data = Gui::record_frame();
+		Gui::process_draw_data(p_gui_data);
+
+		record_draw_gui(frame.submits[2].cmd.commandBuffer, acquire.sc_image_index, p_gui_data);
+
+		std::vector<VkSubmitInfo2> submits{frame.submits[0].submit, frame.submits[1].submit, frame.submits[2].submit};
 		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), static_cast<uint32_t>(submits.size()), submits.data(), VK_NULL_HANDLE);
 
 		wait_timeline_semaphore(frame.timeline, frame.timeline_val);
@@ -177,7 +246,7 @@ namespace Engine {
 	}
 
 	void run() {
-		FramesInFlight frames_in_flight(Swapchain::g_IMAGE_COUNT, 2);
+		FramesInFlight frames_in_flight(Swapchain::g_IMAGE_COUNT, 3);
 
 		std::chrono::steady_clock::time_point before{};
 		std::chrono::steady_clock::time_point after{};
@@ -238,7 +307,7 @@ namespace Engine {
 		Vulkan::check(vkResetFences(g_device, 1, &fence), "Failed to reset fence");
 	}
 
-	void set_viewport_and_scissor(VkCommandBuffer cmd_buf) {
+	void fit_viewport(VkCommandBuffer cmd_buf) {
 		VkViewport viewport{
 			.x = 0.0f,
 			.y = 0.0f,

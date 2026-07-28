@@ -1,12 +1,12 @@
 #include "Gui.h"
 #include "utility/Vulkan.h"
 #include "backend/PhysicalDevice.h"
+#include "memory/MemoryManager.h"
 
 namespace Gui {
 	void init(float width, float height) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
@@ -68,6 +68,25 @@ namespace Gui {
 			for(ImTextureData* p_tex_data : *p_draw_data->Textures) {
 				if(should_create_texture(p_tex_data)) {
 					g_texture = create_texture_image(p_tex_data);
+					g_texture_view = ImageView(
+						Vulkan::NO_FLAGS, 
+						g_texture.image, 
+						VK_IMAGE_VIEW_TYPE_2D, 
+						(p_tex_data->Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
+						VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+					);
+					MemoryManager::g_descriptor_sets.get("gui descriptor set")->write(
+						DescriptorSet::Write{
+							.binding_num = 0,
+							.descriptor_num = 0,
+							.descriptor_count = 1,
+							.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+							.image_info = VkDescriptorImageInfo{
+								.imageView = Gui::g_texture_view.get_image_view(),
+								.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+							}
+						}
+					);
 					set_status_and_id(p_tex_data);
 				} else if(should_update_texture(p_tex_data)) {
 					update_texture_image(p_tex_data, g_texture);

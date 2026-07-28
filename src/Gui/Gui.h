@@ -4,7 +4,7 @@
 #include <vulkan/vulkan.h>
 #include "imgui.h"
 #include "memory/Memory.hpp"
-#include "memory/Sampler.hpp"
+#include "memory/ImageView.hpp"
 #include "memory/Image.hpp"
 #include "memory/Buffer.hpp"
 
@@ -21,6 +21,7 @@ namespace Gui {
 	inline VkDeviceSize g_index_buffer_size = 0;
 
 	inline Image g_texture;
+	inline ImageView g_texture_view;
 
 	inline Memory g_memory{};
 
