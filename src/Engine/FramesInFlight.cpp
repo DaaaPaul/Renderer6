@@ -1,6 +1,6 @@
 #include "FramesInFlight.hpp"
-#include "Utility/Vulkan.h"
-#include "Backend/PhysicalDevice.h"
+#include "utility/Vulkan.h"
+#include "backend/PhysicalDevice.h"
 
 FramesInFlight::Index::Index(uint32_t frames_in_flight) :
 	frames_in_flight{ frames_in_flight },

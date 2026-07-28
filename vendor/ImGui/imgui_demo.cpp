@@ -582,7 +582,7 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::Spacing();
         }
 
-        if (ImGui::TreeNode("Backend Flags"))
+        if (ImGui::TreeNode("backend Flags"))
         {
             IMGUI_DEMO_MARKER("Configuration/Backend Flags");
             HelpMarker(

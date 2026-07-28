@@ -1,7 +1,7 @@
-#include "Backend/LogicalDevice.h"
-#include "Backend/PhysicalDevice.h"
-#include "Utility/Utility.h"
-#include "Utility/Vulkan.h"
+#include "backend/LogicalDevice.h"
+#include "backend/PhysicalDevice.h"
+#include "utility/Utility.h"
+#include "utility/Vulkan.h"
 
 namespace LogicalDevice {
 	void init() {

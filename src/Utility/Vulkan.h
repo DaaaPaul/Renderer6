@@ -6,8 +6,8 @@
 #include <string>
 #include <stdexcept>
 #include <cstdint>
-#include "Backend/Instance.h"
-#include "ShaderStructs/PBRVertex.hpp"
+#include "backend/Instance.h"
+#include "shader/PBRVertex.hpp"
 
 namespace Vulkan {
 	inline constexpr VkFlags NO_FLAGS = 0U;

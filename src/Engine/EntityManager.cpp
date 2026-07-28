@@ -1,5 +1,5 @@
 #include "EntityManager.h"
-#include "Backend/Window.h"
+#include "backend/Window.h"
 
 namespace EntityManager {
 	void init() {

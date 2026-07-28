@@ -17202,7 +17202,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
     }
 
     // Settings
-    if (TreeNode("Memory allocations"))
+    if (TreeNode("memory allocations"))
     {
         ImGuiDebugAllocInfo* info = &g.DebugAllocInfo;
         Text("%d current allocations", info->TotalAllocCount - info->TotalFreeCount);

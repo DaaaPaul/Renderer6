@@ -3,8 +3,8 @@
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
 #include "FramesInFlight.hpp"
-#include "Backend/Swapchain.h"
-#include "ShaderStructs/UniformBufferBlock.hpp"
+#include "backend/Swapchain.h"
+#include "shader/UniformBufferBlock.hpp"
 
 namespace Engine {	
 	struct ScAcquire {

@@ -2,8 +2,8 @@
 #include <vector>
 #include <cstdint>
 #include "Image.hpp"
-#include "Backend/LogicalDevice.h"
-#include "Utility/Vulkan.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
 
 Image::Image(VkImageCreateFlags create_flags, 
 			 VkImageType image_type,    

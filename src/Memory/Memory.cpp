@@ -1,8 +1,8 @@
 #include <vulkan/vulkan.h>
 #include <cstdlib>
-#include "Memory.hpp"
-#include "Backend/PhysicalDevice.h"
-#include "Utility/Vulkan.h"
+#include "memory.hpp"
+#include "backend/PhysicalDevice.h"
+#include "utility/Vulkan.h"
 
 Memory::Memory(const std::vector<Buffer>& buffers, const std::vector<Image>& images, VkMemoryPropertyFlags memory_property_flags, const void* memory_create_p_next) :
 	memory_property_flags{ memory_property_flags }, specs{ get_properties(buffers, images, memory_property_flags) }, buffers(buffers), images(images) {

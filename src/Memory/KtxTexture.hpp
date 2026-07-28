@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <ktx.h>
 #include "Image.hpp"
-#include "Utility/Vulkan.h"
+#include "utility/Vulkan.h"
 
 struct KtxTexture {
 	ktxTexture2* ktx_texture{};

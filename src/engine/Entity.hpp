@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <typeindex>
 #include <stdexcept>
-#include "Utility.h"
+#include "utility/utility.h"
 
 class Component;
 

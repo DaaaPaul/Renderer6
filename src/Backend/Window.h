@@ -3,8 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <vector>
-#include "Utility/Utility.h"
-#include "Engine/CameraComponent.hpp"
+#include "utility/Utility.h"
+#include "engine/CameraComponent.hpp"
 
 namespace Window {
 	struct WindowUser {

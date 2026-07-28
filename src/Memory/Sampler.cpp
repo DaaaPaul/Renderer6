@@ -1,5 +1,5 @@
 #include "Sampler.hpp"
-#include "Utility/Vulkan.h"
+#include "utility/Vulkan.h"
 
 Sampler::Sampler(VkSamplerCreateFlags create_flags,
 				 VkFilter mag_filter,

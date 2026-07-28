@@ -1,11 +1,11 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include "Backend/Swapchain.h"
-#include "Backend/LogicalDevice.h"
-#include "Backend/PhysicalDevice.h"
-#include "Backend/Instance.h"
-#include "Backend/Window.h"
-#include "Utility/Vulkan.h"
+#include "backend/Swapchain.h"
+#include "backend/LogicalDevice.h"
+#include "backend/PhysicalDevice.h"
+#include "backend/Instance.h"
+#include "backend/Window.h"
+#include "utility/Vulkan.h"
 
 namespace Swapchain {
 	void init() {

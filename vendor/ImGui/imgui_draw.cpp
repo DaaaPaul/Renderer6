@@ -2790,7 +2790,7 @@ void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool rendere
         // Update and remove if requested
         ImTextureData* tex = atlas->TexList[tex_n];
         if (tex->Status == ImTextureStatus_WantCreate && atlas->RendererHasTextures)
-            IM_ASSERT(tex->TexID == ImTextureID_Invalid && tex->BackendUserData == NULL && "Backend set texture's TexID/BackendUserData but did not update Status to OK.");
+            IM_ASSERT(tex->TexID == ImTextureID_Invalid && tex->BackendUserData == NULL && "backend set texture's TexID/BackendUserData but did not update Status to OK.");
 
         bool remove_from_list = ImTextureDataUpdateNewFrame(tex);
         if (remove_from_list)
@@ -2812,7 +2812,7 @@ void ImFontAtlasUpdateNewFrame(ImFontAtlas* atlas, int frame_count, bool rendere
     }
     // Legacy backend
     if (!atlas->RendererHasTextures)
-        IM_ASSERT_USER_ERROR(atlas->TexIsBuilt, "Backend does not support ImGuiBackendFlags_RendererHasTextures, and font atlas is not built! Update backend OR make sure you called ImGui_ImplXXXX_NewFrame() function for renderer backend, which should call io.Fonts->GetTexDataAsRGBA32() / GetTexDataAsAlpha8().");
+        IM_ASSERT_USER_ERROR(atlas->TexIsBuilt, "backend does not support ImGuiBackendFlags_RendererHasTextures, and font atlas is not built! Update backend OR make sure you called ImGui_ImplXXXX_NewFrame() function for renderer backend, which should call io.Fonts->GetTexDataAsRGBA32() / GetTexDataAsAlpha8().");
     if (atlas->TexIsBuilt && atlas->Builder->PreloadedAllGlyphsRanges)
         IM_ASSERT_USER_ERROR(atlas->RendererHasTextures == false, "Called ImFontAtlas::Build() before ImGuiBackendFlags_RendererHasTextures got set! With new backends: you don't need to call Build().");
 
@@ -2872,7 +2872,7 @@ bool ImTextureDataUpdateNewFrame(ImTextureData* tex)
     // Process texture being destroyed
     if (tex->Status == ImTextureStatus_Destroyed)
     {
-        IM_ASSERT(tex->TexID == ImTextureID_Invalid && tex->BackendUserData == NULL && "Backend set texture Status to Destroyed but did not clear TexID/BackendUserData!");
+        IM_ASSERT(tex->TexID == ImTextureID_Invalid && tex->BackendUserData == NULL && "backend set texture Status to Destroyed but did not clear TexID/BackendUserData!");
         IM_ASSERT(tex->QueueUserData == NULL && "Texture queue set Status to Destroyed but did not clear QueueUserData!");
         if (tex->WantDestroyNextFrame)
             remove_from_list = true; // Destroy was scheduled by us

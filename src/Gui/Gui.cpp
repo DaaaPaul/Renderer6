@@ -1,6 +1,6 @@
 #include "Gui.h"
-#include "Utility/Vulkan.h"
-#include "Backend/PhysicalDevice.h"
+#include "utility/Vulkan.h"
+#include "backend/PhysicalDevice.h"
 
 namespace Gui {
 	void init(float width, float height) {

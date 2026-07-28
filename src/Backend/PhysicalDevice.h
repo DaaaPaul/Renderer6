@@ -4,7 +4,7 @@
 #include <vector>
 #include <array>
 #include <cstdint>
-#include "Backend/LogicalDevice.h"
+#include "backend/LogicalDevice.h"
 
 namespace PhysicalDevice {
 	inline VkPhysicalDevice g_physical_device{};

@@ -1,8 +1,8 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include "DescriptorSet.hpp"
-#include "Backend/LogicalDevice.h"
-#include "Utility/Vulkan.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
 
 DescriptorSet::DescriptorSet(const std::vector<VkDescriptorSetLayoutBinding>& bindings) :
 	pool{ Vulkan::create_descriptor_pool({ bindings }) }, 

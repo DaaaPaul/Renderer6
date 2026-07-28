@@ -1,7 +1,7 @@
 #include <fstream>
-#include "Pipeline/ShaderModule.h"
-#include "Backend/LogicalDevice.h"
-#include "Utility/Vulkan.h"
+#include "pipeline/ShaderModule.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
 
 namespace ShaderModule {
 	void init() {

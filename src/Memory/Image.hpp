@@ -3,8 +3,8 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <cstdint>
-#include "Backend/LogicalDevice.h"
-#include "Utility/Utility.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Utility.h"
 
 struct Image {
 	VkImage image{};

@@ -2,15 +2,15 @@
 
 #include <cstdint>
 #include <vector>
-#include "Utility/Addmap.hpp"
-#include "ShaderStructs/PBRVertex.hpp"
+#include "containers/Addmap.hpp"
+#include "shader/PBRVertex.hpp"
 #include "Buffer.hpp"
 #include "Image.hpp"
 #include "DescriptorSet.hpp"
 #include "ImageView.hpp"
 #include "Sampler.hpp"
 #include "KtxTexture.hpp"
-#include "Memory.hpp"
+#include "memory.hpp"
 
 namespace MemoryManager {
 	inline Addmap<Buffer> g_buffers(12);

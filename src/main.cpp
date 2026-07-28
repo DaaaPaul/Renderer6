@@ -3,20 +3,20 @@
 #include <iostream>
 #include <stdexcept>
 #include <chrono>
-#include "Backend/Window.h"
-#include "Backend/Instance.h"
-#include "Backend/LogicalDevice.h"
-#include "Backend/PhysicalDevice.h"
-#include "Backend/Swapchain.h"
-#include "Pipeline/PipelineLayouts.h"
-#include "Pipeline/ShaderModule.h"
-#include "Pipeline/Pipelines.h"
-#include "Utility/Vulkan.h"
-#include "Utility/Utility.h"
-#include "Memory/MemoryManager.h"
-#include "Engine/Engine.h"
-#include "Engine/EntityManager.h"
-#include "Engine/Frame.hpp"
+#include "backend/Window.h"
+#include "backend/Instance.h"
+#include "backend/LogicalDevice.h"
+#include "backend/PhysicalDevice.h"
+#include "backend/Swapchain.h"
+#include "pipeline/PipelineLayouts.h"
+#include "pipeline/ShaderModule.h"
+#include "pipeline/Pipelines.h"
+#include "utility/Vulkan.h"
+#include "utility/Utility.h"
+#include "memory/MemoryManager.h"
+#include "engine/Engine.h"
+#include "engine/EntityManager.h"
+#include "engine/Frame.hpp"
 
 int main() {
     try {

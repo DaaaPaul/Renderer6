@@ -1,6 +1,6 @@
 #include <fstream>
 #include <random>	
-#include "Utility/Utility.h"
+#include "utility/Utility.h"
 
 std::ostream& operator<<(std::ostream& os, glm::vec2 const& vec2) {
 	return os << '[' << vec2.x << ", " << vec2.y << ']';

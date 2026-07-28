@@ -1,6 +1,6 @@
 #include <stdexcept>
-#include "Backend/Window.h"
-#include "Engine/CameraComponent.hpp"
+#include "backend/Window.h"
+#include "engine/CameraComponent.hpp"
 
 namespace Window {
 	std::vector<const char*> get_instance_window_extensions() {

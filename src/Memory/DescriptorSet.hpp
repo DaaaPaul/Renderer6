@@ -3,7 +3,7 @@
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
 #include <vector>
-#include "Backend/LogicalDevice.h"
+#include "backend/LogicalDevice.h"
 
 class DescriptorSet {
 	public:

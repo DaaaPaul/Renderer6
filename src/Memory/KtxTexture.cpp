@@ -4,8 +4,8 @@
 #include <cstdint>
 #include "Image.hpp"
 #include "KtxTexture.hpp"
-#include "Backend/LogicalDevice.h"
-#include "Utility/Vulkan.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
 
 KtxTexture::KtxTexture(const char* ktx_path,
 				 uint32_t mip_level_count,

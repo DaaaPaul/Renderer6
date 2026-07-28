@@ -4,9 +4,9 @@
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
 #include <cassert>
-#include "Backend/Swapchain.h"
-#include "Backend/LogicalDevice.h"
-#include "Utility/Utility.h"
+#include "backend/Swapchain.h"
+#include "backend/LogicalDevice.h"
+#include "utility/Utility.h"
 
 struct Submit {
 	VkCommandPool cmd_pool{};

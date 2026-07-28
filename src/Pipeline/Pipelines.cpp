@@ -1,10 +1,10 @@
-#include "Pipelines.h"
-#include "PipelineLayouts.h"
-#include "Backend/LogicalDevice.h"
+#include "pipelines.h"
+#include "pipelineLayouts.h"
+#include "backend/LogicalDevice.h"
 #include "ShaderModule.h"
-#include "Backend/Swapchain.h"
-#include "Utility/Vulkan.h"
-#include "ShaderStructs/PBRVertex.hpp"
+#include "backend/Swapchain.h"
+#include "utility/Vulkan.h"
+#include "shader/PBRVertex.hpp"
 #include "Gui/Gui.h"
 
 namespace Pipelines {
@@ -134,7 +134,7 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[0],
 			};
 
-			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &pbr_pipeline), "Pipelines::init: failed");
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &pbr_pipeline), "pipelines::init: failed");
 
 			g_pipelines.push_back(pbr_pipeline);
 		}
@@ -277,7 +277,7 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[1],
 			};
 
-			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &simple_pipeline), "Pipelines::init: failed");
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &simple_pipeline), "pipelines::init: failed");
 
 			g_pipelines.push_back(simple_pipeline);
 		}
@@ -428,7 +428,7 @@ namespace Pipelines {
 				.layout = PipelineLayouts::g_layouts[2],
 			};
 
-			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &gui_pipeline), "Pipelines::init: failed");
+			Vulkan::check(vkCreateGraphicsPipelines(g_device, VK_NULL_HANDLE, 1, &create, nullptr, &gui_pipeline), "pipelines::init: failed");
 
 			g_pipelines.push_back(gui_pipeline);
 		}

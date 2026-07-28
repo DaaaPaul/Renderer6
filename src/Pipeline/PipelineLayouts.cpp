@@ -1,8 +1,8 @@
-#include "Pipeline/PipelineLayouts.h"
-#include "Backend/LogicalDevice.h"
-#include "Memory/MemoryManager.h"
-#include "Utility/Vulkan.h"
-#include "ShaderStructs/PushConstantBlock.hpp"
+#include "pipeline/PipelineLayouts.h"
+#include "backend/LogicalDevice.h"
+#include "memory/MemoryManager.h"
+#include "utility/Vulkan.h"
+#include "shader/PushConstantBlock.hpp"
 #include "Gui/Gui.h"
 
 namespace PipelineLayouts {

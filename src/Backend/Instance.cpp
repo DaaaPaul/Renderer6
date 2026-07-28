@@ -3,10 +3,10 @@
 #include <string>
 #include <stdexcept>
 #include <cstdint>
-#include "Backend/Instance.h"
-#include "Backend/Window.h"
-#include "Utility/Utility.h"
-#include "Utility/Vulkan.h"
+#include "backend/Instance.h"
+#include "backend/Window.h"
+#include "utility/Utility.h"
+#include "utility/Vulkan.h"
 
 namespace Instance {
 	std::vector<const char*> init_extensions() {

@@ -47,13 +47,13 @@ namespace Utility {
 		std::cout << msg << '\n';
 	}
 
-	inline void check_nullptr(void* p, const char* error_msg = "Utility::check_nullptr: failed") {
+	inline void check_nullptr(void* p, const char* error_msg = "utility::check_nullptr: failed") {
 		if(!p) {
 			throw std::runtime_error(error_msg);
 		}
 	}
 
-	inline void check_true(bool b, const char* error_msg = "Utility::check_true: failed") {
+	inline void check_true(bool b, const char* error_msg = "utility::check_true: failed") {
 		if(!b) {
 			throw std::runtime_error(error_msg);
 		}

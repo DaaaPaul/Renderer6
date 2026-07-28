@@ -2,8 +2,8 @@
 
 #include <glm/fwd.hpp>
 #include <GLFW/glfw3.h>
-#include "Utility/Utility.h"
-#include "Utility/Entity.hpp"
+#include "utility/Utility.h"
+#include "engine/Entity.hpp"
 #include "Component.hpp"
 
 struct Angles {

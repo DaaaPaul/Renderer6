@@ -1,7 +1,7 @@
 #include <vulkan/vulkan_core.h>
 #include "ImageView.hpp"
-#include "Utility/Vulkan.h"
-#include "Backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
+#include "backend/LogicalDevice.h"
 
 ImageView::ImageView(VkImageViewCreateFlags create_flags,
 					 VkImage image,

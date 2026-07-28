@@ -4,11 +4,11 @@
 #include <cstdint>
 #include <algorithm>
 #include <string>
-#include "Backend/PhysicalDevice.h"
-#include "Backend/LogicalDevice.h"
-#include "Backend/Instance.h"
-#include "Utility/Vulkan.h"
-#include "Utility/Utility.h"
+#include "backend/PhysicalDevice.h"
+#include "backend/LogicalDevice.h"
+#include "backend/Instance.h"
+#include "utility/Vulkan.h"
+#include "utility/Utility.h"
 
 namespace PhysicalDevice {
 	void init() {

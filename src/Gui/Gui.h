@@ -3,9 +3,9 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 #include "imgui.h"
-#include "Memory/Sampler.hpp"
-#include "Memory/Image.hpp"
-#include "Memory/Buffer.hpp"
+#include "memory/Sampler.hpp"
+#include "memory/Image.hpp"
+#include "memory/Buffer.hpp"
 
 namespace Gui {
 	struct PushConstantBlock {

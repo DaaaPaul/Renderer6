@@ -2,10 +2,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cassert>
 #include <cmath>
-#include "Utility/Vulkan.h"
-#include "Backend/Swapchain.h"
-#include "Backend/Window.h"
-#include "Engine/CameraComponent.hpp"
+#include "utility/Vulkan.h"
+#include "backend/Swapchain.h"
+#include "backend/Window.h"
+#include "engine/CameraComponent.hpp"
 
 glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
 	const float COS = std::cos(angle_cc);

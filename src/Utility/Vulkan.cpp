@@ -11,12 +11,12 @@
 #include <string>
 #include <cassert>
 #include <cstdint>
-#include "Utility/Vulkan.h"
-#include "Utility/Utility.h"
-#include "Backend/LogicalDevice.h"
-#include "Backend/PhysicalDevice.h"
-#include "Backend/Instance.h"
-#include "Backend/Window.h"
+#include "utility/Vulkan.h"
+#include "utility/Utility.h"
+#include "backend/LogicalDevice.h"
+#include "backend/PhysicalDevice.h"
+#include "backend/Instance.h"
+#include "backend/Window.h"
 
 namespace Vulkan {
 	void load() {

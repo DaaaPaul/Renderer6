@@ -3,7 +3,7 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <cstdint>
-#include "Backend/LogicalDevice.h"
+#include "backend/LogicalDevice.h"
 
 struct Buffer {
 	VkBuffer buffer{};

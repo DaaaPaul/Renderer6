@@ -1,11 +1,11 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include <cstdint>
-#include "Backend/LogicalDevice.h"
-#include "Backend/PhysicalDevice.h"
+#include "backend/LogicalDevice.h"
+#include "backend/PhysicalDevice.h"
 #include "Buffer.hpp"
-#include "Utility/Utility.h"
-#include "Utility/Vulkan.h"
+#include "utility/Utility.h"
+#include "utility/Vulkan.h"
 
 Buffer::Buffer(VkBufferCreateFlags create_flags, 
 			   VkDeviceSize size, 

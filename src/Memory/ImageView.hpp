@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan_core.h>
-#include "Backend/LogicalDevice.h"
+#include "backend/LogicalDevice.h"
 
 class ImageView {
 	private:

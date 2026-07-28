@@ -3,7 +3,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <glm/glm.hpp>
-#include "Engine/CameraComponent.hpp"
+#include "engine/CameraComponent.hpp"
 
 struct UniformBufferBlock {
 	glm::mat4 model{};

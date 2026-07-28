@@ -1,7 +1,7 @@
-#include "Engine/Frame.hpp"
-#include "Utility/Vulkan.h"
-#include "Utility/Utility.h"
-#include "Backend/PhysicalDevice.h"
+#include "engine/Frame.hpp"
+#include "utility/Vulkan.h"
+#include "utility/Utility.h"
+#include "backend/PhysicalDevice.h"
 
 Submit::Submit(VkCommandPool cmd_pool, VkSemaphore timeline) :
 	cmd_pool{ cmd_pool },
