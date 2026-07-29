@@ -44,7 +44,7 @@ int main() {
 		
 		Engine::run();
 
-		ImGui::DestroyContext();
+		Gui::destroy();
 		EntityManager::destroy();
 
 		Pipelines::clear();

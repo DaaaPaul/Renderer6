@@ -171,10 +171,11 @@ namespace Vulkan {
 		vkCmdPipelineBarrier2(cmd_buf, &deps);
 	}
 
-	VkResult begin_one_time_cmd_buffer(VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf, uint32_t queue_family_index) {
+	void begin_one_time_cmd_buffer(VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf, uint32_t queue_family_index) {
 		cmd_pool = create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queue_family_index);
 		cmd_buf = create_cmd_buffer(cmd_pool);
-		return begin_cmd_buffer(cmd_buf, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		
+		begin_cmd_buffer(cmd_buf, VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	}
 
 	void end_one_time_cmd_buffer(VkQueue queue, VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf) {
@@ -224,13 +225,13 @@ namespace Vulkan {
 		return cmd_buffer;
 	}
 
-	VkResult begin_cmd_buffer(VkCommandBuffer cmd_buf, VkCommandBufferUsageFlags flags) {
+	void begin_cmd_buffer(VkCommandBuffer cmd_buf, VkCommandBufferUsageFlags flags) {
 		if(flags != VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) {
 			Vulkan::check(vkResetCommandBuffer(cmd_buf, Vulkan::NO_FLAGS), "begin_cmd_buf: failed to reset command buffer");
 		}
 		
 		VkCommandBufferBeginInfo begin{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = flags };
-		return vkBeginCommandBuffer(cmd_buf, &begin);
+		Vulkan::check(vkBeginCommandBuffer(cmd_buf, &begin), "begin_cmd_buf: failed");
 	}
 
 	VkFence create_fence(VkFenceCreateFlags flags) {

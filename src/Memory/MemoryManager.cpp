@@ -26,6 +26,41 @@ namespace MemoryManager {
 		write_descriptor_sets();
 	}
 
+	void destroy() {
+		g_descriptor_sets.get("descriptor set")->destroy();
+		g_descriptor_sets.get("gui descriptor set")->destroy();
+
+		g_samplers.get("sampler")->destroy();
+
+		g_image_views.get("depth view")->destroy();
+		g_image_views.get("sion normals view")->destroy();
+		g_image_views.get("sion metallic roughness view")->destroy();
+		g_image_views.get("sion texture view")->destroy();
+
+		g_depth_image_memory.destroy();
+		g_device_memory.destroy();
+		g_host_memory.destroy();
+
+		g_images.get("depth image")->destroy();
+
+		g_textures.get("sion normals")->destroy();
+		g_textures.get("sion metallic roughness")->destroy();
+		g_textures.get("sion texture")->destroy();
+
+		g_buffers.get("uniform buffer 0")->destroy();
+		g_buffers.get("uniform buffer 1")->destroy();
+		g_buffers.get("uniform buffer 2")->destroy();
+		g_buffers.get("uniform buffer 3")->destroy();
+		g_buffers.get("sphere vertex buffer")->destroy();
+		g_buffers.get("sphere index buffer")->destroy();
+		g_buffers.get("sphere vertex stage")->destroy();
+		g_buffers.get("sphere index stage")->destroy();
+		g_buffers.get("vertex buffer")->destroy();
+		g_buffers.get("index buffer")->destroy();
+		g_buffers.get("vertex stage")->destroy();
+		g_buffers.get("index stage")->destroy();
+	}
+
 	void load_vertices_and_indices() {
 		std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> model = Vulkan::load_gltf_model(R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\scene.gltf)");
 		g_vertices = std::move(model.first);
@@ -431,40 +466,5 @@ namespace MemoryManager {
 				}
 			}
 		);
-	}
-
-	void destroy() {
-		g_descriptor_sets.get("descriptor set")->destroy();
-		g_descriptor_sets.get("gui descriptor set")->destroy();
-
-		g_samplers.get("sampler")->destroy();
-
-		g_image_views.get("depth view")->destroy();
-		g_image_views.get("sion normals view")->destroy();
-		g_image_views.get("sion metallic roughness view")->destroy();
-		g_image_views.get("sion texture view")->destroy();
-
-		g_depth_image_memory.destroy();
-		g_device_memory.destroy();
-		g_host_memory.destroy();
-
-		g_images.get("depth image")->destroy();
-
-		g_textures.get("sion normals")->destroy();
-		g_textures.get("sion metallic roughness")->destroy();
-		g_textures.get("sion texture")->destroy();
-
-		g_buffers.get("uniform buffer 0")->destroy();
-		g_buffers.get("uniform buffer 1")->destroy();
-		g_buffers.get("uniform buffer 2")->destroy();
-		g_buffers.get("uniform buffer 3")->destroy();
-		g_buffers.get("sphere vertex buffer")->destroy();
-		g_buffers.get("sphere index buffer")->destroy();
-		g_buffers.get("sphere vertex stage")->destroy();
-		g_buffers.get("sphere index stage")->destroy();
-		g_buffers.get("vertex buffer")->destroy();
-		g_buffers.get("index buffer")->destroy();
-		g_buffers.get("vertex stage")->destroy();
-		g_buffers.get("index stage")->destroy();
 	}
 }

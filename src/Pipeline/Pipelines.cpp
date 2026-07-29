@@ -330,7 +330,7 @@ namespace Pipelines {
 				VkVertexInputAttributeDescription{
 					.location = 2,
 					.binding = 0,
-					.format = VK_FORMAT_R32_SFLOAT,
+					.format = VK_FORMAT_R32_UINT,
 					.offset = offsetof(ImDrawVert, col)
 				}
 			};

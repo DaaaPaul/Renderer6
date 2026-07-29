@@ -89,7 +89,7 @@ namespace Engine {
 		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
-		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_model: command buffer end recording failure");
+		Vulkan::end_cmd_buffer(cmd_buf);
 	};
 
 	void record_draw_sphere(VkCommandBuffer cmd_buf, uint32_t sc_image_index) {
@@ -145,10 +145,23 @@ namespace Engine {
 		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_simple_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
-		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_sphere: command buffer end recording failure");
+		Vulkan::end_cmd_buffer(cmd_buf);
 	}
 
 	void record_draw_gui(VkCommandBuffer cmd_buf, uint32_t sc_image_index, ImDrawData* p_gui_data) {
+		MemoryManager::g_descriptor_sets.get("gui descriptor set")->write(
+			DescriptorSet::Write{
+				.binding_num = 0,
+				.descriptor_num = 0,
+				.descriptor_count = 1,
+				.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+				.image_info = VkDescriptorImageInfo{
+					.imageView = Gui::g_texture_view.get_image_view(),
+					.imageLayout = VK_IMAGE_LAYOUT_GENERAL
+				}
+			}
+		);
+		
 		VkRenderingAttachmentInfo sc_image_attachment{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Swapchain::g_image_views[sc_image_index],
@@ -198,6 +211,9 @@ namespace Engine {
 				};
 				vkCmdSetScissor(cmd_buf, 0, 1, &scissor);
 
+				VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_sets.get("gui descriptor set")->get_descriptor_set();
+				vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[2], 0, 1, &descriptor_set, 0, nullptr);
+
 				vkCmdBeginRendering(cmd_buf, &rendering_info);
 				vkCmdDrawIndexed(cmd_buf, cmds.ElemCount, 1, index_offset, vertex_offset, 0);
 				vkCmdEndRendering(cmd_buf);
@@ -213,7 +229,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
 		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::check(vkEndCommandBuffer(cmd_buf), "record_draw_gui: command buffer end recording failure");
+		Vulkan::end_cmd_buffer(cmd_buf);
 	}
 
 	void render_next(Frame& frame) {
@@ -228,13 +244,27 @@ namespace Engine {
 
 		record_draw_model(frame.submits[0].cmd.commandBuffer, acquire.sc_image_index);
 		record_draw_sphere(frame.submits[1].cmd.commandBuffer, acquire.sc_image_index);
+		
+		std::vector<VkSubmitInfo2> submits{frame.submits[0].submit, frame.submits[1].submit};
 
 		ImDrawData* p_gui_data = Gui::record_frame();
-		Gui::process_draw_data(p_gui_data);
+		if(Gui::new_draw_data(p_gui_data)) {
+			Gui::process_draw_data(p_gui_data);
+			record_draw_gui(frame.submits[2].cmd.commandBuffer, acquire.sc_image_index, p_gui_data);
+			submits.push_back(frame.submits[2].submit);
+		} else {
+			--frame.timeline_val; // since frame.submits[2] is never ran
 
-		record_draw_gui(frame.submits[2].cmd.commandBuffer, acquire.sc_image_index, p_gui_data);
+			Vulkan::begin_cmd_buffer(frame.submits[1].cmd.commandBuffer, Vulkan::NO_FLAGS);
 
-		std::vector<VkSubmitInfo2> submits{frame.submits[0].submit, frame.submits[1].submit, frame.submits[2].submit};
+			Vulkan::insert_image_barrier(frame.submits[1].cmd.commandBuffer, Swapchain::g_images[acquire.sc_image_index], VkImageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1), 
+			VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE, 
+			VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
+		
+			Vulkan::check(vkEndCommandBuffer(frame.submits[1].cmd.commandBuffer), "record_draw_gui: command buffer end recording failure");
+		}
+
 		vkQueueSubmit2(LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT), static_cast<uint32_t>(submits.size()), submits.data(), VK_NULL_HANDLE);
 
 		wait_timeline_semaphore(frame.timeline, frame.timeline_val);

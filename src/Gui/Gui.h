@@ -22,10 +22,12 @@ namespace Gui {
 
 	inline Image g_texture;
 	inline ImageView g_texture_view;
+	inline ImTextureData g_texture_data{};
 
 	inline Memory g_memory{};
 
 	void init(float width, float height);
+	void destroy();
 
 	ImDrawData* record_frame();
 	void process_draw_data(ImDrawData* p_draw_data);
@@ -42,7 +44,7 @@ namespace Gui {
 	}
 	Buffer get_vertex_buffer(ImDrawData* p_draw_data);
 	Buffer get_index_buffer(ImDrawData* p_draw_data);
-	Memory new_memory(Buffer v_buffer, Buffer i_buffer, ImDrawData* p_draw_data);
+	Memory new_memory(Buffer v_buffer, Buffer i_buffer, Image texture, ImDrawData* p_draw_data);
 
 	inline bool should_create_texture(ImTextureData* p_tex_data)  {
 		return p_tex_data->Status == ImTextureStatus_WantCreate && p_tex_data->Pixels;
