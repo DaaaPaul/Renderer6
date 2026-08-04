@@ -4,12 +4,13 @@
 #include "tiny_gltf.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
 #include <ktx.h>
 #include <vector>
 #include <unordered_map>
 #include <stdexcept>
 #include <string>
-#include <cassert>
 #include <cstdint>
 #include "utility/Vulkan.h"
 #include "utility/Utility.h"
@@ -19,9 +20,27 @@
 #include "backend/Window.h"
 
 namespace Vulkan {
-	void load() {
+	void load_functions() {
 		vkTransitionImageLayoutEXT = reinterpret_cast<PFN_vkTransitionImageLayoutEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkTransitionImageLayoutEXT"));
 		vkCopyMemoryToImageEXT = reinterpret_cast<PFN_vkCopyMemoryToImageEXT>(vkGetInstanceProcAddr(Instance::g_instance, "vkCopyMemoryToImageEXT"));
+		vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vkGetInstanceProcAddr(Instance::g_instance, "vkGetDeviceProcAddr"));
+	}
+
+	void init_vma() {
+		VmaVulkanFunctions vma_functions{
+			.vkGetInstanceProcAddr = vkGetInstanceProcAddr,
+			.vkGetDeviceProcAddr = vkGetDeviceProcAddr,
+			.vkCreateImage = vkCreateImage
+		};
+		VmaAllocatorCreateInfo vma_create{
+			.flags = NO_FLAGS,
+			.physicalDevice = PhysicalDevice::g_physical_device,
+			.device = g_device,
+			.pVulkanFunctions = &vma_functions,
+			.instance = Instance::g_instance
+		};
+
+		check(vmaCreateAllocator(&vma_create, &g_vma_allocator), "init_vma: failed");
 	}
 
 	std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> load_gltf_model(const std::string& file_path) {
@@ -344,7 +363,9 @@ namespace Vulkan {
 		VkDescriptorSetLayoutBindingFlagsCreateInfo binding_flags_info{};
 
 		if(!binding_flags.empty()) {
-			assert(bindings.size() == binding_flags.size());
+			if(bindings.size() != binding_flags.size()) {
+				throw std::runtime_error("create_descriptor_set_layout: bindings.size() != binding_flags.size()");
+			}
 		
 			binding_flags_info = {
 				.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,

@@ -3,7 +3,6 @@
 #include <vector>
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include <cassert>
 #include "backend/Swapchain.h"
 #include "backend/LogicalDevice.h"
 #include "utility/Utility.h"

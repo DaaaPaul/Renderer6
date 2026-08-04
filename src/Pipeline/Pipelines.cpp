@@ -319,7 +319,7 @@ namespace Pipelines {
 					.location = 0,
 					.binding = 0,
 					.format = VK_FORMAT_R32G32_SFLOAT,
-					.offset = 0
+					.offset = offsetof(ImDrawVert, pos)
 				},
 				VkVertexInputAttributeDescription{
 					.location = 1,
@@ -330,7 +330,7 @@ namespace Pipelines {
 				VkVertexInputAttributeDescription{
 					.location = 2,
 					.binding = 0,
-					.format = VK_FORMAT_R32_UINT,
+					.format = VK_FORMAT_R8G8B8A8_UNORM,
 					.offset = offsetof(ImDrawVert, col)
 				}
 			};

@@ -11,7 +11,8 @@ Buffer::Buffer(VkBufferCreateFlags create_flags,
 			   VkDeviceSize size, 
 			   VkBufferUsageFlags usage_flags, 
 			   VkSharingMode sharing_mode,
-			   const std::vector<uint32_t>& queue_family_indices) {
+			   const std::vector<uint32_t>& queue_family_indices,
+			   VmaAllocationCreateInfo vma_allocation_info) {
 	VkBufferCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 		.flags = create_flags,
@@ -22,17 +23,20 @@ Buffer::Buffer(VkBufferCreateFlags create_flags,
 		.pQueueFamilyIndices = queue_family_indices.data()
 	};
 
-	Vulkan::check(vkCreateBuffer(g_device, &create, nullptr, &buffer), "Buffer: failed");
+	Vulkan::check(vmaCreateBuffer(Vulkan::g_vma_allocator, &create, &vma_allocation_info, &buffer, &allocation, &allocation_info), "Buffer: failed");
 }
 
-VkMemoryRequirements Buffer::get_memory_requirements() const { 
-	VkMemoryRequirements memory_requirements{};
-	vkGetBufferMemoryRequirements(g_device, buffer, &memory_requirements);
+void Buffer::copy_to(const void* p_data, Buffer* dst, size_t size) {
+	void* p_buffer = dst->get_allocation_info().pMappedData;
+	
+	if(!p_buffer) {
+		throw std::runtime_error("copy_to: !p_buffer");
+	}
 
-	return memory_requirements; 
+	memcpy(p_buffer, p_data, size);
 }
 
-void Buffer::copy_buffer(const Buffer* src, Buffer* dst, VkBufferCopy region) {
+void Buffer::copy(const Buffer* src, Buffer* dst, VkBufferCopy region) {
 	VkCommandPool pool{};
 	VkCommandBuffer one_time_cmds{};
 

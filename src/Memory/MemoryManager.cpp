@@ -2,23 +2,21 @@
 #include <cstdint>
 #include <vector>
 #include <chrono>
-#include "memoryManager.h"
+#include "MemoryManager.h"
 #include "utility/Vulkan.h"
 #include "utility/Utility.h"
 #include "shader/UniformBufferBlock.hpp"
 #include "backend/PhysicalDevice.h"
 #include "backend/Swapchain.h"
 #include "Image.hpp"
-#include "KtxTexture.hpp"
 #include "Buffer.hpp"
 
 namespace MemoryManager {
 	void init() {
 		load_vertices_and_indices();
 		init_buffers();
-		init_images();
 		init_textures();
-		init_memory();
+		init_images();
 		populate_memory();
 		init_image_views();
 		init_samplers();
@@ -37,15 +35,11 @@ namespace MemoryManager {
 		g_image_views.get("sion metallic roughness view")->destroy();
 		g_image_views.get("sion texture view")->destroy();
 
-		g_depth_image_memory.destroy();
-		g_device_memory.destroy();
-		g_host_memory.destroy();
-
 		g_images.get("depth image")->destroy();
 
-		g_textures.get("sion normals")->destroy();
-		g_textures.get("sion metallic roughness")->destroy();
-		g_textures.get("sion texture")->destroy();
+		g_ktx_textures.get("sion normals")->destroy();
+		g_ktx_textures.get("sion metallic roughness")->destroy();
+		g_ktx_textures.get("sion texture")->destroy();
 
 		g_buffers.get("uniform buffer 0")->destroy();
 		g_buffers.get("uniform buffer 1")->destroy();
@@ -67,40 +61,30 @@ namespace MemoryManager {
 		g_indices = std::move(model.second);
 
 		std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> sphere = Utility::get_sphere(0.1f, 4, 4);
-		g_simple_vertices = std::move(sphere.first);
-		g_simple_indices = std::move(sphere.second);
+		g_sphere_vertices = std::move(sphere.first);
+		g_sphere_indices = std::move(sphere.second);
 	}
 
 	void init_buffers() {
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(PBRVertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 
-		const uint32_t SIMPLE_VERTEX_BUFFER_SIZE = g_simple_vertices.size() * sizeof(glm::vec3);
-		const uint32_t SIMPLE_INDEX_BUFFER_SIZE = g_simple_indices.size() * sizeof(uint32_t);
+		const uint32_t SIMPLE_VERTEX_BUFFER_SIZE = g_sphere_vertices.size() * sizeof(glm::vec3);
+		const uint32_t SIMPLE_INDEX_BUFFER_SIZE = g_sphere_indices.size() * sizeof(uint32_t);
 	
-		g_buffers.add(
-			"vertex stage",
-			Vulkan::NO_FLAGS,
-			VERTEX_BUFFER_SIZE,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
-		g_buffers.add(
-			"index stage",
-			Vulkan::NO_FLAGS,
-			INDEX_BUFFER_SIZE,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
+		constexpr VmaAllocationCreateInfo DEVICE_HOST_VMA_ALLOCATE{
+			.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+			.usage = VMA_MEMORY_USAGE_AUTO
+		};
+
 		g_buffers.add(
 			"vertex buffer",
 			Vulkan::NO_FLAGS,
 			VERTEX_BUFFER_SIZE,
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"index buffer",
@@ -108,24 +92,8 @@ namespace MemoryManager {
 			INDEX_BUFFER_SIZE,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
-
-		g_buffers.add(
-			"sphere vertex stage",
-			Vulkan::NO_FLAGS,
-			SIMPLE_VERTEX_BUFFER_SIZE,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
-		g_buffers.add(
-			"sphere index stage",
-			Vulkan::NO_FLAGS,
-			SIMPLE_INDEX_BUFFER_SIZE,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"sphere vertex buffer",
@@ -133,7 +101,8 @@ namespace MemoryManager {
 			SIMPLE_VERTEX_BUFFER_SIZE,
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"sphere index buffer",
@@ -141,16 +110,17 @@ namespace MemoryManager {
 			SIMPLE_INDEX_BUFFER_SIZE,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
-
 		g_buffers.add(
 			"uniform buffer 0",
 			Vulkan::NO_FLAGS,
 			sizeof(UniformBufferBlock),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"uniform buffer 1",
@@ -158,7 +128,8 @@ namespace MemoryManager {
 			sizeof(UniformBufferBlock),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"uniform buffer 2",
@@ -166,7 +137,8 @@ namespace MemoryManager {
 			sizeof(UniformBufferBlock),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
 		);
 		g_buffers.add(
 			"uniform buffer 3",
@@ -174,11 +146,56 @@ namespace MemoryManager {
 			sizeof(UniformBufferBlock),
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			DEVICE_HOST_VMA_ALLOCATE
+		);
+	}
+
+	void init_textures() {
+		constexpr VmaAllocationCreateInfo VMA_ALLOCATE{
+			.usage = VMA_MEMORY_USAGE_AUTO
+		};
+
+		g_ktx_textures.add(
+			"sion texture",
+			KTX_TTF_BC7_RGBA,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\base_color.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			PhysicalDevice::g_graphics_family_index,
+			VMA_ALLOCATE
+		);
+		g_ktx_textures.add(
+			"sion metallic roughness",
+			KTX_TTF_BC7_RGBA,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\metallic_roughness.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			PhysicalDevice::g_graphics_family_index,
+			VMA_ALLOCATE
+		);
+		g_ktx_textures.add(
+			"sion normals",
+			KTX_TTF_BC7_RGBA,
+			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\normal.ktx2)",
+			1,
+			1,
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_SHARING_MODE_EXCLUSIVE,
+			PhysicalDevice::g_graphics_family_index,
+			VMA_ALLOCATE
 		);
 	}
 
 	void init_images() {
+		constexpr VmaAllocationCreateInfo VMA_ALLOCATE{
+			.usage = VMA_MEMORY_USAGE_AUTO
+		};
+
 		g_images.add(
 			"depth image",
 			Vulkan::NO_FLAGS,
@@ -190,127 +207,60 @@ namespace MemoryManager {
 			VK_SAMPLE_COUNT_1_BIT,
 			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			VMA_ALLOCATE
 		);
-	}
-
-	void init_textures() {
-		g_textures.add(
-			"sion texture",
-			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\base_color.ktx2)",
-			1,
-			1,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
-		g_textures.add(
-			"sion metallic roughness",
-			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\metallic_roughness.ktx2)",
-			1,
-			1,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index		
-		);
-		g_textures.add(
-			"sion normals",
-			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\normal.ktx2)",
-			1,
-			1,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index		
-		);
-	}
-
-	void init_memory() {
-		g_host_memory = Memory({
-			*g_buffers.get("vertex stage"),
-			*g_buffers.get("index stage"),
-			*g_buffers.get("sphere vertex stage"),
-			*g_buffers.get("sphere index stage"),
-			*g_buffers.get("uniform buffer 0"),
-			*g_buffers.get("uniform buffer 1"),
-			*g_buffers.get("uniform buffer 2"),
-			*g_buffers.get("uniform buffer 3")
-		}, 
-		{}, 
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, nullptr);
-
-		g_device_memory = Memory({
-			*g_buffers.get("vertex buffer"),
-			*g_buffers.get("index buffer"),
-			*g_buffers.get("sphere vertex buffer"),
-			*g_buffers.get("sphere index buffer")
-		}, 
-		{
-			g_textures.get("sion texture")->image,
-			g_textures.get("sion metallic roughness")->image,
-			g_textures.get("sion normals")->image,
-		}, 
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, nullptr);
-
-		g_depth_image_memory = Memory(
-		{},
-		{ *g_images.get("depth image") },
-		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, nullptr);
 	}
 
 	void populate_memory() {
 		const uint64_t VERTEX_BUFFER_SIZE = g_vertices.size() * sizeof(PBRVertex);
 		const uint64_t INDEX_BUFFER_SIZE = g_indices.size() * sizeof(uint32_t);
 
-		const uint32_t SPHERE_VERTEX_BUFFER_SIZE = g_simple_vertices.size() * sizeof(glm::vec3);
-		const uint32_t SPHERE_INDEX_BUFFER_SIZE = g_simple_indices.size() * sizeof(uint32_t);
+		const uint32_t SPHERE_VERTEX_BUFFER_SIZE = g_sphere_vertices.size() * sizeof(glm::vec3);
+		const uint32_t SPHERE_INDEX_BUFFER_SIZE = g_sphere_indices.size() * sizeof(uint32_t);
 
-		g_host_memory.copy_to_buffer(g_vertices.data(), *g_buffers.get("vertex stage"), 0, VERTEX_BUFFER_SIZE);
-		g_host_memory.copy_to_buffer(g_indices.data(), *g_buffers.get("index stage"), 0, INDEX_BUFFER_SIZE);
-		g_host_memory.copy_to_buffer(g_simple_vertices.data(), *g_buffers.get("sphere vertex stage"), 0, SPHERE_VERTEX_BUFFER_SIZE);
-		g_host_memory.copy_to_buffer(g_simple_indices.data(), *g_buffers.get("sphere index stage"), 0, SPHERE_INDEX_BUFFER_SIZE);
+		Buffer::copy_to(g_vertices.data(), g_buffers.get("vertex buffer"), VERTEX_BUFFER_SIZE);
+		Buffer::copy_to(g_indices.data(), g_buffers.get("index buffer"), INDEX_BUFFER_SIZE);
+		Buffer::copy_to(g_sphere_vertices.data(), g_buffers.get("sphere vertex buffer"), SPHERE_VERTEX_BUFFER_SIZE);
+		Buffer::copy_to(g_sphere_indices.data(), g_buffers.get("sphere index buffer"), SPHERE_INDEX_BUFFER_SIZE);
 
-		Buffer::copy_buffer(g_buffers.get("vertex stage"), g_buffers.get("vertex buffer"), VkBufferCopy{0, 0, VERTEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get("index stage"), g_buffers.get("index buffer"), VkBufferCopy{0, 0, INDEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get("sphere vertex stage"), g_buffers.get("sphere vertex buffer"), VkBufferCopy{0, 0, SPHERE_VERTEX_BUFFER_SIZE});
-		Buffer::copy_buffer(g_buffers.get("sphere index stage"), g_buffers.get("sphere index buffer"), VkBufferCopy{0, 0, SPHERE_INDEX_BUFFER_SIZE});
-		
-		Image::transition_image_layout(g_textures.get("sion texture")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-		Image::transition_image_layout(g_textures.get("sion metallic roughness")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-		Image::transition_image_layout(g_textures.get("sion normals")->image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-		g_textures.get("sion texture")->copy_texture_data_to_image();
-		g_textures.get("sion metallic roughness")->copy_texture_data_to_image();
-		g_textures.get("sion normals")->copy_texture_data_to_image();
+		Image::transition_layout(g_ktx_textures.get("sion texture")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		Image::transition_layout(g_ktx_textures.get("sion metallic roughness")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		Image::transition_layout(g_ktx_textures.get("sion normals")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+		g_ktx_textures.get("sion texture")->copy_texture_data_to_image();
+		g_ktx_textures.get("sion metallic roughness")->copy_texture_data_to_image();
+		g_ktx_textures.get("sion normals")->copy_texture_data_to_image();
 	}
 
 	void init_image_views() {
 		g_image_views.add(
 			"sion texture view",
 			Vulkan::NO_FLAGS,
-			g_textures.get("sion texture")->image.image,
+			g_ktx_textures.get("sion texture")->get_image().get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_textures.get("sion texture")->ktx_texture->vkFormat),
+			static_cast<VkFormat>(g_ktx_textures.get("sion texture")->get_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
 		g_image_views.add(
 			"sion metallic roughness view",
 			Vulkan::NO_FLAGS,
-			g_textures.get("sion metallic roughness")->image.image,
+			g_ktx_textures.get("sion metallic roughness")->get_image().get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_textures.get("sion metallic roughness")->ktx_texture->vkFormat),
+			static_cast<VkFormat>(g_ktx_textures.get("sion metallic roughness")->get_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
 		g_image_views.add(
 			"sion normals view",
 			Vulkan::NO_FLAGS,
-			g_textures.get("sion normals")->image.image,
+			g_ktx_textures.get("sion normals")->get_image().get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
-			static_cast<VkFormat>(g_textures.get("sion normals")->ktx_texture->vkFormat),
+			static_cast<VkFormat>(g_ktx_textures.get("sion normals")->get_ktx_texture()->vkFormat),
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 }
 		);
 		g_image_views.add(
 			"depth view",
 			Vulkan::NO_FLAGS,
-			g_images.get("depth image")->image,
+			g_images.get("depth image")->get_image(),
 			VK_IMAGE_VIEW_TYPE_2D,
 			VK_FORMAT_D32_SFLOAT,
 			VkImageSubresourceRange{ VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 }
@@ -400,7 +350,7 @@ namespace MemoryManager {
 				.descriptor_count = 1,
 				.descriptor_type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 				.buffer_info = VkDescriptorBufferInfo{
-					.buffer = g_buffers.get("uniform buffer 0")->buffer,
+					.buffer = g_buffers.get("uniform buffer 0")->get_buffer(),
 					.offset = 0,
 					.range = VK_WHOLE_SIZE
 				}

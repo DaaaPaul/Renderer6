@@ -14,7 +14,8 @@ Image::Image(VkImageCreateFlags create_flags,
 		 	 VkSampleCountFlagBits sample_count,
 		 	 VkImageUsageFlags usage,
 		 	 VkSharingMode sharing_mode, 
-		 	 const std::vector<uint32_t>& queue_family_indices) {
+		 	 const std::vector<uint32_t>& queue_family_indices,
+			 VmaAllocationCreateInfo vma_allocation_info) {
 	VkImageCreateInfo create{
 		.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
 		.flags = create_flags,
@@ -32,17 +33,10 @@ Image::Image(VkImageCreateFlags create_flags,
 		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
 	};
 
-	Vulkan::check(vkCreateImage(g_device, &create, nullptr, &image), "Image: failed to create image");
+	Vulkan::check(vmaCreateImage(Vulkan::g_vma_allocator, &create, &vma_allocation_info, &image, &allocation, &allocation_info), "Image: failed to create image");
 }
 
-VkMemoryRequirements Image::get_memory_requirements() const { 
-	VkMemoryRequirements memory_requirements{};
-	vkGetImageMemoryRequirements(g_device, image, &memory_requirements);
-	
-	return memory_requirements; 
-}
-
-void Image::transition_image_layout(Image image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count) {
+void Image::transition_layout(Image image, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t mip_level_count, uint32_t array_layer_count) {
 	VkHostImageLayoutTransitionInfo transition{
 		.sType = VK_STRUCTURE_TYPE_HOST_IMAGE_LAYOUT_TRANSITION_INFO,
 		.image = image.image,
@@ -50,10 +44,10 @@ void Image::transition_image_layout(Image image, VkImageLayout old_layout, VkIma
 		.newLayout = new_layout,
 		.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, mip_level_count, 0, array_layer_count}
 	};
-	Vulkan::check(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "transition_image_layout: transition failed");
+	Vulkan::check(Vulkan::vkTransitionImageLayoutEXT(g_device, 1, &transition), "transition_layout: transition failed");
 }
 
-void Image::copy_to_image(Image image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level) {
+void Image::copy_to(Image image, const void* p_data, VkOffset3D offset, VkExtent3D extent, uint32_t mip_level) {
 	VkMemoryToImageCopyEXT region{
 		.sType = VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT,
 		.pHostPointer = p_data,
@@ -69,5 +63,5 @@ void Image::copy_to_image(Image image, const void* p_data, VkOffset3D offset, Vk
 		.pRegions = &region,
 	};
 
-	Vulkan::check(Vulkan::vkCopyMemoryToImageEXT(g_device, &copy), "copy_to_image: copy failed");
+	Vulkan::check(Vulkan::vkCopyMemoryToImageEXT(g_device, &copy), "copy_to: copy failed");
 }

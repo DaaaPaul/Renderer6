@@ -16,7 +16,7 @@ namespace PhysicalDevice {
 		g_physical_device = select_physical_device(physical_devices, get_physical_device_properties(physical_devices));
 
 		if(!g_physical_device) {
-			throw std::runtime_error("Failed to select a GPU on your system");
+			throw std::runtime_error("init: failed to select a GPU on your system");
 		} else {
 			VkPhysicalDeviceProperties selected_properties{};
 			vkGetPhysicalDeviceProperties(g_physical_device, &selected_properties);
@@ -27,7 +27,9 @@ namespace PhysicalDevice {
 	}
 	
 	VkPhysicalDevice select_physical_device(const std::vector<VkPhysicalDevice>& system_physical_devices, const std::vector<VkPhysicalDeviceProperties>& system_physical_device_properties) {
-		assert(system_physical_devices.size() == system_physical_device_properties.size());
+		if(system_physical_devices.size() != system_physical_device_properties.size()) {
+			throw std::runtime_error("select_physical_device: system_physical_devices.size() != system_physical_device_properties.size()");
+		}
 		VkPhysicalDevice selected = nullptr;
 
 		for(int i = 0; i < system_physical_devices.size() && !selected; ++i) {

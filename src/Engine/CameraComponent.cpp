@@ -1,6 +1,5 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
-#include <cassert>
 #include <cmath>
 #include "utility/Vulkan.h"
 #include "backend/Swapchain.h"

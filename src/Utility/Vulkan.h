@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan_core.h>
+#include <vma/vk_mem_alloc.h>
 #include <ktx.h>
 #include <vector>
 #include <string>
@@ -20,8 +21,15 @@ namespace Vulkan {
 
 	inline PFN_vkTransitionImageLayoutEXT vkTransitionImageLayoutEXT{};
 	inline PFN_vkCopyMemoryToImageEXT vkCopyMemoryToImageEXT{};
+	inline PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr{};
 
-	void load();
+	inline VmaAllocator g_vma_allocator{};
+	
+	void load_functions();
+	void init_vma();
+	inline void destroy_vma() {
+		vmaDestroyAllocator(g_vma_allocator);
+	}
 
 	std::pair<std::vector<PBRVertex>, std::vector<uint32_t>> load_gltf_model(const std::string& file_path);
 

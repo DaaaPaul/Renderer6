@@ -25,9 +25,10 @@ int main() {
 
 		Window::init();
 		Instance::init();
-		Vulkan::load();
+		Vulkan::load_functions();
 		PhysicalDevice::init();
 		LogicalDevice::init();
+		Vulkan::init_vma();
 		Swapchain::init();
 
 		MemoryManager::init();
@@ -54,6 +55,7 @@ int main() {
 		MemoryManager::destroy();
 
 		Swapchain::destroy();
+		Vulkan::destroy_vma();
 		LogicalDevice::destroy();
 		Instance::destroy();
 		Window::destroy();
