@@ -47,12 +47,8 @@ namespace MemoryManager {
 		g_buffers.get("uniform buffer 3")->destroy();
 		g_buffers.get("sphere vertex buffer")->destroy();
 		g_buffers.get("sphere index buffer")->destroy();
-		g_buffers.get("sphere vertex stage")->destroy();
-		g_buffers.get("sphere index stage")->destroy();
 		g_buffers.get("vertex buffer")->destroy();
 		g_buffers.get("index buffer")->destroy();
-		g_buffers.get("vertex stage")->destroy();
-		g_buffers.get("index stage")->destroy();
 	}
 
 	void load_vertices_and_indices() {
@@ -158,8 +154,8 @@ namespace MemoryManager {
 
 		g_ktx_textures.add(
 			"sion texture",
-			KTX_TTF_BC7_RGBA,
 			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\base_color.ktx2)",
+			KTX_TTF_BC7_RGBA,
 			1,
 			1,
 			VK_SAMPLE_COUNT_1_BIT,
@@ -169,8 +165,8 @@ namespace MemoryManager {
 		);
 		g_ktx_textures.add(
 			"sion metallic roughness",
-			KTX_TTF_BC7_RGBA,
 			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\metallic_roughness.ktx2)",
+			KTX_TTF_BC7_RGBA,
 			1,
 			1,
 			VK_SAMPLE_COUNT_1_BIT,
@@ -180,8 +176,8 @@ namespace MemoryManager {
 		);
 		g_ktx_textures.add(
 			"sion normals",
-			KTX_TTF_BC7_RGBA,
 			R"(C:\Users\paulp\ComputerPrograms\Renderer6\resources\models\sion axe\textures\normal.ktx2)",
+			KTX_TTF_BC7_RGBA,
 			1,
 			1,
 			VK_SAMPLE_COUNT_1_BIT,
@@ -219,10 +215,10 @@ namespace MemoryManager {
 		const uint32_t SPHERE_VERTEX_BUFFER_SIZE = g_sphere_vertices.size() * sizeof(glm::vec3);
 		const uint32_t SPHERE_INDEX_BUFFER_SIZE = g_sphere_indices.size() * sizeof(uint32_t);
 
-		Buffer::copy_to(g_vertices.data(), g_buffers.get("vertex buffer"), VERTEX_BUFFER_SIZE);
-		Buffer::copy_to(g_indices.data(), g_buffers.get("index buffer"), INDEX_BUFFER_SIZE);
-		Buffer::copy_to(g_sphere_vertices.data(), g_buffers.get("sphere vertex buffer"), SPHERE_VERTEX_BUFFER_SIZE);
-		Buffer::copy_to(g_sphere_indices.data(), g_buffers.get("sphere index buffer"), SPHERE_INDEX_BUFFER_SIZE);
+		Buffer::copy_to(g_buffers.get("vertex buffer"), g_vertices.data(), VERTEX_BUFFER_SIZE, 0);
+		Buffer::copy_to(g_buffers.get("index buffer"), g_indices.data(), INDEX_BUFFER_SIZE, 0);
+		Buffer::copy_to(g_buffers.get("sphere vertex buffer"), g_sphere_vertices.data(), SPHERE_VERTEX_BUFFER_SIZE, 0);
+		Buffer::copy_to(g_buffers.get("sphere index buffer"), g_sphere_indices.data(), SPHERE_INDEX_BUFFER_SIZE, 0);
 
 		Image::transition_layout(g_ktx_textures.get("sion texture")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
 		Image::transition_layout(g_ktx_textures.get("sion metallic roughness")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);

@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include "backend/LogicalDevice.h"
+#include "utility/Vulkan.h"
 
 class Buffer {
 	public:
@@ -16,7 +17,7 @@ class Buffer {
 					const std::vector<uint32_t>& queue_family_indices,
 					VmaAllocationCreateInfo vma_allocation_info);
 	void destroy() {
-		vkDestroyBuffer(g_device, buffer, nullptr);
+		vmaDestroyBuffer(Vulkan::g_vma_allocator, buffer, allocation);
 	};
 
 	VkBuffer get_buffer() const {
@@ -32,8 +33,14 @@ class Buffer {
 		return allocation_info;
 	}
 
-	static void copy_to(const void* p_data, Buffer* dst, size_t size);
+	static void copy_to(Buffer* dst, const void* p_data, uint32_t offset, size_t size);
 	static void copy(const Buffer* src, Buffer* dst, VkBufferCopy region);
+	static bool smaller(const Buffer* p_buffer, size_t object_size, uint32_t object_count) {
+		return p_buffer->allocation_info.size < (object_size * object_count);
+	}
+	static bool larger(const Buffer* p_buffer, size_t object_size, uint32_t object_count) {
+		return p_buffer->allocation_info.size > (object_size * object_count);
+	}
 	static std::vector<VkDeviceSize> get_buffer_sizes(const std::vector<Buffer*>& buffers);
 
 	private:

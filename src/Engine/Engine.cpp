@@ -56,11 +56,10 @@ namespace Engine {
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[0]);
 		fit_viewport(cmd_buf);
 
-		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("vertex buffer")->buffer;
-		VkBuffer index_buffer = MemoryManager::g_buffers.get("index buffer")->buffer;
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
-		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
+		std::vector<VkDeviceSize> vertex_buffer_offsets{ 0 };
+		std::vector<VkBuffer> vertex_buffers{ MemoryManager::g_buffers.get("vertex buffer")->get_buffer() };
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, vertex_buffers.data(), vertex_buffer_offsets.data());
+		vkCmdBindIndexBuffer(cmd_buf, MemoryManager::g_buffers.get("index buffer")->get_buffer(), 0, VK_INDEX_TYPE_UINT32);
 
 		VkDescriptorSet descriptor_set = MemoryManager::g_descriptor_sets.get("descriptor set")->get_descriptor_set();
 		vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, PipelineLayouts::g_layouts[0], 0, 1, &descriptor_set, 0, nullptr);
@@ -80,7 +79,7 @@ namespace Engine {
 		VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
 
-		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_images.get("depth image")->image, VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
+		Vulkan::insert_image_barrier(cmd_buf, MemoryManager::g_images.get("depth image")->get_image(), VkImageSubresourceRange(VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1), 
 		VK_PIPELINE_STAGE_2_NONE, VK_ACCESS_2_NONE,
 		VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT, 
 		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT));
@@ -122,8 +121,8 @@ namespace Engine {
 		fit_viewport(cmd_buf);
 
 		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("sphere vertex buffer")->buffer;
-		VkBuffer index_buffer = MemoryManager::g_buffers.get("sphere index buffer")->buffer;
+		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("sphere vertex buffer")->get_buffer();
+		VkBuffer index_buffer = MemoryManager::g_buffers.get("sphere index buffer")->get_buffer();
 		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
 		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -142,7 +141,7 @@ namespace Engine {
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[1], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(SimplePushConstantBlock), &push_constants); 
 
 		vkCmdBeginRendering(cmd_buf, &rendering_info);
-		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_simple_indices.size(), 1, 0, 0, 0);
+		vkCmdDrawIndexed(cmd_buf, MemoryManager::g_sphere_indices.size(), 1, 0, 0, 0);
 		vkCmdEndRendering(cmd_buf);
 
 		Vulkan::end_cmd_buffer(cmd_buf);
@@ -195,11 +194,10 @@ namespace Engine {
 		};
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[2], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push_constants), &push_constants);
 
-		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer gui_vertex_buffer = Gui::g_vertex_buffer.buffer;
-		VkBuffer gui_index_buffer = Gui::g_index_buffer.buffer;
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &gui_vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
-		vkCmdBindIndexBuffer(cmd_buf, gui_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+		std::vector<VkDeviceSize> vertex_buffer_offsets{ 0 };
+		std::vector<VkBuffer> vertex_buffers{ Gui::g_vertex_buffer.get_buffer() };
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, vertex_buffers.data(), vertex_buffer_offsets.data());
+		vkCmdBindIndexBuffer(cmd_buf, Gui::g_index_buffer.get_buffer(), 0, VK_INDEX_TYPE_UINT16);
 
 		uint32_t vertex_offset = 0;
 		uint32_t index_offset = 0;
@@ -248,7 +246,7 @@ namespace Engine {
 		std::vector<VkSubmitInfo2> submits{frame.submits[0].submit, frame.submits[1].submit};
 
 		ImDrawData* p_gui_data = Gui::record_frame();
-		if(Gui::new_draw_data(p_gui_data)) {
+		if(p_gui_data && p_gui_data->CmdLists.size() > 0) {
 			Gui::process_draw_data(p_gui_data);
 			record_draw_gui(frame.submits[2].cmd.commandBuffer, acquire.sc_image_index, p_gui_data);
 			submits.push_back(frame.submits[2].submit);
@@ -379,6 +377,6 @@ namespace Engine {
 		g_ubo_data.light_positions[0].x = g_circle_position.x;
 		g_ubo_data.light_positions[0].z = g_circle_position.y;
 
-		MemoryManager::g_host_memory.copy_to_buffer(&g_ubo_data, *MemoryManager::g_buffers.get("uniform buffer 0"), 0, sizeof(UniformBufferBlock));
+		Buffer::copy_to(MemoryManager::g_buffers.get("uniform buffer 0"), &g_ubo_data, 0, sizeof(g_ubo_data));
 	}
 }

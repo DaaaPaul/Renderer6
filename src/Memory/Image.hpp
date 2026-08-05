@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include "backend/LogicalDevice.h"
-#include "utility/Utility.h"
+#include "utility/Vulkan.h"
 
 class Image {
 	public:
@@ -22,7 +22,7 @@ class Image {
 				   const std::vector<uint32_t>& queue_family_indices,
 				   VmaAllocationCreateInfo vma_allocation_info);
 	void destroy() {
-		vkDestroyImage(g_device, image, nullptr);
+		vmaDestroyImage(Vulkan::g_vma_allocator, image, allocation);
 	}
 
 	VkImage get_image() const {

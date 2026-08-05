@@ -1,5 +1,6 @@
 #include "Gui.h"
 #include "utility/Vulkan.h"
+#include "utility/Utility.h"
 #include "backend/PhysicalDevice.h"
 #include "memory/MemoryManager.h"
 
@@ -28,13 +29,12 @@ namespace Gui {
 		g_texture.destroy();
 		g_vertex_buffer.destroy();
 		g_index_buffer.destroy();
-		g_memory.destroy();
 	}
 
 	ImDrawData* record_frame() {
 		ImGui::NewFrame();
 
-		ImGui::Begin("Fk you, and you, and you and you and you");
+		ImGui::Begin("Paul Paul");
 		ImGui::Text("Hello imGui Peter");
 		if(ImGui::Button("Click moi")) {
 			Utility::println("clicked bi");
@@ -46,193 +46,121 @@ namespace Gui {
 		return ImGui::GetDrawData();
 	}
 
-	void process_draw_data(ImDrawData* p_draw_data) {
-		if(!new_draw_data(p_draw_data)) {
-			throw std::runtime_error("process_draw_data: !new_draw_data(p_draw_data)");
-		}
+	void process_draw_data(const ImDrawData* p_draw_data) {
+		check_draw_data(p_draw_data);
 
-		bool vertex_buffer_changed = false;
-		bool index_buffer_changed = false;
-
-		if(vertex_buffer_too_small(p_draw_data)) {
+		if(Buffer::smaller(&g_vertex_buffer, sizeof(ImDrawVert), p_draw_data->TotalVtxCount)) {
 			g_vertex_buffer.destroy();
-			g_vertex_buffer = get_vertex_buffer(p_draw_data);
-
-			vertex_buffer_changed = true;
+			g_vertex_buffer = fit_vertex_buffer(p_draw_data);
+			copy_vertices(p_draw_data, &g_vertex_buffer);
 		}
-		if(index_buffer_too_small(p_draw_data)) {
+		if(Buffer::smaller(&g_index_buffer, sizeof(ImDrawIdx), p_draw_data->TotalIdxCount)) {
 			g_index_buffer.destroy();
-			g_index_buffer = get_index_buffer(p_draw_data);
-
-			index_buffer_changed = true;
+			g_index_buffer = fit_index_buffer(p_draw_data);
+			copy_indices(p_draw_data, &g_index_buffer);
 		}
-
-		bool texture_created = false;
 
 		if(p_draw_data->Textures) {
 			for(ImTextureData* p_tex_data : *p_draw_data->Textures) {
-				if(should_create_texture(p_tex_data)) {
-					g_texture_data = *p_tex_data;
+				if(p_tex_data->Pixels) {
+					if(p_tex_data->Status == ImTextureStatus_WantCreate) {
+						g_texture_data = *p_tex_data;
 
-					g_texture.destroy();
-					g_texture = create_texture_image(p_tex_data);
-					g_vertex_buffer.destroy();
-					g_vertex_buffer = get_vertex_buffer(p_draw_data);
-					g_index_buffer.destroy();
-					g_index_buffer = get_index_buffer(p_draw_data);
-					g_memory.destroy();
-					g_memory = new_memory(g_vertex_buffer, g_index_buffer, g_texture, p_draw_data);
-					texture_created = true;
+						g_texture.destroy();
+						g_texture = Image(
+							Vulkan::NO_FLAGS,
+							VK_IMAGE_TYPE_2D,
+							(p_tex_data->Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
+							VkExtent3D{static_cast<uint32_t>(p_tex_data->Width), static_cast<uint32_t>(p_tex_data->Height), 1},
+							1,
+							1,
+							VK_SAMPLE_COUNT_1_BIT,
+							VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT,
+							VK_SHARING_MODE_EXCLUSIVE,
+							PhysicalDevice::g_graphics_family_index,
+							VmaAllocationCreateInfo{
+								.usage = VMA_MEMORY_USAGE_AUTO
+							}
+						);
 
-					update_texture_image(p_tex_data, g_texture);
-					g_texture_view.destroy();
-					g_texture_view = ImageView(
-						Vulkan::NO_FLAGS, 
-						g_texture.image, 
-						VK_IMAGE_VIEW_TYPE_2D, 
-						(p_tex_data->Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
-						VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-					);
-					//MemoryManager::g_descriptor_sets.get("gui descriptor set")->write(
-					//	DescriptorSet::Write{
-					//		.binding_num = 0,
-					//		.descriptor_num = 0,
-					//		.descriptor_count = 1,
-					//		.descriptor_type = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-					//		.image_info = VkDescriptorImageInfo{
-					//			.imageView = Gui::g_texture_view.get_image_view(),
-					//			.imageLayout = VK_IMAGE_LAYOUT_GENERAL
-					//		}
-					//	}
-					//);
-					set_status_and_id(p_tex_data);
-				} else if(should_update_texture(p_tex_data)) {
-					g_texture_data = *p_tex_data;
+						// WARNING: texture could be too small to hold p_tex_data.Pixels
+						Image::transition_layout(g_texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
+						Image::copy_to(g_texture, p_tex_data->Pixels, VkOffset3D{0, 0, 0}, {static_cast<uint32_t>(p_tex_data->Width), static_cast<uint32_t>(p_tex_data->Height), 1}, 0);
 
-					update_texture_image(p_tex_data, g_texture);
-					set_status_and_id(p_tex_data);
+						g_texture_view.destroy();
+						g_texture_view = ImageView(
+							Vulkan::NO_FLAGS, 
+							g_texture.get_image(), 
+							VK_IMAGE_VIEW_TYPE_2D, 
+							(p_tex_data->Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
+							VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
+						);
+
+						p_tex_data->SetStatus(ImTextureStatus_OK);
+						p_tex_data->SetTexID(reinterpret_cast<intptr_t>(g_texture.get_image()));
+					} else if(p_tex_data->Status == ImTextureStatus_WantUpdates) {
+						g_texture_data = *p_tex_data;
+
+						Image::copy_to(g_texture, p_tex_data->Pixels, VkOffset3D{0, 0, 0}, {static_cast<uint32_t>(p_tex_data->Width), static_cast<uint32_t>(p_tex_data->Height), 1}, 0);
+						p_tex_data->SetStatus(ImTextureStatus_OK);
+						p_tex_data->SetTexID(reinterpret_cast<intptr_t>(g_texture.get_image()));
+					}
 				}
 			}
 		}
-
-		if(!texture_created) {
-			if(vertex_buffer_changed && index_buffer_changed) {
-				g_texture.destroy();
-				g_texture = create_texture_image(&g_texture_data);
-				g_memory.destroy();
-				g_memory = new_memory(g_vertex_buffer, g_index_buffer, g_texture, p_draw_data);
-				update_texture_image(&g_texture_data, g_texture);
-				g_texture_view.destroy();
-				g_texture_view = ImageView(
-					Vulkan::NO_FLAGS, 
-					g_texture.image, 
-					VK_IMAGE_VIEW_TYPE_2D, 
-					(g_texture_data.Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
-					VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-				);
-			} else if(vertex_buffer_changed) {
-				g_index_buffer.destroy();
-				g_index_buffer = get_index_buffer(p_draw_data);
-				g_texture.destroy();
-				g_texture = create_texture_image(&g_texture_data);
-				g_memory.destroy();
-				g_memory = new_memory(g_vertex_buffer, g_index_buffer, g_texture, p_draw_data);
-				update_texture_image(&g_texture_data, g_texture);
-				g_texture_view.destroy();
-				g_texture_view = ImageView(
-					Vulkan::NO_FLAGS, 
-					g_texture.image, 
-					VK_IMAGE_VIEW_TYPE_2D, 
-					(g_texture_data.Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
-					VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-				);
-			} else if(index_buffer_changed) {
-				g_vertex_buffer.destroy();
-				g_vertex_buffer = get_vertex_buffer(p_draw_data);
-				g_texture.destroy();
-				g_texture = create_texture_image(&g_texture_data);
-				g_memory.destroy();
-				g_memory = new_memory(g_vertex_buffer, g_index_buffer, g_texture, p_draw_data);
-				update_texture_image(&g_texture_data, g_texture);
-				g_texture_view.destroy();
-				g_texture_view = ImageView(
-					Vulkan::NO_FLAGS, 
-					g_texture.image, 
-					VK_IMAGE_VIEW_TYPE_2D, 
-					(g_texture_data.Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
-					VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}
-				);
-			}
-		}
 	}
 
-	Memory new_memory(Buffer v_buffer, Buffer i_buffer, Image texture, ImDrawData* p_draw_data) {
-		Memory memory({g_vertex_buffer, g_index_buffer}, {texture}, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, nullptr);
-
-		uint32_t v_offset = 0;
-		uint32_t v_size = Utility::INVALID_UINT32;
-		uint32_t i_offset = 0;
-		uint32_t i_size = Utility::INVALID_UINT32;
-		for(ImDrawList* p_cmd_list : p_draw_data->CmdLists) {
-			v_size = p_cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
-			i_size = p_cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
-
-			memory.copy_to_buffer(p_cmd_list->VtxBuffer.Data, g_vertex_buffer, v_offset, v_size);
-			memory.copy_to_buffer(p_cmd_list->IdxBuffer.Data, g_index_buffer, i_offset, i_size);
-
-			v_offset += v_size;
-			i_offset += i_size;
-		}
-
-		Image::transition_image_layout(texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
-
-		return memory;
-	}
-
-	Buffer get_vertex_buffer(ImDrawData* p_draw_data) {
-		if(!new_draw_data(p_draw_data)) {
-			throw std::runtime_error("fit_vertex_buffer: !new_draw_data(p_draw_data)");
-		}
+	Buffer fit_vertex_buffer(const ImDrawData* p_draw_data) {
+		check_draw_data(p_draw_data);
 
 		return Buffer(Vulkan::NO_FLAGS,
 			p_draw_data->TotalVtxCount * sizeof(ImDrawVert),
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			VmaAllocationCreateInfo{
+				.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+				.usage = VMA_MEMORY_USAGE_AUTO
+			}
 		);
 	}
 
-	Buffer get_index_buffer(ImDrawData* p_draw_data) {
-		if(!new_draw_data(p_draw_data)) {
-			throw std::runtime_error("fit_vertex_buffer: !new_draw_data(p_draw_data)");
-		}
+	Buffer fit_index_buffer(const ImDrawData* p_draw_data) {
+		check_draw_data(p_draw_data);
 
 		return Buffer(Vulkan::NO_FLAGS,
 			p_draw_data->TotalIdxCount * sizeof(ImDrawIdx),
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
+			PhysicalDevice::g_graphics_family_index,
+			VmaAllocationCreateInfo{
+				.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT,
+				.usage = VMA_MEMORY_USAGE_AUTO
+			}
 		);
 	}
 
-	Image create_texture_image(ImTextureData* p_tex_data) {
-		if(!should_create_texture(p_tex_data)) {
-			throw std::runtime_error("create_texture: !should_create_texture(p_tex_data)");
+	void copy_vertices(const ImDrawData* p_draw_data, Buffer* p_vertex_buffer) {
+		uint32_t offset = 0;
+		uint32_t size = Utility::INVALID_UINT32;
+
+		for(const ImDrawList* p_cmd_list : p_draw_data->CmdLists) {
+			size = p_cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
+
+			Buffer::copy_to(p_vertex_buffer, p_cmd_list->VtxBuffer.Data, offset, size);
+			offset += size;
 		}
+	}
 
-		VkExtent3D texture_extent{static_cast<uint32_t>(p_tex_data->Width), static_cast<uint32_t>(p_tex_data->Height), 1};
+	void copy_indices(const ImDrawData* p_draw_data, Buffer* p_index_buffer) {
+		uint32_t offset = 0;
+		uint32_t size = Utility::INVALID_UINT32;
 
-		return Image(
-			Vulkan::NO_FLAGS,
-			VK_IMAGE_TYPE_2D,
-			(p_tex_data->Format == ImTextureFormat_RGBA32) ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8_UNORM,
-			texture_extent,
-			1,
-			1,
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_HOST_TRANSFER_BIT,
-			VK_SHARING_MODE_EXCLUSIVE,
-			PhysicalDevice::g_graphics_family_index
-		);
+		for(const ImDrawList* p_cmd_list : p_draw_data->CmdLists) {
+			size = p_cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
+
+			Buffer::copy_to(p_index_buffer, p_cmd_list->IdxBuffer.Data, offset, size);
+			offset += size;
+		}
 	}
 }

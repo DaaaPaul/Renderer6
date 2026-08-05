@@ -53,8 +53,6 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/ShaderModule.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/ShaderModule.h
 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/Memory.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/Memory.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/MemoryManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/MemoryManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/Buffer.cpp

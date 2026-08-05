@@ -26,14 +26,14 @@ Buffer::Buffer(VkBufferCreateFlags create_flags,
 	Vulkan::check(vmaCreateBuffer(Vulkan::g_vma_allocator, &create, &vma_allocation_info, &buffer, &allocation, &allocation_info), "Buffer: failed");
 }
 
-void Buffer::copy_to(const void* p_data, Buffer* dst, size_t size) {
+void Buffer::copy_to(Buffer* dst, const void* p_data, uint32_t offset, size_t size) {
 	void* p_buffer = dst->get_allocation_info().pMappedData;
 	
 	if(!p_buffer) {
 		throw std::runtime_error("copy_to: !p_buffer");
 	}
 
-	memcpy(p_buffer, p_data, size);
+	memcpy(reinterpret_cast<char*>(p_buffer) + offset, p_data, size);
 }
 
 void Buffer::copy(const Buffer* src, Buffer* dst, VkBufferCopy region) {
