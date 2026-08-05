@@ -64,8 +64,6 @@ namespace Gui {
 			for(ImTextureData* p_tex_data : *p_draw_data->Textures) {
 				if(p_tex_data->Pixels) {
 					if(p_tex_data->Status == ImTextureStatus_WantCreate) {
-						g_texture_data = *p_tex_data;
-
 						g_texture.destroy();
 						g_texture = Image(
 							Vulkan::NO_FLAGS,
@@ -99,8 +97,6 @@ namespace Gui {
 						p_tex_data->SetStatus(ImTextureStatus_OK);
 						p_tex_data->SetTexID(reinterpret_cast<intptr_t>(g_texture.get_image()));
 					} else if(p_tex_data->Status == ImTextureStatus_WantUpdates) {
-						g_texture_data = *p_tex_data;
-
 						Image::copy_to(g_texture, p_tex_data->Pixels, VkOffset3D{0, 0, 0}, {static_cast<uint32_t>(p_tex_data->Width), static_cast<uint32_t>(p_tex_data->Height), 1}, 0);
 						p_tex_data->SetStatus(ImTextureStatus_OK);
 						p_tex_data->SetTexID(reinterpret_cast<intptr_t>(g_texture.get_image()));
