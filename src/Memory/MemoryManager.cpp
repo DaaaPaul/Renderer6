@@ -215,10 +215,10 @@ namespace MemoryManager {
 		const uint32_t SPHERE_VERTEX_BUFFER_SIZE = g_sphere_vertices.size() * sizeof(glm::vec3);
 		const uint32_t SPHERE_INDEX_BUFFER_SIZE = g_sphere_indices.size() * sizeof(uint32_t);
 
-		Buffer::copy_to(g_buffers.get("vertex buffer"), g_vertices.data(), VERTEX_BUFFER_SIZE, 0);
-		Buffer::copy_to(g_buffers.get("index buffer"), g_indices.data(), INDEX_BUFFER_SIZE, 0);
-		Buffer::copy_to(g_buffers.get("sphere vertex buffer"), g_sphere_vertices.data(), SPHERE_VERTEX_BUFFER_SIZE, 0);
-		Buffer::copy_to(g_buffers.get("sphere index buffer"), g_sphere_indices.data(), SPHERE_INDEX_BUFFER_SIZE, 0);
+		Buffer::copy_to(g_buffers.get("vertex buffer"), g_vertices.data(), 0, VERTEX_BUFFER_SIZE);
+		Buffer::copy_to(g_buffers.get("index buffer"), g_indices.data(), 0, INDEX_BUFFER_SIZE);
+		Buffer::copy_to(g_buffers.get("sphere vertex buffer"), g_sphere_vertices.data(), 0, SPHERE_VERTEX_BUFFER_SIZE);
+		Buffer::copy_to(g_buffers.get("sphere index buffer"), g_sphere_indices.data(), 0, SPHERE_INDEX_BUFFER_SIZE);
 
 		Image::transition_layout(g_ktx_textures.get("sion texture")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
 		Image::transition_layout(g_ktx_textures.get("sion metallic roughness")->get_image(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 1, 1);

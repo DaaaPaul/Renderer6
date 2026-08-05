@@ -120,11 +120,10 @@ namespace Engine {
 		vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, Pipelines::g_pipelines[1]);
 		fit_viewport(cmd_buf);
 
-		const std::vector<VkDeviceSize> VERTEX_BUFFER_OFFSETS{ 0 };
-		VkBuffer vertex_buffer = MemoryManager::g_buffers.get("sphere vertex buffer")->get_buffer();
-		VkBuffer index_buffer = MemoryManager::g_buffers.get("sphere index buffer")->get_buffer();
-		vkCmdBindVertexBuffers(cmd_buf, 0, 1, &vertex_buffer, VERTEX_BUFFER_OFFSETS.data());
-		vkCmdBindIndexBuffer(cmd_buf, index_buffer, 0, VK_INDEX_TYPE_UINT32);
+		std::vector<VkDeviceSize> vertex_buffer_offsets{ 0 };
+		std::vector<VkBuffer> vertex_buffers{ MemoryManager::g_buffers.get("sphere vertex buffer")->get_buffer() };
+		vkCmdBindVertexBuffers(cmd_buf, 0, 1, vertex_buffers.data(), vertex_buffer_offsets.data());
+		vkCmdBindIndexBuffer(cmd_buf, MemoryManager::g_buffers.get("sphere index buffer")->get_buffer(), 0, VK_INDEX_TYPE_UINT32);
 
 		struct SimplePushConstantBlock {
 			glm::mat4 model{};
