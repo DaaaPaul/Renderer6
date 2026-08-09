@@ -101,8 +101,8 @@ namespace Vulkan {
 					vertices.emplace_back(
 						glm::vec3(p_positions[i * 3], p_positions[i * 3 + 1], p_positions[i * 3 + 2]),
 						glm::vec3(p_normals[i * 3], p_normals[i * 3 + 1], p_normals[i * 3 + 2]),
-						glm::vec2(p_uv[i * 2], p_uv[i * 2 + 1]),
-						glm::vec4(p_tangents[i * 4], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2], p_tangents[i * 4 + 3])
+						glm::vec3(p_tangents[i * 4], p_tangents[i * 4 + 1], p_tangents[i * 4 + 2]),
+						glm::vec2(p_uv[i * 2], p_uv[i * 2 + 1])
 					);
 				}
 

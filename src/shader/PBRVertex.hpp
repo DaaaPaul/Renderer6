@@ -12,8 +12,8 @@
 struct PBRVertex {
 	glm::vec3 position{};
 	glm::vec3 normal{};
+	glm::vec3 tangent{};
 	glm::vec2 uv{};
-	glm::vec4 tangent{};
 
 	static constexpr VkVertexInputBindingDescription get_vertex_input_binding_description(uint32_t binding_num)  {
 		return {
@@ -39,14 +39,14 @@ struct PBRVertex {
 			VkVertexInputAttributeDescription{
 				.location = 2,
 				.binding = binding_num,
-				.format = VK_FORMAT_R32G32_SFLOAT,
-				.offset = offsetof(PBRVertex, uv)
+				.format = VK_FORMAT_R32G32B32_SFLOAT,
+				.offset = offsetof(PBRVertex, tangent)
 			}, 
 			VkVertexInputAttributeDescription{
 				.location = 3,
 				.binding = binding_num,
-				.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-				.offset = offsetof(PBRVertex, tangent)
+				.format = VK_FORMAT_R32G32_SFLOAT,
+				.offset = offsetof(PBRVertex, uv)
 			}, 
 		};
 	}

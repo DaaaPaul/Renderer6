@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+#include <GLFW/glfw3.h>
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "memory/ImageView.hpp"
@@ -21,7 +22,7 @@ namespace Gui {
 	inline Image g_texture;
 	inline ImageView g_texture_view;
 
-	void init(float width, float height);
+	void init(GLFWwindow* glfw_window, float width, float height);
 	void destroy();
 
 	ImDrawData* record_frame();

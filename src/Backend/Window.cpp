@@ -24,6 +24,8 @@ namespace Window {
 	}
 
 	void init() {
+		glfwSetErrorCallback(glfw_error_callback);
+		
 		glfwInit();
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -51,5 +53,9 @@ namespace Window {
 
 	void window_resize_callback(GLFWwindow* glfw_window, int width, int height) {
 		g_window_user_pointer->window_resized = true;
+	}
+
+	void glfw_error_callback(int error_code, const char* description) {
+		Utility::println("glfw_error_callback: (" + std::to_string(error_code) + ")" + description);
 	}
 }

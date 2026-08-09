@@ -1,3 +1,4 @@
 PBR ROTATION:
 - pbr shader math
 - generate sphere math
+- how to not hard code stride in gltf model loader

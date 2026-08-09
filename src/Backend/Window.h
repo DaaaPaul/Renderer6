@@ -28,4 +28,5 @@ namespace Window {
 	void destroy();
 
 	void window_resize_callback(GLFWwindow* glfw_window, int width, int height);
+	void glfw_error_callback(int error_code, const char* description);
 }

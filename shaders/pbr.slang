@@ -1,34 +1,31 @@
 struct VSInput {
-    float3 position : POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float4 tangent : TANGENT;
+    float3 position;
+    float3 normal;
+    float3 tangent;
+    float2 uv;
 };
 
 struct VSOutput {
     float4 position : SV_Position;
-    float3 world_pos : POSITION;
-    float3 normal : NORMAL;
-    float2 uv : TEXCOORD0;
-    float4 tangent : TANGENT;
+    float3 world_pos;
+    float3 normal;
+    float3 tangent;
+    float2 uv;
 };
 
 struct UniformBuffer {
     float4x4 model;
     float4x4 view;
     float4x4 projection;
-    float4 lightPositions[4];
-    float4 lightColors[4];
-    float4 camPos;
+    float4 light_pos[4];
+    float4 light_colors[4];
+    float4 camera_pos;
 };
 
 struct PushConstants {
-    float4 baseColorFactor;
-    float metallicFactor;
-    float roughnessFactor;
-    int baseColorTextureSet;
-    int metallicRoughnessTextureSet;
-    int normalTextureSet;
+    float4 base_color_factor;
+    float metallic_factor;
+    float roughness_factor;
 };
 
 static const float DA_PI = 3.14159265359;
@@ -77,47 +74,44 @@ float3 FresnelSchlick(float cosTheta, float3 F0) {
 
 [[shader("vertex")]]
 VSOutput vertex_main(VSInput input) {
-	VSOutput output;
-	float4 world_pos = mul(ubo.model, float4(input.position, 1.0f));
+    VSOutput output;
 
-    output.position = mul(ubo.projection, mul(ubo.view, world_pos));
-    output.world_pos = world_pos.xyz;
-	output.normal = mul((float3x3) ubo.model, input.normal);
-	output.uv = input.uv;
-    output.tangent = input.tangent;
-    //output.tangent.xyz = mul((float3x3)ubo.model, input.tangent.xyz);
-    //output.tangent.w = input.tangent.w;
+    output.position = mul(ubo.projection, mul(ubo.view, mul(ubo.model, float4(input.position, 1.0f))));
+    output.world_pos = mul(ubo.model, float4(input.position, 1.0f)).xyz;
+    output.normal = mul((float3x3)ubo.model, input.normal);
+    output.tangent = mul((float3x3)ubo.model, input.tangent);
+    output.uv = input.uv;
 
 	return output;
 }
 
 [[shader("fragment")]]
 float4 fragment_main(VSOutput input) : SV_Target {
-	float4 base_color = baseColor.Sample(sampler, input.uv) * push_constants.baseColorFactor;
+	float4 base_color = baseColor.Sample(sampler, input.uv) * push_constants.base_color_factor;
 
 	float2 metallic_roughness = metallicRoughness.Sample(sampler, input.uv).bg;
-	float metallic = metallic_roughness.x * push_constants.metallicFactor;
-	float roughness = metallic_roughness.y * push_constants.roughnessFactor;
+	float metallic = metallic_roughness.x * push_constants.metallic_factor;
+	float roughness = metallic_roughness.y * push_constants.roughness_factor;
 
 	float3 N = normalize(input.normal);
 
-    if (push_constants.normalTextureSet > 0) {
-        float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
+	/* normals! */
+    float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
 
-        // 1. Re-orthogonalize T with respect to N (Gram-Schmidt)
-        float3 T = normalize(input.tangent.xyz);
-        T = normalize(T - dot(T, N) * N);
+    // 1. Re-orthogonalize T with respect to N (Gram-Schmidt)
+    float3 T = normalize(input.tangent.xyz);
+    T = normalize(T - dot(T, N) * N);
 
-        // 2. Calculate B (no need to normalize the cross product if T and N are orthonormal)
-        float3 B = cross(N, T) * input.tangent.w;
+    // 2. Calculate B (no need to normalize the cross product if T and N are orthonormal)
+    float3 B = cross(N, T);
 
-        // 3. Explicitly transform the tangent normal into world space
-        N = normalize(T * tangentNormal.x + B * tangentNormal.y + N * tangentNormal.z);
-    }
+    // 3. Explicitly transform the tangent normal into world space
+    N = normalize(T * tangentNormal.x + B * tangentNormal.y + N * tangentNormal.z);
+    /* normals! */
 
     // === LIGHTING SETUP ===
     // Calculate view direction (fragment to camera)
-    float3 V = normalize(ubo.camPos.xyz - input.world_pos);
+    float3 V = normalize(ubo.camera_pos.xyz - input.world_pos);
 
     // Calculate reflection vector for environment mapping
     float3 R = reflect(-V, N);
@@ -134,8 +128,8 @@ float4 fragment_main(VSOutput input) : SV_Target {
     // === DIRECT LIGHTING LOOP ===
     // Calculate contribution from each light source
     for (int i = 0; i < 4; i++) {
-        float3 lightPos = ubo.lightPositions[i].xyz;
-        float3 lightColor = ubo.lightColors[i].rgb;
+        float3 lightPos = ubo.light_pos[i].xyz;
+        float3 lightColor = ubo.light_colors[i].rgb;
 
         // Calculate light direction and attenuation
         float3 L = normalize(lightPos - input.world_pos);      // Light direction

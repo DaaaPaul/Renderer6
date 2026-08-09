@@ -38,7 +38,7 @@ int main() {
 		Pipelines::init();
 
 		EntityManager::init();
-		Gui::init(Swapchain::g_image_extent.width, Swapchain::g_image_extent.height);
+		Gui::init(Window::g_glfw_window, Swapchain::g_image_extent.width, Swapchain::g_image_extent.height);
 
 		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
 		Utility::println(std::to_string(std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count()));

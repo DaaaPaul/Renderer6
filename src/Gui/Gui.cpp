@@ -3,14 +3,17 @@
 #include "utility/Utility.h"
 #include "backend/PhysicalDevice.h"
 #include "memory/MemoryManager.h"
+#include "imgui/imgui_impl_glfw.h"
 
 namespace Gui {
-	void init(float width, float height) {
+	void init(GLFWwindow* glfw_window, float width, float height) {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;
+
+		ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
 
 		io.DisplaySize = ImVec2(width, height);
 		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
@@ -24,6 +27,7 @@ namespace Gui {
 	}
 
 	void destroy() {
+		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 		g_texture_view.destroy();
 		g_texture.destroy();
@@ -32,14 +36,10 @@ namespace Gui {
 	}
 
 	ImDrawData* record_frame() {
+		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::Begin("Paul Paul");
-		ImGui::Text("Hello imGui Peter");
-		if(ImGui::Button("Click moi")) {
-			Utility::println("clicked bi");
-		}
-		ImGui::End();
+		ImGui::ShowDemoWindow();
 
 		ImGui::Render();
 

@@ -68,9 +68,6 @@ namespace Engine {
 			.base_color_factor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 			.metallicFactor = 1.0f,
 			.roughnessFactor = 1.0f,
-			.baseColorTextureSet = true,
-			.physicalDescriptorTextureSet = true,
-			.normalTextureSet = true,
 		};
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[0], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantBlock), &push_constants); 
 		
