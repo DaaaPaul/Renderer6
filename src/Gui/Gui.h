@@ -1,39 +1,31 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "memory/ImageView.hpp"
-#include "memory/Image.hpp"
-#include "memory/Buffer.hpp"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_vulkan.h"
+#include "backend/Instance.h"
 
 namespace Gui {
-	struct PushConstantBlock {
-		glm::vec2 scale{};
-		glm::vec2 translate{};
-	};
+	inline ImGui_ImplVulkan_InitInfo g_vulkan_init_info{};
 
-	inline ImGuiStyle g_style{};
-	inline Buffer g_vertex_buffer;
-	inline Buffer g_index_buffer;
-
-	inline Image g_texture;
-	inline ImageView g_texture_view;
-
-	void init(GLFWwindow* glfw_window, float width, float height);
-	void destroy();
-
-	ImDrawData* record_frame();
-	void process_draw_data(const ImDrawData* p_draw_data);
-	inline void check_draw_data(const ImDrawData* p_draw_data) {
-		if(!(p_draw_data && p_draw_data->CmdLists.size() > 0)) {
-			throw std::runtime_error("check_draw_data: p_draw_data && p_draw_data->CmdLists.size() > 0 is false");
-		}
+	inline void create_context() {
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
 	}
-	Buffer fit_vertex_buffer(const ImDrawData* p_draw_data);
-	Buffer fit_index_buffer(const ImDrawData* p_draw_data);
-	void copy_vertices(const ImDrawData* p_draw_data, Buffer* p_vertex_buffer);
-	void copy_indices(const ImDrawData* p_draw_data, Buffer* p_index_buffer);
+
+	void set_io_context(glm::vec2 display_size, ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags);
+
+	inline void sync_glfw_callbacks(GLFWwindow* p_glfw_window) {
+		ImGui_ImplGlfw_InitForVulkan(p_glfw_window, true);
+	}
+
+	inline void set_vulkan_init_info() {
+		g_vulkan_init_info.ApiVersion = Instance::
+	}
+
+	inline ImGui_ImplVulkan_InitInfo* get_vulkan_init_info() {
+		return &g_vulkan_init_info;
+	}
 }

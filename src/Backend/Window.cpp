@@ -8,19 +8,19 @@ namespace Window {
 
 		uint32_t requiredCount{};
 		const char** required = glfwGetRequiredInstanceExtensions(&requiredCount);
-		std::vector<const char*> requiredVector{};
+		std::vector<const char*> required_vector(requiredCount);
 
+		for (int i = 0; i < requiredCount; ++i) {
+			required_vector.push_back(required[i]);
+		}
 		#ifdef __APPLE__
 		if (!required) {
-			requiredVector.push_back("VK_KHR_surface");
-			requiredVector.push_back("VK_EXT_metal_surface");
+			required_vector.push_back("VK_KHR_surface");
+			required_vector.push_back("VK_EXT_metal_surface");
 		}
 		#endif
-		for (int i = 0; i < requiredCount; ++i) {
-			requiredVector.push_back(required[i]);
-		}
 
-		return requiredVector;
+		return required_vector;
 	}
 
 	void init() {
