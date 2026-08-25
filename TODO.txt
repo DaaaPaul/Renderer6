@@ -20,8 +20,6 @@ BY THE HOUR:
 
 
 
-- link imgui as a static library dont include it in build
-
 
 
 
@@ -107,3 +105,5 @@ BY THE HOUR:
 
 - merge MemoryManager and Memory
 - for the depth images, just have them in Swapchain::
+- link imgui as a static library dont include it in build
+- remove passing glm things by reference

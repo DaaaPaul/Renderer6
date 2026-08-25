@@ -32,8 +32,8 @@ static const float DA_PI = 3.14159265359;
 
 [[vk::binding(0, 0)]] ConstantBuffer<UniformBuffer> ubo;
 [[vk::binding(1, 0)]] SamplerState sampler;
-[[vk::binding(2, 0)]] Texture2D baseColor;
-[[vk::binding(3, 0)]] Texture2D metallicRoughness;
+[[vk::binding(2, 0)]] Texture2D base_color;
+[[vk::binding(3, 0)]] Texture2D metallic_roughness;
 [[vk::binding(4, 0)]] Texture2D normal;
 
 [[vk::push_constant]] PushConstants push_constants;
@@ -87,27 +87,21 @@ VSOutput vertex_main(VSInput input) {
 
 [[shader("fragment")]]
 float4 fragment_main(VSOutput input) : SV_Target {
-	float4 base_color = baseColor.Sample(sampler, input.uv) * push_constants.base_color_factor;
+	float4 base_color = base_color.Sample(sampler, input.uv) * push_constants.base_color_factor;
 
-	float2 metallic_roughness = metallicRoughness.Sample(sampler, input.uv).bg;
+	float2 metallic_roughness = metallic_roughness.Sample(sampler, input.uv).bg;
 	float metallic = metallic_roughness.x * push_constants.metallic_factor;
 	float roughness = metallic_roughness.y * push_constants.roughness_factor;
 
-	float3 N = normalize(input.normal);
-
-	/* normals! */
-    float3 tangentNormal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
-
-    // 1. Re-orthogonalize T with respect to N (Gram-Schmidt)
-    float3 T = normalize(input.tangent.xyz);
-    T = normalize(T - dot(T, N) * N);
-
-    // 2. Calculate B (no need to normalize the cross product if T and N are orthonormal)
-    float3 B = cross(N, T);
+    float3 interpolated_normal = normalize(input.normal);
+    float3 interpolated_tangent = normalize(input.tangent);
+    
+	float3 tangent = normalize(interpolated_tangent - dot(interpolated_tangent, interpolated_normal) * interpolated_normal);
+    float3 normal = normal.Sample(sampler, input.uv).xyz * 2.0 - 1.0;
+    float3 bitangent = cross(normal, tangent);
 
     // 3. Explicitly transform the tangent normal into world space
-    N = normalize(T * tangentNormal.x + B * tangentNormal.y + N * tangentNormal.z);
-    /* normals! */
+    interpolated_normal = normalize(tangent * normal.x + bitangent * normal.y + interpolated_normal * normal.z);
 
     // === LIGHTING SETUP ===
     // Calculate view direction (fragment to camera)

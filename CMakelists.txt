@@ -32,6 +32,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/imgui_widgets.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/imgui_impl_glfw.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/imgui_impl_glfw.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/imgui_impl_vulkan.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui/imgui_impl_vulkan.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinygltf/tiny_gltf.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinygltf/json.hpp

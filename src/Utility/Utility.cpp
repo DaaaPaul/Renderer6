@@ -2,24 +2,24 @@
 #include <random>	
 #include "utility/Utility.h"
 
-std::ostream& operator<<(std::ostream& os, glm::vec2 const& vec2) {
+std::ostream& operator<<(std::ostream& os, glm::vec2 vec2) {
 	return os << '[' << vec2.x << ", " << vec2.y << ']';
 }
 
-std::ostream& operator<<(std::ostream& os, glm::vec3 const& vec3) {
+std::ostream& operator<<(std::ostream& os, glm::vec3 vec3) {
 	return os << '[' << vec3.x << ", " << vec3.y << ", " << vec3.z << ']';
 }
 
-std::ostream& operator<<(std::ostream& os, glm::vec4 const& vec4) {
+std::ostream& operator<<(std::ostream& os, glm::vec4 vec4) {
 	return os << '[' << vec4.x << ", " << vec4.y << ", " << vec4.z << ", " << vec4.w << ']';
 }
 
-std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4) {
+std::ostream& operator<<(std::ostream& os, glm::mat4 mat4) {
 	return os << 
-		mat4[0] << '\n' <<
-		mat4[1] << '\n' <<
-		mat4[2] << '\n' <<
-		mat4[3];
+		'[' << mat4[0][0] << ", " << mat4[1][0] << ", " << mat4[2][0] << ", " << mat4[3][0] << "]\n" <<
+		'[' << mat4[0][1] << ", " << mat4[1][1] << ", " << mat4[2][1] << ", " << mat4[3][1] << "]\n" <<
+		'[' << mat4[0][2] << ", " << mat4[1][2] << ", " << mat4[2][2] << ", " << mat4[3][2] << "]\n" <<
+		'[' << mat4[0][3] << ", " << mat4[1][3] << ", " << mat4[2][3] << ", " << mat4[3][3] << ']';
 }
 
 namespace Utility {
@@ -34,14 +34,18 @@ namespace Utility {
 	}
 
 	bool contains_all(std::vector<std::string> these_strings, std::vector<std::string> contain_these) {
+		bool contains_all = false;
+
 		if(contain_these.empty()) {
-			return true;
+			contains_all = true;
 		} else {
 			std::sort(these_strings.begin(), these_strings.end());
 			std::sort(contain_these.begin(), contain_these.end());
 
-			return std::ranges::includes(these_strings, contain_these);
+			contains_all = std::ranges::includes(these_strings, contain_these);
 		}
+
+		return contains_all;
 	}
 
 	float random() {
@@ -51,7 +55,7 @@ namespace Utility {
 		return range(random_engine);
 	}
 
-	std::vector<char> get_file_bytes(const std::string& file_path) {
+	std::vector<char> get_file_bytes(std::string file_path) {
 		std::ifstream file_stream_in(file_path, std::ios::binary | std::ios::ate);
 
 		if(!file_stream_in.good()) {
@@ -72,9 +76,9 @@ namespace Utility {
 		return glm::vec2(std::cos(angle) * radius, std::sin(angle) * radius);
 	}
 
-	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT) {
-		const float SECTOR_STEP = 2 * Utility::PI / SECTOR_COUNT;
-		const float STACK_STEP = Utility::PI / STACK_COUNT;
+	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(float radius, uint32_t stack_count, uint32_t sector_count) {
+		const float SECTOR_STEP = 2 * Utility::PI / sector_count;
+		const float STACK_STEP = Utility::PI / stack_count;
 
 		float sector_angle{}, stack_angle{};
 		float xy{}, x{}, y{}, z{};
@@ -84,17 +88,17 @@ namespace Utility {
 		std::vector<glm::vec3> vertices;
 		std::vector<uint32_t> indices;
 
-		for(int i = 0; i <= STACK_COUNT; ++i) {
+		for(int i = 0; i <= stack_count; ++i) {
 			stack_angle = Utility::PI / 2 - i * STACK_STEP;
-			xy = RADIUS * std::cos(stack_angle);
-			z = RADIUS * std::sin(stack_angle);
+			xy = radius * std::cos(stack_angle);
+			z = radius * std::sin(stack_angle);
 
-			if(i < STACK_COUNT) {
-				k1 = i * (SECTOR_COUNT + 1);
-				k2 = k1 + SECTOR_COUNT + 1;
+			if(i < stack_count) {
+				k1 = i * (sector_count + 1);
+				k2 = k1 + sector_count + 1;
 			}
 
-			for(int j = 0; j <= SECTOR_COUNT; ++j, ++k1, ++k2) {
+			for(int j = 0; j <= sector_count; ++j, ++k1, ++k2) {
 				sector_angle = j * SECTOR_STEP;
 
 				x = xy * std::cos(sector_angle);
@@ -102,14 +106,14 @@ namespace Utility {
 
 				vertices.emplace_back(x, y, z);
 
-				if(i < STACK_COUNT && j < SECTOR_COUNT) {
+				if(i < stack_count && j < sector_count) {
 					if(i != 0) {
 						indices.push_back(k1);
 						indices.push_back(k2);
 						indices.push_back(k1 + 1);
 					}
 
-					if(i != (STACK_COUNT - 1)) {
+					if(i != (stack_count - 1)) {
 						indices.push_back(k1 + 1);
 						indices.push_back(k2);
 						indices.push_back(k2 + 1);

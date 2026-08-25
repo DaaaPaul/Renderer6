@@ -2,11 +2,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <cmath>
 #include "utility/Vulkan.h"
+#include "utility/Utility.h"
 #include "backend/Swapchain.h"
 #include "backend/Window.h"
 #include "engine/CameraComponent.hpp"
 
-glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
+glm::mat3 Basis::rotate(glm::vec3 axis, float angle_cc) {
 	const float COS = std::cos(angle_cc);
 	const float SIN = std::sin(angle_cc);
 	const float ONE_MINUS_COS = 1.0f - std::cos(angle_cc);
@@ -26,7 +27,7 @@ glm::mat3 Basis::rotate(const glm::vec3& axis, const float& angle_cc) {
 	);
 }
 
-Basis Basis::apply_rotation(const Basis& basis, const Angles& euler_angles) {
+Basis Basis::apply_rotation(Basis basis, Angles euler_angles) {
 	Basis moved(basis);
 		
 	glm::mat3 about_x = rotate(moved.x, euler_angles.x);
@@ -44,7 +45,7 @@ Basis Basis::apply_rotation(const Basis& basis, const Angles& euler_angles) {
 	return moved;
 }
 
-CameraComponent::CameraComponent(Entity* entity, const glm::vec3& position, const Angles& rotation, float zoom) :
+CameraComponent::CameraComponent(Entity* entity, glm::vec3 position, Angles rotation, float zoom) :
 	Component{ entity },
 	position(DEFAULT_POSITION + position), 
 	basis(Basis::apply_rotation(DEFAULT_BASIS, rotation)), 
@@ -52,7 +53,7 @@ CameraComponent::CameraComponent(Entity* entity, const glm::vec3& position, cons
 	
 }
 
-glm::vec3 CameraComponent::process_position(const Basis& basis, const glm::vec3& vec3, float delta_time) {
+glm::vec3 CameraComponent::process_position(Basis basis, glm::vec3 vec3, float delta_time) {
 	float move_amount = SPEED * delta_time;
 	glm::vec3 change{};
 
@@ -77,11 +78,11 @@ glm::vec3 CameraComponent::process_position(const Basis& basis, const glm::vec3&
 	return vec3 + change;
 }
 
-Basis CameraComponent::process_rotation(const Basis& basis, float x_offset, float y_offset) {
+Basis CameraComponent::process_rotation(Basis basis, float x_offset, float y_offset) {
 	return Basis::apply_rotation(basis, Angles{y_offset * SENSITIVITY, x_offset * SENSITIVITY, 0.0f});
 }
 
-float CameraComponent::process_zoom(const float& zoom, float y_offset) {
+float CameraComponent::process_zoom(float zoom, float y_offset) {
 	return zoom + y_offset * SCROLL_SENSITIVITY;
 }
 
@@ -114,18 +115,23 @@ void CameraComponent::scroll_callback(GLFWwindow* glfw_window, double x_offset, 
 	camera_component->zoom = process_zoom(camera_component->zoom, y_offset);
 }
 
-glm::mat4 CameraComponent::to_view_matrix(const CameraComponent& cam) {
+glm::mat4 CameraComponent::view_matrix() const {
 	return glm::mat4(
-		cam.basis.x.x, cam.basis.y.x, cam.basis.z.x, 0.0f,
-		cam.basis.x.y, cam.basis.y.y, cam.basis.z.y, 0.0f,
-		cam.basis.x.z, cam.basis.y.z, cam.basis.z.z, 0.0f,
-		-(cam.basis.x.x * cam.position.x + cam.basis.x.y * cam.position.y + cam.basis.x.z * cam.position.z), -(cam.basis.y.x * cam.position.x + cam.basis.y.y * cam.position.y + cam.basis.y.z * cam.position.z), -(cam.basis.z.x * cam.position.x + cam.basis.z.y * cam.position.y + cam.basis.z.z * cam.position.z), 1.0f
+		basis.x.x, basis.y.x, basis.z.x, 0.0f,
+		basis.x.y, basis.y.y, basis.z.y, 0.0f,
+		basis.x.z, basis.y.z, basis.z.z, 0.0f,
+		-(basis.x.x * position.x + basis.x.y * position.y + basis.x.z * position.z), -(basis.y.x * position.x + basis.y.y * position.y + basis.y.z * position.z), -(basis.z.x * position.x + basis.z.y * position.y + basis.z.z * position.z), 1.0f
 	);
 }
 
-glm::mat4 CameraComponent::to_projection_matrix(const CameraComponent& cam) {
-	glm::mat4 proj_matrix(glm::perspective(cam.zoom, Swapchain::get_aspect_ratio(), 0.1f, 100.0f));
-	proj_matrix[1][1] *= -1.0f;
+glm::mat4 CameraComponent::projection_matrix() const {
+	const float COT_FOV = 1.0f / std::tan(zoom / 2.0f);
+	constexpr float NEAR_MINUS_FAR = NEAR_PLANE - FAR_PLANE;
 
-	return proj_matrix;
+	return glm::mat4(
+		COT_FOV / Swapchain::get_aspect_ratio(), 0.0f,     0.0f,                                        0.0f,
+		0.0f,                                    -COT_FOV, 0.0f,                                        0.0f,
+		0.0f,                                    0.0f,     FAR_PLANE / NEAR_MINUS_FAR,                  -1.0f,
+		0.0f,                                    0.0f,     2 * FAR_PLANE * NEAR_PLANE / NEAR_MINUS_FAR, 0.0f
+	);
 }

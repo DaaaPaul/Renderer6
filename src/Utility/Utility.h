@@ -30,10 +30,10 @@
 	DELETE_COPYING(x) \
 	DELETE_MOVING(x)
 
-std::ostream& operator<<(std::ostream& os, glm::vec2 const& vec2);
-std::ostream& operator<<(std::ostream& os, glm::vec3 const& vec3);
-std::ostream& operator<<(std::ostream& os, glm::vec4 const& vec4);
-std::ostream& operator<<(std::ostream& os, glm::mat4 const& mat4);
+std::ostream& operator<<(std::ostream& os, glm::vec2 vec2);
+std::ostream& operator<<(std::ostream& os, glm::vec3 vec3);
+std::ostream& operator<<(std::ostream& os, glm::vec4 vec4);
+std::ostream& operator<<(std::ostream& os, glm::mat4 mat4);
 
 namespace Utility {
 	inline constexpr float PI = 3.14159274f;
@@ -43,8 +43,12 @@ namespace Utility {
 		std::cout << msg << '\n';
 	}
 
-	inline void println(const std::string& msg) {
+	inline void println(std::string msg) {
 		std::cout << msg << '\n';
+	}
+
+	inline void println(glm::mat4 mat4) {
+		std::cout << mat4 << '\n';
 	}
 
 	inline void check_nullptr(void* p, const char* error_msg = "utility::check_nullptr: failed") {
@@ -65,9 +69,9 @@ namespace Utility {
 
 	float random();
 
-	std::vector<char> get_file_bytes(const std::string& file_path);
+	std::vector<char> get_file_bytes(std::string file_path);
 
 	glm::vec2 get_circle_position(float angle, float radius);
 
-	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(const float RADIUS, const uint32_t STACK_COUNT, const uint32_t SECTOR_COUNT);
+	std::pair<std::vector<glm::vec3>,  std::vector<uint32_t>> get_sphere(float radius, uint32_t stack_count, uint32_t sector_count);
 }

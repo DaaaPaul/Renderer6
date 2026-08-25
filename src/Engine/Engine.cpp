@@ -130,8 +130,8 @@ namespace Engine {
 		CameraComponent* camera_component = EntityManager::g_camera.get<CameraComponent>();
 		SimplePushConstantBlock push_constants{
 			.model = glm::translate(glm::mat4(1.0f), glm::vec3(g_circle_position.x, 0.0f, g_circle_position.y)),
-			.view = CameraComponent::to_view_matrix(*camera_component),
-			.proj = CameraComponent::to_projection_matrix(*camera_component),
+			.view = camera_component->view_matrix(),
+			.proj = camera_component->projection_matrix(),
 		};
 
 		vkCmdPushConstants(cmd_buf, PipelineLayouts::g_layouts[1], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(SimplePushConstantBlock), &push_constants); 
