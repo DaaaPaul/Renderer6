@@ -9,6 +9,8 @@
 
 namespace Swapchain {
 	void init() {
+		Vulkan::check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &g_surface_capabilities), "get_image_extent: failed to get surface capabilities");
+
 		g_surface = Vulkan::create_surface();
 
 		g_image_extent = get_image_extent();
@@ -68,10 +70,7 @@ namespace Swapchain {
 	}
 
 	VkExtent2D get_image_extent() {
-		VkSurfaceCapabilitiesKHR surface_capabilities{};
-		Vulkan::check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &surface_capabilities), "get_image_extent: failed to get surface capabilities");
-		
-		VkExtent2D image_extent{ surface_capabilities.currentExtent.width, surface_capabilities.currentExtent.height };
+		VkExtent2D image_extent{ g_surface_capabilities.currentExtent.width, g_surface_capabilities.currentExtent.height };
 
 		if(g_image_extent.width == 0xFFFFFFFF) {
 			glfwGetFramebufferSize(Window::g_glfw_window, reinterpret_cast<int*>(&g_image_extent.width), reinterpret_cast<int*>(&g_image_extent.height));

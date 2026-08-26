@@ -302,14 +302,13 @@ namespace Vulkan {
 	VkBuffer create_buffer(VkDeviceSize size, VkBufferUsageFlags usage) {
 		VkBuffer buffer{};
 		
-		uint32_t gfx_queue_family_index = PhysicalDevice::get_queue_family_index(VK_QUEUE_GRAPHICS_BIT);
 		VkBufferCreateInfo create{
 			.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
 			.size = size,
 			.usage = usage,
 			.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
 			.queueFamilyIndexCount = 1,
-			.pQueueFamilyIndices = &gfx_queue_family_index
+			.pQueueFamilyIndices = PhysicalDevice::g_graphics_family_index.data()
 		};
 
 		Vulkan::check(vkCreateBuffer(g_device, &create, nullptr, &buffer), "create_buffer: failed");

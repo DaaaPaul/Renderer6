@@ -9,6 +9,7 @@ namespace Swapchain {
 	inline std::vector<VkImageView> g_image_views{};
 	inline VkSurfaceKHR g_surface{};
 	inline VkSwapchainCreateInfoKHR g_status{};
+	inline VkSurfaceCapabilitiesKHR g_surface_capabilities{};
 
 	inline VkExtent2D g_image_extent{};
 	inline constexpr uint32_t g_IMAGE_COUNT = 4;

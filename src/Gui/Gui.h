@@ -5,27 +5,54 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
-#include "backend/Instance.h"
+#include "backend/Window.h"
 
 namespace Gui {
 	inline ImGui_ImplVulkan_InitInfo g_vulkan_init_info{};
+	inline VkFormat g_color_attachment_format{};
+	inline VkDescriptorPool g_descriptor_pool{};
+
+	void init(ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags);
+	void destroy();
 
 	inline void create_context() {
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 	}
 
-	void set_io_context(glm::vec2 display_size, ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags);
-
-	inline void sync_glfw_callbacks(GLFWwindow* p_glfw_window) {
-		ImGui_ImplGlfw_InitForVulkan(p_glfw_window, true);
+	inline void destroy_context() {
+		ImGui::DestroyContext();
 	}
 
-	inline void set_vulkan_init_info() {
-		g_vulkan_init_info.ApiVersion = Instance::
+	void set_io_context(ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags);
+
+	inline void set_imgui_glfw_window() {
+		ImGui_ImplGlfw_InitForVulkan(Window::g_glfw_window, true);
 	}
+
+	inline void shutdown_imgui_glfw_window() {
+		ImGui_ImplGlfw_Shutdown();
+	}
+
+	void set_descriptor_pool();
+
+	inline void destroy_descriptor_pool() {
+		vkDestroyDescriptorPool(g_device, g_descriptor_pool, nullptr);
+	}
+
+	void set_vulkan_init_info();
 
 	inline ImGui_ImplVulkan_InitInfo* get_vulkan_init_info() {
 		return &g_vulkan_init_info;
 	}
+
+	inline void set_imgui_vulkan_application() {
+		ImGui_ImplVulkan_Init(&g_vulkan_init_info);
+	}
+
+	inline void shutdown_imgui_vulkan_application() {
+		ImGui_ImplVulkan_Shutdown();
+	}
+
+	void imgui_check(VkResult result);
 }
