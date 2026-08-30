@@ -80,6 +80,19 @@ namespace Gui {
 		g_vulkan_init_info.CheckVkResultFn = &imgui_check;
 	}
 
+	FrameRecorded record_frame() {
+		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+
+		ImGui::NewFrame();
+
+		ImGui::ShowDemoWindow();
+
+		ImGui::Render();
+
+		return {};
+	}
+
 	void imgui_check(VkResult result) {
 		char result_char = result + 42;
 

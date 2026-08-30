@@ -8,6 +8,12 @@
 #include "backend/Window.h"
 
 namespace Gui {
+	class FrameRecorded {
+		FrameRecorded() = default;
+
+		friend FrameRecorded record_frame();
+	};
+
 	inline ImGui_ImplVulkan_InitInfo g_vulkan_init_info{};
 	inline VkFormat g_color_attachment_format{};
 	inline VkDescriptorPool g_descriptor_pool{};
@@ -53,6 +59,8 @@ namespace Gui {
 	inline void shutdown_imgui_vulkan_application() {
 		ImGui_ImplVulkan_Shutdown();
 	}
+
+	FrameRecorded record_frame();
 
 	void imgui_check(VkResult result);
 }

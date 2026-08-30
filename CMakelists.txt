@@ -56,6 +56,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/Pipelines.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/ShaderModule.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/ShaderModule.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/Submission.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline/Submission.hpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/MemoryManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/memory/MemoryManager.h
@@ -89,6 +91,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/Frame.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/FramesInFlight.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/FramesInFlight.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/SubmissionManager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/SubmissionManager.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/containers/Addmap.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/containers/FeatureChain.hpp

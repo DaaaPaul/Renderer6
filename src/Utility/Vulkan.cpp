@@ -166,30 +166,6 @@ namespace Vulkan {
 		}
 	}
 
-	void insert_image_barrier(VkCommandBuffer cmd_buf, VkImage image, VkImageSubresourceRange subresource_range, VkPipelineStageFlags2 stage1, VkAccessFlags2 access1, VkPipelineStageFlags2 stage2, VkAccessFlags2 access2, VkImageLayout old_layout, VkImageLayout new_layout, uint32_t graphics_queue_family_index) {
-		VkImageMemoryBarrier2 insert_image_barrier{
-			.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-			.srcStageMask = stage1,
-			.srcAccessMask = access1,
-			.dstStageMask = stage2,
-			.dstAccessMask = access2,
-			.oldLayout = old_layout,
-			.newLayout = new_layout,
-			.srcQueueFamilyIndex = graphics_queue_family_index,
-			.dstQueueFamilyIndex = graphics_queue_family_index,
-			.image = image,
-			.subresourceRange = subresource_range,
-		};
-
-		VkDependencyInfo deps{
-			.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-			.imageMemoryBarrierCount = 1,
-			.pImageMemoryBarriers = &insert_image_barrier,
-		};
-
-		vkCmdPipelineBarrier2(cmd_buf, &deps);
-	}
-
 	void begin_one_time_cmd_buffer(VkCommandPool& cmd_pool, VkCommandBuffer& cmd_buf, uint32_t queue_family_index) {
 		cmd_pool = create_cmd_pool(VK_COMMAND_POOL_CREATE_TRANSIENT_BIT, queue_family_index);
 		cmd_buf = create_cmd_buffer(cmd_pool);
@@ -244,11 +220,7 @@ namespace Vulkan {
 		return cmd_buffer;
 	}
 
-	void begin_cmd_buffer(VkCommandBuffer cmd_buf, VkCommandBufferUsageFlags flags) {
-		if(flags != VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT) {
-			Vulkan::check(vkResetCommandBuffer(cmd_buf, Vulkan::NO_FLAGS), "begin_cmd_buf: failed to reset command buffer");
-		}
-		
+	void begin_cmd_buffer(VkCommandBuffer cmd_buf, VkCommandBufferUsageFlags flags) {		
 		VkCommandBufferBeginInfo begin{ .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO, .flags = flags };
 		Vulkan::check(vkBeginCommandBuffer(cmd_buf, &begin), "begin_cmd_buf: failed");
 	}
