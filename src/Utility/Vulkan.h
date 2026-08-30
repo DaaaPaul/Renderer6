@@ -9,6 +9,7 @@
 #include <cstdint>
 #include "backend/Instance.h"
 #include "shader/PBRVertex.hpp"
+#include "UtilityStructs.hpp"
 
 namespace Vulkan {
 	inline constexpr VkFlags NO_FLAGS = 0U;

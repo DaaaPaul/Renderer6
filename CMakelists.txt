@@ -42,6 +42,8 @@ set(RENDERER6_SOURCES
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/Utility.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/Utility.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/UtilityStructs.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/UtilityStructs.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/Vulkan.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/Vulkan.h
 
@@ -87,10 +89,6 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/EntityManager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/Events.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/Events.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/Frame.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/Frame.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/FramesInFlight.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/FramesInFlight.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/SubmissionManager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/SubmissionManager.h
 
