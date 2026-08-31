@@ -1,4 +1,7 @@
 PBR ROTATION:
 - pbr shader math
-- generate sphere math
-- how to not hard code stride in gltf model loader
+xxx- generate sphere math
+xxx- how to not hard code stride in gltf model loader
+
+C++:
+- returning vector from function (how many copies?)

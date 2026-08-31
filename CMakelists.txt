@@ -48,7 +48,8 @@ set(RENDERER6_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/utility/Vulkan.h
 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/PBRVertex.hpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/PushConstantBlock.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/PBRPushConstantBlock.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/SimplePushConstantBlock.hpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/UniformBufferBlock.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/shader/UniformBufferBlock.hpp
 

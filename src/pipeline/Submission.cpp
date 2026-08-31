@@ -2,6 +2,7 @@
 #include "Submission.hpp"
 #include "backend/Swapchain.h"
 #include "Memory/MemoryManager.h"
+#include "utility/UtilityStructs.hpp"
 
 Attachments::Attachments(uint32_t sc_image_index, const VkClearColorValue* p_CLEAR_COLOR, const VkClearDepthStencilValue* p_CLEAR_DEPTH) :
 	rendering_info{
@@ -53,3 +54,59 @@ void Submission::record(Submission* submission) {
 
 	Vulkan::end_cmd_buffer(submission->cmd_buf);
 }
+
+void Submission::submit(VkQueue queue, VkFence fence, const std::vector<Submission>* p_SUBMISSIONS) {
+	std::vector<CmdBufSubmit> cmd_buf_submits;
+	cmd_buf_submits.reserve(p_SUBMISSIONS->size());
+
+	for(int i = 0; i < p_SUBMISSIONS->size(); ++i) {
+		cmd_buf_submits.emplace_back((*p_SUBMISSIONS)[i].cmd_buf);
+	}
+
+	std::vector<VkSubmitInfo2> submit_info2s(CmdBufSubmit::get_submit_info2s(&cmd_buf_submits));
+
+	vkQueueSubmit2(queue, submit_info2s.size(), submit_info2s.data(), fence);
+}
+
+Submission::Submission(VkCommandBuffer cmd_buf, 
+					   uint32_t sc_image_index, 
+					   float clear_r, 
+					   float clear_g, 
+					   float clear_b, 
+					   float clear_a, 
+					   VkClearDepthStencilValue clear_depth, 
+					   std::function<void(VkCommandBuffer)> f_set_cmds, 
+					   std::function<void(VkCommandBuffer)> f_bind_cmds, 
+					   std::vector<ImageBarrier>&& pre_render_barriers, 
+					   std::function<void(VkCommandBuffer)> f_render_cmds,
+					   std::vector<ImageBarrier>&& post_render_barriers) :
+	cmd_buf{ cmd_buf },
+	sc_image_index{ sc_image_index },
+	clear_color{ .float32{ clear_r, clear_g, clear_b, clear_a } },
+	p_CLEAR_COLOR{ &clear_color },
+	clear_depth{ clear_depth },
+	p_CLEAR_DEPTH{ &clear_depth },
+	f_set_cmds(f_set_cmds),
+	f_bind_cmds(f_bind_cmds),
+	pre_render_barriers(std::move(pre_render_barriers)),
+	f_render_cmds(f_render_cmds),
+	post_render_barriers(std::move(post_render_barriers)) {}
+
+Submission::Submission(VkCommandBuffer cmd_buf, 
+			uint32_t sc_image_index, 
+			std::function<void(VkCommandBuffer)> f_set_cmds, 
+			std::function<void(VkCommandBuffer)> f_bind_cmds, 
+			std::vector<ImageBarrier>&& pre_render_barriers, 
+			std::function<void(VkCommandBuffer)> f_render_cmds,
+			std::vector<ImageBarrier>&& post_render_barriers) :
+	cmd_buf{ cmd_buf },
+	sc_image_index{ sc_image_index },
+	clear_color{},
+	p_CLEAR_COLOR{},
+	clear_depth{},
+	p_CLEAR_DEPTH{},
+	f_set_cmds(f_set_cmds),
+	f_bind_cmds(f_bind_cmds),
+	pre_render_barriers(std::move(pre_render_barriers)),
+	f_render_cmds(f_render_cmds),
+	post_render_barriers(std::move(post_render_barriers)) {}

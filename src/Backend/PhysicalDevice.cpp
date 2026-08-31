@@ -79,7 +79,7 @@ namespace PhysicalDevice {
 			extension_strings.emplace_back(extension.extensionName);
 		}
 
-		return Utility::contains_all(extension_strings, Utility::to_string(LogicalDevice::g_extensions));
+		return Utility::contains_all(extension_strings, Utility::to_string(&LogicalDevice::g_extensions));
 	}
 
 	bool check_features(VkPhysicalDevice physical_device) {

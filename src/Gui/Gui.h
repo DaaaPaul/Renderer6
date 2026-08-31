@@ -6,6 +6,8 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
 #include "backend/Window.h"
+#include "pipeline/Submission.hpp"
+#include "utility/Vulkan.h"
 
 namespace Gui {
 	class FrameRecorded {
@@ -17,9 +19,18 @@ namespace Gui {
 	inline ImGui_ImplVulkan_InitInfo g_vulkan_init_info{};
 	inline VkFormat g_color_attachment_format{};
 	inline VkDescriptorPool g_descriptor_pool{};
+	inline VkCommandPool g_cmd_pool{};
 
 	void init(ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags);
 	void destroy();
+
+	inline void set_cmd_pool() {
+		g_cmd_pool = Vulkan::create_cmd_pool(Vulkan::NO_FLAGS, PhysicalDevice::g_graphics_family_index[0]);
+	}
+
+	inline void destroy_cmd_pool() {
+		vkDestroyCommandPool(g_device, g_cmd_pool, nullptr);
+	}
 
 	inline void create_context() {
 		IMGUI_CHECKVERSION();
@@ -61,6 +72,8 @@ namespace Gui {
 	}
 
 	FrameRecorded record_frame();
+
+	Submission get_submission(FrameRecorded frame_recorded, uint32_t sc_image_index);
 
 	void imgui_check(VkResult result);
 }

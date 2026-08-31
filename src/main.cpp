@@ -16,7 +16,7 @@
 #include "memory/MemoryManager.h"
 #include "engine/Engine.h"
 #include "engine/EntityManager.h"
-#include "engine/Frame.hpp"
+#include "engine/SubmissionManager.h"
 #include "gui/Gui.h"
 
 int main() {
@@ -38,7 +38,9 @@ int main() {
 		Pipelines::init();
 
 		EntityManager::init();
-		Gui::init(Window::g_glfw_window, Swapchain::g_image_extent.width, Swapchain::g_image_extent.height);
+		SubmissionManager::init();
+
+		Gui::init(ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableSetMousePos, 0);
 
 		std::chrono::steady_clock::time_point ready(std::chrono::high_resolution_clock::now());
 		Utility::println(std::to_string(std::chrono::duration<float, std::chrono::seconds::period>(ready - startup).count()));
@@ -46,7 +48,9 @@ int main() {
 		Engine::run();
 
 		Gui::destroy();
+
 		EntityManager::destroy();
+		SubmissionManager::destroy();
 
 		Pipelines::clear();
 		ShaderModule::clear();

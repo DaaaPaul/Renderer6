@@ -1,12 +1,15 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vector>
 
 struct CmdBufSubmit {
 	VkSubmitInfo2 submit_info2{};
 	VkCommandBufferSubmitInfo cmd_buf_info{};
 
 	explicit CmdBufSubmit(VkCommandBuffer cmd_buf);
+
+	static std::vector<VkSubmitInfo2> get_submit_info2s(const std::vector<CmdBufSubmit>* p_CMD_BUF_SUBMITS);
 };
 
 struct Index {

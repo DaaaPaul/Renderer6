@@ -11,3 +11,14 @@ CmdBufSubmit::CmdBufSubmit(VkCommandBuffer cmd_buf) :
 		.commandBuffer = cmd_buf
 	} {
 }
+
+std::vector<VkSubmitInfo2> CmdBufSubmit::get_submit_info2s(const std::vector<CmdBufSubmit>* p_CMD_BUF_SUBMITS) {
+	std::vector<VkSubmitInfo2> submit_info2s;
+	submit_info2s.reserve(p_CMD_BUF_SUBMITS->size());
+
+	for(int i = 0; i < p_CMD_BUF_SUBMITS->size(); ++i) {
+		submit_info2s.push_back((*p_CMD_BUF_SUBMITS)[i].submit_info2);
+	}
+
+	return submit_info2s;
+}

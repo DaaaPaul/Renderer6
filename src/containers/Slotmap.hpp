@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <stdexcept>
 #include <utility>
-#include "utility.h"
+#include "utility/Utility.h"
 
 template<class T>
 class Slotmap {

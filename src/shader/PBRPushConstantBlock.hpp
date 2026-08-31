@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-struct PushConstantBlock {
+struct PBRPushConstantBlock {
 	glm::vec4 base_color_factor{};
     float metallicFactor{};
     float roughnessFactor{};

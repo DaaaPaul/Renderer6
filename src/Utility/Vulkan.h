@@ -9,6 +9,7 @@
 #include <cstdint>
 #include "backend/Instance.h"
 #include "shader/PBRVertex.hpp"
+#include "backend/Swapchain.h"
 #include "UtilityStructs.hpp"
 
 namespace Vulkan {
@@ -75,4 +76,23 @@ namespace Vulkan {
 	std::vector<VkImage> get_swapchain_images(VkSwapchainKHR swapchain);
 
 	std::vector<VkImageView> get_image_views(const std::vector<VkImage>& images, VkImageViewType view_type, VkImageAspectFlags image_aspect, VkFormat format);
+
+	inline VkViewport get_sc_viewport() {
+		return {
+			.x = 0.0f,
+			.y = 0.0f,
+			.width = static_cast<float>(Swapchain::g_status.imageExtent.width),
+			.height = static_cast<float>(Swapchain::g_status.imageExtent.height),
+			.minDepth = 0.0f,
+			.maxDepth = 1.0f,
+		};
+
+	}
+
+	inline VkRect2D get_sc_scissor() {
+		return {
+			.offset = VkOffset2D(0, 0),
+			.extent = Swapchain::g_status.imageExtent
+		};
+	}
 }

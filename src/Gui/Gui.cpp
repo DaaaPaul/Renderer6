@@ -6,6 +6,7 @@
 
 namespace Gui {
 	void init(ImGuiConfigFlags config_flags, ImGuiBackendFlags backend_flags) {
+		set_cmd_pool();
 		create_context();
 		set_io_context(config_flags, backend_flags);
 		set_imgui_glfw_window();
@@ -15,6 +16,7 @@ namespace Gui {
 	}
 
 	void destroy() {
+		destroy_cmd_pool();
 		shutdown_imgui_vulkan_application();
 		destroy_descriptor_pool();
 		shutdown_imgui_glfw_window();
@@ -47,8 +49,8 @@ namespace Gui {
 		VkDescriptorPoolCreateInfo descriptor_pool_create = {
 			.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 			.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-			.maxSets = 1000 * pool_sizes.size(),
-			.poolSizeCount = pool_sizes.size(),
+			.maxSets = static_cast<uint32_t>(1000 * pool_sizes.size()),
+			.poolSizeCount = static_cast<uint32_t>(pool_sizes.size()),
 			.pPoolSizes = pool_sizes.data()
 		};
 
@@ -91,6 +93,41 @@ namespace Gui {
 		ImGui::Render();
 
 		return {};
+	}
+
+	Submission get_submission(FrameRecorded frame_recorded, uint32_t sc_image_index) {
+		VkCommandBuffer cmd_buf = Vulkan::create_cmd_buffer(g_cmd_pool);
+		
+		return Submission{
+			cmd_buf,
+			sc_image_index,
+			std::function<void(VkCommandBuffer)>{},
+			std::function<void(VkCommandBuffer)>{},
+			std::vector<ImageBarrier>{},
+			[](VkCommandBuffer cmd_buf) -> void {
+				ImDrawData* p_draw_data = ImGui::GetDrawData();
+				ImGui_ImplVulkan_RenderDrawData(p_draw_data, cmd_buf);
+			},
+			std::vector<ImageBarrier>{
+				ImageBarrier{
+					.cmd_buf = cmd_buf,
+					.image = Swapchain::g_images[sc_image_index],
+					.image_subresource_range{
+						.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+						.baseMipLevel = 0,
+						.levelCount = 1,
+						.baseArrayLayer = 0,
+						.layerCount = 1
+					},
+					.sync_stage_1 = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+					.access_stage_1 = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+					.sync_stage_2 = VK_PIPELINE_STAGE_2_NONE,
+					.access_stage_2 = VK_ACCESS_2_NONE,
+					.old_layout = VK_IMAGE_LAYOUT_GENERAL,
+					.new_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+				}
+			}
+		};
 	}
 
 	void imgui_check(VkResult result) {

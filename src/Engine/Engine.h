@@ -2,10 +2,10 @@
 
 #include <vulkan/vulkan_core.h>
 #include <cstdint>
-#include "FramesInFlight.hpp"
+#include "imgui/imgui.h"
 #include "backend/Swapchain.h"
 #include "shader/UniformBufferBlock.hpp"
-#include "imgui/imgui.h"
+#include "utility/UtilityStructs.hpp"
 
 namespace Engine {	
 	struct ScAcquire {
@@ -18,17 +18,15 @@ namespace Engine {
 	inline UniformBufferBlock g_ubo_data;
 	inline glm::vec2 g_circle_position{};
 
-	void record_draw_model(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
-	void record_draw_sphere(VkCommandBuffer cmd_buf, uint32_t sc_image_index);
-	void record_draw_gui(VkCommandBuffer cmd_buf, uint32_t sc_image_index, ImDrawData* p_gui_data);
-	void render_next(Frame& frame);
+	inline std::vector<VkFence> g_fences;
+
+	void render(Index sc_index);
 	void run();
 
 	ScAcquire acquire_sc_image(VkFence fence_to_signal);
 	VkResult present_sc_image(uint32_t sc_image_index, VkQueue queue);
 	void wait_timeline_semaphore(VkSemaphore semaphore, uint64_t wait_val);
 	void wait_fence(VkFence fence);
-	void fit_viewport(VkCommandBuffer cmd_buf);
 	void resize();
 	void check_close();
 	void update(float delta_time);

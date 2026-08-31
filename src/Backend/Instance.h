@@ -3,7 +3,6 @@
 #include <vulkan/vulkan_core.h>
 #include <vector>
 #include "Window.h"
-#include "utility/Vulkan.h"
 
 namespace Instance {
 	inline VkInstance g_instance{};
@@ -47,7 +46,8 @@ namespace Instance {
 	}
 
 	inline void set_instance() {
-		Vulkan::check(vkCreateInstance(&g_create_info, nullptr, &g_instance), "set_instance: failed");
+		//Vulkan::check(vkCreateInstance(&g_create_info, nullptr, &g_instance), "set_instance: failed");
+		vkCreateInstance(&g_create_info, nullptr, &g_instance);
 	}
 	inline VkInstance get_instance() {
 		return g_instance;

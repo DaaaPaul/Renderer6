@@ -76,5 +76,26 @@ struct Submission {
 
 	std::vector<ImageBarrier> post_render_barriers;
 
+	Submission(VkCommandBuffer cmd_buf, 
+			   uint32_t sc_image_index, 
+			   float clear_r, 
+			   float clear_g, 
+			   float clear_b, 
+			   float clear_a, 
+			   VkClearDepthStencilValue clear_depth, 
+			   std::function<void(VkCommandBuffer)> f_set_cmds, 
+			   std::function<void(VkCommandBuffer)> f_bind_cmds, 
+			   std::vector<ImageBarrier>&& pre_render_barriers, 
+			   std::function<void(VkCommandBuffer)> f_render_cmds,
+			   std::vector<ImageBarrier>&& post_render_barriers);
+	Submission(VkCommandBuffer cmd_buf, 
+			   uint32_t sc_image_index, 
+			   std::function<void(VkCommandBuffer)> f_set_cmds, 
+			   std::function<void(VkCommandBuffer)> f_bind_cmds, 
+			   std::vector<ImageBarrier>&& pre_render_barriers, 
+			   std::function<void(VkCommandBuffer)> f_render_cmds,
+			   std::vector<ImageBarrier>&& post_render_barriers);
+
 	static void record(Submission* p_submission);
+	static void submit(VkQueue queue, VkFence fence, const std::vector<Submission>* p_SUBMISSIONS);
 };
