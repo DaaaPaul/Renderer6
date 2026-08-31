@@ -11,11 +11,12 @@ namespace SubmissionManager {
 	void init() {
 		set_cmd_pool();
 		set_submissions();
+		record_submissions();
 	}
 
 	void destroy() {
-		destroy_cmd_pool();
 		destroy_submissions();
+		destroy_cmd_pool();
 	}
 
 	void set_submissions() {
@@ -73,7 +74,7 @@ namespace SubmissionManager {
 					},
 					ImageBarrier{
 						.cmd_buf = axe_i_cmd_buf,
-						.image = Swapchain::g_images[i],
+						.image = MemoryManager::g_images.get("depth image")->get_image(),
 						.image_subresource_range{
 							.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
 							.baseMipLevel = 0,
@@ -128,6 +129,13 @@ namespace SubmissionManager {
 				},
 				std::vector<ImageBarrier>{}
 			);
+		}
+	}
+	
+	void record_submissions() {
+		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
+			Submission::record(g_submissions.get(std::string("axe ") + std::to_string(i)));
+			Submission::record(g_submissions.get(std::string("sphere ") + std::to_string(i)));
 		}
 	}
 

@@ -20,6 +20,7 @@ namespace SubmissionManager {
 	}
 
 	void set_submissions();
+	void record_submissions();
 	void destroy_submissions();
 
 	void set_sc_viewport(VkCommandBuffer cmd_buf);

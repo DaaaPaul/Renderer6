@@ -35,9 +35,10 @@ namespace Engine {
 
 		std::vector<Submission> submissions{ 
 			*SubmissionManager::g_submissions.get(std::string("axe ") + std::to_string(sc_index.val)), 
-			*SubmissionManager::g_submissions.get(std::string("sphere ") + std::to_string(sc_index.val)) 
+			*SubmissionManager::g_submissions.get(std::string("sphere ") + std::to_string(sc_index.val)),
+			Gui::get_submission(Gui::record_frame(), sc_index.val)
 		};
-		submissions.push_back(Gui::get_submission(Gui::record_frame(), sc_index.val));
+		Submission::record(&submissions[2]);
 		
 		VkQueue queue = LogicalDevice::get_queue(VK_QUEUE_GRAPHICS_BIT);
 		Submission::submit(queue, VK_NULL_HANDLE, &submissions);

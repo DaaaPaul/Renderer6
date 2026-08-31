@@ -9,9 +9,8 @@
 
 namespace Swapchain {
 	void init() {
-		Vulkan::check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &g_surface_capabilities), "get_image_extent: failed to get surface capabilities");
-
 		g_surface = Vulkan::create_surface();
+		Vulkan::check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(PhysicalDevice::g_physical_device, g_surface, &g_surface_capabilities), "get_image_extent: failed to get surface capabilities");
 
 		g_image_extent = get_image_extent();
 		check_format_colorspace(g_IMAGE_FORMAT, g_IMAGE_COLOR_SPACE);

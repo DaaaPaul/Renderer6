@@ -38,15 +38,21 @@ void Attachments::point(VkRenderingInfo* p_rendering_info, const VkRenderingAtta
 void Submission::record(Submission* submission) {
 	Vulkan::begin_cmd_buffer(submission->cmd_buf, Vulkan::NO_FLAGS);
 
-	submission->f_set_cmds(submission->cmd_buf);
-	submission->f_bind_cmds(submission->cmd_buf);
+	if(submission->f_set_cmds) {
+		submission->f_set_cmds(submission->cmd_buf);
+	}
+	if(submission->f_bind_cmds) {
+		submission->f_bind_cmds(submission->cmd_buf);
+	}
 
 	std::for_each(submission->pre_render_barriers.begin(), submission->pre_render_barriers.end(), ImageBarrier::insert);
 
 	Attachments attachments(submission->sc_image_index, submission->p_CLEAR_COLOR, submission->p_CLEAR_DEPTH);
 	Attachments::begin_rendering(submission->cmd_buf, &attachments);
 	
-	submission->f_render_cmds(submission->cmd_buf);
+	if(submission->f_render_cmds) {
+		submission->f_render_cmds(submission->cmd_buf);
+	}
 
 	Attachments::end_rendering(submission->cmd_buf);
 

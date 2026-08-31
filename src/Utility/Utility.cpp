@@ -23,11 +23,12 @@ std::ostream& operator<<(std::ostream& os, glm::mat4 mat4) {
 }
 
 namespace Utility {
-	std::vector<std::string> to_string(const std::vector<const char*>* c_strings) {
+	std::vector<std::string> to_string(const std::vector<const char*>* C_STRINGS) {
 		std::vector<std::string> strings;
+		strings.reserve(C_STRINGS->size());
 
-		for(const char* c_string : *c_strings) {
-			strings.emplace_back(c_string);
+		for(int i = 0; i < C_STRINGS->size(); ++i) {
+			strings.emplace_back((*C_STRINGS)[i]);
 		}
 
 		return strings;

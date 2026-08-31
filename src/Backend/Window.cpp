@@ -11,7 +11,7 @@ namespace Window {
 		std::vector<const char*> required_vector(requiredCount);
 
 		for (int i = 0; i < requiredCount; ++i) {
-			required_vector.push_back(required[i]);
+			required_vector[i] = required[i];
 		}
 		#ifdef __APPLE__
 		if (!required) {
