@@ -4,7 +4,7 @@
 #include "Memory/MemoryManager.h"
 #include "utility/UtilityStructs.hpp"
 
-Attachments::Attachments(uint32_t sc_image_index, const VkClearColorValue* p_CLEAR_COLOR, const VkClearDepthStencilValue* p_CLEAR_DEPTH) :
+Attachments::Attachments(uint32_t sc_image_index, std::optional<VkClearColorValue> clear_color, std::optional<VkClearDepthStencilValue> clear_depth) :
 	rendering_info{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_INFO,
 			.renderArea = VkRect2D{ VkOffset2D{0, 0}, Swapchain::g_status.imageExtent },
@@ -14,17 +14,17 @@ Attachments::Attachments(uint32_t sc_image_index, const VkClearColorValue* p_CLE
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = Swapchain::g_image_views[sc_image_index],
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-			.loadOp = (p_CLEAR_COLOR) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+			.loadOp = (clear_color.has_value()) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = (p_CLEAR_COLOR) ? VkClearValue{ .color = *p_CLEAR_COLOR } : VkClearValue{}	
+			.clearValue = (clear_color.has_value()) ? VkClearValue{ .color = clear_color.value() } : VkClearValue{}	
 	},
 	depth_image{
 			.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 			.imageView = MemoryManager::g_image_views.get("depth view")->get_image_view(),
 			.imageLayout = VK_IMAGE_LAYOUT_GENERAL,
-			.loadOp = (p_CLEAR_DEPTH) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+			.loadOp = (clear_depth.has_value()) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
 			.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-			.clearValue = (p_CLEAR_DEPTH) ? VkClearValue{ .depthStencil = *p_CLEAR_DEPTH } : VkClearValue{}
+			.clearValue = (clear_depth.has_value()) ? VkClearValue{ .depthStencil = clear_depth.value() } : VkClearValue{}
 	} {
 	point(&rendering_info, &sc_image, &depth_image);
 }
@@ -47,7 +47,7 @@ void Submission::record(Submission* submission) {
 
 	std::for_each(submission->pre_render_barriers.begin(), submission->pre_render_barriers.end(), ImageBarrier::insert);
 
-	Attachments attachments(submission->sc_image_index, submission->p_CLEAR_COLOR, submission->p_CLEAR_DEPTH);
+	Attachments attachments(submission->sc_image_index, submission->clear_color, submission->clear_depth);
 	Attachments::begin_rendering(submission->cmd_buf, &attachments);
 	
 	if(submission->f_render_cmds) {
@@ -73,46 +73,3 @@ void Submission::submit(VkQueue queue, VkFence fence, const std::vector<Submissi
 
 	vkQueueSubmit2(queue, submit_info2s.size(), submit_info2s.data(), fence);
 }
-
-Submission::Submission(VkCommandBuffer cmd_buf, 
-					   uint32_t sc_image_index, 
-					   float clear_r, 
-					   float clear_g, 
-					   float clear_b, 
-					   float clear_a, 
-					   VkClearDepthStencilValue clear_depth, 
-					   std::function<void(VkCommandBuffer)> f_set_cmds, 
-					   std::function<void(VkCommandBuffer)> f_bind_cmds, 
-					   std::vector<ImageBarrier>&& pre_render_barriers, 
-					   std::function<void(VkCommandBuffer)> f_render_cmds,
-					   std::vector<ImageBarrier>&& post_render_barriers) :
-	cmd_buf{ cmd_buf },
-	sc_image_index{ sc_image_index },
-	clear_color{ .float32{ clear_r, clear_g, clear_b, clear_a } },
-	p_CLEAR_COLOR{ &clear_color },
-	clear_depth{ clear_depth },
-	p_CLEAR_DEPTH{ &clear_depth },
-	f_set_cmds(f_set_cmds),
-	f_bind_cmds(f_bind_cmds),
-	pre_render_barriers(std::move(pre_render_barriers)),
-	f_render_cmds(f_render_cmds),
-	post_render_barriers(std::move(post_render_barriers)) {}
-
-Submission::Submission(VkCommandBuffer cmd_buf, 
-			uint32_t sc_image_index, 
-			std::function<void(VkCommandBuffer)> f_set_cmds, 
-			std::function<void(VkCommandBuffer)> f_bind_cmds, 
-			std::vector<ImageBarrier>&& pre_render_barriers, 
-			std::function<void(VkCommandBuffer)> f_render_cmds,
-			std::vector<ImageBarrier>&& post_render_barriers) :
-	cmd_buf{ cmd_buf },
-	sc_image_index{ sc_image_index },
-	clear_color{},
-	p_CLEAR_COLOR{},
-	clear_depth{},
-	p_CLEAR_DEPTH{},
-	f_set_cmds(f_set_cmds),
-	f_bind_cmds(f_bind_cmds),
-	pre_render_barriers(std::move(pre_render_barriers)),
-	f_render_cmds(f_render_cmds),
-	post_render_barriers(std::move(post_render_barriers)) {}

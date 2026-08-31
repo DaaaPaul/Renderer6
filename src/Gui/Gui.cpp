@@ -101,6 +101,8 @@ namespace Gui {
 		return Submission{
 			cmd_buf,
 			sc_image_index,
+			std::nullopt,
+			std::nullopt,
 			std::function<void(VkCommandBuffer)>{},
 			std::function<void(VkCommandBuffer)>{},
 			std::vector<ImageBarrier>{},

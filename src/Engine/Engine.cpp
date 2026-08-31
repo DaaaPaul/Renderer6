@@ -82,6 +82,10 @@ namespace Engine {
 
 		Utility::println(std::to_string(g_total_delta_time / g_total_loops));
 
+		for(int i = 0; i < Swapchain::g_IMAGE_COUNT; ++i) {
+			vkDestroyFence(g_device, g_fences[i], nullptr);
+		}
+
 		Vulkan::check(vkDeviceWaitIdle(LogicalDevice::g_device), "Failed to wait idle");
 	}
 

@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <functional>
+#include <optional>
 #include "backend/PhysicalDevice.h"
 
 struct ImageBarrier {
@@ -47,7 +48,7 @@ struct Attachments {
 	VkRenderingAttachmentInfo sc_image{};
 	VkRenderingAttachmentInfo depth_image{};
 
-	Attachments(uint32_t sc_image_index, const VkClearColorValue* p_CLEAR_COLOR, const VkClearDepthStencilValue* p_CLEAR_DEPTH);
+	Attachments(uint32_t sc_image_index, std::optional<VkClearColorValue> clear_color, std::optional<VkClearDepthStencilValue> clear_depth);
 	static void point(VkRenderingInfo* p_rendering_info, const VkRenderingAttachmentInfo* p_SC_IMAGE, const VkRenderingAttachmentInfo* p_DEPTH_IMAGE);
 
 	static void begin_rendering(VkCommandBuffer cmd_buf, const Attachments* p_ATTACHMENTS) {
@@ -62,10 +63,8 @@ struct Submission {
 	VkCommandBuffer cmd_buf{};
 
 	uint32_t sc_image_index{};
-	VkClearColorValue clear_color{};
-	const VkClearColorValue* p_CLEAR_COLOR{};
-	VkClearDepthStencilValue clear_depth{};
-	const VkClearDepthStencilValue* p_CLEAR_DEPTH{};
+	std::optional<VkClearColorValue> clear_color{};
+	std::optional<VkClearDepthStencilValue> clear_depth{};
 
 	std::function<void(VkCommandBuffer)> f_set_cmds{};
 	std::function<void(VkCommandBuffer)> f_bind_cmds{};
@@ -75,26 +74,6 @@ struct Submission {
 	std::function<void(VkCommandBuffer)> f_render_cmds{};
 
 	std::vector<ImageBarrier> post_render_barriers;
-
-	Submission(VkCommandBuffer cmd_buf, 
-			   uint32_t sc_image_index, 
-			   float clear_r, 
-			   float clear_g, 
-			   float clear_b, 
-			   float clear_a, 
-			   VkClearDepthStencilValue clear_depth, 
-			   std::function<void(VkCommandBuffer)> f_set_cmds, 
-			   std::function<void(VkCommandBuffer)> f_bind_cmds, 
-			   std::vector<ImageBarrier>&& pre_render_barriers, 
-			   std::function<void(VkCommandBuffer)> f_render_cmds,
-			   std::vector<ImageBarrier>&& post_render_barriers);
-	Submission(VkCommandBuffer cmd_buf, 
-			   uint32_t sc_image_index, 
-			   std::function<void(VkCommandBuffer)> f_set_cmds, 
-			   std::function<void(VkCommandBuffer)> f_bind_cmds, 
-			   std::vector<ImageBarrier>&& pre_render_barriers, 
-			   std::function<void(VkCommandBuffer)> f_render_cmds,
-			   std::vector<ImageBarrier>&& post_render_barriers);
 
 	static void record(Submission* p_submission);
 	static void submit(VkQueue queue, VkFence fence, const std::vector<Submission>* p_SUBMISSIONS);

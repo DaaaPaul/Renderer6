@@ -27,10 +27,7 @@ namespace SubmissionManager {
 				std::string("axe ") + std::to_string(i), 
 				axe_i_cmd_buf,
 				i,
-				0.4f, 
-				0.2f, 
-				0.2f, 
-				1.0f,
+				VkClearColorValue{0.4f, 0.2f, 0.2f, 1.0f}, 
 				VkClearDepthStencilValue{ .depth = 1.0f },
 				[](VkCommandBuffer cmd_buf) -> void {
 					set_sc_viewport(cmd_buf);
@@ -102,6 +99,8 @@ namespace SubmissionManager {
 				std::string("sphere ") + std::to_string(i), 
 				sphere_i_cmd_buf,
 				i,
+				std::nullopt,
+				std::nullopt,
 				[](VkCommandBuffer cmd_buf) -> void {
 					set_sc_viewport(cmd_buf);
 					set_sc_scissor(cmd_buf);
